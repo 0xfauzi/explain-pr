@@ -214,3 +214,67 @@ expensive ones and somebody else would otherwise build them.
 2. The back-translation fine-tune of E4, whose corruption operator is the one
    thing in this programme that behaved reliably: pushing text toward the machine
    attractor lowered rhythm on four of four sources.
+
+## E6: the measure works in one register and not in the other
+
+Prompted by a challenge from the owner: a commercial detector reported both of
+his published posts as fully machine-written. That forced an audit of what the
+corpus had ever been calling human.
+
+**The audit, and it failed on every count.**
+
+- The `human` group was llama.cpp. That repository has **zero commits before
+  ChatGPT**, its README carries 234 distinct authors, and it is an LLM project,
+  so its contributors are the population most likely to write with assistance.
+  It was labelled human because it was community open source, which is an
+  assumption and not evidence.
+- The `owner-human` group contained `AGENTS.md`, which is Claude-co-authored on
+  **11 of the 11 commits** that touched it. The label was simply wrong.
+- Which left the owner's session messages, 548 words, as the only text in the
+  entire corpus defensible as human-written.
+
+Every reference band reported before this point rested on those labels.
+
+**The fix needs no detector.** Text published before ChatGPT is certainly human.
+Text generated now is certainly not. Both ends are guaranteed, so provenance
+stops being a judgement call.
+
+Human side: 18 documents, PEPs and RFCs dated 1997 to 2018, plus 8 Paul Graham
+essays, all pre-2022. Generated side: 16 explanations and 8 specifications
+written for this experiment.
+
+**The result, and the reason the first version of it was wrong.**
+
+| register | author | n | median cv | IQR |
+| --- | --- | ---: | ---: | :---: |
+| technical | human | 18 | 0.784 | 0.729-0.827 |
+| technical | generated | 5 | **0.491** | 0.413-0.504 |
+| essay | human | 8 | 0.633 | 0.583-0.656 |
+| essay | generated | 16 | 0.604 | 0.550-0.627 |
+
+Comparing human technical prose against generated essays gives an AUC of 0.995,
+which looks like a triumph and is an artefact. It compares two registers at once.
+Within register:
+
+| register | gap | AUC | verdict |
+| --- | ---: | ---: | --- |
+| technical | +0.293 | **1.000** | separates perfectly |
+| essay | +0.029 | 0.664 | does not separate |
+
+**What this means.** Rhythm separates human from generated writing only where
+human writers actually vary. Specification authors vary enormously. Paul Graham
+does not: he writes short, uniform, deliberate sentences, and on this measure he
+scores 0.633 against a machine's 0.604.
+
+So the target is register-specific and there is no single number:
+
+- **Technical documentation and PR lessons: aim for 0.78.** We sit at 0.649, so
+  the gap is real and worth closing. Generated spec prose at 0.491 is the flattest
+  thing measured anywhere, so this is where the problem is worst.
+- **Essays: do not chase this metric.** Our 0.649 already exceeds the human essay
+  median of 0.633. Optimising further would push prose away from how good
+  essayists actually write.
+
+**Caveat.** Only 5 of 8 generated specifications cleared the 400-word floor, so
+the perfect AUC rests on a small cell. The size of the gap is not in doubt; its
+precision is.
