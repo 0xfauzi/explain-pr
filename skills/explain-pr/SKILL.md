@@ -197,10 +197,21 @@ one in half.
     python scripts/lesson_lint.py <lesson.html> [--glossary <register.md>]
 
 It reads those rules so they cannot rot, and it parses every inline script, so a
-widget that cannot run is caught here. Whether a widget teaches the truth is
-step 5's job, and no checker can take it.
+widget that cannot run is caught here.
 
-**Done when** the checker exits 0.
+    python scripts/ai_tells.py <lesson.html> <a file a person wrote>
+
+That one counts the documented signatures of unedited model prose, and it has no
+pass mark on purpose. Read it beside writing you know a person produced, because
+a count with no human reference tells you the prose changed rather than improved.
+
+Watch the rhythm figure hardest. Uniform sentence length is the signature word
+choice cannot disguise, and human technical prose sits near 0.76 to 0.81. If your
+draft is well under that, you have written to a limit rather than to a reader.
+
+Whether a widget teaches the truth is step 5's job, and no checker can take it.
+
+**Done when** `lesson_lint.py` exits 0 and you have read the tells report.
 
 ## 8. Record what it taught
 

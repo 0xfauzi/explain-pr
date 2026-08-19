@@ -124,61 +124,98 @@ radius, then the move.
 Then name two specific moves under each widget and say what each shows. "Try it"
 is not an instruction. "Drag the right box left until the number turns red" is.
 
-## Shape
+## Shape, and the rhythm that carries it
 
-Two limits, both from ASD-STE100, the controlled-English standard for technical
-writing. **Twenty words per sentence.** **Six sentences per paragraph.** Two to
-four sentences usually reads better than six.
+One idea per sentence. Simple tenses. Active voice. Name who does the thing. Cut
+every word that does no work: "in order to" is "to", "the fact that" is nothing,
+and a sentence that survives its own deletion should be deleted.
 
-Four habits underneath them, from Zinsser:
+Then vary the length. This is the part that is easy to get wrong in a way that
+looks like compliance, so it gets the rest of this section.
 
-- **Simplicity.** One idea per sentence. Simple tenses. Active voice. Name who
-  does the thing.
-- **Brevity.** Cut every word that does no work. "In order to" is "to". "The
-  fact that" is nothing. If a sentence survives its own deletion, delete it.
-- **Clarity.** The same word for the same idea, always, and jargon only where
-  the glossary defines it.
-- **Humanity.** Write to a person. Say plainly when something is wrong, unproven
-  or unknown.
+Aim most sentences short, and let a long one run when it carries a single
+connected thought that does not survive being cut in half. What you are steering
+is the spread, not the maximum. A page where every sentence lands between twelve
+and twenty words reads like a machine even when each sentence is good, because
+uniform sentence length is one of the few signatures of generated prose that word
+choice cannot disguise.
 
-## The trap inside the limits, and the way out
+### The measurement that changed this rule
 
-This section is worth more than the limits themselves.
+An earlier version of this file set a hard twenty-word cap. It was measured and
+it was wrong.
 
-The limits are pacing, not compliance. Take a twenty-six word sentence, split it
-at the comma, and you keep every word while throwing away the join, which was
-carrying your argument. The result passes the checker and reads like a wall of
-commandments.
+Two explanations of the same pull request, same prompt and same model, differing
+only in whether the teaching style was active:
 
-This document did it to itself. An earlier draft of the widgets file read:
+| | mean words | longest | coefficient of variation |
+| --- | ---: | ---: | ---: |
+| style off | 26.2 | 114 | 0.874 |
+| style on | 26.4 | 64 | **0.606** |
+| the repository owner's own writing | 20 to 22 | 78 to 129 | 0.76 to 0.81 |
+
+The cap did not shorten the average sentence at all. What it did was clip the
+long tail, and the long tail is what makes prose read like a person. Comprehension,
+measured separately on the same two documents, showed no detectable difference.
+
+So the cap cost the thing it was supposed to protect and bought nothing that
+could be measured. Steer the distribution instead, and check it with
+`scripts/ai_tells.py`, which reports the coefficient of variation alongside the
+other signatures.
+
+### The move that keeps a short sentence honest
+
+If you find yourself splitting a sentence at its comma to meet a limit, stop.
+That keeps every word and throws away the join, which was carrying the argument.
+An earlier draft of the widgets file did exactly this:
 
 > A hand-drawn topology is a rival definition of the topology. It starts
 > drifting the moment a part moves. Nothing tells the reader it has drifted.
 
 Three legal sentences, and nothing says why the second follows from the first.
-
-**Put the join at the front of the next sentence.** That is the whole technique,
-and it costs one word:
+Put the connective at the front of the next sentence instead:
 
 > Draw the topology by hand and you have two definitions of it. So they disagree
 > the moment somebody moves a part. Nothing tells you they have.
 
-Same limit, and the reasoning survived. The words doing this work are all small:
-so, but, and, then, because, which is why, that is.
+It costs one word and the reasoning survives. The words doing this work are all
+small: so, but, then, because, which is why.
 
 Reach for a short sentence because the thought is finished.
 
-## Rhythm
+## The habits that survive a style instruction
 
-Ten sentences of the same length read like a machine, even when each one is good.
-Vary them.
+Published work on generated prose finds two classes of tell, and they behave
+differently.
 
-The basic move is a longer sentence that unfolds an argument, then a short one
-that lands it. Then let the next paragraph breathe differently, or the reader
-starts hearing the pattern instead of the content.
+**Vocabulary washes out.** The words people learned to spot in 2023, like "delve"
+and "tapestry", have largely gone, partly because writers avoid them and partly
+because humans have adopted them from reading model output. A word blocklist has
+a shelf life measured in months, so do not spend much attention on one.
 
-Read the draft aloud. Anywhere you would not say a sentence to a colleague
-standing at your desk, rewrite it.
+**Structure persists.** These habits come from markdown-heavy training and survive
+being told to write differently, which makes them the honest test of whether a
+style instruction changed anything:
+
+- **Reaching for a heading, a bullet or a bold run** where a sentence would do.
+  Structure earns its place when the content is genuinely parallel; scaffolding
+  applied to one argument fragments it.
+- **Paragraphs of uniform length**, for the same reason as uniform sentences.
+- **Negative parallelism**: "it is not just X, it is Y", a modest claim followed
+  by a grander restatement of the same claim. This is the most reliable current
+  tell, because it is a shape rather than a word. Say the claim once, at its real
+  size.
+- **The rule of three**, used because three sounds complete rather than because
+  there are three things. Two is allowed, and so is four.
+- **Participial tails** asserting significance without evidence: ", highlighting
+  the importance of", ", underscoring its role in". Real significance deserves
+  its own sentence with a reason attached.
+- **Significance inflation**: "plays a crucial role", "stands as a testament to",
+  "a turning point". Show the thing and let the reader judge its size.
+
+`scripts/ai_tells.py` counts all of these and names its sources. Read its output
+against a sample of writing you know a person produced, because a count with no
+human reference tells you the prose changed rather than improved.
 
 ## Two habits that protect the reader
 

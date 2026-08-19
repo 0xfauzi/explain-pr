@@ -35,6 +35,7 @@ from __future__ import annotations
 import argparse
 import re
 import shutil
+import statistics
 import subprocess
 import tempfile
 from pathlib import Path
@@ -342,8 +343,18 @@ def main() -> int:
     print(f"{args.lesson}")
     print(f"  authored prose   : {words} words, {len(all_sents)} sentences")
     if all_sents:
-        longest = max(len(s.split()) for s in all_sents)
+        lengths = [len(s.split()) for s in all_sents]
+        longest = max(lengths)
         print(f"  longest sentence : {longest} words (limit {MAX_SENTENCE_WORDS})")
+        # Reported, never failed. Uniform sentence length is a documented
+        # signature of generated prose, and the sentence cap above works by
+        # clipping the long tail, which is what produces the variation. The two
+        # rules pull against each other, so both numbers are printed and the
+        # writer decides. `ai_tells.py` explains the measurement.
+        if len(lengths) > 1:
+            mean = statistics.mean(lengths)
+            cv = statistics.stdev(lengths) / mean if mean else 0.0
+            print(f"  rhythm           : cv {cv:.2f} (human technical prose sits near 0.76 to 0.81)")
     print(f"  over {MAX_SENTENCE_WORDS} words     : {len(long_sents)}")
     print(f"  blocks over {MAX_PARAGRAPH_SENTENCES}    : {len(fat_blocks)}")
     print(f"  banned aliases   : {len(used_aliases)}")

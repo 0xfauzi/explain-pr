@@ -1,0 +1,9 @@
+{
+  "name": "explain-pr",
+  "description": "Teach a pull request instead of reviewing it, and write the way a teacher does. Ships the explain-pr skill, the Teacher output style, a prose checker and an AI-tells meter.",
+  "version": "0.1.0",
+  "author": { "name": "0xfauzi" },
+  "license": "MIT",
+  "skills": ["./skills/explain-pr"],
+  "outputStyles": "./output-styles"
+}
