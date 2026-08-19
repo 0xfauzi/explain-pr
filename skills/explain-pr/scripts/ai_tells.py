@@ -108,14 +108,36 @@ BULLET = re.compile(r"^\s*[-*+]\s+\S", re.M)
 SENTENCE_SPLIT = re.compile(r"(?<=[.!?])\s+(?=[A-Z(\"'])")
 
 
+#: A prose sentence this long is not a sentence. Measured on community docs, the
+#: segments above this were unstripped JSON payloads and shell transcripts, one
+#: of them 1461 "words" long, and they inflated a corpus median from 0.74 to 0.92.
+#: Dropped rather than trusted, and the count is reported so the drop is visible.
+MAX_PROSE_SENTENCE_WORDS = 80
+
+
 def strip_markup(text: str) -> str:
-    """Prose only. Code, fences and inline spans answer to other constraints."""
+    """Prose only. Code, fences, tables and inline spans answer to other rules."""
     text = re.sub(r"\A---\n.*?\n---\n", " ", text, flags=re.S)
-    text = re.sub(r"<(script|style|svg)\b.*?</\1>", " ", text, flags=re.S | re.I)
+    text = re.sub(r"<(script|style|svg|pre|code)\b.*?</\1>", " ", text, flags=re.S | re.I)
+    text = re.sub(r"^\s*```.*?^\s*```", " ", text, flags=re.S | re.M)
     text = re.sub(r"```.*?```", " ", text, flags=re.S)
     text = re.sub(r"^(?: {4}|\t).*$", " ", text, flags=re.M)
+    #: Markdown tables are data laid out in rows, not sentences.
+    text = re.sub(r"^\s*\|.*$", " ", text, flags=re.M)
     text = re.sub(r"`[^`]+`", " CODE ", text)
     text = re.sub(r"<[^>]+>", " ", text)
+    return text
+
+
+def strip_quoted(text: str) -> str:
+    """Drop quoted spans before counting tells.
+
+    A document ABOUT these signatures names them, and naming one is citation
+    rather than use. Without this, the writing guide that lists "delve" as a word
+    to avoid scores as though it had used it.
+    """
+    text = re.sub(r"^\s*>.*$", " ", text, flags=re.M)
+    text = re.sub(r'"[^"\n]{1,120}"', " ", text)
     return text
 
 
@@ -127,6 +149,13 @@ def sentences(prose: str) -> list[str]:
             continue
         out.extend(s.strip() for s in SENTENCE_SPLIT.split(block) if s.strip())
     return out
+
+
+def prose_sentences(prose: str) -> tuple[list[str], int]:
+    """Sentences, and how many segments were dropped as non-prose."""
+    everything = sentences(prose)
+    kept = [s for s in everything if len(s.split()) <= MAX_PROSE_SENTENCE_WORDS]
+    return kept, len(everything) - len(kept)
 
 
 def phrase_hits(prose: str, phrases: list[str]) -> list[str]:
@@ -141,21 +170,22 @@ def phrase_hits(prose: str, phrases: list[str]) -> list[str]:
 def measure(path: Path) -> dict[str, float | int | list[str]]:
     raw = path.read_text(encoding="utf-8")
     prose = strip_markup(raw)
-    sents = sentences(prose)
+    sents, dropped = prose_sentences(prose)
+    counted = strip_quoted(prose)
     lengths = [len(s.split()) for s in sents]
     words = sum(lengths) or 1
 
     def per_k(n: int) -> float:
         return round(1000 * n / words, 1)
 
-    hits_2023 = phrase_hits(prose, WORDS_2023)
-    hits_2024 = phrase_hits(prose, WORDS_2024)
-    hits_2025 = phrase_hits(prose, WORDS_2025)
-    copula = phrase_hits(prose, COPULA_DODGE)
-    inflation = phrase_hits(prose, INFLATION)
-    negpar = NEGATIVE_PARALLELISM.findall(prose)
-    tails = PARTICIPIAL_TAIL.findall(prose)
-    tricolon = TRICOLON.findall(prose)
+    hits_2023 = phrase_hits(counted, WORDS_2023)
+    hits_2024 = phrase_hits(counted, WORDS_2024)
+    hits_2025 = phrase_hits(counted, WORDS_2025)
+    copula = phrase_hits(counted, COPULA_DODGE)
+    inflation = phrase_hits(counted, INFLATION)
+    negpar = NEGATIVE_PARALLELISM.findall(counted)
+    tails = PARTICIPIAL_TAIL.findall(counted)
+    tricolon = TRICOLON.findall(counted)
 
     mean = statistics.mean(lengths) if lengths else 0.0
     stdev = statistics.stdev(lengths) if len(lengths) > 1 else 0.0
@@ -167,6 +197,7 @@ def measure(path: Path) -> dict[str, float | int | list[str]]:
         "burstiness": round(stdev, 1),
         "cv": round(stdev / mean, 3) if mean else 0.0,
         "longest": max(lengths) if lengths else 0,
+        "dropped": dropped,
         "lex_2023": per_k(len(hits_2023)),
         "lex_2024": per_k(len(hits_2024)),
         "lex_2025": per_k(len(hits_2025)),
@@ -188,19 +219,71 @@ RHETORICAL = ("neg_parallel", "participial", "tricolon")
 STRUCTURAL = ("em_dash", "bold", "heading", "bullet")
 
 
+ALL_TELLS = LEXICAL + RHETORICAL + STRUCTURAL
+
+
+def summarise(rows: list[tuple[str, dict[str, object]]], groups: dict[str, str]) -> None:
+    """Aggregate by group, because one document tells you nothing about a band.
+
+    Median rather than mean: a single long README drags an average around, and
+    what we want is where a typical document of this kind sits.
+    """
+    buckets: dict[str, list[dict[str, object]]] = {}
+    for name, m in rows:
+        buckets.setdefault(groups[name], []).append(m)
+
+    def med(vals: list[float]) -> float:
+        return round(statistics.median(vals), 3) if vals else 0.0
+
+    print(f"\n{'group':18s} {'files':>5s} {'words':>7s} {'cv median':>10s} {'cv range':>13s}")
+    print("-" * 58)
+    for group, ms in buckets.items():
+        cvs = sorted(float(m["cv"]) for m in ms)
+        words = sum(int(m["words"]) for m in ms)
+        span = f"{cvs[0]:.2f}-{cvs[-1]:.2f}" if cvs else "-"
+        print(f"{group:18s} {len(ms):>5d} {words:>7d} {med(cvs):>10} {span:>13s}")
+
+    print(f"\n{'group':18s} " + " ".join(f"{k[:9]:>10s}" for k in ALL_TELLS))
+    print("-" * (19 + 11 * len(ALL_TELLS)))
+    for group, ms in buckets.items():
+        cells = [med([float(m[k]) for m in ms]) for k in ALL_TELLS]
+        print(f"{group:18s} " + " ".join(f"{c:>10}" for c in cells))
+
+
 def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("files", nargs="+")
     ap.add_argument("--detail", action="store_true", help="print the words that matched")
+    ap.add_argument("--summary", action="store_true",
+                    help="aggregate by containing directory instead of listing every file")
+    ap.add_argument("--min-words", type=int, default=0,
+                    help="skip files shorter than this; short files give unstable variance")
     args = ap.parse_args()
 
-    rows = [(Path(f).name, measure(Path(f))) for f in args.files]
+    paths = [Path(f) for f in args.files]
+    rows = []
+    groups = {}
+    for path in paths:
+        m = measure(path)
+        if int(m["words"]) < args.min_words:
+            continue
+        rows.append((path.name, m))
+        groups[path.name] = path.parent.name
 
-    print(f"\n{'file':28s} {'words':>6s} {'sent':>5s} {'mean':>5s} {'burst':>6s} {'cv':>5s} {'max':>4s}")
-    print("-" * 64)
+    if args.summary:
+        summarise(rows, groups)
+        print("\nBurstiness is the standard deviation of sentence length in words.")
+        print("Model prose is uniform; human prose alternates short and long.")
+        return 0
+
+    print(f"\n{'file':28s} {'words':>6s} {'sent':>5s} {'mean':>5s} {'burst':>6s} {'cv':>5s} {'max':>4s} {'skip':>4s}")
+    print("-" * 70)
     for name, m in rows:
         print(f"{name:28s} {m['words']:>6} {m['sentences']:>5} {m['mean_len']:>5} "
-              f"{m['burstiness']:>6} {m['cv']:>5} {m['longest']:>4}")
+              f"{m['burstiness']:>6} {m['cv']:>5} {m['longest']:>4} {m['dropped']:>4}")
+    if any(int(m["dropped"]) for _, m in rows):
+        print("\nskip = segments over 80 words dropped as non-prose, usually unstripped")
+        print("code or data. A high count means the numbers beside it are shaky.")
 
     for title, keys in (("lexical", LEXICAL), ("rhetorical", RHETORICAL), ("structural", STRUCTURAL)):
         print(f"\n{title} tells, per 1000 words")
