@@ -4,9 +4,9 @@ Two things for explaining engineering work, and the measurements that check them
 
 - **`explain-pr`**, a skill that turns a pull request into a lesson somebody can
   read in a sitting, with widgets they can operate, kept in your repository.
-- **`Teacher`**, an output style that changes how the model explains everything
-  else: idea before name, the rejected approach shown, and a clear mark on how
-  each claim is known.
+- **`Human-Outward`**, a writing style that changes how the model explains
+  everything else: simple words, varied sentences, the idea before its name, the
+  rejected approach shown, and a clear mark on how each claim is known.
 
 A code review asks what is wrong with a change. Both of these ask something
 different. What does somebody need to understand, and in what order, before the
@@ -25,11 +25,15 @@ Both artefacts are namespaced by the plugin, which is worth knowing before you g
 looking for them. Measured on a fresh clone, the skill lists as
 `explain-pr:explain-pr`, and the style is selected as:
 
-    /output-style explain-pr:Teacher
+    /output-style explain-pr:Human-Outward
 
-The namespace matters most for the style. A plain `Teacher` resolves to a local
-style of that name if you have one, and the two can sit side by side without
-either complaining.
+The namespace matters most for the style, because a bare name resolves to a local
+style first if you have one.
+
+`Human-Outward` replaces the earlier `Teacher` style. It says the same things
+about teaching and adds what the research found, most importantly that simple
+words and varied sentences are separate dials and only the first should be turned
+down.
 
 ## What the skill does
 
@@ -122,8 +126,23 @@ prose toward the thing it was meant to avoid. A separate comprehension test on
 the same two documents found no detectable difference either way.
 
 Both the style and the skill now steer the distribution rather than the maximum,
-and `lesson_lint.py` reports the rhythm figure beside the sentence count so the
-two rules can be seen pulling against each other.
+and `lesson_lint.py` reports the rhythm figure beside the sentence count.
+
+The target depends on register, and there is no single number. Measured on text
+with hard publication dates, so the human label is a date and not a judgement:
+
+| register | human | machine | separates? |
+| --- | ---: | ---: | --- |
+| specs, docs, procedures | 0.78 (n=18) | 0.49 (n=5) | yes, perfectly |
+| essays | 0.63 (n=8) | 0.60 (n=16) | no |
+
+Rhythm tells human from machine writing only where human writers actually vary.
+Specification authors vary enormously. Good essayists often do not, so chasing
+the number in an essay moves you away from how the best of them write.
+
+`research/design.md` and `research/results.md` carry the full programme, including
+the three levers that failed and one place where a pre-registered rule passed and
+a better test refuted it.
 
 ## Does the skill work?
 

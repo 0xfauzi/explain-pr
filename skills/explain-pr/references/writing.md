@@ -161,7 +161,9 @@ measured separately on the same two documents, showed no detectable difference.
 So the cap cost the thing it was supposed to protect and bought nothing that
 could be measured. Steer the distribution instead, and check it with
 `scripts/ai_tells.py`, which reports the coefficient of variation alongside the
-other signatures.
+other signatures. Aim for 0.78 in this register. That figure is the median of
+18 specifications and standards published before ChatGPT, against 0.49 for
+machine-written prose of the same kind, and the two do not overlap at all.
 
 ### The move that keeps a short sentence honest
 

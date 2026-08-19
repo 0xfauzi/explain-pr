@@ -53,9 +53,12 @@ from pathlib import Path
 SENTENCE_REFERENCE_WORDS = 20
 PARAGRAPH_REFERENCE_SENTENCES = 6
 
-#: Human technical prose measured on this project sits in this band. Well under
-#: it means the draft was written to a limit rather than to a reader.
-HUMAN_RHYTHM_BAND = (0.76, 0.81)
+#: Interquartile range of 18 specifications and standards published before
+#: ChatGPT, so the label is a date rather than a judgement. Machine-written
+#: prose in the same register sits near 0.49. Essays are a different matter:
+#: good essayists write evenly, and the human essay median is 0.63, so this
+#: band does not apply to them.
+HUMAN_RHYTHM_BAND = (0.729, 0.827)
 
 BLOCK_END = re.compile(
     r"</(p|li|h[1-6]|figcaption|td|th|blockquote|dd|dt|summary)\s*>|<br\s*/?>",
