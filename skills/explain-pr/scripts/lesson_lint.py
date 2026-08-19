@@ -40,14 +40,22 @@ import subprocess
 import tempfile
 from pathlib import Path
 
-# ASD-STE100 caps a procedural sentence at 20 words and a descriptive one at 25.
-# The stricter 20 is applied to everything, on the argument that pacing, not
-# compliance, is the point: one new idea per sentence lets a reader stop and take
-# it in.
-MAX_SENTENCE_WORDS = 20
+# ASD-STE100 caps a procedural sentence at 20 words and a descriptive one at 25,
+# and both numbers are REPORTED here rather than enforced. Measured on two
+# explanations of one pull request, differing only in whether the teaching style
+# was active, a hard 20-word cap left mean sentence length untouched at 26 words
+# and cut the longest from 114 to 64. All it removed was the long tail, and the
+# long tail is what carries the variation that human prose has. A separate
+# comprehension test on the same two documents found no gain to show for it.
+#
+# So the cap is a reference line, not a gate. What to steer is the spread, which
+# is what `rhythm` below reports. `ai_tells.py` explains the measurement.
+SENTENCE_REFERENCE_WORDS = 20
+PARAGRAPH_REFERENCE_SENTENCES = 6
 
-# Same source: keep paragraphs to 6 sentences or fewer.
-MAX_PARAGRAPH_SENTENCES = 6
+#: Human technical prose measured on this project sits in this band. Well under
+#: it means the draft was written to a limit rather than to a reader.
+HUMAN_RHYTHM_BAND = (0.76, 0.81)
 
 BLOCK_END = re.compile(
     r"</(p|li|h[1-6]|figcaption|td|th|blockquote|dd|dt|summary)\s*>|<br\s*/?>",
@@ -330,8 +338,8 @@ def main() -> int:
     all_sents = [s for b in bl for s in sentences(b)]
     words = sum(len(s.split()) for s in all_sents)
 
-    long_sents = [s for s in all_sents if len(s.split()) > MAX_SENTENCE_WORDS]
-    fat_blocks = [b for b in bl if len(sentences(b)) > MAX_PARAGRAPH_SENTENCES]
+    long_sents = [s for s in all_sents if len(s.split()) > SENTENCE_REFERENCE_WORDS]
+    fat_blocks = [b for b in bl if len(sentences(b)) > PARAGRAPH_REFERENCE_SENTENCES]
     aliases = banned_aliases(Path(args.glossary)) if args.glossary else {}
     prose = " ".join(all_sents).lower()
     used_aliases = {a: t for a, t in aliases.items() if re.search(rf"\b{re.escape(a)}\b", prose)}
@@ -345,7 +353,7 @@ def main() -> int:
     if all_sents:
         lengths = [len(s.split()) for s in all_sents]
         longest = max(lengths)
-        print(f"  longest sentence : {longest} words (limit {MAX_SENTENCE_WORDS})")
+        print(f"  longest sentence : {longest} words")
         # Reported, never failed. Uniform sentence length is a documented
         # signature of generated prose, and the sentence cap above works by
         # clipping the long tail, which is what produces the variation. The two
@@ -354,9 +362,15 @@ def main() -> int:
         if len(lengths) > 1:
             mean = statistics.mean(lengths)
             cv = statistics.stdev(lengths) / mean if mean else 0.0
-            print(f"  rhythm           : cv {cv:.2f} (human technical prose sits near 0.76 to 0.81)")
-    print(f"  over {MAX_SENTENCE_WORDS} words     : {len(long_sents)}")
-    print(f"  blocks over {MAX_PARAGRAPH_SENTENCES}    : {len(fat_blocks)}")
+            low, high = HUMAN_RHYTHM_BAND
+            flag = "" if cv >= low else "  <- flat; vary sentence length"
+            print(
+                f"  rhythm           : cv {cv:.2f} "
+                f"(human prose sits near {low} to {high}){flag}"
+            )
+    print(f"  over {SENTENCE_REFERENCE_WORDS} words     : {len(long_sents)}")
+    blocks_over = len(fat_blocks)
+    print(f"  blocks over {PARAGRAPH_REFERENCE_SENTENCES}    : {blocks_over}")
     print(f"  banned aliases   : {len(used_aliases)}")
     print(f"  dashes/emoji     : {len(chars)}")
     print(f"  widgets          : {widgets} the reader can operate, scripts {js_state}")
@@ -374,7 +388,10 @@ def main() -> int:
         for p in passives[:12]:
             print(f"    passive? {p}")
 
-    failures = len(long_sents) + len(fat_blocks) + len(used_aliases) + len(chars) + len(broken)
+    # Hard findings are the unambiguous ones: a banned character, a glossary
+    # alias, a widget that will not parse. Sentence and paragraph length are
+    # judgement about a distribution, so they are printed and left to the writer.
+    failures = len(used_aliases) + len(chars) + len(broken)
     print(f"  RESULT: {'FAIL' if failures else 'PASS'} ({failures} hard findings)")
     return 1 if failures else 0
 
