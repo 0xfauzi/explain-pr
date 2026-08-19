@@ -1,0 +1,21 @@
+{
+  "name": "explain-pr",
+  "owner": {
+    "name": "0xfauzi"
+  },
+  "metadata": {
+    "description": "Teach a pull request instead of reviewing it, and keep the record",
+    "version": "0.1.0"
+  },
+  "plugins": [
+    {
+      "name": "explain-pr",
+      "description": "Turn a merged or open pull request into a lesson: one self-contained HTML file with widgets the reader can operate, plus a register entry recording what it taught. Ships the prose checker and an eval suite that measures whether the lesson teaches, by examining a reader who only has it.",
+      "source": "./",
+      "strict": false,
+      "skills": [
+        "./skills/explain-pr"
+      ]
+    }
+  ]
+}
