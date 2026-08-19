@@ -19,13 +19,17 @@ next change here is safe to make?
 
 Then, in a repository with an open or merged PR:
 
-    /explain-pr 128
+    /explain-pr:explain-pr 128
 
-The output style installs alongside the skill and is selected by name. It is
-namespaced by the plugin, which is worth knowing because a plain `Teacher` will
-pick up a local style of the same name instead:
+Both artefacts are namespaced by the plugin, which is worth knowing before you go
+looking for them. Measured on a fresh clone, the skill lists as
+`explain-pr:explain-pr`, and the style is selected as:
 
     /output-style explain-pr:Teacher
+
+The namespace matters most for the style. A plain `Teacher` resolves to a local
+style of that name if you have one, and the two can sit side by side without
+either complaining.
 
 ## What the skill does
 
