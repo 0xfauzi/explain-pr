@@ -1,0 +1,33 @@
+# An exam is a list of questions with answer keys, in TOML so it needs nothing
+# installed.
+#
+# The only rule that decides whether any of this means anything: write every key
+# from the primary source, and write it BEFORE you open the document you intend
+# to test. A key taken from the document scores the document against itself.
+#
+# Aim for a mix. Some questions recall a fact. Some ask why a choice was made.
+# The transfer questions are the ones worth having, because a reader can pass
+# recall questions by skimming and cannot pass transfer questions that way.
+
+subject = "example: a change that removed a duplicated calculation"
+
+[[questions]]
+id = "q1"
+kind = "factual"
+ask = "One number was computed in two places before this change. Name both places, and name the single field that carries the number now."
+key = "Replace with the real answer, taken from the source and written down before reading the document under test."
+source = "where you checked it"
+
+[[questions]]
+id = "q2"
+kind = "why"
+ask = "One approach was tried first and then abandoned. What was it, and what evidence killed it?"
+key = "Replace with the real answer."
+source = "where you checked it"
+
+[[questions]]
+id = "q3"
+kind = "transfer"
+ask = "You need to add something similar. Where must it go, and what specifically breaks if you put it in the other place?"
+key = "Replace with the real answer."
+source = "where you checked it"

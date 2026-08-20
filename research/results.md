@@ -399,3 +399,29 @@ Measured again with the sidechain flag checked, 639 messages and 33,621 words
 were typed by the owner and 121 messages and 34,924 words were prompts Claude
 wrote to its own subagents. The original figure was about half somebody else's
 writing, and I never inspected what was inside it.
+
+## Closed
+
+This workstream is closed. It was expensive and it did not reach its target.
+
+It also had the wrong target. The goal was never that generated prose should
+sound human. The goal is that a person reads something and understands it, and
+"sounds human" was a proxy chosen because it looked measurable. It turned out to
+be measurable only within one register, defeated by a forty-line script, and
+dependent on a preprocessing choice nobody had disclosed.
+
+What survives and is worth keeping:
+
+- **`comprehension.py`**, which examines a reader who has only the document. It
+  is the only measurement here pointed at understanding, and it found the one
+  real defect this programme ever caught: a shipped lesson that scored below the
+  raw diff of the change it described, because it never named the fields the
+  change was about.
+- **The record of what does not work.** Rewriting, selection, perplexity,
+  cross-family revision and fine-tuning were all tried or designed and rejected.
+  Those are the expensive things somebody else would otherwise build.
+- **The two findings that qualify the rest**: the measure is gameable, and the
+  human band depends on how you clean the corpus.
+
+What is retired: chasing the rhythm number as a goal, and any plan that would
+train a model to satisfy it.

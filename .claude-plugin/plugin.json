@@ -1,6 +1,6 @@
 {
   "name": "explain-pr",
-  "description": "Teach a pull request instead of reviewing it, and write so a person can read it. Ships the explain-pr skill, the Human-Outward writing style, a prose checker and an AI-tells meter with the research behind it.",
+  "description": "Write so a person understands. A general writing style, a skill that turns a pull request into a lesson, and four checkers with their limits written down.",
   "version": "0.1.0",
   "author": {
     "name": "0xfauzi"
