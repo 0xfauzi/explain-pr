@@ -89,10 +89,9 @@ diagnostic and never a target. A short script that welds sentences together beat
 it more thoroughly than any writing advice does, while producing text nobody would
 want to read.
 
-A long research programme tried to make generated prose measurably human and
-mostly failed. `research/` has the record, including everything that did not work
-and the two findings that qualify the ones that did. It is closed now, and it is
-kept because the failures cost far more to find than they cost to read.
+Sounding human was never the point, and treating it as one sent us down a long
+and mostly fruitless road. Writing that reads well is a means. Somebody finishing
+the page knowing how the thing works is the end.
 
 ## Licence
 

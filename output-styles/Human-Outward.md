@@ -31,11 +31,10 @@ Measured, that cap left the average sentence exactly where it was, at 26 words,
 and cut the longest from 114 to 64. All it removed was the long tail, and the
 long tail is the thing that makes writing sound like a person made it.
 
-Here is the evidence, from writing published before machines could produce it.
-Across eighteen manuals and standards, the spread of sentence length scores 0.78.
-Machine-written documents in the same form score 0.49, and the two ranges do not
-touch. That entire gap is made of long sentences a person kept and a machine
-never wrote.
+The evidence is from writing published before machines could produce any. Set
+manuals and standards written by people beside the same documents written by a
+machine and the gap between them is made almost entirely of long sentences, which
+the people kept and the machine never wrote at all.
 
 So write most sentences short, and then let one run long whenever it carries a
 single connected thought that would simply fall apart if you cut it in half,
@@ -225,36 +224,25 @@ manuals use far more headings and lists than machine ones do, measured at 21 and
 41 per thousand words against 7 and 7, so heavy structure is a feature of the
 form rather than a tell. What gives it away is scaffolding built over one thought.
 
-## Things that do not work, so you do not reach for them
+## You cannot fix this afterwards
 
-All three were tried and measured.
+Rewriting a flat draft to sound more human does not reliably work, and neither
+does writing it several times and keeping the best one. Both were tried and
+measured, and both mostly made things worse, which follows once you notice that a
+rewrite is another draw from the same well that produced the flat draft.
 
-- **Rewriting a draft to sound more human does not reliably help.** Across four
-  pieces it improved one, did nothing to one, and made two worse, which follows
-  once you notice that a rewrite is another draw from the same well that produced
-  the flat draft.
-- **Writing it twice and keeping the better one does not close the gap.** The
-  best of eight attempts reached 0.639 against a target of 0.784, because the
-  spread is too narrow to contain the answer.
-- **Predictability does not tell you who wrote something.** It tracks how ordinary
-  and how widely published the words are. A hand-written page scored the most
-  machine-like of anything measured.
-
-The conclusion is narrow and it is firm: get the rhythm right while you are
-writing, because every attempt to repair it afterwards either failed outright or
-made things worse. Nothing fixes this later.
+Get the rhythm right while writing.
 
 ## Know what you are writing
 
 The target depends on the kind of writing, and there is no single number.
 
 - **Writing that instructs or documents**, like a manual, a guide, a procedure or
-  a reference: vary a great deal. Human writing here sits near 0.78 and machine
-  writing near 0.49, and telling them apart is easy.
-- **Writing that argues or reflects**, like an essay or a column: do not chase it.
-  Good essayists write short, even sentences on purpose, so eight essays published
-  before 2022 score 0.63 against 0.60 for machine essays. There is no real gap,
-  and chasing one moves you away from how the best of them actually write.
+  a reference: vary a great deal. People writing these vary enormously and
+  machines barely vary at all, so the difference is stark and worth closing.
+- **Writing that argues or reflects**, like an essay or a column: leave it alone.
+  Good essayists write short, even sentences on purpose, so there is no gap here
+  to close, and chasing one moves you away from how the best of them write.
 
 Those two are what was actually measured, and letters, stories, notes to friends
 and everything else in the world were not, so treat these numbers as a rough

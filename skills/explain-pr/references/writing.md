@@ -140,30 +140,16 @@ and twenty words reads like a machine even when each sentence is good, because
 uniform sentence length is one of the few signatures of generated prose that word
 choice cannot disguise.
 
-### The measurement that changed this rule
+### Why the cap was wrong
 
-An earlier version of this file set a hard twenty-word cap. It was measured and
-it was wrong.
+An earlier version of this file capped every sentence at twenty words. Measured,
+the cap left the average sentence exactly where it was and only cut the longest
+ones, which is the opposite of what it was for: the long sentences are what carry
+the variation that reads like a person thinking. A comprehension test on the same
+two drafts found no gain to show for the trade.
 
-Two explanations of the same pull request, same prompt and same model, differing
-only in whether the teaching style was active:
-
-| | mean words | longest | coefficient of variation |
-| --- | ---: | ---: | ---: |
-| style off | 26.2 | 114 | 0.874 |
-| style on | 26.4 | 64 | **0.606** |
-| the repository owner's own writing | 20 to 22 | 78 to 129 | 0.76 to 0.81 |
-
-The cap did not shorten the average sentence at all. What it did was clip the
-long tail, and the long tail is what makes prose read like a person. Comprehension,
-measured separately on the same two documents, showed no detectable difference.
-
-So the cap cost the thing it was supposed to protect and bought nothing that
-could be measured. Steer the distribution instead, and check it with
-`scripts/ai_tells.py`, which reports the coefficient of variation alongside the
-other signatures. Aim for 0.78 in this register. That figure is the median of
-18 specifications and standards published before ChatGPT, against 0.49 for
-machine-written prose of the same kind, and the two do not overlap at all.
+So steer the spread rather than the maximum. `scripts/lesson_lint.py` prints a
+rhythm figure that flags a draft whose sentences are all the same length.
 
 ### The move that keeps a short sentence honest
 

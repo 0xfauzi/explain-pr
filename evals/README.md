@@ -93,9 +93,10 @@ Pass a document you know a person wrote, so the number has a scale.
 
 ## What we tried and gave up on
 
-`research/` has the full record, including a pre-registered design and the results
-that killed most of it. The short version, because the failures cost more to find
-than they cost to read:
+A long programme tried to make generated prose measurably human. It mostly failed,
+and the record now lives in the git history rather than in this repository, because
+it is closed and it is not what these tools are for. The short version, since the
+failures cost far more to find than they cost to read:
 
 - **Rewriting a draft to sound more human**: rejected. Across four sources and
   three revisers, twelve rewrites, the median change made the rhythm worse.
@@ -110,5 +111,7 @@ than they cost to read:
   no-go, principally because the measure it would optimise is the gameable one
   above.
 
-The workstream is closed. What survives is the writing style, the skill, and the
-four measurements on this page with their limits attached.
+The workstream is closed, and closing it clarified the goal. The aim was never
+prose that passes for human. It is a reader who understands the thing, and every
+measurement on this page is a proxy for that, each falling short in the way
+described beside it.
