@@ -278,3 +278,70 @@ So the target is register-specific and there is no single number:
 **Caveat.** Only 5 of 8 generated specifications cleared the 400-word floor, so
 the perfect AUC rests on a small cell. The size of the gap is not in doubt; its
 precision is.
+
+## E3, completed: every reviser makes rhythm worse
+
+The GPT-class arm ran once codex quota returned, so the three-way comparison the
+design registered is now complete. Same instruction, byte-identical, four sources
+of different kinds.
+
+| source | original | Claude | Gemma | GPT-5.6 |
+| --- | ---: | ---: | ---: | ---: |
+| PR body | 0.730 | 0.899 | 0.516 | 0.706 |
+| human OSS doc | 0.700 | 0.711 | 0.559 | 0.523 |
+| our styled text | 0.606 | 0.556 | 0.604 | 0.569 |
+| raw model output | 0.714 | 0.680 | 0.647 | 0.440 |
+| **median change** | | **-0.011** | **-0.104** | **-0.107** |
+
+Fact retention: Claude 1.00 on all four, GPT-5.6 1.00 on all four, Gemma between
+0.93 and 1.00.
+
+**Verdict: reject.** The rule required a cross-family reviser to beat same-family
+by 0.05 in median change. GPT-5.6 trails it by 0.096.
+
+The result is stronger than a rejection of one hypothesis. **All three revisers
+have a negative median.** Across twelve revisions, three revisers and four kinds
+of source, asking a model to rewrite prose so it reads more human made the rhythm
+worse more often than better. Claude is closest to neutral, and neutral is the
+ceiling.
+
+Worth noting separately: GPT-5.6 kept every identifier in every source, matching
+Claude and beating the local model. It is a careful reviser. It is just a flatter
+writer, which is what the next section measures.
+
+## E7, at full sample: the other family is flatter still
+
+| writer | n | median cv | range |
+| --- | ---: | ---: | :---: |
+| human, published pre-2022 | 18 | **0.784** | 0.676-1.151 |
+| Claude | 6 | 0.493 | 0.405-0.553 |
+| GPT-5.6 | 5 | **0.297** | 0.248-0.308 |
+
+The three cells do not overlap anywhere. GPT-5.6's range is the tightest of the
+three and sits entirely below Claude's.
+
+The two families reach flatness from opposite directions. Claude writes long
+sentences of similar length. GPT-5.6 writes short ones of similar length, and in
+five documents no sentence exceeded 21 words.
+
+**So flatness is not a Claude quirk and no vendor has fixed it.** Two families
+trained separately converge on uniform sentence length by opposite routes, and
+both sit far below every human document measured. That also explains E3: there is
+no reviser to borrow, because the obvious candidate writes flatter than the
+writer, and a flatter reviser cannot add variation.
+
+## A methodology error, recorded because it changed what I reported
+
+I claimed in an earlier draft of this file that codex runs took about ten minutes
+each, that concurrent runs collided, and that the sample was small because
+generation was expensive. All three were wrong.
+
+`codex exec` blocks indefinitely reading standard input unless it is redirected.
+Every hang was that. Measured on the same trivial prompt: without a redirect it
+ran to the timeout, and with `< /dev/null` it finished in 10.6 seconds. Once the
+redirect was added, four revisions and three specifications completed in a single
+pass.
+
+The lesson generalises past this tool. I diagnosed a slow model from a hanging
+process without checking why it hung, then wrote the diagnosis into a results
+file as though it were an observation. It was an assumption wearing a number.
