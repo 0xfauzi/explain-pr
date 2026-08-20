@@ -140,6 +140,16 @@ Rhythm tells human from machine writing only where human writers actually vary.
 Specification authors vary enormously. Good essayists often do not, so chasing
 the number in an essay moves you away from how the best of them write.
 
+**Two caveats, both found by an independent review and both reproduced.** The
+measure is trivially gameable: a short script that joins sentences with ", and"
+raises cv by between +0.148 and +0.409 while preserving every word and making the
+prose worse. And the separation above depends on an undisclosed preprocessing
+choice, because 30% of what the instrument calls a sentence in the human corpus is
+document furniture like "Table of Contents". Stripping that furniture leaves the
+result intact; dropping every sentence under 8 words collapses it to chance.
+Treat cv as a diagnostic, never as a target. `research/results.md` has the
+numbers.
+
 `research/design.md` and `research/results.md` carry the full programme, including
 the three levers that failed and one place where a pre-registered rule passed and
 a better test refuted it.

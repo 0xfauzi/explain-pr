@@ -345,3 +345,57 @@ pass.
 The lesson generalises past this tool. I diagnosed a slow model from a hanging
 process without checking why it hung, then wrote the diagnosis into a results
 file as though it were an observation. It was an assumption wearing a number.
+
+## Two findings from an independent review, which qualify everything above
+
+A fresh-context agent was asked to design the fine-tuning experiment and to
+verify rather than inherit any claim in this file. It returned a no-go, and two
+of its reasons undercut the measure itself. Both were reproduced independently
+before being recorded here.
+
+### The measure is trivially gameable
+
+A short script with no model in it, joining runs of sentences with ", and",
+", but" and ", so", raises cv on the five GPT-5.6 specifications from 0.293 to
+0.441 in my reproduction and to 0.702 in the reviewer's fuller version.
+
+That is a gain of between +0.148 and +0.409, against the +0.045 that the writing
+instruction bought and a noise floor of 0.043. Every word is preserved, so fact
+retention is 1.00 and the existing gate never fires. The output is a run-on, and
+plainly worse prose than its input.
+
+**So cv is a diagnostic and can never be a target.** Any process that optimises
+it, including a fine-tune, will find this move before it finds good writing. This
+is the strongest argument against the fine-tune, and it is not about cost.
+
+### The separation depends on a preprocessing choice we never disclosed
+
+Thirty percent of what the instrument counts as a sentence in the human corpus is
+five words or fewer, and the samples are document furniture: "Table of Contents",
+"Tabs or Spaces?", "Maximum Line Length", RFC page footers, dotted contents lines.
+
+Two defensible cleanings disagree, and they disagree by more than the effect
+anyone is chasing:
+
+| cleaning | human median | AUC human vs Claude |
+| --- | ---: | ---: |
+| none, as published | 0.785 | 1.000 |
+| strip headings and page furniture | 0.741 | 1.000 |
+| drop every sentence under 8 words | 0.450 | **0.489** |
+| drop every sentence under 10 words | 0.420 | 0.391 |
+
+A targeted furniture stripper leaves the finding intact. A blunt short-sentence
+floor destroys it, and at a floor of 10 reverses it.
+
+**The honest status is unsettled, not refuted.** Which cleaning is correct is a
+real question about what a sentence is, and this file previously reported the
+uncleaned number as though no choice had been made. GPT-5.6 is the exception: its
+separation holds at every floor tested, so E7 stands.
+
+### A data error of mine, corrected
+
+Draft E4 claimed 67,964 words of the owner's own writing in session transcripts.
+Measured again with the sidechain flag checked, 639 messages and 33,621 words
+were typed by the owner and 121 messages and 34,924 words were prompts Claude
+wrote to its own subagents. The original figure was about half somebody else's
+writing, and I never inspected what was inside it.
