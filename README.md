@@ -1,16 +1,18 @@
 # explain-pr
 
-Two things for explaining engineering work, and the measurements that check them.
+Two things for writing so a person can read it, and the measurements that check
+whether they work.
 
-- **`explain-pr`**, a skill that turns a pull request into a lesson somebody can
-  read in a sitting, with widgets they can operate, kept in your repository.
-- **`Human-Outward`**, a writing style that changes how the model explains
-  everything else: simple words, varied sentences, the idea before its name, the
-  rejected approach shown, and a clear mark on how each claim is known.
+- **`Human-Outward`**, a general writing style. Simple words and varied
+  sentences, the idea before its name, the answer you rejected shown, a clear
+  mark on how each claim is known, and kindness that is not performed. It applies
+  to anything: essays, letters, documentation, an explanation of your own work.
+- **`explain-pr`**, a skill built on the same rules for one specific job, which
+  is turning a pull request into a lesson somebody can read in a sitting, with
+  widgets they can operate, kept in your repository.
 
-A code review asks what is wrong with a change. Both of these ask something
-different. What does somebody need to understand, and in what order, before the
-next change here is safe to make?
+The style is the general case and the skill is one application of it. If you only
+want one, take the style.
 
 ## Install
 
