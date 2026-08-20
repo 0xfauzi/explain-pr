@@ -315,7 +315,7 @@ writer, which is what the next section measures.
 | --- | ---: | ---: | :---: |
 | human, published pre-2022 | 18 | **0.784** | 0.676-1.151 |
 | Claude | 6 | 0.493 | 0.405-0.553 |
-| GPT-5.6 | 5 | **0.297** | 0.248-0.308 |
+| GPT-5.6 | 5 | **0.293** | 0.248-0.308 |
 
 The three cells do not overlap anywhere. GPT-5.6's range is the tightest of the
 three and sits entirely below Claude's.
