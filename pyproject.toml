@@ -1,0 +1,11 @@
+# This file exists only to hold tool settings. The repo ships skills, not a
+# package, but vulture exits 2 without a [tool.vulture] section naming its paths,
+# and the shared pre-commit config is byte-identical across repos, so the settings
+# have to live where those tools read them.
+
+[tool.vulture]
+min_confidence = 80
+paths = ["skills"]
+
+[tool.codespell]
+skip = "*.lock,*/package-lock.json,.git"
