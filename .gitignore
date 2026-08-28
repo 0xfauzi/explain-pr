@@ -2,3 +2,11 @@
 evals/results/
 __pycache__/
 *.pyc
+
+# uv-lock in the shared pre-commit config regenerates this on every run, because a
+# pyproject.toml exists here. It is meaningless: this repo ships skills, not a
+# package, and the pyproject holds nothing but tool settings. The generated lock
+# declares requires-python ">=3.12", which nobody chose and which contradicts the
+# py311 target set for ruff above it. Ignoring it is better than committing a
+# version claim no one made.
+uv.lock
