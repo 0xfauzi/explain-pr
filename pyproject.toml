@@ -9,3 +9,10 @@ paths = ["skills"]
 
 [tool.codespell]
 skip = "*.lock,*/package-lock.json,.git"
+
+[tool.ruff]
+# The scripts import tomllib, which is stdlib from 3.11. With no version declared
+# ruff resolves the target to 3.10, calls tomllib third-party, and isort then moves
+# it out of the stdlib block. Measured: declaring 3.11 restores that grouping and
+# adds no other finding, and ruff format produces byte-identical output either way.
+target-version = "py311"

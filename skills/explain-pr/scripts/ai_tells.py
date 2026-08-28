@@ -44,33 +44,96 @@ from pathlib import Path
 # evidence today, so the current-era list is scored separately and is the one to
 # watch. Source: Wikipedia, "Signs of AI writing".
 WORDS_2023 = [
-    "delve", "delves", "delving", "tapestry", "testament", "intricate",
-    "meticulous", "meticulously", "pivotal", "underscore", "underscores",
-    "underscoring", "boasts", "garner", "garnered", "landscape", "vibrant",
-    "interplay", "bolstered", "enduring", "realm", "navigating", "multifaceted",
+    "delve",
+    "delves",
+    "delving",
+    "tapestry",
+    "testament",
+    "intricate",
+    "meticulous",
+    "meticulously",
+    "pivotal",
+    "underscore",
+    "underscores",
+    "underscoring",
+    "boasts",
+    "garner",
+    "garnered",
+    "landscape",
+    "vibrant",
+    "interplay",
+    "bolstered",
+    "enduring",
+    "realm",
+    "navigating",
+    "multifaceted",
 ]
 WORDS_2024 = [
-    "align with", "aligns with", "crucial", "enhance", "enhances", "enhancing",
-    "fostering", "foster", "highlighting", "showcasing", "showcase", "seamless",
-    "leverage", "leveraging", "robust", "comprehensive", "notably", "moreover",
+    "align with",
+    "aligns with",
+    "crucial",
+    "enhance",
+    "enhances",
+    "enhancing",
+    "fostering",
+    "foster",
+    "highlighting",
+    "showcasing",
+    "showcase",
+    "seamless",
+    "leverage",
+    "leveraging",
+    "robust",
+    "comprehensive",
+    "notably",
+    "moreover",
 ]
 #: The current set, and the one that carries the most weight. It is short
 #: because the earlier ones washed out as people learned to avoid them.
-WORDS_2025 = ["emphasizing", "emphasises", "emphasizes", "enhance", "highlighting", "showcasing"]
+WORDS_2025 = [
+    "emphasizing",
+    "emphasises",
+    "emphasizes",
+    "enhance",
+    "highlighting",
+    "showcasing",
+]
 
 #: Copula avoidance: replacing "is" with something that sounds weightier.
 COPULA_DODGE = [
-    "serves as", "stands as", "functions as", "operates as", "represents a",
-    "marks a", "boasts a", "features a", "offers a", "maintains a",
+    "serves as",
+    "stands as",
+    "functions as",
+    "operates as",
+    "represents a",
+    "marks a",
+    "boasts a",
+    "features a",
+    "offers a",
+    "maintains a",
 ]
 
 #: Significance inflation: telling the reader a thing matters instead of showing it.
 INFLATION = [
-    "testament to", "plays a crucial role", "plays a key role", "plays a vital role",
-    "underscores the importance", "highlights the importance", "a turning point",
-    "evolving landscape", "indelible mark", "deeply rooted", "at the forefront",
-    "paving the way", "setting the stage", "in the realm of", "it is important to note",
-    "it is worth noting", "when it comes to", "in today's", "ever-evolving",
+    "testament to",
+    "plays a crucial role",
+    "plays a key role",
+    "plays a vital role",
+    "underscores the importance",
+    "highlights the importance",
+    "a turning point",
+    "evolving landscape",
+    "indelible mark",
+    "deeply rooted",
+    "at the forefront",
+    "paving the way",
+    "setting the stage",
+    "in the realm of",
+    "it is important to note",
+    "it is worth noting",
+    "when it comes to",
+    "in today's",
+    "ever-evolving",
 ]
 
 #: Negative parallelism, the "not just X, it's Y" move. Named across every source
@@ -80,7 +143,7 @@ NEGATIVE_PARALLELISM = re.compile(
     r"\b(?:it'?s|its|this is|that'?s|they'?re|we'?re|is)\s+not\s+(?:just|only|merely|simply)\b"
     r"|\bnot\s+(?:just|only|merely|simply)\s+[^.;:!?]{2,60}?,\s*(?:it'?s|but|they'?re)\b"
     r"|\bnot\s+[^.;:!?]{2,40}?,\s*but\s+(?:rather\s+)?\b",
-    re.I,
+    re.IGNORECASE,
 )
 
 #: Participial tails that assert significance without evidence. Source: Wikipedia,
@@ -91,19 +154,21 @@ PARTICIPIAL_TAIL = re.compile(
     r"symbolizing|symbolising|showcasing|demonstrating|illustrating|"
     r"contributing to|fostering|cultivating|encompassing|enhancing|ensuring|"
     r"allowing|enabling|making it|solidifying|cementing)\b",
-    re.I,
+    re.IGNORECASE,
 )
 
 #: The tricolon. Three items where two would do, or four would be honest.
-TRICOLON = re.compile(r"\b\w+(?:\s+\w+){0,2},\s+\w+(?:\s+\w+){0,2},\s+and\s+\w+(?:\s+\w+){0,2}\b")
+TRICOLON = re.compile(
+    r"\b\w+(?:\s+\w+){0,2},\s+\w+(?:\s+\w+){0,2},\s+and\s+\w+(?:\s+\w+){0,2}\b"
+)
 
 #: Markdown leaking into prose. The fingerprint paper's finding is that these
 #: survive a style instruction, so they are the honest test of whether a style
 #: changed anything structural.
 EM_DASH = re.compile("[\u2013\u2014]")
 BOLD_RUN = re.compile(r"\*\*[^*\n]+\*\*")
-HEADING = re.compile(r"^#{1,6}\s", re.M)
-BULLET = re.compile(r"^\s*[-*+]\s+\S", re.M)
+HEADING = re.compile(r"^#{1,6}\s", re.MULTILINE)
+BULLET = re.compile(r"^\s*[-*+]\s+\S", re.MULTILINE)
 
 SENTENCE_SPLIT = re.compile(r"(?<=[.!?])\s+(?=[A-Z(\"'])")
 
@@ -117,13 +182,18 @@ MAX_PROSE_SENTENCE_WORDS = 80
 
 def strip_markup(text: str) -> str:
     """Prose only. Code, fences, tables and inline spans answer to other rules."""
-    text = re.sub(r"\A---\n.*?\n---\n", " ", text, flags=re.S)
-    text = re.sub(r"<(script|style|svg|pre|code)\b.*?</\1>", " ", text, flags=re.S | re.I)
-    text = re.sub(r"^\s*```.*?^\s*```", " ", text, flags=re.S | re.M)
-    text = re.sub(r"```.*?```", " ", text, flags=re.S)
-    text = re.sub(r"^(?: {4}|\t).*$", " ", text, flags=re.M)
+    text = re.sub(r"\A---\n.*?\n---\n", " ", text, flags=re.DOTALL)
+    text = re.sub(
+        r"<(script|style|svg|pre|code)\b.*?</\1>",
+        " ",
+        text,
+        flags=re.DOTALL | re.IGNORECASE,
+    )
+    text = re.sub(r"^\s*```.*?^\s*```", " ", text, flags=re.DOTALL | re.MULTILINE)
+    text = re.sub(r"```.*?```", " ", text, flags=re.DOTALL)
+    text = re.sub(r"^(?: {4}|\t).*$", " ", text, flags=re.MULTILINE)
     #: Markdown tables are data laid out in rows, not sentences.
-    text = re.sub(r"^\s*\|.*$", " ", text, flags=re.M)
+    text = re.sub(r"^\s*\|.*$", " ", text, flags=re.MULTILINE)
     text = re.sub(r"`[^`]+`", " CODE ", text)
     text = re.sub(r"<[^>]+>", " ", text)
     return text
@@ -136,7 +206,7 @@ def strip_quoted(text: str) -> str:
     rather than use. Without this, the writing guide that lists "delve" as a word
     to avoid scores as though it had used it.
     """
-    text = re.sub(r"^\s*>.*$", " ", text, flags=re.M)
+    text = re.sub(r"^\s*>.*$", " ", text, flags=re.MULTILINE)
     text = re.sub(r'"[^"\n]{1,120}"', " ", text)
     return text
 
@@ -210,7 +280,9 @@ def measure(path: Path) -> dict[str, float | int | list[str]]:
         "bold": per_k(len(BOLD_RUN.findall(raw))),
         "heading": per_k(len(HEADING.findall(raw))),
         "bullet": per_k(len(BULLET.findall(raw))),
-        "_examples": sorted(set(hits_2023 + hits_2024 + hits_2025 + copula + inflation))[:12],
+        "_examples": sorted(
+            set(hits_2023 + hits_2024 + hits_2025 + copula + inflation)
+        )[:12],
     }
 
 
@@ -222,7 +294,9 @@ STRUCTURAL = ("em_dash", "bold", "heading", "bullet")
 ALL_TELLS = LEXICAL + RHETORICAL + STRUCTURAL
 
 
-def summarise(rows: list[tuple[str, dict[str, object]]], groups: dict[str, str]) -> None:
+def summarise(
+    rows: list[tuple[str, dict[str, object]]], groups: dict[str, str]
+) -> None:
     """Aggregate by group, because one document tells you nothing about a band.
 
     Median rather than mean: a single long README drags an average around, and
@@ -235,7 +309,9 @@ def summarise(rows: list[tuple[str, dict[str, object]]], groups: dict[str, str])
     def med(vals: list[float]) -> float:
         return round(statistics.median(vals), 3) if vals else 0.0
 
-    print(f"\n{'group':18s} {'files':>5s} {'words':>7s} {'cv median':>10s} {'cv range':>13s}")
+    print(
+        f"\n{'group':18s} {'files':>5s} {'words':>7s} {'cv median':>10s} {'cv range':>13s}"
+    )
     print("-" * 58)
     for group, ms in buckets.items():
         cvs = sorted(float(m["cv"]) for m in ms)
@@ -251,13 +327,24 @@ def summarise(rows: list[tuple[str, dict[str, object]]], groups: dict[str, str])
 
 
 def main() -> int:
-    ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
+    ap = argparse.ArgumentParser(
+        description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter
+    )
     ap.add_argument("files", nargs="+")
-    ap.add_argument("--detail", action="store_true", help="print the words that matched")
-    ap.add_argument("--summary", action="store_true",
-                    help="aggregate by containing directory instead of listing every file")
-    ap.add_argument("--min-words", type=int, default=0,
-                    help="skip files shorter than this; short files give unstable variance")
+    ap.add_argument(
+        "--detail", action="store_true", help="print the words that matched"
+    )
+    ap.add_argument(
+        "--summary",
+        action="store_true",
+        help="aggregate by containing directory instead of listing every file",
+    )
+    ap.add_argument(
+        "--min-words",
+        type=int,
+        default=0,
+        help="skip files shorter than this; short files give unstable variance",
+    )
     args = ap.parse_args()
 
     paths = [Path(f) for f in args.files]
@@ -276,16 +363,26 @@ def main() -> int:
         print("Model prose is uniform; human prose alternates short and long.")
         return 0
 
-    print(f"\n{'file':28s} {'words':>6s} {'sent':>5s} {'mean':>5s} {'burst':>6s} {'cv':>5s} {'max':>4s} {'skip':>4s}")
+    print(
+        f"\n{'file':28s} {'words':>6s} {'sent':>5s} {'mean':>5s} {'burst':>6s} {'cv':>5s} {'max':>4s} {'skip':>4s}"
+    )
     print("-" * 70)
     for name, m in rows:
-        print(f"{name:28s} {m['words']:>6} {m['sentences']:>5} {m['mean_len']:>5} "
-              f"{m['burstiness']:>6} {m['cv']:>5} {m['longest']:>4} {m['dropped']:>4}")
+        print(
+            f"{name:28s} {m['words']:>6} {m['sentences']:>5} {m['mean_len']:>5} "
+            f"{m['burstiness']:>6} {m['cv']:>5} {m['longest']:>4} {m['dropped']:>4}"
+        )
     if any(int(m["dropped"]) for _, m in rows):
-        print("\nskip = segments over 80 words dropped as non-prose, usually unstripped")
+        print(
+            "\nskip = segments over 80 words dropped as non-prose, usually unstripped"
+        )
         print("code or data. A high count means the numbers beside it are shaky.")
 
-    for title, keys in (("lexical", LEXICAL), ("rhetorical", RHETORICAL), ("structural", STRUCTURAL)):
+    for title, keys in (
+        ("lexical", LEXICAL),
+        ("rhetorical", RHETORICAL),
+        ("structural", STRUCTURAL),
+    ):
         print(f"\n{title} tells, per 1000 words")
         print(f"{'file':28s} " + " ".join(f"{k:>13s}" for k in keys))
         print("-" * (29 + 14 * len(keys)))
