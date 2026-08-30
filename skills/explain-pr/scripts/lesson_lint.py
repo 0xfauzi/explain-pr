@@ -62,7 +62,7 @@ HUMAN_RHYTHM_BAND = (0.729, 0.827)
 
 BLOCK_END = re.compile(
     r"</(p|li|h[1-6]|figcaption|td|th|blockquote|dd|dt|summary)\s*>|<br\s*/?>",
-    re.I,
+    re.IGNORECASE,
 )
 # A crude passive detector: a form of "be" followed by a participle. It over-
 # reports ("is complete"), so it is advisory and always prints the match.
@@ -70,7 +70,7 @@ PASSIVE = re.compile(
     r"\b(?:is|are|was|were|be|been|being)\s+"
     r"(?:\w+ed|written|drawn|taken|given|shown|made|built|held|read|kept|left|"
     r"seen|known|done|sent|set|put|found|thrown|caught|bound|split|cast|meant)\b",
-    re.I,
+    re.IGNORECASE,
 )
 # Spelled as escapes on purpose: a literal dash here would be the very character
 # the rule forbids, and this file would fail its own check.
@@ -80,9 +80,11 @@ BANNED_CHARS = re.compile("[\u2013\u2014]|[\U0001f300-\U0001faff\u2600-\u27bf]")
 def strip_generated(html: str) -> str:
     """Drop script, style, svg, and anything marked data-generated."""
     for tag in ("script", "style", "svg"):
-        html = re.sub(rf"<{tag}\b.*?</{tag}>", " ", html, flags=re.S | re.I)
+        html = re.sub(
+            rf"<{tag}\b.*?</{tag}>", " ", html, flags=re.DOTALL | re.IGNORECASE
+        )
     while True:
-        m = re.search(r"<(\w+)[^>]*\bdata-generated\b", html, re.I)
+        m = re.search(r"<(\w+)[^>]*\bdata-generated\b", html, re.IGNORECASE)
         if not m:
             return html
         close = f"</{m.group(1)}>"
@@ -95,7 +97,9 @@ def strip_generated(html: str) -> str:
 def blocks(html: str) -> list[str]:
     """Authored text, one string per block-level element."""
     # A code span is one term, not a sentence boundary and not many words.
-    html = re.sub(r"<code\b[^>]*>.*?</code>", " CODE ", html, flags=re.S | re.I)
+    html = re.sub(
+        r"<code\b[^>]*>.*?</code>", " CODE ", html, flags=re.DOTALL | re.IGNORECASE
+    )
     html = BLOCK_END.sub("\x00", html)
     out = []
     for chunk in html.split("\x00"):
@@ -117,11 +121,11 @@ def markdown_blocks(text: str) -> list[str]:
     reads to decide whether to load the file, so it is written for retrieval and
     is deliberately dense. Judging it as prose fails every skill ever written.
     """
-    text = re.sub(r"\A---\n.*?\n---\n", " ", text, flags=re.S)
-    text = re.sub(r"```.*?```", " ", text, flags=re.S)
-    text = re.sub(r"^(?: {4}|\t).*$", " ", text, flags=re.M)
+    text = re.sub(r"\A---\n.*?\n---\n", " ", text, flags=re.DOTALL)
+    text = re.sub(r"```.*?```", " ", text, flags=re.DOTALL)
+    text = re.sub(r"^(?: {4}|\t).*$", " ", text, flags=re.MULTILINE)
     text = re.sub(r"`[^`]+`", " CODE ", text)
-    text = re.sub(r"^#+ .*$", " ", text, flags=re.M)
+    text = re.sub(r"^#+ .*$", " ", text, flags=re.MULTILINE)
     text = re.sub(r"\[([^\]]+)\]\([^)]+\)", r"\1", text)
     out = []
     for para in re.split(r"\n\s*\n", text):
@@ -152,9 +156,9 @@ def interactive_figures(html: str) -> int:
     """
     return sum(
         1
-        for fig in re.findall(r"<figure\b.*?</figure>", html, re.S | re.I)
+        for fig in re.findall(r"<figure\b.*?</figure>", html, re.DOTALL | re.IGNORECASE)
         if "data-generated" not in fig.lower()
-        and re.search(r"<(input|button|select)\b", fig, re.I)
+        and re.search(r"<(input|button|select)\b", fig, re.IGNORECASE)
     )
 
 
@@ -164,7 +168,9 @@ def script_syntax(html: str) -> tuple[list[str], str]:
     node's absence is reported rather than passed: an unchecked widget is not a
     working one, and a silent skip reads exactly like a pass.
     """
-    sources = re.findall(r"<script\b[^>]*>(.*?)</script>", html, re.S | re.I)
+    sources = re.findall(
+        r"<script\b[^>]*>(.*?)</script>", html, re.DOTALL | re.IGNORECASE
+    )
     if not sources:
         return [], "none"
     if shutil.which("node") is None:
@@ -182,7 +188,9 @@ def script_syntax(html: str) -> tuple[list[str], str]:
                 timeout=30,
             )
             if proc.returncode != 0:
-                line = next((ln for ln in proc.stderr.splitlines() if ln.strip()), "no detail")
+                line = next(
+                    (ln for ln in proc.stderr.splitlines() if ln.strip()), "no detail"
+                )
                 bad.append(f"script {index + 1}: {line.strip()[:110]}")
     if bad:
         return bad, f"{len(bad)} of {len(sources)} WILL NOT RUN"
@@ -286,7 +294,9 @@ def check_register(register: Path) -> list[str]:
         # link in a PR never sees this register, and a file that looks current is
         # exactly how a reader learns a withdrawn claim.
         superseded = entry.get("superseded-by", "")
-        body = register.parent / listed if listed and not listed.startswith("(") else None
+        body = (
+            register.parent / listed if listed and not listed.startswith("(") else None
+        )
         if (
             superseded
             and not superseded.startswith("(")
@@ -326,7 +336,9 @@ def main() -> int:
         for problem in problems:
             print(f"REGISTER: {problem}")
         if not args.quiet:
-            print(f"RESULT: {'FAIL' if problems else 'PASS'} ({len(problems)} findings)")
+            print(
+                f"RESULT: {'FAIL' if problems else 'PASS'} ({len(problems)} findings)"
+            )
         return 1 if problems else 0
 
     if args.lesson is None:
@@ -345,7 +357,9 @@ def main() -> int:
     fat_blocks = [b for b in bl if len(sentences(b)) > PARAGRAPH_REFERENCE_SENTENCES]
     aliases = banned_aliases(Path(args.glossary)) if args.glossary else {}
     prose = " ".join(all_sents).lower()
-    used_aliases = {a: t for a, t in aliases.items() if re.search(rf"\b{re.escape(a)}\b", prose)}
+    used_aliases = {
+        a: t for a, t in aliases.items() if re.search(rf"\b{re.escape(a)}\b", prose)
+    }
     chars = BANNED_CHARS.findall(html)
     passives = [m.group(0) for s in all_sents for m in PASSIVE.finditer(s)]
     broken, js_state = script_syntax(html)

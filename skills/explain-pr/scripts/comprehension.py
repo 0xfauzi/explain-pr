@@ -128,19 +128,35 @@ def json_objects(text: str) -> list[dict[str, object]]:
     return found
 
 
-def claude(prompt: str, *, model: str, cwd: Path, timeout: int, tools: list[str]) -> str:
+def claude(
+    prompt: str, *, model: str, cwd: Path, timeout: int, tools: list[str]
+) -> str:
     """One headless turn. The prompt goes on stdin, because `--allowedTools` is
     variadic and would swallow a positional prompt placed after it."""
     cmd = ["claude", "-p", "--model", model, "--settings", NEUTRAL]
     if tools:
         cmd += ["--allowedTools", *tools]
-    done = subprocess.run(cmd, input=prompt, cwd=cwd, capture_output=True, text=True, timeout=timeout)
+    # check=False because the returncode is handled below: CalledProcessError
+    # would throw away the stderr tail, which is the only thing that says why.
+    done = subprocess.run(
+        cmd,
+        input=prompt,
+        cwd=cwd,
+        capture_output=True,
+        text=True,
+        timeout=timeout,
+        check=False,
+    )
     if done.returncode != 0:
-        raise RuntimeError(f"claude exited {done.returncode}: {done.stderr.strip()[:300]}")
+        raise RuntimeError(
+            f"claude exited {done.returncode}: {done.stderr.strip()[:300]}"
+        )
     return done.stdout.strip()
 
 
-def read_once(doc: Path | None, questions: str, model: str, wanted: set[str]) -> dict[str, str]:
+def read_once(
+    doc: Path | None, questions: str, model: str, wanted: set[str]
+) -> dict[str, str]:
     with tempfile.TemporaryDirectory() as tmp:
         packet = Path(tmp)
         if doc is None:
@@ -149,7 +165,9 @@ def read_once(doc: Path | None, questions: str, model: str, wanted: set[str]) ->
             shutil.copy(doc, packet / doc.name)
         raw = claude(
             READER_PROMPT.format(questions=questions),
-            model=model, cwd=packet, timeout=READER_TIMEOUT_S,
+            model=model,
+            cwd=packet,
+            timeout=READER_TIMEOUT_S,
             tools=["Read", "Grep", "Glob", "Bash"],
         )
     candidates = json_objects(raw)
@@ -167,7 +185,10 @@ def read_once(doc: Path | None, questions: str, model: str, wanted: set[str]) ->
 def judge_one(q: dict[str, str], answer: str, model: str, cwd: Path) -> int:
     raw = claude(
         JUDGE_PROMPT.format(ask=q["ask"], key=q["key"], answer=answer),
-        model=model, cwd=cwd, timeout=JUDGE_TIMEOUT_S, tools=[],
+        model=model,
+        cwd=cwd,
+        timeout=JUDGE_TIMEOUT_S,
+        tools=[],
     )
     verdicts = [o for o in json_objects(raw) if "score" in o]
     if not verdicts:
@@ -179,7 +200,9 @@ def judge_one(q: dict[str, str], answer: str, model: str, cwd: Path) -> int:
 
 
 def main() -> int:
-    ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
+    ap = argparse.ArgumentParser(
+        description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter
+    )
     ap.add_argument("exam", help="TOML with a [[questions]] table of id, ask, key")
     ap.add_argument("documents", nargs="+", help="the documents to compare")
     ap.add_argument("--runs", type=int, default=3)
@@ -195,7 +218,9 @@ def main() -> int:
     questions = "\n\n".join(f"{q['id']}. {q['ask']}" for q in qs)
     top = 2 * len(qs)
 
-    arms: list[tuple[str, Path | None]] = [(Path(d).name, Path(d)) for d in args.documents]
+    arms: list[tuple[str, Path | None]] = [
+        (Path(d).name, Path(d)) for d in args.documents
+    ]
     arms.append(("(control: nothing)", None))
 
     here = Path.cwd()
@@ -205,7 +230,9 @@ def main() -> int:
         for r in range(1, args.runs + 1):
             print(f"  {name} run {r}", file=sys.stderr, flush=True)
             answers = read_once(doc, questions, args.model, wanted)
-            totals.append(sum(judge_one(q, answers[q["id"]], args.model, here) for q in qs))
+            totals.append(
+                sum(judge_one(q, answers[q["id"]], args.model, here) for q in qs)
+            )
         results[name] = totals
 
     print(f"\n{len(qs)} questions, {top} points per run, {args.runs} runs each\n")
@@ -213,8 +240,10 @@ def main() -> int:
     print("-" * 68)
     for name, totals in results.items():
         mean = statistics.mean(totals)
-        print(f"{name:34s} {mean:>6.1f} {top:>4d} {100 * mean / top:>5.0f}% "
-              f"{','.join(str(t) for t in totals):>12s}")
+        print(
+            f"{name:34s} {mean:>6.1f} {top:>4d} {100 * mean / top:>5.0f}% "
+            f"{','.join(str(t) for t in totals):>12s}"
+        )
 
     control = statistics.mean(results["(control: nothing)"])
     print(f"\nControl scored {control:.1f} of {top}.")
@@ -222,7 +251,9 @@ def main() -> int:
         print("That is too high. The reader is answering from prior knowledge, so")
         print("every number above is inflated and this run should be discarded.")
     else:
-        print("Low, so the points above came from reading rather than from prior knowledge.")
+        print(
+            "Low, so the points above came from reading rather than from prior knowledge."
+        )
     print("\nThis compares documents. It does not certify that any of them is good,")
     print("and the reader is a model standing in for a person.")
     return 0
