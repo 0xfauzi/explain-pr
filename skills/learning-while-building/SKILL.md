@@ -1,6 +1,6 @@
 ---
 name: learning-while-building
-description: Turns building software with Claude into deliberate practice, so the learner's own engineering ability grows instead of eroding. Has the learner attempt designs, predictions and diagnoses before Claude explains, has them explain finished changes back, schedules spaced retrieval and transfer questions, runs debugging drills on injected bugs, and keeps a per-dimension record of what the learner has shown they can do unaided. Use when the user wants to learn from the work rather than only finish it - "make this a learning task", "teach me as we build", "help me understand what PR 128 did", "quiz me", "test whether I still understand X", "what am I weak at", "give me a debugging drill". Do not use for ordinary implementation, defect review or code review requests that show no learning intent.
+description: Turns building software with Claude into deliberate practice, so the learner's own engineering ability grows instead of eroding. Has the learner attempt designs, predictions and diagnoses before Claude explains, has them explain finished changes back, schedules spaced retrieval and transfer questions, builds interactive explainer pages that make the learner predict before revealing, runs debugging drills on injected bugs, and keeps a per-dimension record of what the learner has shown they can do unaided. Use when the user wants to learn from the work rather than only finish it - "make this a learning task", "teach me as we build", "help me understand what PR 128 did", "quiz me", "test whether I still understand X", "what am I weak at", "give me a debugging drill", "draw me how this works". Do not use for ordinary implementation, defect review or code review requests that show no learning intent.
 ---
 
 # Learning while building
@@ -18,6 +18,9 @@ Terms used throughout:
 - **hint level**: H0 none, H1 a nudge toward what matters, H2 a pointer to the
   file, boundary or observation, H3 the worked answer
 - **record**: the data kept by `scripts/learning.py`
+
+Requires Python 3.9+ and git. Explainer checks also need node, and Playwright
+for node for the browser half; without them, say which checks did not run.
 
 ## Ground rules
 
@@ -68,6 +71,11 @@ want the record out of the project repository, pass `--dir` to point elsewhere.
 - **"What am I weak at?"**: follow Map mode.
 - **A debugging drill is requested or due**: read
   [references/repair-drills.md](references/repair-drills.md).
+- **A mechanism needs a picture** (state over time, ordering, a threshold,
+  topology) and the learner has already attempted it in chat: build an
+  explainer page by following
+  [references/explainers.md](references/explainers.md). Also when the learner
+  asks for one.
 
 Before writing any question, read
 [references/questions.md](references/questions.md). It covers question kinds,
@@ -114,7 +122,8 @@ it.
 **5. Explain-back.** Once the change works, ask the learner to explain the
 mechanism that makes it correct, or what change would break it. Use kind
 `explain-back`. Do not summarise the change first; the learner's explanation
-comes before Claude's.
+comes before Claude's. If their answer shows a gap in a mechanism with a visual
+shape, offer an explainer page aimed at that gap.
 
 **6. Record topics.** Keep one to three topics per task: the concepts worth
 having in a month. Each one needs a `--concept` a stranger could understand and
@@ -166,6 +175,7 @@ goes through the script; never edit the data files by hand.
 | `topic retire --id ID --reason TEXT` | Stop scheduling a topic |
 | `ask --topic ID --kind K --question TEXT --rubric TEXT` | Fix the rubric and open an attempt; prints its number |
 | `grade --attempt N --outcome O --hint H --confidence C --answer TEXT --gap TEXT` | Close an attempt; prints the next review date |
+| `import --file F` | Record results pasted from an explainer page (`-` reads stdin) |
 | `due [--limit N]` | Topics due now, mixed across dimensions |
 | `map` | Per-dimension evidence, misconceptions, and how the schedule is holding up |
 | `check` | Validate the record; exits 1 with each problem named |
@@ -173,6 +183,11 @@ goes through the script; never edit the data files by hand.
 Kinds: `attempt`, `explain-back`, `retrieval`, `transfer`, `diagnosis`,
 `repair`, `field`. Outcomes: `correct`, `partial`, `wrong`, `skipped`. The script
 refuses `correct` at H3, and refuses a new `ask` while one is ungraded.
+
+Explainer pages are checked with
+`python3 ${CLAUDE_SKILL_DIR}/scripts/check_explainer.py PAGE`; see
+`references/explainers.md`. Page results count as weaker evidence: they surface
+misconceptions but do not raise a topic's level.
 
 Record `--answer` as a short paraphrase of what the learner said, not a
 transcript.

@@ -1,0 +1,484 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>EXAMPLE: Retrying a charge safely</title>
+<style>
+:root {
+  --bg: #fbfbf8; --fg: #1d1f21; --muted: #5d6166; --line: #d9d9d2;
+  --panel: #f1f1ec; --accent: #2557a7; --right: #1f7a3a; --wrong: #b3261e;
+  --right-bg: #e6f3ea; --wrong-bg: #fbe9e7; --hl: #fff2b3;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #17181a; --fg: #e6e6e3; --muted: #a3a6aa; --line: #3a3c40;
+    --panel: #222427; --accent: #8ab4f8; --right: #7fd39a; --wrong: #f2a29b;
+    --right-bg: #1d3325; --wrong-bg: #3a2220; --hl: #4a4220;
+  }
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0; background: var(--bg); color: var(--fg);
+  font: 17px/1.55 system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+main { max-width: 42rem; margin: 0 auto; padding: 1.5rem 1rem 4rem; }
+h1 { font-size: 1.6rem; line-height: 1.25; margin: 0 0 .5rem; }
+h2 { font-size: 1.2rem; margin: 2.2rem 0 .6rem; }
+p, li, td, th, figcaption { overflow-wrap: break-word; }
+code { overflow-wrap: anywhere; }
+code, pre { font: 0.9em ui-monospace, SFMono-Regular, Menlo, monospace; }
+pre { background: var(--panel); padding: .75rem; overflow-x: auto; border-radius: 6px; }
+table { border-collapse: collapse; width: 100%; font-size: .95rem; }
+th, td { border-bottom: 1px solid var(--line); padding: .4rem .3rem; text-align: left; vertical-align: top; }
+figure { margin: 1rem 0; }
+figcaption { color: var(--muted); font-size: .9rem; margin-top: .3rem; }
+svg { max-width: 100%; height: auto; display: block; }
+svg text { fill: var(--fg); font: 13px system-ui, sans-serif; }
+svg .box { fill: var(--panel); stroke: var(--fg); stroke-width: 1.2; }
+svg .edge { stroke: var(--fg); stroke-width: 1.4; fill: none; marker-end: url(#arrow); }
+svg .arrowhead { fill: var(--fg); }
+svg .changed { stroke: var(--accent); stroke-width: 3; }
+svg text.changed { stroke: none; fill: var(--accent); font-weight: 600; }
+svg .fault { stroke: var(--wrong); stroke-width: 2; stroke-dasharray: 5 4; }
+.stake { font-size: 1.05rem; }
+.ex-predict, .ex-explain, .ex-order, .ex-sim, .ex-stepper {
+  border: 1px solid var(--line); border-radius: 8px; padding: .9rem 1rem; margin: 1.2rem 0;
+}
+.ex-q { font-weight: 600; margin-top: 0; }
+.ex-options, .ex-items { list-style: none; padding: 0; margin: .5rem 0; }
+.ex-options li label { display: flex; gap: .6rem; align-items: flex-start; padding: .55rem .5rem; min-height: 44px; border-radius: 6px; cursor: pointer; }
+.ex-options li label:hover { background: var(--panel); }
+.ex-right { background: var(--right-bg); border-left: 4px solid var(--right); }
+.ex-wrong { background: var(--wrong-bg); border-left: 4px solid var(--wrong); }
+.ex-badge { font-size: .8rem; font-weight: 600; margin-left: auto; white-space: nowrap; }
+.ex-conf { border: 0; padding: 0; margin: .6rem 0; }
+.ex-conf legend { padding: 0; color: var(--muted); }
+.ex-conf div { display: flex; gap: 1.2rem; }
+.ex-conf label { min-height: 44px; display: inline-flex; align-items: center; gap: .3rem; }
+button { font: inherit; min-height: 44px; padding: .4rem .9rem; border-radius: 6px; border: 1px solid var(--accent); background: transparent; color: var(--accent); cursor: pointer; }
+button.ex-commit { background: var(--accent); color: var(--bg); }
+button:disabled { opacity: .45; cursor: default; }
+.ex-msg { font-weight: 600; min-height: 1.2em; }
+.ex-reveal { border-top: 1px dashed var(--line); margin-top: .8rem; padding-top: .6rem; }
+textarea { width: 100%; min-height: 6rem; font: inherit; padding: .5rem; background: var(--bg); color: var(--fg); border: 1px solid var(--line); border-radius: 6px; }
+.ex-items li { display: flex; align-items: center; gap: .4rem; padding: .3rem .4rem; border: 1px solid var(--line); border-radius: 6px; margin: .3rem 0; }
+.ex-items li span { flex: 1; }
+.ex-items li button { min-width: 44px; padding: .2rem; }
+.ex-nav { display: flex; gap: .6rem; align-items: center; margin-top: .6rem; }
+.ex-nav span { color: var(--muted); }
+.ex-sim .ex-controls { display: grid; gap: .4rem; margin: .6rem 0; }
+.ex-sim input[type=range] { width: 100%; min-height: 44px; }
+.ex-out { display: block; font-weight: 600; padding: .5rem; border-radius: 6px; background: var(--panel); }
+.ex-sim[data-state=bad] .ex-out { background: var(--wrong-bg); }
+.ex-sim[data-state=good] .ex-out { background: var(--right-bg); }
+.ex-label { color: var(--muted); font-size: .9rem; }
+.ex-results { background: var(--panel); border-radius: 8px; padding: .9rem 1rem; margin-top: 2.5rem; }
+.ex-results textarea { min-height: 8rem; font: .8rem ui-monospace, monospace; }
+</style>
+</head>
+<!-- data-topic must match a topic id in the learner's record. -->
+<body data-topic="EXAMPLE-idempotent-retry">
+<!-- Shared SVG definitions. Keep them here: a marker defined inside a hidden
+     stepper frame does not render in other frames. -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs><marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path class="arrowhead" d="M0,0 L10,5 L0,10 z"/></marker></defs>
+</svg>
+<main>
+
+<h1>EXAMPLE: Why a retried charge needs a key</h1>
+<p class="stake">Without the key, a slow payment gateway makes the worker charge the
+customer twice. This page shows where and why. Nothing you click here changes any
+code.</p>
+
+<!-- 1. PRETEST: predictions before any explanation. -->
+<section class="ex-predict" data-id="p1" data-kind="attempt" data-answer="c">
+  <p class="ex-q">The worker sends a charge, the gateway takes 1.2 s to reply, and the
+  worker's timeout is 0.8 s. With no idempotency key, what does the customer see?</p>
+  <ol class="ex-options">
+    <li data-value="a">One charge, because the gateway rejects the second request</li>
+    <li data-value="b">No charge, because the timeout cancelled the first request</li>
+    <li data-value="c">Two charges, because the retry looks like a new request</li>
+  </ol>
+  <div class="ex-reveal" hidden>
+    <p data-for="b">A client timeout stops the client waiting. It does not stop the
+    gateway, which finishes the first charge anyway.</p>
+    <p>The gateway cannot tell a retry from a new purchase, so it charges again
+    (<code>worker/charge.py:41</code>).</p>
+  </div>
+</section>
+
+<h2>Words used on this page</h2>
+<table>
+  <tr><th>Word</th><th>Meaning here</th></tr>
+  <tr><td>key</td><td>A unique id sent with a charge. The gateway runs each key at most once.</td></tr>
+</table>
+
+<!-- 2. MECHANISM: learner-paced frames, gated at the decisive step. -->
+<h2>What happens, step by step</h2>
+<section class="ex-stepper">
+  <figure class="ex-frame">
+    <svg viewBox="0 0 360 120" role="img" aria-label="Worker sends charge to gateway">
+      <rect class="box" x="10" y="40" width="100" height="40" rx="6"/><text x="60" y="65" text-anchor="middle">worker</text>
+      <rect class="box" x="250" y="40" width="100" height="40" rx="6"/><text x="300" y="65" text-anchor="middle">gateway</text>
+      <path class="edge changed" d="M110,60 L250,60"/><text x="180" y="52" text-anchor="middle">charge #1</text>
+    </svg>
+    <figcaption>Step 1. The worker sends charge #1 and starts a 0.8 s timer.</figcaption>
+  </figure>
+  <figure class="ex-frame">
+    <svg viewBox="0 0 360 120" role="img" aria-label="Timer fires before the gateway replies">
+      <rect class="box" x="10" y="40" width="100" height="40" rx="6"/><text x="60" y="65" text-anchor="middle">worker</text>
+      <rect class="box" x="250" y="40" width="100" height="40" rx="6"/><text x="300" y="65" text-anchor="middle">gateway</text>
+      <path class="edge" d="M110,60 L250,60"/><text x="180" y="52" text-anchor="middle">charge #1</text>
+      <text class="changed" x="60" y="100" text-anchor="middle">timer fires at 0.8 s</text>
+    </svg>
+    <figcaption>Step 2. The timer fires. The gateway is still working on charge #1.</figcaption>
+    <section class="ex-predict" data-id="p2" data-kind="attempt" data-answer="b">
+      <p class="ex-q">What does the worker know at this moment?</p>
+      <ol class="ex-options">
+        <li data-value="a">The charge failed</li>
+        <li data-value="b">Nothing: the charge may or may not have happened</li>
+        <li data-value="c">The charge succeeded</li>
+      </ol>
+      <div class="ex-reveal" hidden><p>A timeout is an absence of an answer, not a
+      failure. That uncertainty is the whole problem the key solves.</p></div>
+    </section>
+  </figure>
+  <figure class="ex-frame">
+    <svg viewBox="0 0 360 120" role="img" aria-label="Retry reaches the gateway as a second charge">
+      <rect class="box" x="10" y="40" width="100" height="40" rx="6"/><text x="60" y="65" text-anchor="middle">worker</text>
+      <rect class="box" x="250" y="40" width="100" height="40" rx="6"/><text x="300" y="65" text-anchor="middle">gateway</text>
+      <path class="edge fault" d="M110,75 L250,75"/><text x="180" y="95" text-anchor="middle">charge #2 (retry)</text>
+    </svg>
+    <figcaption>Step 3. The retry arrives. Without a key it is a second purchase.</figcaption>
+  </figure>
+</section>
+
+<!-- 3. SIMULATION: gated by a prediction; the rule lives in #ex-rules. -->
+<h2>Try the boundary</h2>
+<section class="ex-sim" data-rule="charges">
+  <section class="ex-predict" data-id="p3" data-kind="transfer" data-answer="b">
+    <p class="ex-q">With the key turned on, how slow must the gateway be before the
+    customer is charged twice?</p>
+    <ol class="ex-options">
+      <li data-value="a">Slower than the timeout, 0.8 s</li>
+      <li data-value="b">No latency causes a double charge</li>
+      <li data-value="c">Slower than two timeouts, 1.6 s</li>
+    </ol>
+    <div class="ex-reveal" hidden><p>The gateway runs each key once, so latency only
+    changes how long the customer waits. Check it with the controls below.</p></div>
+  </section>
+  <div class="ex-controls">
+    <label>Gateway latency: <b class="ex-val" data-for="latency"></b> ms
+      <input type="range" data-param="latency" min="0" max="2000" step="50" value="400"></label>
+    <label><input type="checkbox" data-param="key"> Send an idempotency key</label>
+  </div>
+  <output class="ex-out"></output>
+  <p class="ex-label">Simulated values. The 800 ms timeout is the real setting in
+  <code>worker/config.py:12</code>; latencies are illustrative.</p>
+</section>
+
+<!-- 4. SELF-EXPLANATION: the learner writes, then compares. -->
+<section class="ex-explain" data-id="e1" data-kind="explain-back">
+  <p class="ex-q">In one or two sentences: why does the key make the retry safe, and
+  what must the worker do with the key across a restart?</p>
+  <div class="ex-reveal" hidden>
+    <p>The gateway stores each key and returns the first result for any repeat, so a
+    retry cannot create a second charge. The worker must store the key before the
+    first send and reuse it after a restart, or a restarted worker invents a new key
+    and the protection is gone (<code>worker/charge.py:30-36</code>).</p>
+  </div>
+</section>
+
+<!-- 5. CONSTRUCT: put the steps in order. Write items in the CORRECT order;
+     the page shuffles them. -->
+<section class="ex-order" data-id="o1" data-kind="attempt">
+  <p class="ex-q">Put the worker's steps in the order the code runs them.</p>
+  <ol class="ex-items">
+    <li>Generate the key</li>
+    <li>Save the key with the job</li>
+    <li>Send the charge with the key</li>
+    <li>On timeout, resend with the same key</li>
+  </ol>
+  <div class="ex-reveal" hidden><p>Saving before sending is the step that survives a
+  crash between the two.</p></div>
+</section>
+
+<!-- 6. EVIDENCE: how each claim is known. -->
+<h2>How each claim is known</h2>
+<table>
+  <tr><th>Claim</th><th>Known by</th><th>Where</th></tr>
+  <tr><td>Retries reuse the stored key</td><td>Observed: test passes</td><td><code>tests/test_charge.py::test_retry_same_key</code></td></tr>
+  <tr><td>Gateway deduplicates by key</td><td>Unknown: vendor documentation only</td><td>Gateway docs, not tested here</td></tr>
+</table>
+
+</main>
+
+<script id="ex-rules">
+// Pure rules, one per simulation. Each takes the control values and returns
+// {text, state}. No DOM access: check_explainer.py extracts this block so the
+// rule can be swept in node, outside the browser.
+const RULES = {
+  charges({ latency, key }) {
+    const TIMEOUT_MS = 800; // worker/config.py:12
+    const retried = latency > TIMEOUT_MS;
+    const charges = retried && !key ? 2 : 1;
+    return {
+      text: `${charges} charge${charges > 1 ? "s" : ""}: ` +
+        (retried ? (key ? "the retry reused the key, so the gateway ignored it" : "the retry looked like a new purchase")
+                 : "the reply arrived before the timeout, so there was no retry"),
+      state: charges > 1 ? "bad" : "good",
+    };
+  },
+};
+</script>
+
+<script id="ex-runtime">
+// Runtime. Do not edit per page. Every interaction requires a committed answer
+// and a confidence before anything is revealed.
+(function () {
+  "use strict";
+  const topic = document.body.dataset.topic || "";
+  const results = new Map();
+  let gated = 0;
+
+  const text = (el) => (el ? el.textContent.replace(/\s+/g, " ").trim() : "");
+  const make = (tag, props = {}, kids = []) => {
+    const el = Object.assign(document.createElement(tag), props);
+    el.append(...kids);
+    return el;
+  };
+
+  function confidence(name) {
+    const row = make("div");
+    for (const level of ["low", "medium", "high"]) {
+      const input = make("input", { type: "radio", name: name + "-conf", value: level });
+      row.append(make("label", {}, [input, level]));
+    }
+    return make("fieldset", { className: "ex-conf" }, [make("legend", { textContent: "How sure are you?" }), row]);
+  }
+  const chosenConfidence = (root) => (root.querySelector(".ex-conf input:checked") || {}).value;
+
+  function lock(root, button) {
+    root.querySelectorAll("input, textarea, .ex-items button").forEach((el) => (el.disabled = true));
+    button.disabled = true;
+    root.dataset.committed = "true";
+    root.dispatchEvent(new CustomEvent("ex:committed", { bubbles: true }));
+  }
+
+  function record(entry) {
+    results.set(entry.id, Object.assign({ topic, hint: 0 }, entry));
+    renderResults();
+  }
+
+  function commitControls(root, after) {
+    const conf = confidence(root.dataset.id);
+    const button = make("button", { type: "button", className: "ex-commit", textContent: "Commit answer" });
+    const msg = make("p", { className: "ex-msg", role: "status" });
+    after.after(conf, button, msg);
+    return { button, msg };
+  }
+
+  function setupPredict(root) {
+    gated++;
+    const list = root.querySelector(".ex-options");
+    const items = [...list.children];
+    for (const li of items) {
+      const input = make("input", { type: "radio", name: root.dataset.id + "-opt", value: li.dataset.value });
+      const kids = [...li.childNodes];
+      li.append(make("label", {}, [input, make("span", {}, kids)]));
+    }
+    const { button, msg } = commitControls(root, list);
+    button.addEventListener("click", () => {
+      const picked = list.querySelector("input:checked");
+      const conf = chosenConfidence(root);
+      if (!picked || !conf) {
+        msg.textContent = "Pick an answer and how sure you are. Your answer locks when you commit.";
+        return;
+      }
+      const answer = root.dataset.answer;
+      const right = picked.value === answer;
+      for (const li of items) {
+        const label = li.querySelector("label");
+        if (li.dataset.value === answer) {
+          li.classList.add("ex-right");
+          label.append(make("span", { className: "ex-badge", textContent: "correct answer" }));
+        } else if (li.dataset.value === picked.value) {
+          li.classList.add("ex-wrong");
+          label.append(make("span", { className: "ex-badge", textContent: "your answer" }));
+        }
+      }
+      msg.textContent = right ? "Correct." : "Not this one. The correct answer is marked.";
+      if (!right && conf === "high") msg.textContent += " You were sure, so read the explanation closely: the code contradicts a belief you hold.";
+      const reveal = root.querySelector(".ex-reveal");
+      reveal.querySelectorAll("[data-for]").forEach((p) => (p.hidden = p.dataset.for !== picked.value));
+      reveal.hidden = false;
+      lock(root, button);
+      record({
+        id: root.dataset.id, kind: root.dataset.kind || "attempt", grader: "page",
+        question: text(root.querySelector(".ex-q")),
+        rubric: text(items.find((li) => li.dataset.value === answer).querySelector("span")),
+        answer: text(picked.closest("li").querySelector("span")),
+        outcome: right ? "correct" : "wrong", confidence: conf,
+      });
+    });
+  }
+
+  function setupExplain(root) {
+    gated++;
+    const area = make("textarea", { placeholder: "Write your answer before looking." });
+    root.querySelector(".ex-q").after(area);
+    const { button, msg } = commitControls(root, area);
+    button.textContent = "Commit and compare";
+    button.addEventListener("click", () => {
+      const conf = chosenConfidence(root);
+      if (area.value.trim().length < 15 || !conf) {
+        msg.textContent = "Write a sentence or two and pick how sure you are first.";
+        return;
+      }
+      root.querySelector(".ex-reveal").hidden = false;
+      lock(root, button);
+      msg.textContent = "Compare yours with the model answer, then grade yourself honestly.";
+      const grades = make("div", { className: "ex-nav" });
+      for (const [label, outcome] of [["I had it", "correct"], ["I had part", "partial"], ["I missed it", "wrong"]]) {
+        const b = make("button", { type: "button", textContent: label });
+        b.addEventListener("click", () => {
+          grades.querySelectorAll("button").forEach((x) => (x.disabled = true));
+          msg.textContent = "Recorded as " + outcome + ".";
+          record({
+            id: root.dataset.id, kind: root.dataset.kind || "explain-back", grader: "self",
+            question: text(root.querySelector(".ex-q")),
+            rubric: text(root.querySelector(".ex-reveal")),
+            answer: area.value.trim().slice(0, 400), outcome, confidence: conf,
+          });
+        });
+        grades.append(b);
+      }
+      root.querySelector(".ex-reveal").after(grades);
+    });
+  }
+
+  function setupOrder(root) {
+    gated++;
+    const list = root.querySelector(".ex-items");
+    const correct = [...list.children].map((li, i) => ((li.dataset.pos = i), text(li)));
+    const items = [...list.children];
+    // Deterministic shuffle from the id, so a reload shows the same order.
+    let seed = [...root.dataset.id].reduce((a, c) => (a * 31 + c.charCodeAt(0)) >>> 0, 7);
+    for (let i = items.length - 1; i > 0; i--) {
+      seed = (seed * 1103515245 + 12345) >>> 0;
+      const j = seed % (i + 1);
+      [items[i], items[j]] = [items[j], items[i]];
+    }
+    if (items.every((li, i) => Number(li.dataset.pos) === i)) items.push(items.shift());
+    for (const li of items) {
+      const label = make("span", {}, [...li.childNodes]);
+      const up = make("button", { type: "button", textContent: "↑", ariaLabel: "Move up" });
+      const down = make("button", { type: "button", textContent: "↓", ariaLabel: "Move down" });
+      up.addEventListener("click", () => li.previousElementSibling && li.after(li.previousElementSibling));
+      down.addEventListener("click", () => li.nextElementSibling && li.before(li.nextElementSibling));
+      li.append(label, up, down);
+      list.append(li);
+    }
+    const { button, msg } = commitControls(root, list);
+    button.addEventListener("click", () => {
+      const conf = chosenConfidence(root);
+      if (!conf) { msg.textContent = "Pick how sure you are first. The order locks when you commit."; return; }
+      const now = [...list.children];
+      const hits = now.filter((li, i) => Number(li.dataset.pos) === i).length;
+      now.forEach((li, i) => li.classList.add(Number(li.dataset.pos) === i ? "ex-right" : "ex-wrong"));
+      const outcome = hits === now.length ? "correct" : hits * 2 >= now.length ? "partial" : "wrong";
+      msg.textContent = `${hits} of ${now.length} in the right place.`;
+      const reveal = root.querySelector(".ex-reveal");
+      reveal.prepend(make("ol", {}, correct.map((t) => make("li", { textContent: t }))));
+      reveal.hidden = false;
+      lock(root, button);
+      record({
+        id: root.dataset.id, kind: root.dataset.kind || "attempt", grader: "page",
+        question: text(root.querySelector(".ex-q")), rubric: correct.join(" > "),
+        answer: now.map((li) => text(li.querySelector("span"))).join(" > "), outcome, confidence: conf,
+      });
+    });
+  }
+
+  function setupStepper(root) {
+    const frames = [...root.querySelectorAll(":scope > .ex-frame")];
+    let at = 0;
+    const prev = make("button", { type: "button", textContent: "Back" });
+    const next = make("button", { type: "button", textContent: "Next step" });
+    const where = make("span");
+    root.append(make("div", { className: "ex-nav" }, [prev, next, where]));
+    const open = (frame) => [...frame.querySelectorAll(".ex-predict, .ex-explain, .ex-order")].some((g) => g.dataset.committed !== "true");
+    const show = () => {
+      frames.forEach((f, i) => (f.hidden = i !== at));
+      prev.disabled = at === 0;
+      next.disabled = at === frames.length - 1 || open(frames[at]);
+      where.textContent = open(frames[at]) ? "Answer the question to continue" : `Step ${at + 1} of ${frames.length}`;
+    };
+    prev.addEventListener("click", () => { at--; show(); });
+    next.addEventListener("click", () => { at++; show(); });
+    root.addEventListener("ex:committed", show);
+    show();
+  }
+
+  function setupSim(root) {
+    const rule = (typeof RULES === "object" && RULES[root.dataset.rule]) || null;
+    const out = root.querySelector(".ex-out");
+    const inputs = [...root.querySelectorAll("[data-param]")];
+    const gate = root.querySelector(".ex-predict");
+    const run = () => {
+      if (!rule) { out.textContent = "Missing rule: " + root.dataset.rule; return; }
+      const params = {};
+      for (const input of inputs) {
+        params[input.dataset.param] = input.type === "checkbox" ? input.checked : Number(input.value);
+        const shown = root.querySelector(`.ex-val[data-for="${input.dataset.param}"]`);
+        if (shown) shown.textContent = input.value;
+      }
+      const result = rule(params);
+      out.textContent = result.text;
+      root.dataset.state = result.state || "";
+    };
+    for (const input of inputs) {
+      const shown = root.querySelector(`.ex-val[data-for="${input.dataset.param}"]`);
+      if (shown) shown.textContent = input.value;
+      input.addEventListener("input", run);
+    }
+    if (gate) {
+      inputs.forEach((input) => (input.disabled = true));
+      out.textContent = "Commit your prediction above to unlock the controls.";
+      gate.addEventListener("ex:committed", () => { inputs.forEach((input) => (input.disabled = false)); run(); });
+    } else run();
+  }
+
+  function renderResults() {
+    let box = document.getElementById("ex-results");
+    if (!box) {
+      const area = make("textarea", { readOnly: true, id: "ex-results-text" });
+      const copy = make("button", { type: "button", textContent: "Copy for Claude" });
+      copy.addEventListener("click", () => {
+        area.select();
+        const done = () => (copy.textContent = "Copied");
+        navigator.clipboard ? navigator.clipboard.writeText(area.value).then(done, () => document.execCommand("copy") && done()) : document.execCommand("copy") && done();
+      });
+      box = make("section", { id: "ex-results", className: "ex-results" }, [
+        make("h2", { textContent: "Your answers" }),
+        make("p", { id: "ex-results-count" }),
+        make("p", { textContent: "Paste this into the chat so Claude can add it to your record." }),
+        area, copy,
+      ]);
+      document.querySelector("main").append(box);
+    }
+    document.getElementById("ex-results-count").textContent = `${results.size} of ${gated} answered.`;
+    document.getElementById("ex-results-text").value = [...results.values()].map((r) => JSON.stringify(r)).join("\n");
+  }
+
+  document.querySelectorAll(".ex-predict").forEach(setupPredict);
+  document.querySelectorAll(".ex-explain").forEach(setupExplain);
+  document.querySelectorAll(".ex-order").forEach(setupOrder);
+  document.querySelectorAll(".ex-stepper").forEach(setupStepper);
+  document.querySelectorAll(".ex-sim").forEach(setupSim);
+  renderResults();
+})();
+</script>
+</body>
+</html>

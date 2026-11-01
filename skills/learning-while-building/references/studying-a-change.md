@@ -79,6 +79,10 @@ skipping anything they already had right:
 Keep it conversational and short. A long explanation read passively teaches less
 than the learner's own attempt plus targeted correction.
 
+If the gap is in a mechanism with a visual shape (ordering, state over time, a
+threshold, topology), build an explainer page for it instead of a longer chat
+explanation, following `explainers.md`.
+
 ## 5. One question the change did not answer
 
 Ask one `transfer` question: a case the change and the explanation did not
