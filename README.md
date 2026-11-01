@@ -1,97 +1,117 @@
-# explain-pr
+# learning-while-building
 
-Tools for writing so that a person understands.
+A Claude Code skill for building a real project with Claude while getting better
+as an engineer, rather than only getting faster.
 
-Not so that it sounds human, which is a different thing and a trap. The goal is
-that somebody finishes reading and knows something they did not know before.
-
-## What is here
-
-**`Human-Outward`**, a writing style. Simple words and varied sentences, the idea
-before its name, the answer you rejected shown, a clear mark on how each claim is
-known, and kindness that is not performed. It applies to anything you write: an
-essay, a letter, a document, an explanation of your own work.
-
-**`explain-pr`**, a skill that applies those rules to one job. It turns a pull
-request into a lesson somebody can read in a sitting, with widgets they can
-operate, kept in the repository so the next person finds it.
-
-**Four checkers**, each with its limits written down, in `evals/README.md`.
-
-The style is the general case. The skill is one application of it. If you only
-want one thing, take the style.
+Claude still does most of the building. At a few chosen points the skill makes
+you do the thinking: commit to a design before seeing one, diagnose a bug before
+Claude fixes it, explain a change back once it works. It then brings topics back
+on a spaced schedule, with new cases rather than repeats, and keeps a record of
+what you showed you could do without help, split by engineering dimension.
 
 ## Install
 
     /plugin marketplace add 0xfauzi/explain-pr
-    /plugin install explain-pr@explain-pr
+    /plugin install learning-while-building@learning-while-building
 
-Turn the style on:
+Then, in a project repository:
 
-    /output-style explain-pr:Human-Outward
+    /learning-while-building:learning-while-building
 
-Use the skill, in a repository with an open or merged pull request:
+or just say "make this a learning task", "quiz me", "help me understand what PR
+128 did", or "what am I weak at".
 
-    /explain-pr:explain-pr 128
+The first run creates `.learning/` in the repository. Commit it. Cloud session
+containers are reclaimed, and an uncommitted record goes with them.
 
-Both are namespaced by the plugin. A bare `Human-Outward` will find a local style
-of that name first, if you have one.
+## What it does
 
-## The style, in one screen
+| You say | What happens |
+|---|---|
+| "Make this a learning task" | You sketch the design or name the invariant first. Claude builds, offers you the critical piece to write, offers you first go at any bug, then asks you to explain the result. |
+| "Help me understand PR 128" | You explain or predict first. Claude reads the diff, separates what the description claims from what the code does, and explains only what you missed. Then one question the PR did not answer. |
+| "Quiz me" | Due topics come back, mixed across dimensions. Retrieval first, then new cases. |
+| "Give me a debugging drill" | Claude breaks one thing in a throwaway worktree and shows you only the failing output. |
+| "What am I weak at?" | Per-dimension evidence, misconceptions you held with high confidence, and how well the schedule is holding. |
 
-- **Say why it matters** before any name, number or detail.
-- **Teach the idea, then name it.** The word should be a label for something the
-  reader is already holding.
-- **Assume no context and full capability.** They know none of your background
-  and can follow anything once you hand it over. Explaining is kind. Talking down
-  is not.
-- **Show the answer you rejected**, with the evidence that killed it. This is the
-  most useful thing you will write and the thing people leave out.
-- **Say how you know**, every time: measured, reasoned, judged, or unknown.
-- **Simple words, varied sentences.** These are separate dials and most people
-  turn down both. Turn down the first one only.
-- **Be kind and mean it.** Cut the words that blame the reader. Say the hard thing
-  and aim it at the work. Never leave a reader stuck.
+Saying "skip" or "just do it" always works.
 
-Full text in `output-styles/Human-Outward.md`.
+## Why it is built this way
 
-## The skill, in one screen
+Each rule traces to a finding. Most of these studies used other populations
+(students, junior developers, short tasks), so the design is a hypothesis to
+test on yourself, not a proven method.
 
-1. **Fix the diff range against the PR's own base**, not the default branch.
-   Stacked and merged PRs each get this wrong by default, in opposite directions,
-   and both mistakes are silent.
-2. **Hand the writing to a reader who did not make the change.** An author
-   explains a change as they meant it, and cannot see the reasoning that never
-   reached the diff.
-3. **Build one arc**: where this sits, why each decision went that way, what you
-   need for the next change, and what would make it wrong.
-4. **Prefer a widget the reader can operate** over a picture of a rule. A picture
-   states the rule. It does not let anybody try it and be surprised.
-5. **Record what it taught**, so the set becomes an account of the system rather
-   than a pile of files.
+- **How you use AI matters more than whether you use it.** In Anthropic's
+  randomised study of 52 developers learning a new library
+  ([Shen and Tamkin, 2026](https://www.anthropic.com/research/AI-assistance-coding-skills)),
+  the AI group scored 50% on a follow-up quiz against 67% for the hand-coding
+  group, with the largest gap on debugging. The patterns that kept scores high
+  were asking conceptual questions, and generating code and then questioning it.
+  The patterns that lost the most were full delegation and letting AI do the
+  debugging (24%). So the skill answers conceptual questions freely, makes you
+  explain generated code back, and gives you first go at bugs.
+- **Unguarded help raises practice scores and lowers later unaided ones.**
+  [Bastani et al., 2025](https://doi.org/10.1073/pnas.2422633122) found students
+  with plain ChatGPT did 17% worse once it was removed, while a tutor that gave
+  hints rather than answers removed most of the harm. Hence the hint ladder, and
+  the rule that a question and its answer never share a message.
+- **Attempting before instruction helps understanding and transfer**
+  ([Kapur, 2014](https://doi.org/10.1111/cogs.12107)), and producing an answer
+  beats reading one. Hence attempt-first, explain-back, and you writing the
+  critical piece when you choose to.
+- **Retrieval, spaced out, is what makes things stick**
+  ([Roediger and Karpicke, 2006](https://doi.org/10.1111/j.1467-9280.2006.01693.x);
+  [Cepeda et al., 2008](https://doi.org/10.1111/j.1467-9280.2008.02209.x)), and it
+  transfers better to new cases when feedback explains why
+  ([Pan and Rickard, 2018](https://doi.org/10.1037/bul0000151)). Hence scheduled
+  reviews that move from recall to new cases, with feedback citing the code.
+- **Feeling that you understood is a poor guide to whether you did**
+  ([Deslauriers et al., 2019](https://doi.org/10.1073/pnas.1821936116)). Hence
+  confidence is recorded beside every answer, and confident wrong answers are
+  surfaced as misconceptions.
+- **Guidance that helps a novice can slow down someone experienced**
+  ([Kalyuga, 2007](https://doi.org/10.1007/s10648-007-9054-3)). Hence the hint
+  ladder starts at nothing, and one interruption per task at most.
 
-`skills/explain-pr/SKILL.md` is the procedure. `references/` holds the writing
-rules with the draft that failed without each one, a guide to what to draw, and
-the register format.
+## What changed from explain-pr, and why
 
-## About measurement, honestly
+This repository used to ship `explain-pr`, which turned a pull request into an
+interactive HTML lesson, plus a writing style and four prose checkers. A
+proposal suggested keeping all of that and adding a learning layer beside it.
+That proposal was reviewed, and most of it was not adopted:
 
-We cannot measure whether you understood something. That happens inside you, and
-it depends on what you already knew and what you needed it for.
+- **Kept:** attempt before explanation, the hint ladder, grading that separates
+  unassisted from assisted answers, transfer questions on new cases, repair
+  drills, separating what a PR claims from what the code shows, and the PR range
+  handling for stacked and merged PRs.
+- **Dropped: Claude writing polished lessons for you to read.** Reading a good
+  explanation is the passive pattern the research above warns about, and
+  fluency of the page is what makes it feel learned. Your attempt plus targeted
+  correction does the work instead.
+- **Dropped:** HTML widgets, the lesson register, the prose checkers, the output
+  style, mobile briefs and evidence packets. They measured or improved the
+  document, and the target is you.
+- **Added, not in the proposal:** engineering dimensions, so practice targets
+  where your record is thin; confidence capture; a rubric fixed before each
+  question, so grading cannot drift toward whatever you said; mixing dimensions
+  within a session; and field evidence, for when you solve something alone.
+- **Evaluations:** none ship. The real outcome is your capability, which no
+  automated check here can measure. Note that this departs from Anthropic's skill
+  guidance, which asks for at least three behavioural evaluations of the skill
+  itself (does Claude stop after asking, does it stay quiet on routine work).
+  Those are measurable and could be added later.
 
-So every number here is a proxy, and `evals/README.md` says how far each one falls
-short. The closest is `comprehension.py`, which examines a reader who has only the
-document and no access to its subject. It is the only measurement aimed at the
-real goal, and it still substitutes a model for a person.
+The old files are in the git history.
 
-One warning worth repeating from that page. The prose meter, `ai_tells.py`, is a
-diagnostic and never a target. A short script that welds sentences together beats
-it more thoroughly than any writing advice does, while producing text nobody would
-want to read.
+## What it cannot do
 
-Sounding human was never the point, and treating it as one sent us down a long
-and mostly fruitless road. Writing that reads well is a means. Somebody finishing
-the page knowing how the thing works is the end.
+- Grading is Claude's judgement against a rubric Claude wrote. Treat the record
+  as evidence, not a certificate.
+- Nothing reminds you. Reviews happen when you run the skill.
+- The review intervals (1, then 3, 7, 21, 60 and 180 days) are starting values.
+  `map` prints the success rate at each step, so after a few weeks your own data
+  says whether they fit you.
 
 ## Licence
 

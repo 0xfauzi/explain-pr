@@ -1,13 +1,12 @@
 {
-  "name": "explain-pr",
-  "description": "Write so a person understands. A general writing style, a skill that turns a pull request into a lesson, and four checkers with their limits written down.",
-  "version": "0.1.0",
+  "name": "learning-while-building",
+  "description": "Build software with Claude and become a better engineer while doing it: attempt-first questions, explain-backs, spaced retrieval and transfer, debugging drills, and a record of what you can do unaided.",
+  "version": "0.2.0",
   "author": {
     "name": "0xfauzi"
   },
   "license": "MIT",
   "skills": [
-    "./skills/explain-pr"
-  ],
-  "outputStyles": "./output-styles"
+    "./skills/learning-while-building"
+  ]
 }
