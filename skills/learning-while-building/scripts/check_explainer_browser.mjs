@@ -54,9 +54,18 @@ page.on("pageerror", (e) => problems.push("uncaught exception: " + e.message));
 await page.goto(url);
 await page.waitForLoadState("load");
 
+// Full-page shots of a long page are unreadable whole, so each is also cut into
+// screen-sized tiles: name-01.png, name-02.png, ...
+const TILE_HEIGHT = 1000;
 const shot = async (name, width) => {
   await page.setViewportSize({ width, height: 800 });
   await page.screenshot({ path: path.join(outDir, name), fullPage: true });
+  const height = await page.evaluate(() => document.documentElement.scrollHeight);
+  const base = name.replace(/\.png$/, "");
+  for (let y = 0, i = 1; y < height; y += TILE_HEIGHT, i++) {
+    const h = Math.min(TILE_HEIGHT, height - y);
+    await page.screenshot({ path: path.join(outDir, `${base}-${String(i).padStart(2, "0")}.png`), fullPage: true, clip: { x: 0, y, width, height: h } });
+  }
 };
 
 const overflow = await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
@@ -157,7 +166,7 @@ const report = await page.evaluate(() => {
     pickConf(root, "low");
     commit(root);
     if (!reveal.hidden) P(`${root.dataset.id}: model answer revealed with an empty answer`);
-    root.querySelector("textarea").value = "Because the gateway remembers the key and returns the first result.";
+    root.querySelector("textarea").value = "Sample answer typed by the checker to test the reveal.";
     const before = count();
     commit(root);
     if (reveal.hidden) P(`${root.dataset.id}: model answer still hidden after commit`);
@@ -180,13 +189,16 @@ const report = await page.evaluate(() => {
 
 problems.push(...report.problems);
 notes.push(...report.notes);
-await page.evaluate(() => document.querySelectorAll(".ex-stepper .ex-frame").forEach((f) => (f.hidden = false)));
+await page.evaluate(() => {
+  document.querySelectorAll(".ex-stepper .ex-frame").forEach((f) => (f.hidden = false));
+  document.querySelectorAll(".ex-stepper .ex-nav span").forEach((s) => (s.textContent = "(checker: all frames shown)"));
+});
 await shot("phone-after.png", 375);
 await browser.close();
 
 if (blocked.length) problems.push("network requests (blocked): " + [...new Set(blocked)].join(", "));
 for (const n of notes) console.log("NOTE: " + n);
 for (const p of problems) console.log("PROBLEM: " + p);
-console.log(`Screenshots: ${path.resolve(outDir)}/{phone,desktop}-before.png, phone-after.png`);
+console.log(`Screenshots: ${path.resolve(outDir)}/ (phone-before-NN, phone-after-NN, desktop-before-NN tiles)`);
 console.log(problems.length ? `FAILED: ${problems.length} problem(s)` : "OK: browser checks passed");
 process.exit(problems.length ? 1 : 0);

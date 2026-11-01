@@ -30,7 +30,11 @@ These apply in every mode.
    question. Never put the answer, the rubric or a hint in the same message.
 2. **Fix the rubric first.** Run `ask` with the rubric before posing the
    question. Grade against that rubric, not against how good the answer sounds.
-3. **Ask for confidence** (low, medium, high) with every answer.
+   If a question already went out without `ask`, write the rubric from the code
+   before re-reading the answer, run `ask`, then grade, and put
+   "rubric written after the question" in `--gap`.
+3. **Ask for confidence** (low, medium, high) with every answer. If the
+   learner gave none, grade with `--confidence unknown`; never guess one.
 4. **Climb the hint ladder one rung per request.** Give a hint only when the
    learner asks or after a wrong answer, and record the highest level used.
 5. **Grade plainly.** Say correct, partial or wrong. A confident wrong answer

@@ -16,8 +16,8 @@ Static checks (always run, standard library only):
   - every inline script parses (needs node; skipped with a note otherwise)
 
 Then, unless --no-browser, it runs check_explainer_browser.mjs, which drives the
-page in headless Chromium and saves screenshots to --shots (default: a folder
-next to the page named <page>-shots). Look at the screenshots: the checks find
+page in headless Chromium and saves screenshots to --shots (default: a new
+temporary folder, so screenshots never land in the committed record). Look at the screenshots: the checks find
 broken behaviour, not a confusing page.
 
 --extract-rules writes the ex-rules script as a CommonJS module so a rule can be
@@ -320,7 +320,7 @@ def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     parser.add_argument("page", type=Path)
     parser.add_argument(
-        "--shots", type=Path, help="screenshot folder (default <page>-shots/)"
+        "--shots", type=Path, help="screenshot folder (default: a new temp folder)"
     )
     parser.add_argument("--no-browser", action="store_true", help="static checks only")
     parser.add_argument("--extract-rules", type=Path, metavar="OUT.cjs")
@@ -342,7 +342,7 @@ def main() -> None:
     parse_problems, notes = check_scripts_parse(page)
     problems += parse_problems
     if not args.no_browser and not problems:
-        shots = args.shots or args.page.with_name(args.page.stem + "-shots")
+        shots = args.shots or Path(tempfile.mkdtemp(prefix=args.page.stem + "-shots-"))
         browser_problems, browser_notes = run_browser(args.page, shots)
         problems += browser_problems
         notes += browser_notes

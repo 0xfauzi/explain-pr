@@ -44,7 +44,8 @@ NOVEL_KINDS = {"transfer", "diagnosis", "repair", "field"}
 SCHEDULED_KINDS = set(KINDS) - {"attempt"}
 
 OUTCOMES = ["correct", "partial", "wrong", "skipped"]
-CONFIDENCES = ["low", "medium", "high"]
+# "unknown" when the learner gave no confidence. Recorded as missing, never guessed.
+CONFIDENCES = ["low", "medium", "high", "unknown"]
 HINT_LEVELS = [0, 1, 2, 3]
 
 # Who graded an attempt. Only "claude" grades count toward levels and the review

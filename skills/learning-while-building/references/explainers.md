@@ -49,7 +49,9 @@ Explainer:
 
 **1. Collect the facts.** Read the code that implements the mechanism and note
 real names, values and `path:line` references. Run the tests that exercise it
-and note the results. Every claim on the page comes from this list.
+and note the results. If no test exercises it, run the real code on chosen
+inputs (a short script, or the program with fixed arguments) and keep those runs
+as the observed evidence. Every claim on the page comes from this list.
 
 **2. Choose the mechanism and the gaps.** Name the one mechanism in a sentence.
 List what the learner's chat answer missed or got wrong; each gap gets at least
@@ -60,13 +62,19 @@ one interaction.
 `<script id="ex-runtime">` block unchanged. Replace everything marked EXAMPLE,
 set `<body data-topic>` to the topic id, and follow the structure below.
 
-**4. Sweep the rules.** For each simulation:
+**4. Sweep the rules.** For each simulation, extract the rules to a scratch
+location outside the repository and sweep them:
 
-    python3 ${CLAUDE_SKILL_DIR}/scripts/check_explainer.py PAGE --extract-rules /tmp/rules.cjs
-    node -e "const R=require('/tmp/rules.cjs'); for (let v=MIN; v<=MAX; v+=STEP) console.log(v, R.NAME({param: v}).text)"
+    python3 ${CLAUDE_SKILL_DIR}/scripts/check_explainer.py PAGE --extract-rules SCRATCH/rules.cjs
+    node -e "
+      const R = require('SCRATCH/rules.cjs');
+      for (const flag of [false, true])
+        for (let v = MIN; v <= MAX; v += STEP)
+          console.log(flag, v, R.NAME({ param: v, flag }).text);
+    "
 
-Sweep every control across its full range and in every combination of toggles.
-Read the output against each claim the page makes:
+Nest one loop per control, so every slider is swept under every toggle and
+select value. Read the output against each claim the page makes:
 
 1. Does the case the page promises fall inside the reachable range?
 2. Does the output change where the page says it changes, and stay flat where it
@@ -74,8 +82,13 @@ Read the output against each claim the page makes:
 3. Does the threshold sit exactly where the page and the code put it?
 4. Does the prediction's marked answer match what the rule produces?
 
-The checker cannot catch a simulation that runs and lies. This sweep is the only
-thing that does.
+Then compare the rule with the code, not only with the page: run the real code
+on at least three of the swept inputs, including one on each side of every
+threshold, and check that it gives the same outcome as the rule. A rule that
+faithfully encodes a misreading of the code passes every page check.
+
+The checker cannot catch a simulation that runs and lies. This sweep and the
+comparison with the code are the only things that do.
 
 **5. Run the checker.**
 
@@ -88,8 +101,10 @@ answered, and one result line per answered interaction. Fix every problem and
 run it again. If it reports that node or Playwright is missing, tell the learner
 the browser checks did not run.
 
-**6. Look at the screenshots.** Open `phone-before.png`, `phone-after.png` and
-`desktop-before.png` from the shots folder the checker prints. Check that each
+**6. Look at the screenshots.** Open the `phone-before-NN`, `phone-after-NN` and
+`desktop-before-NN` tiles from the folder the checker prints; the full-page
+images are too tall to read whole. In `phone-after` every stepper frame is shown
+at once on purpose. Check that each
 diagram can be read at phone width, that labels do not overlap, and that the
 answered state shows the learner's choice and the correct one. Fix and repeat
 from step 5.
@@ -105,6 +120,8 @@ In this order. Skip a part only when the mechanism genuinely lacks it.
 2. **Predictions first.** One to three `ex-predict` blocks with `data-kind="attempt"`,
    before any explanation. Target the learner's gaps and the most common wrong
    model. Wrong answers here are expected; they make the explanation stick.
+   Any question whose answer a later diagram would show must come before that
+   diagram. A fixed layout often gives away its own end state.
 3. **Words used on this page.** A short table, only for terms the page needs and
    the learner may not hold. Use those exact words everywhere after, including
    inside diagrams.
@@ -190,6 +207,7 @@ inside locks the controls until committed.
     <label>Label: <b class="ex-val" data-for="x"></b>
       <input type="range" data-param="x" min="0" max="100" step="5" value="20"></label>
     <label><input type="checkbox" data-param="flag"> Toggle</label>
+    <label>Choice: <select data-param="mode"><option>first</option><option>second</option></select></label>
   </div>
   <output class="ex-out"></output>
   <p class="ex-label">Which values are real (path:line) and which are illustrative.</p>
@@ -204,13 +222,19 @@ const RULES = {
 };
 ```
 
+Supported controls: range sliders and number inputs (passed as numbers),
+checkboxes (booleans) and selects (the option value, as a number when numeric).
+Use a select when the input is one choice from several; two checkboxes allow
+combinations that cannot happen.
+
 A rule takes the control values and returns `{text, state}`. No DOM access, so it
 can be swept in node. Mirror the real code's logic and constants, and cite them.
 
 ## Diagrams
 
-- **One idea per figure.** If a figure needs a paragraph to decode, split it
-  into frames.
+- **One idea per figure.** One mechanism, possibly shown through several linked
+  marks (a value, a position, a pointer) that change together. If a figure needs
+  a paragraph to decode, split it into frames.
 - **Discrete frames, not animation.** Show each state as its own frame, which the
   learner steps through at their own pace. Do not animate continuously.
 - **Keep the layout fixed across frames.** Same component, same position, same
@@ -222,8 +246,10 @@ can be swept in node. Mirror the real code's logic and constants, and cite them.
   label, so the figure works for colour-blind readers and in both themes.
 - **No decoration.** No icons, gradients, shadows or illustrative clip-art.
   Every mark carries information.
-- **Readable at 375 px.** Keep `viewBox` widths near 360 units with 13 px text,
-  and no more than four or five boxes per row.
+- **Readable at 375 px.** Keep `viewBox` widths near 360 units. At phone width
+  a 360-unit figure renders at about 0.85 scale, so the template's 15-unit text
+  lands near 13 px. No more than six boxes per row. The template caps figures at
+  30rem wide so they do not balloon on a desktop.
 - **Use the template's classes** (`box`, `edge`, `changed`, `fault`, `arrowhead`)
   so dark mode works. Keep shared `<defs>` in the hidden block at the top.
 - **Generated over hand-drawn for system maps.** If the repository can emit its
@@ -255,7 +281,8 @@ this code. Do not restate in prose what a diagram or interaction already showed.
 1. Save it as `.learning/explainers/<topic-id>.html`, so it is committed with
    the record.
 2. If the session has a tool for publishing an HTML page the learner can open on
-   any device, publish it there. Otherwise give the file path.
+   any device, publish it there for the learner. Otherwise give the file path.
+   Screenshots from the checker are for Claude; do not commit them.
 3. Tell the learner: work through it, then press "Copy for Claude" at the bottom
    and paste the result into the chat.
 4. Import what they paste:
