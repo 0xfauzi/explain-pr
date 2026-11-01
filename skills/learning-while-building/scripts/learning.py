@@ -5,22 +5,22 @@ Every write goes through this script so the record stays valid and the schedule
 is computed the same way every time. Claude never edits the data files by hand.
 
 Data lives in one directory (default `.learning/` under the current directory,
-override with --dir or the LEARNING_DIR environment variable):
-
-  topics.json     the dimensions the learner cares about, and one entry per topic
-  attempts.jsonl  append-only: an `ask` line when a question is posed (with the
-                  rubric fixed in advance), and a `grade` line when it is graded
+override with --dir or the LEARNING_DIR environment variable), one file per
+topic and per attempt; see record.py for the layout and why.
 
 Commands:
   init      [--dimensions a,b,c]
   topic     add --id ID --dimension D --concept TEXT [--anchor PATH ...]
+  topic     add-dimension --name D
   topic     retire --id ID --reason TEXT
   ask       --topic ID --kind KIND --question TEXT --rubric TEXT
-  grade     --attempt N --outcome O --hint H --confidence C --answer TEXT [--gap TEXT]
+  grade     --attempt ID --outcome O --hint H --confidence C --answer TEXT
+            [--gap TEXT] [--evidence REF]
   import    --file RESULTS.jsonl   (results pasted from an explainer page)
   due       [--limit N]
   map
   check
+  migrate   (convert a record from the old single-file format)
 
 Only the standard library is used. Python 3.9 or later.
 """
@@ -30,6 +30,7 @@ from __future__ import annotations
 import argparse
 import datetime as dt
 import json
+import subprocess
 import sys
 from pathlib import Path
 
@@ -37,39 +38,72 @@ from record import (
     CONFIDENCES,
     DEFAULT_DIMENSIONS,
     DEFAULT_DUE_LIMIT,
+    GRADERS,
     HINT_LEVELS,
     INTERVAL_AFTER_MISS,
     INTERVALS_AFTER_SUCCESS,
     KINDS,
     LEVEL_NAMES,
     OUTCOMES,
-    SCHEMA_VERSION,
+    TOPIC_ID,
     RecordError,
-    append_event,
-    build_attempts,
+    current_evidence,
     data_dir,
+    durable_since,
+    find_attempt,
     graded_for_topic,
+    highest_reached,
     is_clean_success,
     is_durable,
     level,
-    load_events,
-    load_topics,
+    load_attempts,
+    load_record,
+    new_attempt_id,
     next_due,
     now_stamp,
+    read_json,
     require_topic,
-    save_topics,
+    save_attempt,
+    save_dimensions,
+    save_topic,
     scheduled_history,
     success_streak,
     today,
 )
+
+# ---------------------------------------------------------------- git
+
+
+def git(*args: str) -> str | None:
+    try:
+        done = subprocess.run(
+            ["git", *args], capture_output=True, text=True, check=False
+        )
+    except OSError:
+        return None
+    return done.stdout.strip() if done.returncode == 0 else None
+
+
+def branch_note() -> None:
+    """Say when a write lands on a branch other sessions cannot see yet."""
+    branch = git("rev-parse", "--abbrev-ref", "HEAD")
+    default = (
+        git("symbolic-ref", "--short", "refs/remotes/origin/HEAD") or ""
+    ).removeprefix("origin/")
+    if branch and default and branch != default:
+        print(
+            f"Note: recorded on branch {branch}. Sessions on other branches see this only "
+            f"after {branch} is pushed and merged into {default}."
+        )
+
 
 # ---------------------------------------------------------------- commands
 
 
 def cmd_init(args: argparse.Namespace) -> None:
     root = data_dir(args.dir)
-    if (root / "topics.json").exists():
-        raise RecordError(f"{root}/topics.json already exists. Nothing was changed.")
+    if (root / "dimensions.json").exists() or (root / "topics.json").exists():
+        raise RecordError(f"{root}/ already holds a record. Nothing was changed.")
     dims = (
         [d.strip() for d in args.dimensions.split(",")]
         if args.dimensions
@@ -80,20 +114,23 @@ def cmd_init(args: argparse.Namespace) -> None:
         raise RecordError(
             "--dimensions was empty. Pass a comma-separated list, or omit it."
         )
-    root.mkdir(parents=True, exist_ok=True)
-    save_topics(
-        root, {"schema_version": SCHEMA_VERSION, "dimensions": dims, "topics": {}}
-    )
-    (root / "attempts.jsonl").touch()
+    save_dimensions(root, dims)
+    for sub in ("topics", "attempts"):
+        (root / sub).mkdir(parents=True, exist_ok=True)
+        (root / sub / ".gitkeep").touch()
     print(f"Created {root}/ with dimensions: {', '.join(dims)}")
     print(
-        "Commit this directory, or it is lost when the session's container is reclaimed."
+        "Commit and push this directory, or it is lost when the session's container is reclaimed."
     )
 
 
 def cmd_topic_add(args: argparse.Namespace) -> None:
     root = data_dir(args.dir)
-    data = load_topics(root)
+    data = load_record(root)
+    if not TOPIC_ID.match(args.id):
+        raise RecordError(
+            f"Topic id {args.id!r} must be lowercase letters, digits and hyphens."
+        )
     if args.id in data["topics"]:
         raise RecordError(
             f"Topic {args.id!r} already exists. Pick another id or reuse it."
@@ -107,42 +144,42 @@ def cmd_topic_add(args: argparse.Namespace) -> None:
     missing = [a for a in args.anchor or [] if not Path(a).exists()]
     if missing:
         raise RecordError(f"Anchor paths do not exist: {', '.join(missing)}")
-    data["topics"][args.id] = {
+    topic = {
         "dimension": args.dimension,
         "concept": args.concept,
         "anchors": args.anchor or [],
         "created": today(args.today).isoformat(),
         "status": "active",
     }
-    save_topics(root, data)
+    save_topic(root, args.id, topic)
     print(
         f"Added topic {args.id} ({args.dimension}). First review due in {INTERVAL_AFTER_MISS} day."
     )
+    branch_note()
 
 
 def cmd_topic_dimension(args: argparse.Namespace) -> None:
     root = data_dir(args.dir)
-    data = load_topics(root)
+    data = load_record(root)
     if args.name in data["dimensions"]:
         raise RecordError(f"Dimension {args.name!r} already exists.")
-    data["dimensions"].append(args.name)
-    save_topics(root, data)
+    save_dimensions(root, data["dimensions"] + [args.name])
     print(f"Added dimension {args.name}.")
 
 
 def cmd_topic_retire(args: argparse.Namespace) -> None:
     root = data_dir(args.dir)
-    data = load_topics(root)
+    data = load_record(root)
     topic = require_topic(data, args.id)
     topic["status"] = "retired"
     topic["retired_reason"] = args.reason
-    save_topics(root, data)
+    save_topic(root, args.id, topic)
     print(f"Retired topic {args.id}: {args.reason}")
 
 
 def cmd_ask(args: argparse.Namespace) -> None:
     root = data_dir(args.dir)
-    data = load_topics(root)
+    data = load_record(root)
     topic = require_topic(data, args.topic)
     if topic["status"] != "active":
         raise RecordError(f"Topic {args.topic!r} is retired. Add a new topic instead.")
@@ -150,63 +187,72 @@ def cmd_ask(args: argparse.Namespace) -> None:
         raise RecordError(
             "--rubric is empty. Write the expected answer points before asking."
         )
-    attempts = build_attempts(load_events(root))
-    open_ones = [str(n) for n, a in attempts.items() if not a["graded"]]
+    open_ones = [
+        f"{k} ({a['topic']})" for k, a in load_attempts(root).items() if not a["graded"]
+    ]
     if open_ones:
         raise RecordError(
-            f"Attempt(s) {', '.join(open_ones)} are still ungraded. Grade each one first; "
+            f"Still ungraded: {', '.join(open_ones)}. Grade each one first; "
             "use --outcome skipped if the learner never answered."
         )
-    number = max(attempts, default=0) + 1
-    append_event(
-        root,
-        {
-            "event": "ask",
-            "attempt": number,
-            "topic": args.topic,
-            "kind": args.kind,
-            "question": args.question,
-            "rubric": args.rubric,
-            "at": now_stamp(args.today),
-        },
+    stamp = now_stamp(args.today)
+    attempt = {
+        "id": new_attempt_id(stamp),
+        "topic": args.topic,
+        "kind": args.kind,
+        "question": args.question,
+        "rubric": args.rubric,
+        "at": stamp,
+        "graded": None,
+    }
+    save_attempt(root, attempt)
+    print(
+        f"Attempt {attempt['id']} recorded. Ask the question now; do not show the rubric."
     )
-    print(f"Attempt {number} recorded. Ask the question now; do not show the rubric.")
+
+
+def grader_for(attempt: dict, evidence: str) -> str:
+    """A field report counts only when Claude has something real to inspect."""
+    if attempt["kind"] == "field" and not evidence:
+        return "self"
+    return "claude"
 
 
 def cmd_grade(args: argparse.Namespace) -> None:
     root = data_dir(args.dir)
-    attempts = build_attempts(load_events(root))
-    attempt = attempts.get(args.attempt)
-    if attempt is None:
-        raise RecordError(
-            f"No attempt {args.attempt}. Run `ask` first; it prints the number."
-        )
+    attempt = find_attempt(load_attempts(root), args.attempt)
     if attempt["graded"]:
         raise RecordError(
-            f"Attempt {args.attempt} is already graded. Ask a new question instead."
+            f"Attempt {attempt['id']} is already graded. Ask a new question instead."
         )
     if args.outcome == "correct" and args.hint == 3:
         raise RecordError(
             "Hint level 3 means the answer was given. Grade it partial or wrong, not correct."
         )
-    append_event(
-        root,
-        {
-            "event": "grade",
-            "attempt": args.attempt,
-            "outcome": args.outcome,
-            "hint": args.hint,
-            "confidence": args.confidence,
-            "answer": args.answer,
-            "gap": args.gap or "",
-            "at": now_stamp(args.today),
-        },
-    )
-    data = load_topics(root)
+    evidence = (args.evidence or "").strip()
+    attempt["graded"] = {
+        "outcome": args.outcome,
+        "hint": args.hint,
+        "confidence": args.confidence,
+        "answer": args.answer,
+        "gap": args.gap or "",
+        "evidence": evidence,
+        "grader": grader_for(attempt, evidence),
+        "at": now_stamp(args.today),
+    }
+    save_attempt(root, attempt)
+    data = load_record(root)
     topic = data["topics"][attempt["topic"]]
-    history = scheduled_history(build_attempts(load_events(root)), attempt["topic"])
-    print(f"Graded attempt {args.attempt}: {args.outcome}, hint H{args.hint}.")
+    history = scheduled_history(load_attempts(root), attempt["topic"])
+    print(f"Graded {attempt['id']}: {args.outcome}, hint H{args.hint}.")
+    if attempt["graded"]["grader"] == "self":
+        print(
+            "Self-report recorded; independent capability not verified, so levels are "
+            "unchanged. One artifact (a commit, PR, test output or trace) that Claude has "
+            "inspected would count: record a new field attempt with --evidence."
+        )
     print(f"Next review of {attempt['topic']}: {next_due(topic, history).isoformat()}")
+    branch_note()
 
 
 IMPORT_FIELDS = [
@@ -247,9 +293,33 @@ def parse_import_line(number: int, line: str, data: dict) -> dict:
     return row
 
 
+def imported_attempt(row: dict, stamp: str) -> dict:
+    return {
+        "id": new_attempt_id(stamp),
+        "topic": row["topic"],
+        "kind": row["kind"],
+        "question": row["question"],
+        "rubric": row["rubric"],
+        "page_id": row["id"],
+        "at": stamp,
+        "graded": {
+            "outcome": row["outcome"],
+            "hint": 0,
+            "confidence": row["confidence"],
+            "answer": row["answer"][:400],
+            "gap": ""
+            if row["outcome"] == "correct"
+            else f"page: {row['question'][:120]}",
+            "evidence": "",
+            "grader": row["grader"],
+            "at": stamp,
+        },
+    }
+
+
 def cmd_import(args: argparse.Namespace) -> None:
     root = data_dir(args.dir)
-    data = load_topics(root)
+    data = load_record(root)
     source = (
         sys.stdin.read()
         if args.file == "-"
@@ -260,55 +330,26 @@ def cmd_import(args: argparse.Namespace) -> None:
         for n, line in enumerate(source.splitlines(), 1)
         if line.strip()
     ]
-    attempts = build_attempts(load_events(root))
-    already = {(a["topic"], a.get("page_id"), a["question"]) for a in attempts.values()}
-    number = max(attempts, default=0)
+    already = {
+        (a["topic"], a.get("page_id"), a["question"])
+        for a in load_attempts(root).values()
+    }
     added: list[dict] = []
     for row in rows:
         if (row["topic"], row["id"], row["question"]) in already:
             continue
-        number += 1
-        stamp = now_stamp(args.today)
-        append_event(
-            root,
-            {
-                "event": "ask",
-                "attempt": number,
-                "topic": row["topic"],
-                "kind": row["kind"],
-                "question": row["question"],
-                "rubric": row["rubric"],
-                "page_id": row["id"],
-                "at": stamp,
-            },
-        )
-        append_event(
-            root,
-            {
-                "event": "grade",
-                "attempt": number,
-                "outcome": row["outcome"],
-                "hint": 0,
-                "confidence": row["confidence"],
-                "answer": row["answer"][:400],
-                "gap": ""
-                if row["outcome"] == "correct"
-                else f"page: {row['question'][:120]}",
-                "grader": row["grader"],
-                "at": stamp,
-            },
-        )
+        save_attempt(root, imported_attempt(row, now_stamp(args.today)))
         added.append(row)
     print(
         f"Imported {len(added)} result(s); skipped {len(rows) - len(added)} already recorded."
     )
-    confident_misses = [
-        r for r in added if r["confidence"] == "high" and r["outcome"] == "wrong"
-    ]
-    for row in confident_misses:
-        print(
-            f"MISCONCEPTION to discuss: {row['question'][:100]} (answered: {row['answer'][:80]})"
-        )
+    for row in added:
+        if row["confidence"] == "high" and row["outcome"] == "wrong":
+            print(
+                f"MISCONCEPTION to discuss: {row['question'][:100]} (answered: {row['answer'][:80]})"
+            )
+    if added:
+        branch_note()
 
 
 def interleave(rows: list[tuple]) -> list[tuple]:
@@ -324,7 +365,7 @@ def interleave(rows: list[tuple]) -> list[tuple]:
     return ordered
 
 
-def due_rows(data: dict, attempts: dict[int, dict], now: dt.date) -> list[tuple]:
+def due_rows(data: dict, attempts: dict[str, dict], now: dt.date) -> list[tuple]:
     rows = []
     for topic_id, topic in data["topics"].items():
         if topic["status"] != "active":
@@ -339,13 +380,14 @@ def due_rows(data: dict, attempts: dict[int, dict], now: dt.date) -> list[tuple]
     return rows
 
 
-def print_due(row: tuple) -> None:
+def print_due(row: tuple, now: dt.date) -> None:
     overdue, topic_id, dim, topic, history = row
     suggestion = "retrieval" if success_streak(history) == 0 else "transfer"
     print(
         f"- {topic_id} [{dim}] overdue {overdue}d, {len(history)} prior review(s), "
-        f"level: {LEVEL_NAMES[level(history)]}, suggested kind: {suggestion}"
+        f"highest: {LEVEL_NAMES[level(history)]}, suggested kind: {suggestion}"
     )
+    print(f"    current: {current_evidence(topic, history, now)}")
     print(f"    concept: {topic['concept']}")
     for anchor in topic["anchors"]:
         missing = not Path(anchor).exists()
@@ -355,22 +397,23 @@ def print_due(row: tuple) -> None:
 
 def cmd_due(args: argparse.Namespace) -> None:
     root = data_dir(args.dir)
-    data = load_topics(root)
-    attempts = build_attempts(load_events(root))
+    data = load_record(root)
+    attempts = load_attempts(root)
     for attempt in attempts.values():
         if not attempt["graded"]:
             print(
-                f"UNGRADED attempt {attempt['attempt']} on {attempt['topic']}: grade it "
+                f"UNGRADED attempt {attempt['id']} on {attempt['topic']}: grade it "
                 "(--outcome skipped if never answered) before asking anything new."
             )
-    rows = due_rows(data, attempts, today(args.today))
+    now = today(args.today)
+    rows = due_rows(data, attempts, now)
     chosen = interleave(rows)[: args.limit]
     if not chosen:
         print("Nothing due.")
         return
     print(f"{len(rows)} topic(s) due; showing {len(chosen)}.")
     for row in chosen:
-        print_due(row)
+        print_due(row, now)
 
 
 def is_confident_miss(attempt: dict) -> bool:
@@ -378,48 +421,57 @@ def is_confident_miss(attempt: dict) -> bool:
     return grade["confidence"] == "high" and grade["outcome"] == "wrong"
 
 
-def summarize_dimension(
-    dim: str, topics: list[tuple], attempts: dict[int, dict]
-) -> str:
-    counts = {name: 0 for name in LEVEL_NAMES.values()}
-    durable = 0
-    overconfident = 0
-    for tid, topic in topics:
-        history = scheduled_history(attempts, tid)
-        counts[LEVEL_NAMES[level(history)]] += 1
-        durable += is_durable(topic, history)
-        overconfident += sum(
-            1 for a in graded_for_topic(attempts, tid) if is_confident_miss(a)
-        )
-    spread = ", ".join(f"{n} {name}" for name, n in counts.items() if n)
-    return (
-        f"{dim}: {len(topics)} topic(s): {spread}; durable {durable}; "
-        f"confident-and-wrong {overconfident}"
+def topic_lines(
+    topic_id: str, topic: dict, attempts: dict[str, dict], now: dt.date
+) -> list[str]:
+    history = scheduled_history(attempts, topic_id)
+    best, reached = highest_reached(history)
+    durable = durable_since(topic, history)
+    everything = graded_for_topic(attempts, topic_id)
+    confident_misses = sum(1 for a in everything if is_confident_miss(a))
+    self_reports = sum(
+        1
+        for a in everything
+        if a["kind"] == "field" and a["graded"]["grader"] == "self"
     )
-
-
-def dimension_rows(data: dict, attempts: dict[int, dict]) -> list[str]:
-    lines = []
-    for dim in data["dimensions"]:
-        topics = [
-            (tid, t)
-            for tid, t in data["topics"].items()
-            if t["dimension"] == dim and t["status"] == "active"
-        ]
-        if topics:
-            lines.append(summarize_dimension(dim, topics, attempts))
-        else:
-            lines.append(f"{dim}: no evidence yet")
+    lines = [
+        f"  {topic_id}: {topic['concept']}",
+        f"    highest demonstrated: {LEVEL_NAMES[best]}"
+        + (f" ({reached})" if reached else ""),
+        f"    current evidence: {current_evidence(topic, history, now)}",
+        f"    durable retention: {durable if durable else 'not yet demonstrated'}",
+        f"    next review: {next_due(topic, history).isoformat()}",
+    ]
+    if confident_misses:
+        lines.append(f"    confident-and-wrong answers: {confident_misses}")
+    if self_reports:
+        lines.append(f"    self-reported field work (not counted): {self_reports}")
     return lines
 
 
-def interval_rows(attempts: dict[int, dict], data: dict) -> list[str]:
+def dimension_lines(
+    dim: str, data: dict, attempts: dict[str, dict], now: dt.date
+) -> list[str]:
+    topics = [
+        (tid, t)
+        for tid, t in data["topics"].items()
+        if t["dimension"] == dim and t["status"] == "active"
+    ]
+    if not topics:
+        return [f"{dim}: no evidence yet"]
+    durable = sum(is_durable(t, scheduled_history(attempts, tid)) for tid, t in topics)
+    lines = [f"{dim}: {len(topics)} topic(s), {durable} with durable retention"]
+    for tid, topic in topics:
+        lines += topic_lines(tid, topic, attempts, now)
+    return lines
+
+
+def interval_rows(attempts: dict[str, dict], data: dict) -> list[str]:
     """Success rate by how many clean successes preceded the review."""
     tallies: dict[int, list[int]] = {}
     for tid in data["topics"]:
-        history = scheduled_history(attempts, tid)
         streak = 0
-        for attempt in history:
+        for attempt in scheduled_history(attempts, tid):
             hit = is_clean_success(attempt)
             bucket = tallies.setdefault(streak, [0, 0])
             bucket[0] += hit
@@ -428,28 +480,29 @@ def interval_rows(attempts: dict[int, dict], data: dict) -> list[str]:
     lines = []
     for streak in sorted(tallies):
         hits, total = tallies[streak]
-        gap = (
-            "first review or after a miss"
-            if streak == 0
-            else f"after {INTERVALS_AFTER_SUCCESS[min(streak, len(INTERVALS_AFTER_SUCCESS)) - 1]}d gap"
-        )
+        step = INTERVALS_AFTER_SUCCESS[min(streak, len(INTERVALS_AFTER_SUCCESS)) - 1]
+        gap = "first review or after a miss" if streak == 0 else f"after {step}d gap"
         lines.append(f"  {gap}: {hits}/{total} unassisted correct")
     return lines
 
 
 def cmd_map(args: argparse.Namespace) -> None:
     root = data_dir(args.dir)
-    data = load_topics(root)
-    attempts = build_attempts(load_events(root))
+    data = load_record(root)
+    attempts = load_attempts(root)
+    now = today(args.today)
+    print("Highest demonstrated is the best answer ever given, a historical fact:")
     print(
-        "Levels: not yet < with help < recalls (known case, no hints) < transfers (novel case, no hints)"
+        "  not yet < with help < recalls (known case, no hints) < transfers (new case, no hints)"
     )
+    print("Current evidence reads only the latest review, so a later miss shows here.")
     print(
-        "Durable: an unassisted correct answer at least a week after the topic was recorded."
+        "Durable retention: an unaided correct answer at least a week after the topic was added."
     )
     print()
-    for line in dimension_rows(data, attempts):
-        print(line)
+    for dim in data["dimensions"]:
+        for line in dimension_lines(dim, data, attempts, now):
+            print(line)
     rates = interval_rows(attempts, data)
     if rates:
         print()
@@ -458,71 +511,100 @@ def cmd_map(args: argparse.Namespace) -> None:
         )
         for line in rates:
             print(line)
-    gaps = [
-        (a["topic"], a["graded"]["gap"])
-        for a in attempts.values()
-        if a["graded"] and a["graded"]["gap"]
-    ]
-    if gaps:
-        print()
-        print("Most recent recorded gaps:")
-        for topic_id, gap in gaps[-5:]:
-            print(f"  {topic_id}: {gap}")
 
 
-def check_ask(event: dict, data: dict, asked: set[int]) -> list[str]:
-    number = event.get("attempt")
+def check_attempt(key: str, attempt: dict, data: dict) -> list[str]:
     problems = []
-    if number in asked:
-        problems.append(f"attempt {number} asked twice")
-    if event.get("topic") not in data["topics"]:
-        problems.append(f"attempt {number} names unknown topic {event.get('topic')!r}")
-    if event.get("kind") not in KINDS:
-        problems.append(f"attempt {number} has unknown kind {event.get('kind')!r}")
-    asked.add(number)
-    return problems
-
-
-def check_grade(event: dict, asked: set[int], graded: set[int]) -> list[str]:
-    number = event.get("attempt")
-    problems = []
-    if number not in asked:
-        problems.append(f"grade for attempt {number} has no ask before it")
-    if number in graded:
-        problems.append(f"attempt {number} graded twice")
-    graded.add(number)
-    return problems
-
-
-def check_attempts(data: dict, events: list[dict]) -> list[str]:
-    problems = []
-    asked: set[int] = set()
-    graded: set[int] = set()
-    for event in events:
-        kind = event.get("event")
-        if kind == "ask":
-            problems += check_ask(event, data, asked)
-        elif kind == "grade":
-            problems += check_grade(event, asked, graded)
-        else:
-            problems.append(f"unknown event {kind!r}")
+    if attempt.get("id") != key:
+        problems.append(f"attempts/{key}.json holds id {attempt.get('id')!r}")
+    if attempt.get("topic") not in data["topics"]:
+        problems.append(f"attempt {key} names unknown topic {attempt.get('topic')!r}")
+    if attempt.get("kind") not in KINDS:
+        problems.append(f"attempt {key} has unknown kind {attempt.get('kind')!r}")
+    grade = attempt.get("graded")
+    if grade:
+        for field, allowed in (
+            ("outcome", OUTCOMES),
+            ("confidence", CONFIDENCES),
+            ("grader", GRADERS),
+        ):
+            if grade.get(field) not in allowed:
+                problems.append(f"attempt {key} has {field} {grade.get(field)!r}")
+        if grade.get("hint") not in HINT_LEVELS:
+            problems.append(f"attempt {key} has hint {grade.get('hint')!r}")
     return problems
 
 
 def cmd_check(args: argparse.Namespace) -> None:
     root = data_dir(args.dir)
-    data = load_topics(root)
-    problems = check_attempts(data, load_events(root))
+    data = load_record(root)
+    attempts = load_attempts(root)
+    problems = []
+    for key, attempt in attempts.items():
+        problems += check_attempt(key, attempt, data)
     for tid, topic in data["topics"].items():
-        if topic["dimension"] not in data["dimensions"]:
+        if topic.get("dimension") not in data["dimensions"]:
             problems.append(
-                f"topic {tid} names unknown dimension {topic['dimension']!r}"
+                f"topic {tid} names unknown dimension {topic.get('dimension')!r}"
             )
     if problems:
         for problem in problems:
             print(f"PROBLEM: {problem}")
         raise SystemExit(1)
-    print(f"OK: {len(data['topics'])} topic(s), {len(load_events(root))} event(s).")
+    print(f"OK: {len(data['topics'])} topic(s), {len(attempts)} attempt(s).")
+
+
+def v1_attempts(lines: list[str]) -> dict[int, dict]:
+    attempts: dict[int, dict] = {}
+    for line in lines:
+        if not line.strip():
+            continue
+        event = json.loads(line)
+        number = event.pop("attempt")
+        kind = event.pop("event")
+        if kind == "ask":
+            attempts[number] = dict(event, id=f"v1-{number:04d}", graded=None)
+        elif kind == "grade" and number in attempts:
+            # The old format had no evidence field, so an old field report is a
+            # self-report by definition.
+            is_field = attempts[number]["kind"] == "field"
+            event.setdefault("grader", "self" if is_field else "claude")
+            event.setdefault("evidence", "")
+            attempts[number]["graded"] = event
+    return attempts
+
+
+def cmd_migrate(args: argparse.Namespace) -> None:
+    root = data_dir(args.dir)
+    old_topics = root / "topics.json"
+    if (root / "dimensions.json").exists():
+        raise RecordError(
+            f"{root}/ is already in the current format. Nothing was changed."
+        )
+    if not old_topics.exists():
+        raise RecordError(f"No old-format record at {root}/topics.json.")
+    old = read_json(old_topics)
+    old_attempts = root / "attempts.jsonl"
+    lines = (
+        old_attempts.read_text(encoding="utf-8").splitlines()
+        if old_attempts.exists()
+        else []
+    )
+    attempts = v1_attempts(lines)
+    save_dimensions(root, old["dimensions"])
+    for tid, topic in old["topics"].items():
+        save_topic(root, tid, topic)
+    for attempt in attempts.values():
+        save_attempt(root, attempt)
+    (root / "topics").mkdir(exist_ok=True)
+    (root / "attempts").mkdir(exist_ok=True)
+    old_topics.unlink()
+    if old_attempts.exists():
+        old_attempts.unlink()
+    print(
+        f"Migrated {len(old['topics'])} topic(s) and {len(attempts)} attempt(s). Old files removed."
+    )
+    print("Commit the result. The old files remain in git history.")
 
 
 # ---------------------------------------------------------------- cli
@@ -538,8 +620,7 @@ def build_parser() -> argparse.ArgumentParser:
 
     p = sub.add_parser("init")
     p.add_argument(
-        "--dimensions",
-        help=f"comma-separated; default: {','.join(DEFAULT_DIMENSIONS)}",
+        "--dimensions", help=f"comma-separated; default: {','.join(DEFAULT_DIMENSIONS)}"
     )
     p.set_defaults(func=cmd_init)
 
@@ -566,12 +647,18 @@ def build_parser() -> argparse.ArgumentParser:
     p.set_defaults(func=cmd_ask)
 
     p = sub.add_parser("grade")
-    p.add_argument("--attempt", required=True, type=int)
+    p.add_argument(
+        "--attempt", required=True, help="the id `ask` printed, or a unique part of it"
+    )
     p.add_argument("--outcome", required=True, choices=OUTCOMES)
     p.add_argument("--hint", required=True, type=int, choices=HINT_LEVELS)
     p.add_argument("--confidence", required=True, choices=CONFIDENCES)
     p.add_argument("--answer", required=True, help="the learner's answer, paraphrased")
     p.add_argument("--gap", help="what was missing or wrong, in one line")
+    p.add_argument(
+        "--evidence",
+        help="an artifact Claude inspected: commit, PR, test output, trace",
+    )
     p.set_defaults(func=cmd_grade)
 
     p = sub.add_parser("due")
@@ -588,6 +675,7 @@ def build_parser() -> argparse.ArgumentParser:
 
     sub.add_parser("map").set_defaults(func=cmd_map)
     sub.add_parser("check").set_defaults(func=cmd_check)
+    sub.add_parser("migrate").set_defaults(func=cmd_migrate)
     return parser
 
 

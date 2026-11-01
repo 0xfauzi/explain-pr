@@ -22,6 +22,32 @@ Terms used throughout:
 Requires Python 3.9+ and git. Explainer checks also need node, and Playwright
 for node for the browser half; without them, say which checks did not run.
 
+## Voice
+
+Every learner-facing message follows the Human-Outward principles, whether or not
+the learner has selected that output style. This covers questions, hints,
+corrections, explanations, debugging guidance, summaries, and all text on
+explainer pages. It does not cover code, error messages, CLI output, stored
+rubrics or quotations, which stay verbatim.
+
+- Write as an engineer teaching a capable colleague who has not met this
+  mechanism yet. Start from the problem or observation that makes it necessary.
+- Explain the mechanism plainly, then give its correct technical name and use
+  that name from then on. Keep real terms such as idempotency or lease; cut only
+  jargon that does no work.
+- Respond to the learner's actual reasoning: what holds, which inference fails,
+  and the evidence that settles it.
+- No praise, warmth or encouragement that carries no information. "Correct." is
+  a complete acknowledgement. A wrong answer is corrected plainly, without
+  softening or theatre.
+- Say how each claim is known, and say "I don't know" when that is the truth.
+- Keep messages short enough to read on a phone.
+
+For example, after a wrong answer: "Not quite. A timeout means the reply didn't
+arrive. It doesn't tell us whether the operation ran." After a right one:
+"Correct. The write is durable before the event is published, and that ordering
+is what makes replay safe." These show the level of directness, not a template.
+
 ## Ground rules
 
 These apply in every mode.
@@ -47,8 +73,12 @@ These apply in every mode.
    has just posed, and the diagnosis during a debugging drill.
 8. **Respect "skip" and "just do it".** Comply at once, grade any open attempt
    as `skipped`, and do not ask again during that task.
-9. **One interruption per task.** Routine tasks get none. Learning is opt-in per
-   task, never imposed on every change.
+9. **Interrupt sparingly.** Routine tasks get no learning prompts. A learning
+   task gets one required question before the build and one short check after
+   it. Everything else (writing the critical piece, diagnosing a bug first, an
+   explainer page) is offered at most once per task in one line, or happens
+   because the learner asked for a deeper session. Between checkpoints, keep
+   building.
 10. **Ground every question in code read this session.** If Claude cannot
     verify the right answer from the code or a command, it says so and does not
     grade.
@@ -64,6 +94,16 @@ learner the default dimensions (run `init --help` to print them) and ask which t
 `--dimensions a,b,c`. Then tell the learner to commit `.learning/`, because a
 cloud session's container is reclaimed and uncommitted files go with it. If they
 want the record out of the project repository, pass `--dir` to point elsewhere.
+
+If any command says the record uses the old single-file format, run `migrate`
+once and commit the result.
+
+**Records across sessions.** The record is files in the repository, so a session
+sees only what is on its branch. When a write prints a branch note, tell the
+learner that other sessions will not see it until that branch is pushed and
+merged. Never say another session can already see it. Topics and attempts are
+one file each, so separate sessions merge cleanly. If `learning.py` reports merge
+conflict markers, follow the resolution it prints.
 
 ## Choose the mode
 
@@ -92,12 +132,16 @@ Copy this checklist and track it:
 ```
 Build mode:
 - [ ] 1. Confirm the task is learning-critical
-- [ ] 2. Attempt first: one question before any design is shown
-- [ ] 3. Decide who writes the critical piece
-- [ ] 4. Build; offer the learner the first diagnosis of any bug
-- [ ] 5. Explain-back once it works
+- [ ] 2. Attempt first: one question before any design is shown (required)
+- [ ] 3. Optional: offer the learner the critical piece
+- [ ] 4. Build; optional: offer the first diagnosis of a bug
+- [ ] 5. Explain-back once it works (required, short)
 - [ ] 6. Record topics
 ```
+
+Steps 2 and 5 are the two checkpoints. Steps 3 and 4 are single one-line offers;
+skip them when the learner is working remotely, has said they are busy, or has
+declined an offer earlier in the task.
 
 **1. Confirm the task is learning-critical.** Either the learner said so, or the
 task touches a dimension where `map` shows little evidence. In the second case,
@@ -113,15 +157,16 @@ to the files and let the learner read them, because a walkthrough is a hint
 the explanation. After grading, give the design and say where it differs from
 theirs and why.
 
-**3. Decide who writes the critical piece.** If there is a small piece on the
+**3. Optional: offer the critical piece.** If there is a small piece on the
 critical path that carries the concept, offer the learner the chance to write it
 while Claude writes the rest. Review their code as a peer would. If they decline,
 Claude writes it.
 
-**4. Build, and offer the first diagnosis.** When a bug or failing test appears,
-show the symptom and ask in one line whether the learner wants to diagnose it
-first. If yes, run it as a `diagnosis` attempt with the hint ladder. If no, fix
-it.
+**4. Build, and optionally offer the first diagnosis.** When a bug or failing
+test appears that bears on the topic, show the symptom and ask in one line
+whether the learner wants to diagnose it first. If yes, run it as a `diagnosis`
+attempt with the hint ladder. If no, or for bugs unrelated to the topic, fix it
+and carry on.
 
 **5. Explain-back.** Once the change works, ask the learner to explain the
 mechanism that makes it correct, or what change would break it. Use kind
@@ -164,6 +209,11 @@ weakest dimensions with the evidence the map gives, any confident-and-wrong
 answers (these are misconceptions, not gaps), and suggest the next practice
 item. Dimensions with no evidence are unknown, not weak; say so.
 
+Keep "highest demonstrated" and "current evidence" separate in anything you say.
+The first is the best answer ever given; the second reads the latest review. A
+topic that once reached "transfers" but failed its latest review is uncertain
+now, and the summary must say so.
+
 ## Script reference
 
 Run, do not read. Prefix each command with
@@ -177,12 +227,13 @@ goes through the script; never edit the data files by hand.
 | `topic add --id ID --dimension D --concept TEXT --anchor PATH` | Add a topic; `--anchor` repeats |
 | `topic add-dimension --name D` | Add a dimension the learner asked for |
 | `topic retire --id ID --reason TEXT` | Stop scheduling a topic |
-| `ask --topic ID --kind K --question TEXT --rubric TEXT` | Fix the rubric and open an attempt; prints its number |
-| `grade --attempt N --outcome O --hint H --confidence C --answer TEXT --gap TEXT` | Close an attempt; prints the next review date |
+| `ask --topic ID --kind K --question TEXT --rubric TEXT` | Fix the rubric and open an attempt; prints its id |
+| `grade --attempt ID --outcome O --hint H --confidence C --answer TEXT --gap TEXT [--evidence REF]` | Close an attempt; prints the next review date. `ID` may be a unique part of the id |
 | `import --file F` | Record results pasted from an explainer page (`-` reads stdin) |
 | `due [--limit N]` | Topics due now, mixed across dimensions |
 | `map` | Per-dimension evidence, misconceptions, and how the schedule is holding up |
 | `check` | Validate the record; exits 1 with each problem named |
+| `migrate` | Convert a record from the old single-file format, once |
 
 Kinds: `attempt`, `explain-back`, `retrieval`, `transfer`, `diagnosis`,
 `repair`, `field`. Outcomes: `correct`, `partial`, `wrong`, `skipped`. The script
@@ -199,7 +250,16 @@ transcript.
 **Field evidence.** When the learner reports doing real work on a topic alone
 (fixed a bug, designed a change, answered a colleague), record it: `ask` with
 kind `field`, a one-line description as the question, the criterion as the
-rubric, then `grade`. This is the strongest evidence the record can hold.
+rubric, then `grade`.
+
+- If there is an artifact (a commit, PR, test output, trace or document), look
+  at it first, judge it against the rubric, and pass a reference to it as
+  `--evidence`. Evidence-backed field work is the strongest evidence the record
+  holds.
+- With no artifact, grade without `--evidence`. The script records it as a
+  self-report, kept in the record but not counted toward levels. Say so in one
+  line and say which artifact would count. Do not press for one; one useful
+  artifact is enough when it exists.
 
 ## What this cannot do
 

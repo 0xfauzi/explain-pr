@@ -25,10 +25,19 @@ show you only the failing output"). Pick a topic from the weakest dimension in
 
 ## 2. Make a throwaway worktree
 
-    git worktree add ../drill-<topic> -b drill/<topic> HEAD
+Pick a name unique to this drill, then check neither the path nor the branch
+exists:
 
-All drill work happens in that directory. Never edit the learner's working tree
-or any shared branch, and never push the drill branch.
+    NAME=drill-<topic>-$(date +%Y%m%d-%H%M%S)
+    git worktree list
+    git branch --list "drill/$NAME"
+    git worktree add "../$NAME" -b "drill/$NAME" HEAD
+
+If either already exists, pick another name. Never reuse or overwrite one.
+
+All drill work happens in that directory: the injected bug and every change the
+learner makes. Never edit the learner's working tree or any shared branch, and
+never push the drill branch.
 
 ## 3. Inject one bug and confirm it shows
 
@@ -72,8 +81,27 @@ correct; review it as a peer would.
 
 ## 7. Clean up and record
 
-    git worktree remove ../drill-<topic>
-    git branch -D drill/<topic>
+First, see what is in the drill worktree:
+
+    git -C "../$NAME" status --short
+    git -C "../$NAME" diff
+
+The learner's fix is work they did. Before removing anything, ask in one line
+whether they want to keep it. Options: keep the patch as a file
+(`git -C "../$NAME" diff > ../$NAME.patch`), commit it on the drill branch and
+keep the branch, or discard it. The injected bug must never reach a real branch,
+so a kept fix is kept as the drill's record, not applied to the project.
+
+Once the learner has said the work is saved or disposable:
+
+    git worktree remove "../$NAME"
+    git branch -d "drill/$NAME"
+
+Do not add `--force` or use `-D` as a shortcut. `worktree remove` refuses when
+there are uncommitted changes, and `branch -d` refuses an unmerged branch; both
+refusals mean work would be lost. Use the forcing form only after the learner has
+explicitly said to discard that work. If a cleanup command fails, report the exact
+path, the branch name and what is left, rather than retrying silently.
 
 Grade the attempt. `--gap` records the step where the learner got stuck, for
 example "read the code before forming a hypothesis" or "did not check the

@@ -156,7 +156,10 @@ with help, and the record treats it that way.
 
 1. Compare the answer to the rubric, point by point.
 2. Say the outcome in the first sentence: correct, partial or wrong.
-3. For each missed point, say what was missing and cite `path:line`.
+3. Respond to the learner's reasoning, not just the conclusion. Say which part
+   holds, which inference fails, and the evidence that settles it, citing
+   `path:line`. A right answer reached by a wrong route is partial, and the
+   route is what to correct.
 4. If the confidence was high and the answer wrong, say plainly that this is a
    misconception, name the belief that produced it, and show the evidence
    against it. Correcting a confident error is the most valuable feedback in the
@@ -167,7 +170,13 @@ with help, and the record treats it that way.
 6. Run `grade`, with `--gap` naming the missing idea in one line.
 
 Feedback is short: the outcome, the evidence, the missing idea. Do not restate
-the parts the learner got right.
+the parts the learner got right. No praise or encouragement that carries no
+information; a correct answer is acknowledged in a word and the session moves on.
+Write it in the voice set out in `SKILL.md`:
+
+> Not quite. You assumed the timeout means the charge failed. A timeout only
+> means the reply didn't arrive; the gateway may have finished the charge
+> (`worker/charge.py:41`). What would you check before retrying?
 
 ## Examples
 

@@ -26,6 +26,13 @@ did", "draw me how this works", or "what am I weak at".
 The first run creates `.learning/` in the repository. Commit it. Cloud session
 containers are reclaimed, and an uncommitted record goes with them.
 
+The plugin also ships **Human-Outward**, a writing style: plain words, the idea
+before its name, the real technical term once the idea is clear, honest about
+what is known, and no performed warmth. The skill applies it to everything it
+says to you whether or not you select it. To use it for all of Claude's writing:
+
+    /output-style learning-while-building:Human-Outward
+
 Requires Python 3.9+ and git. Checking explainer pages also needs node, and
 Playwright for node (`npm i -g playwright`) to drive the page in a browser.
 
@@ -133,13 +140,28 @@ not a proven method.
 
 ## How the record judges evidence
 
-- **Levels** (not yet, with help, recalls, transfers) count only answers you
-  produced in chat, graded by Claude against a rubric fixed before the question.
+- **Highest demonstrated** (not yet, with help, recalls, transfers) is the best
+  answer you have ever produced in chat, graded by Claude against a rubric fixed
+  before the question. It is history, not a claim about today.
+- **Current evidence** reads only your latest review: holding, unverified
+  (review overdue), or uncertain (the latest answer was wrong, partial or
+  needed a hint). A topic that once reached "transfers" and then failed a review
+  shows as uncertain.
 - **Page results** are multiple choice, ordering or self-graded, which is weaker
   evidence. They are recorded and surface misconceptions, but do not raise a
   level.
-- **Field evidence**, something you did alone in real work, is the strongest
-  thing the record holds. Tell Claude when it happens.
+- **Field work**, something you did alone in real work, counts when Claude has
+  inspected an artifact of it: a commit, PR, test output or trace. Without one
+  it is kept as a self-report and does not change your level.
+
+## Several sessions, one record
+
+Each topic and each attempt is its own file with a random id, so sessions on
+different branches add different files and git merges them cleanly. A session
+only sees what is on its branch; when it records something on an unmerged
+branch it says so. If two branches change the same topic or grade the same
+attempt, git reports a conflict and `learning.py` explains how to resolve it.
+Records from version 0.2 are converted once with `learning.py migrate`.
 
 ## What changed from explain-pr
 
@@ -149,9 +171,11 @@ current design keeps HTML pages but changes their job. Before, a page was an
 explanation you read. Now it is a set of questions, each locked until you
 answer, built after your own attempt and aimed at what you missed. The PR range
 handling for stacked and merged PRs, separating claims from code, and sweeping
-a simulation's rule outside the browser all came across. The register, prose
-checkers and output style did not; they improved the document, and the target
-is you. The old files are in the git history.
+a simulation's rule outside the browser all came across. The register and prose
+checkers did not; they improved the document, and the target is you. The
+Human-Outward style was removed in 0.2 and restored in 0.3, with three changes:
+keep the correct technical term once the idea is clear, respond to the learner's
+actual reasoning, and drop the passages about measuring how human prose sounds. The old files are in the git history.
 
 No evaluations ship. The real outcome is your capability, which nothing
 automated here can measure. This departs from Anthropic's skill guidance, which
@@ -167,6 +191,9 @@ would be measurable and could be added.
   runs correctly and teaches something false; only sweeping the rule against the
   code does that, and that step relies on Claude doing it.
 - Nothing reminds you. Reviews happen when you run the skill.
+- An explainer page needs a way to reach you. In a cloud session it is published
+  privately when the session has a tool for that; otherwise the same questions
+  run in the chat.
 - The review intervals (1, then 3, 7, 21, 60 and 180 days) are starting values.
   `map` prints the success rate at each step, so your own data can say whether
   they fit you.
