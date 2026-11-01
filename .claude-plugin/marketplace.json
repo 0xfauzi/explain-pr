@@ -1,20 +1,20 @@
 {
-  "name": "explain-pr",
+  "name": "learning-while-building",
   "owner": {
     "name": "0xfauzi"
   },
   "metadata": {
-    "description": "Write so a person understands",
-    "version": "0.1.0"
+    "description": "Learn while you build with Claude",
+    "version": "0.2.0"
   },
   "plugins": [
     {
-      "name": "explain-pr",
-      "description": "A general writing style plus a skill that turns a pull request into a lesson somebody can read in a sitting. Ships four checkers and an honest account of what none of them can measure.",
+      "name": "learning-while-building",
+      "description": "Turns building with Claude into deliberate practice, and keeps a record of what you can do unaided.",
       "source": "./",
       "strict": false,
       "skills": [
-        "./skills/explain-pr"
+        "./skills/learning-while-building"
       ]
     }
   ]

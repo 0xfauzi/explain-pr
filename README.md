@@ -1,97 +1,175 @@
-# explain-pr
+# learning-while-building
 
-Tools for writing so that a person understands.
+A Claude Code skill for building a real project with Claude while getting better
+as an engineer, rather than only getting faster.
 
-Not so that it sounds human, which is a different thing and a trap. The goal is
-that somebody finishes reading and knows something they did not know before.
-
-## What is here
-
-**`Human-Outward`**, a writing style. Simple words and varied sentences, the idea
-before its name, the answer you rejected shown, a clear mark on how each claim is
-known, and kindness that is not performed. It applies to anything you write: an
-essay, a letter, a document, an explanation of your own work.
-
-**`explain-pr`**, a skill that applies those rules to one job. It turns a pull
-request into a lesson somebody can read in a sitting, with widgets they can
-operate, kept in the repository so the next person finds it.
-
-**Four checkers**, each with its limits written down, in `evals/README.md`.
-
-The style is the general case. The skill is one application of it. If you only
-want one thing, take the style.
+Claude still does most of the building. At a few chosen points the skill makes
+you do the thinking: commit to a design before seeing one, diagnose a bug before
+Claude fixes it, explain a change back once it works. For mechanisms that need a
+picture, it builds an interactive explainer page that will not show you an
+answer until you have committed to one. It brings topics back on a spaced
+schedule, with new cases rather than repeats, and keeps a record of what you
+showed you could do without help, split by engineering dimension.
 
 ## Install
 
     /plugin marketplace add 0xfauzi/explain-pr
-    /plugin install explain-pr@explain-pr
+    /plugin install learning-while-building@learning-while-building
 
-Turn the style on:
+Then, in a project repository:
 
-    /output-style explain-pr:Human-Outward
+    /learning-while-building:learning-while-building
 
-Use the skill, in a repository with an open or merged pull request:
+or say "make this a learning task", "quiz me", "help me understand what PR 128
+did", "draw me how this works", or "what am I weak at".
 
-    /explain-pr:explain-pr 128
+The first run creates `.learning/` in the repository. Commit it. Cloud session
+containers are reclaimed, and an uncommitted record goes with them.
 
-Both are namespaced by the plugin. A bare `Human-Outward` will find a local style
-of that name first, if you have one.
+Requires Python 3.9+ and git. Checking explainer pages also needs node, and
+Playwright for node (`npm i -g playwright`) to drive the page in a browser.
 
-## The style, in one screen
+## What it does
 
-- **Say why it matters** before any name, number or detail.
-- **Teach the idea, then name it.** The word should be a label for something the
-  reader is already holding.
-- **Assume no context and full capability.** They know none of your background
-  and can follow anything once you hand it over. Explaining is kind. Talking down
-  is not.
-- **Show the answer you rejected**, with the evidence that killed it. This is the
-  most useful thing you will write and the thing people leave out.
-- **Say how you know**, every time: measured, reasoned, judged, or unknown.
-- **Simple words, varied sentences.** These are separate dials and most people
-  turn down both. Turn down the first one only.
-- **Be kind and mean it.** Cut the words that blame the reader. Say the hard thing
-  and aim it at the work. Never leave a reader stuck.
+| You say | What happens |
+|---|---|
+| "Make this a learning task" | You sketch the design or name the invariant first. Claude builds, offers you the critical piece to write, offers you first go at any bug, then asks you to explain the result. |
+| "Help me understand PR 128" | You explain or predict first. Claude reads the diff, separates what the description claims from what the code does, and explains only what you missed. Then one question the PR did not answer. |
+| "Draw me how this works" | After your attempt in chat, an explainer page aimed at what you missed: predictions first, a step-through diagram that stops before the decisive step, a simulation locked until you predict, then you explain it back. You paste your answers into the chat. |
+| "Quiz me" | Due topics come back, mixed across dimensions. Recall first, then new cases. |
+| "Give me a debugging drill" | Claude breaks one thing in a throwaway worktree and shows you only the failing output. |
+| "What am I weak at?" | Per-dimension evidence, misconceptions you held with high confidence, and how well the schedule is holding. |
 
-Full text in `output-styles/Human-Outward.md`.
+Saying "skip" or "just do it" always works.
 
-## The skill, in one screen
+## Why it is built this way
 
-1. **Fix the diff range against the PR's own base**, not the default branch.
-   Stacked and merged PRs each get this wrong by default, in opposite directions,
-   and both mistakes are silent.
-2. **Hand the writing to a reader who did not make the change.** An author
-   explains a change as they meant it, and cannot see the reasoning that never
-   reached the diff.
-3. **Build one arc**: where this sits, why each decision went that way, what you
-   need for the next change, and what would make it wrong.
-4. **Prefer a widget the reader can operate** over a picture of a rule. A picture
-   states the rule. It does not let anybody try it and be surprised.
-5. **Record what it taught**, so the set becomes an account of the system rather
-   than a pile of files.
+Each rule traces to a finding. Most of these studies used students or junior
+developers on short tasks, so the design is a hypothesis to test on yourself,
+not a proven method.
 
-`skills/explain-pr/SKILL.md` is the procedure. `references/` holds the writing
-rules with the draft that failed without each one, a guide to what to draw, and
-the register format.
+### Working with AI
 
-## About measurement, honestly
+- **How you use AI matters more than whether you use it.** In Anthropic's
+  randomised study of 52 developers learning a new library
+  ([Shen and Tamkin, 2026](https://www.anthropic.com/research/AI-assistance-coding-skills)),
+  the AI group scored 50% on a follow-up quiz against 67% for hand-coders, with
+  the largest gap on debugging. Asking conceptual questions, and generating code
+  and then questioning it, kept scores high; full delegation and letting AI
+  debug lost the most (24%). So the skill answers conceptual questions freely,
+  makes you explain generated code back, and gives you first go at bugs.
+- **Unguarded help raises practice scores and lowers later unaided ones.**
+  [Bastani et al., 2025](https://doi.org/10.1073/pnas.2422633122): students with
+  plain ChatGPT did 17% worse once it was removed; a tutor that gave hints rather
+  than answers removed most of the harm. Hence the hint ladder, and no question
+  shares a message with its answer.
 
-We cannot measure whether you understood something. That happens inside you, and
-it depends on what you already knew and what you needed it for.
+### Explainer pages and diagrams
 
-So every number here is a proxy, and `evals/README.md` says how far each one falls
-short. The closest is `comprehension.py`, which examines a reader who has only the
-document and no access to its subject. It is the only measurement aimed at the
-real goal, and it still substitutes a model for a person.
+- **Watching teaches little; predicting first does.** Students who watched
+  physics demonstrations understood them no better than students who never saw
+  them, while students who predicted the outcome first understood significantly
+  more ([Crouch et al., 2004](https://doi.org/10.1119/1.1707018)). So every
+  interaction on a page locks until you commit an answer.
+- **What you do with a visualisation matters more than what it shows.** A
+  meta-study of 24 algorithm-visualisation experiments found how learners used
+  the visualisation predicted its effect better than its graphics
+  ([Hundhausen, Douglas and Stasko, 2002](https://doi.org/10.1006/jvlc.2002.0237)).
+  So pages are built from questions, with diagrams in service of them.
+- **Animation helps less than it looks.** Meta-analyses find small gains over
+  static pictures, d = 0.37
+  ([Höffler and Leutner, 2007](https://doi.org/10.1016/j.learninstruc.2007.09.013))
+  and later estimates near g = 0.23, and continuous motion is often too fast to
+  follow ([Tversky et al., 2002](https://doi.org/10.1006/ijhc.2002.1017)). So
+  mechanisms are discrete frames you step through at your own pace, with only the
+  change between frames highlighted.
+- **Multimedia design principles** ([Mayer and Fiorella, eds., Cambridge
+  Handbook of Multimedia Learning, 2021](https://doi.org/10.1017/9781108894333)):
+  no decoration (coherence), highlight what matters (signalling), labels on the
+  parts rather than in a legend (spatial contiguity), learner-paced steps
+  (segmenting), key terms before the mechanism (pre-training).
+- **Guidance that helps a novice can hinder an expert**
+  ([Kalyuga et al., 1998](https://doi.org/10.1518/001872098779480587);
+  [Kalyuga, 2007](https://doi.org/10.1007/s10648-007-9054-3)). So pages do not
+  narrate what a diagram already shows, and worked examples appear only where
+  your record shows you are new to the area.
 
-One warning worth repeating from that page. The prose meter, `ai_tells.py`, is a
-diagnostic and never a target. A short script that welds sentences together beats
-it more thoroughly than any writing advice does, while producing text nobody would
-want to read.
+### Questions and feedback
 
-Sounding human was never the point, and treating it as one sent us down a long
-and mostly fruitless road. Writing that reads well is a means. Somebody finishing
-the page knowing how the thing works is the end.
+- **Testing before teaching helps.** Pre-instruction questions improve later
+  learning even when answered wrongly
+  ([Pan and Carpenter, 2023](https://doi.org/10.1007/s10648-023-09814-5)). Hence
+  attempt-first in chat and predictions at the top of every page.
+- **Explaining to yourself helps**: a meta-analysis of 64 reports found g = 0.55
+  for prompted self-explanation
+  ([Bisra et al., 2018](https://doi.org/10.1007/s10648-018-9434-x)). Hence
+  explain-backs, and the write-then-compare block on pages.
+- **Confident errors are the ones most likely to be corrected** once feedback
+  arrives ([Butterfield and Metcalfe, 2001](https://doi.org/10.1037/0278-7393.27.6.1491)),
+  and felt understanding is a poor guide to real understanding
+  ([Deslauriers et al., 2019](https://doi.org/10.1073/pnas.1821936116)). Hence
+  confidence on every answer, and confident wrong answers surfaced as
+  misconceptions to discuss.
+- **Feedback works on average, but varies widely; informative feedback works
+  best** ([Wisniewski et al., 2020](https://doi.org/10.3389/fpsyg.2019.03087),
+  d = 0.48). Hence feedback with evidence, and on pages a separate explanation
+  for each wrong option.
+- **Retrieval, spaced out, makes things stick**
+  ([Roediger and Karpicke, 2006](https://doi.org/10.1111/j.1467-9280.2006.01693.x);
+  [Cepeda et al., 2008](https://doi.org/10.1111/j.1467-9280.2008.02209.x)), and
+  transfers to new cases better with elaborated feedback
+  ([Pan and Rickard, 2018](https://doi.org/10.1037/bul0000151)). Hence the review
+  schedule, moving from recall to new cases.
+- **Programming tasks have an order.** Tracing code and explaining it in plain
+  English predicted code-writing performance
+  ([Lopez et al., 2008](https://doi.org/10.1145/1404520.1404531); the strict
+  hierarchy has been questioned since), and ordering tasks gave the same gains
+  as writing code in less time
+  ([Ericson et al., 2017](https://doi.org/10.1145/3141880.3141895)). Hence trace,
+  then explain, then modify for unfamiliar code, and ordering tasks on pages.
+- **Attempting before instruction helps transfer**
+  ([Kapur, 2014](https://doi.org/10.1111/cogs.12107)). Hence you write the
+  critical piece when you choose to.
+
+## How the record judges evidence
+
+- **Levels** (not yet, with help, recalls, transfers) count only answers you
+  produced in chat, graded by Claude against a rubric fixed before the question.
+- **Page results** are multiple choice, ordering or self-graded, which is weaker
+  evidence. They are recorded and surface misconceptions, but do not raise a
+  level.
+- **Field evidence**, something you did alone in real work, is the strongest
+  thing the record holds. Tell Claude when it happens.
+
+## What changed from explain-pr
+
+This repository used to ship `explain-pr`, which turned a pull request into a
+long HTML lesson to read, plus a writing style and four prose checkers. The
+current design keeps HTML pages but changes their job. Before, a page was an
+explanation you read. Now it is a set of questions, each locked until you
+answer, built after your own attempt and aimed at what you missed. The PR range
+handling for stacked and merged PRs, separating claims from code, and sweeping
+a simulation's rule outside the browser all came across. The register, prose
+checkers and output style did not; they improved the document, and the target
+is you. The old files are in the git history.
+
+No evaluations ship. The real outcome is your capability, which nothing
+automated here can measure. This departs from Anthropic's skill guidance, which
+asks for at least three behavioural evaluations of the skill itself; those
+would be measurable and could be added.
+
+## What it cannot do
+
+- Grading is Claude's judgement against a rubric Claude wrote. Treat the record
+  as evidence, not a certificate.
+- The page checker finds broken behaviour (answers visible early, locks that do
+  not lock, network requests, layout overflow). It cannot find a simulation that
+  runs correctly and teaches something false; only sweeping the rule against the
+  code does that, and that step relies on Claude doing it.
+- Nothing reminds you. Reviews happen when you run the skill.
+- The review intervals (1, then 3, 7, 21, 60 and 180 days) are starting values.
+  `map` prints the success rate at each step, so your own data can say whether
+  they fit you.
 
 ## Licence
 
