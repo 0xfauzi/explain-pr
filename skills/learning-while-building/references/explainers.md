@@ -291,10 +291,13 @@ behind the choice and the evidence against it; it never scolds or cheers.
    - the file path, when the learner works on the same machine
    Never publish a page built from proprietary code to a public site to make it
    viewable. Screenshots from the checker are for Claude; do not commit them.
-3. If none of those reach the learner, or they say they cannot open it, run the
-   same exercise in the conversation instead: the stake in one line, then the
-   page's questions one at a time in its order, each with its reveal and
-   evidence after the answer, then the explain-back. Grade these in chat as
+3. If the learner cannot open it and a private publishing tool exists that was
+   not used, offer that link once. Otherwise, or if that fails too, run the same
+   exercise in the conversation: the stake in one line, then the page's
+   questions one at a time in its order, each with its reveal and evidence after
+   the answer, then the explain-back. Skip any question the chat already asked
+   or whose answer earlier feedback gave away; replace it with a variant that
+   changes one condition, so it stays a prediction rather than recognition. Grade these in chat as
    normal attempts. The page is supporting material; a learning session never
    depends on opening it.
 4. When the page is open, tell the learner: work through it, then press "Copy

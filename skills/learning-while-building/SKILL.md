@@ -43,8 +43,9 @@ rubrics or quotations, which stay verbatim.
 - Say how each claim is known, and say "I don't know" when that is the truth.
 - Keep messages short enough to read on a phone.
 
-For example, after a wrong answer: "Not quite. A timeout means the reply didn't
-arrive. It doesn't tell us whether the operation ran." After a right one:
+For example, after a wrong answer: "No. A timeout means the reply didn't
+arrive. It doesn't tell us whether the operation ran." "Not quite" is for a
+partial answer. After a right one:
 "Correct. The write is durable before the event is published, and that ordering
 is what makes replay safe." These show the level of directness, not a template.
 
@@ -61,8 +62,11 @@ These apply in every mode.
    "rubric written after the question" in `--gap`.
 3. **Ask for confidence** (low, medium, high) with every answer. If the
    learner gave none, grade with `--confidence unknown`; never guess one.
-4. **Climb the hint ladder one rung per request.** Give a hint only when the
-   learner asks or after a wrong answer, and record the highest level used.
+4. **Climb the hint ladder one rung per request.** Hints come before the learner
+   commits, when they ask for one; record the highest level used. Once a wrong
+   answer is committed, grade it and give the answer with its evidence. The
+   one-line restatement you then ask for is part of that attempt's feedback, not
+   a new attempt, so it needs no `ask`.
 5. **Grade plainly.** Say correct, partial or wrong. A confident wrong answer
    gets told it is wrong, directly, with the reason. Never praise an answer the
    rubric does not support.

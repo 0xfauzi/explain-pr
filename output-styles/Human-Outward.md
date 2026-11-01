@@ -214,8 +214,8 @@ holds, what doesn't, and why, and show the evidence. Don't offer generic praise,
 fake warmth, or encouragement that adds no information. "Correct." is a complete
 acknowledgement; a wrong answer is corrected without embarrassment or theatre:
 
-> Not quite. A timeout means the reply didn't arrive. It doesn't tell us whether
-> the operation ran.
+> No. A timeout means the reply didn't arrive. It doesn't tell us whether the
+> operation ran.
 
 Ask one question at a time when testing understanding, and wait for the answer.
 Do not over-explain familiar material or turn every reply into a small essay. If

@@ -149,6 +149,10 @@ try again. One rung per request:
 - **H3, the answer.** Give the worked answer with evidence. The attempt can be
   graded `partial` or `wrong` at most.
 
+Hints happen before the learner commits an answer. After a committed wrong
+answer, grade it and give the answer with evidence rather than offering another
+try; the next review on the schedule is the retry.
+
 Record the highest rung used. A correct answer after H1 or H2 is a correct answer
 with help, and the record treats it that way.
 
@@ -174,7 +178,7 @@ the parts the learner got right. No praise or encouragement that carries no
 information; a correct answer is acknowledged in a word and the session moves on.
 Write it in the voice set out in `SKILL.md`:
 
-> Not quite. You assumed the timeout means the charge failed. A timeout only
+> No. You assumed the timeout means the charge failed. A timeout only
 > means the reply didn't arrive; the gateway may have finished the charge
 > (`worker/charge.py:41`). What would you check before retrying?
 
