@@ -272,25 +272,42 @@ can be swept in node. Mirror the real code's logic and constants, and cite them.
 
 ## Writing on the page
 
-Short sentences, plain words, the idea before its name. Every claim carries its
-evidence or says it is unverified. Write for a capable engineer who has not seen
-this code. Do not restate in prose what a diagram or interaction already showed.
+The page follows the Voice section of `SKILL.md`, including the instructions,
+captions and every wrong-answer feedback line. Explain the mechanism plainly,
+then name it with its real technical term and keep using that term. Every claim
+carries its evidence or says it is unverified. Do not restate in prose what a
+diagram or interaction already showed. Wrong-answer feedback names the belief
+behind the choice and the evidence against it; it never scolds or cheers.
 
 ## Storing and delivering the page
 
 1. Save it as `.learning/explainers/<topic-id>.html`, so it is committed with
    the record.
-2. If the session has a tool for publishing an HTML page the learner can open on
-   any device, publish it there for the learner. Otherwise give the file path.
-   Screenshots from the checker are for Claude; do not commit them.
-3. Tell the learner: work through it, then press "Copy for Claude" at the bottom
-   and paste the result into the chat.
-4. Import what they paste:
+2. Get it in front of the learner in a form they can open where they are. A
+   path inside a cloud container is not something a phone can open. In order of
+   preference:
+   - a tool in this session that publishes a **private** page only the learner
+     can open, or that sends the file to them as an attachment or preview
+   - the file path, when the learner works on the same machine
+   Never publish a page built from proprietary code to a public site to make it
+   viewable. Screenshots from the checker are for Claude; do not commit them.
+3. If the learner cannot open it and a private publishing tool exists that was
+   not used, offer that link once. Otherwise, or if that fails too, run the same
+   exercise in the conversation: the stake in one line, then the page's
+   questions one at a time in its order, each with its reveal and evidence after
+   the answer, then the explain-back. Skip any question the chat already asked
+   or whose answer earlier feedback gave away; replace it with a variant that
+   changes one condition, so it stays a prediction rather than recognition. Grade these in chat as
+   normal attempts. The page is supporting material; a learning session never
+   depends on opening it.
+4. When the page is open, tell the learner: work through it, then press "Copy
+   for Claude" at the bottom and paste the result into the chat.
+5. Import what they paste:
 
        python3 ${CLAUDE_SKILL_DIR}/scripts/learning.py import --file RESULTS.jsonl
 
    (Write the pasted text to a file first, or pipe it with `--file -`.)
-5. Discuss every misconception the import prints. Then ask one question in chat,
+6. Discuss every misconception the import prints. Then ask one question in chat,
    graded by Claude against a fixed rubric, that the page did not ask. Page
    results are recognition and self-assessment; only a produced answer in chat
    moves the topic's level.

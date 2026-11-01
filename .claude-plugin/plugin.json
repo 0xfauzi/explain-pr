@@ -1,12 +1,13 @@
 {
   "name": "learning-while-building",
-  "description": "Build software with Claude and become a better engineer while doing it: attempt-first questions, explain-backs, spaced retrieval and transfer, debugging drills, and a record of what you can do unaided.",
-  "version": "0.2.0",
+  "description": "Build software with Claude and become a better engineer while doing it: attempt-first questions, explain-backs, spaced retrieval and transfer, debugging drills, interactive explainers, a record of what you can do unaided, and the Human-Outward writing style.",
+  "version": "0.3.0",
   "author": {
     "name": "0xfauzi"
   },
   "license": "MIT",
   "skills": [
     "./skills/learning-while-building"
-  ]
+  ],
+  "outputStyles": "./output-styles"
 }
