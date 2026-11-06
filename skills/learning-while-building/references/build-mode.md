@@ -15,7 +15,13 @@ Build mode:
 - [ ] 6. Record topics
 ```
 
-Steps 2 and 5 are the two checkpoints. Steps 3 and 4 are single one-line offers;
+Steps 2 and 5 are the two checkpoints. If the learner is not in the
+conversation, post the question instead of asking it and keep building; grade
+it from `inbox` at the next checkpoint (`room.md`). Prefer asking the step 2
+question in chat when they are present, since it only works as a prediction if
+it is answered before they see the change.
+
+ Steps 3 and 4 are single one-line offers;
 skip them when the learner is working remotely, has said they are busy, or has
 declined an offer earlier in the task.
 

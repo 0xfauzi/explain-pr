@@ -23,6 +23,17 @@ Then, in a project repository:
 or say "make this a learning task", "quiz me", "help me understand what PR 128
 did", "draw me how this works", or "what am I weak at".
 
+**Answer when it suits you.** Claude can post a question and keep building. You
+answer later: in chat, in a terminal with `learning.py answer`, or on the
+learning room page, which runs on your own machine with `learning.py serve`.
+On claude.ai the same page can be published privately and grades your answer
+on the spot. The next session grades anything still waiting, and the feedback
+is stored so you can read it on any of those routes.
+
+Nothing here needs a particular harness: the skill uses the Agent Skills
+format, Python 3 and git. Claude Code, claude.ai pages and Playwright are used
+when present and skipped when not.
+
 The first run creates `.learning/` in the repository. Commit it. Cloud session
 containers are reclaimed, and an uncommitted record goes with them.
 

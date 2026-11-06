@@ -70,7 +70,7 @@ set `<body data-topic>` to the topic id, and follow the structure below.
 **4. Sweep the rules.** For each simulation, extract the rules to a scratch
 location outside the repository and sweep them:
 
-    python3 ${CLAUDE_SKILL_DIR}/scripts/check_explainer.py PAGE --extract-rules SCRATCH/rules.cjs
+    python3 <skill>/scripts/check_explainer.py PAGE --extract-rules SCRATCH/rules.cjs
     node -e "
       const R = require('SCRATCH/rules.cjs');
       for (const flag of [false, true])
@@ -97,7 +97,7 @@ comparison with the code are the only things that do.
 
 **5. Run the checker.**
 
-    python3 ${CLAUDE_SKILL_DIR}/scripts/check_explainer.py PAGE
+    python3 <skill>/scripts/check_explainer.py PAGE
 
 It runs static checks, then drives the page in headless Chromium: no network
 requests, no console errors, no sideways scroll on a phone, no answer visible
@@ -309,7 +309,7 @@ behind the choice and the evidence against it; it never scolds or cheers.
    for Claude" at the bottom and paste the result into the chat.
 5. Import what they paste:
 
-       python3 ${CLAUDE_SKILL_DIR}/scripts/learning.py import --file RESULTS.jsonl
+       python3 <skill>/scripts/learning.py import --file RESULTS.jsonl
 
    (Write the pasted text to a file first, or pipe it with `--file -`.)
 6. Discuss every misconception the import prints. Then ask one question in chat,

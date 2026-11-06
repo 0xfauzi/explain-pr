@@ -19,6 +19,11 @@ Terms used throughout:
   file, boundary or observation, H3 the worked answer
 - **record**: the data kept by `scripts/learning.py`
 
+**Paths.** `<skill>` means the folder that contains this file. Scripts live in
+`<skill>/scripts/` and are run from the project root, so write the full path:
+`python3 <skill>/scripts/learning.py ...`. (Claude Code also exposes this folder
+as `${CLAUDE_SKILL_DIR}`.) Below, `learning.py` is short for that command.
+
 Requires Python 3.9+ and git. Explainer checks also need node, and Playwright
 for node for the browser half; without them, say which checks did not run.
 
@@ -91,7 +96,7 @@ These apply in every mode.
 
 On first use in a repository, run:
 
-    python3 ${CLAUDE_SKILL_DIR}/scripts/learning.py init
+    python3 <skill>/scripts/learning.py init
 
 Run all commands from the repository root. Before running `init`, show the
 learner the default dimensions (run `init --help` to print them) and ask which to keep, drop or add. Pass their list with
@@ -122,6 +127,9 @@ and 43 tool calls. A repair drill takes many turns of coaching.
 - **"Quiz me", "test me", or due reviews at the start of a session**: read
   [references/practice.md](references/practice.md).
 - **"What am I weak at?"**: follow Map mode below.
+- **The learner is away, or prefers to answer later** (on a phone, in a
+  terminal, between tasks): post the question instead of asking it, and grade
+  it at the next checkpoint. Read [references/room.md](references/room.md).
 - **A debugging drill is requested**: read
   [references/repair-drills.md](references/repair-drills.md).
 - **An explainer page**: build one only when the learner asks for one, or when
@@ -136,7 +144,7 @@ and grading. When the right format or question shape is not obvious, read
 
 ## Map mode
 
-Run `python3 ${CLAUDE_SKILL_DIR}/scripts/learning.py map`. By default it lists
+Run `python3 <skill>/scripts/learning.py map`. By default it lists
 only topics that are not holding; use `--topic ID` for one topic's detail and
 `--all` only when the learner asks for everything. Report the two
 weakest dimensions with the evidence the map gives, any confident-and-wrong
@@ -151,7 +159,7 @@ now, and the summary must say so.
 ## Script reference
 
 Run, do not read. Prefix each command with
-`python3 ${CLAUDE_SKILL_DIR}/scripts/learning.py`. All commands take `--dir`
+`python3 <skill>/scripts/learning.py`. All commands take `--dir`
 (default `.learning`). Every write
 goes through the script; never edit the data files by hand.
 
@@ -167,6 +175,11 @@ goes through the script; never edit the data files by hand.
 | `due [--limit N]` | Topics due now, mixed across dimensions |
 | `map [--topic ID] [--all]` | Per-dimension summary and the topics not holding; how the schedule is doing |
 | `check` | Validate the record; exits 1 with each problem named |
+| `post --topic ID --kind K --question TEXT --rubric TEXT [--context TEXT]` | Leave a question without waiting; see `room.md` |
+| `inbox` | Answers waiting to be graded, with their rubrics |
+| `grade ... --feedback TEXT` | Also store the feedback, so the learner can read it outside chat |
+| `questions`, `answer` | For the learner: what is waiting and recent feedback; answer from a terminal |
+| `serve`, `room-push`, `room-pull` | The learning room page; see `room.md` |
 | `migrate` | Convert a record from the old single-file format, once |
 
 Kinds: `attempt`, `explain-back`, `retrieval`, `transfer`, `diagnosis`,
@@ -176,7 +189,7 @@ refuses `correct` at H3, and refuses a new `ask` while one is ungraded unless
 ...`) rather than one call each.
 
 Explainer pages are checked with
-`python3 ${CLAUDE_SKILL_DIR}/scripts/check_explainer.py PAGE`; see
+`python3 <skill>/scripts/check_explainer.py PAGE`; see
 `references/explainers.md`. Page results count as weaker evidence: they surface
 misconceptions but do not raise a topic's level.
 

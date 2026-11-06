@@ -22,7 +22,7 @@ Practice:
 - [ ] 5. Close with two lines
 ```
 
-**1. Run `due`.** `python3 ${CLAUDE_SKILL_DIR}/scripts/learning.py due` shows at
+**1. Run `due`.** `python3 <skill>/scripts/learning.py due` shows at
 most three topics, mixed across dimensions. If it reports an ungraded attempt,
 grade it first (`skipped` if the learner never answered). If nothing is due,
 say so and offer one transfer question or a repair drill on the weakest
@@ -36,7 +36,7 @@ learner and retire the topic with a reason.
 suggests, following `questions.md`. Record them all in one command before
 sending:
 
-    L="python3 ${CLAUDE_SKILL_DIR}/scripts/learning.py"
+    L="python3 <skill>/scripts/learning.py"
     $L ask --batch --topic A ... && $L ask --batch --topic B ... && $L ask --batch --topic C ...
 
 Then send one message: the questions numbered, each in two or three lines, and
@@ -49,6 +49,10 @@ the outcome word, and for a miss the evidence and the missing idea, as
 `questions.md` describes. A confident wrong answer gets the full correction. A
 correct one gets "Correct." and nothing more. If any answer was wrong, end with
 the one-line restatement request for the most important miss only.
+
+If the learner wants to answer later or away from the conversation, post the
+batch instead of sending it (`learning.py post`, one per topic) and grade it
+from `inbox` next time; see `room.md`.
 
 **5. Close** with two lines: what the learner showed unaided, and the one gap to
 work on next.

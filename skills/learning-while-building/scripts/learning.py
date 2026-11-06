@@ -70,6 +70,7 @@ from record import (
     success_streak,
     today,
 )
+from room import add_commands as add_room_commands
 
 # Independent review questions sent in one message. Same size as a practice
 # session, for the same reason: more than that and the reply becomes a chore.
@@ -191,8 +192,11 @@ def cmd_ask(args: argparse.Namespace) -> None:
         raise RecordError(
             "--rubric is empty. Write the expected answer points before asking."
         )
+    # Posted questions wait for the learner by design, so they never block a chat question.
     open_ones = [
-        f"{k} ({a['topic']})" for k, a in load_attempts(root).items() if not a["graded"]
+        f"{k} ({a['topic']})"
+        for k, a in load_attempts(root).items()
+        if not a["graded"] and a.get("channel") != "async"
     ]
     if args.batch and len(open_ones) >= BATCH_LIMIT:
         raise RecordError(
@@ -239,11 +243,19 @@ def cmd_grade(args: argparse.Namespace) -> None:
             "Hint level 3 means the answer was given. Grade it partial or wrong, not correct."
         )
     evidence = (args.evidence or "").strip()
+    response = attempt.get("response") or {}
+    answer = args.answer or response.get("answer")
+    confidence = args.confidence or response.get("confidence")
+    if not answer or not confidence:
+        raise RecordError(
+            "--answer and --confidence are required unless the learner saved an answer."
+        )
     attempt["graded"] = {
         "outcome": args.outcome,
         "hint": args.hint,
-        "confidence": args.confidence,
-        "answer": args.answer,
+        "confidence": confidence,
+        "answer": answer,
+        "feedback": args.feedback or "",
         "gap": args.gap or "",
         "evidence": evidence,
         "grader": grader_for(attempt, evidence),
@@ -409,7 +421,7 @@ def cmd_due(args: argparse.Namespace) -> None:
     data = load_record(root)
     attempts = load_attempts(root)
     for attempt in attempts.values():
-        if not attempt["graded"]:
+        if not attempt["graded"] and attempt.get("channel") != "async":
             print(
                 f"UNGRADED attempt {attempt['id']} on {attempt['topic']}: grade it "
                 "(--outcome skipped if never answered) before asking anything new."
@@ -700,9 +712,18 @@ def build_parser() -> argparse.ArgumentParser:
     )
     p.add_argument("--outcome", required=True, choices=OUTCOMES)
     p.add_argument("--hint", required=True, type=int, choices=HINT_LEVELS)
-    p.add_argument("--confidence", required=True, choices=CONFIDENCES)
-    p.add_argument("--answer", required=True, help="the learner's answer, paraphrased")
+    p.add_argument(
+        "--confidence", choices=CONFIDENCES, help="defaults to the saved answer's"
+    )
+    p.add_argument(
+        "--answer",
+        help="the learner's answer, paraphrased; defaults to the saved answer",
+    )
     p.add_argument("--gap", help="what was missing or wrong, in one line")
+    p.add_argument(
+        "--feedback",
+        help="the feedback, stored so the learner can read it outside chat",
+    )
     p.add_argument(
         "--evidence",
         help="an artifact Claude inspected: commit, PR, test output, trace",
@@ -726,6 +747,7 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("--topic", help="full detail for one topic")
     p.set_defaults(func=cmd_map)
     sub.add_parser("check").set_defaults(func=cmd_check)
+    add_room_commands(sub)
     sub.add_parser("migrate").set_defaults(func=cmd_migrate)
     return parser
 
