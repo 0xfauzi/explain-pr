@@ -403,8 +403,11 @@ def cmd_serve(args: argparse.Namespace) -> None:
             "these questions and answer them. Prefer 127.0.0.1 with an SSH tunnel."
         )
     server = ThreadingHTTPServer((args.host, args.port), make_handler(root))
+    # Flush: when output goes to a pipe (a log, `tee`, a process manager) Python
+    # buffers it, and this line would never appear while the server runs.
     print(
-        f"Learning room at http://{args.host}:{server.server_address[1]}/  (Ctrl+C stops it)"
+        f"Learning room at http://{args.host}:{server.server_address[1]}/  (Ctrl+C stops it)",
+        flush=True,
     )
     try:
         server.serve_forever()

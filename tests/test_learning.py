@@ -10,12 +10,14 @@ Run with:  python3 -m unittest discover -s tests
 from __future__ import annotations
 
 import json
+import select
 import shutil
 import socket
 import subprocess
 import sys
 import tempfile
 import threading
+import time
 import unittest
 import urllib.request
 from pathlib import Path
@@ -24,6 +26,8 @@ ROOT = Path(__file__).resolve().parent.parent
 SKILL = ROOT / "skills" / "learning-while-building"
 LEARNING = SKILL / "scripts" / "learning.py"
 CHECK_EXPLAINER = SKILL / "scripts" / "check_explainer.py"
+# Starting the server takes well under a second; ten covers a slow CI runner.
+SERVER_START_SECONDS = 10
 
 
 class Record:
@@ -383,7 +387,22 @@ class ServerTest(RecordTest):
         self.server = subprocess.Popen(
             cmd, cwd=self.tmp, stdout=subprocess.PIPE, stderr=subprocess.STDOUT
         )
-        self.server.stdout.readline()  # the "Learning room at ..." line means it is listening
+        self.wait_until_listening()
+
+    def wait_until_listening(self) -> None:
+        """Poll the port, so a server that fails to start fails the test instead of hanging it."""
+        deadline = time.monotonic() + SERVER_START_SECONDS
+        while time.monotonic() < deadline:
+            if self.server.poll() is not None:
+                raise AssertionError(
+                    "server exited: " + self.server.stdout.read().decode()
+                )
+            try:
+                socket.create_connection(("127.0.0.1", self.port), timeout=0.2).close()
+                return
+            except OSError:
+                time.sleep(0.05)
+        raise AssertionError(f"server did not listen within {SERVER_START_SECONDS} s")
 
     def tearDown(self) -> None:
         self.server.terminate()
@@ -432,6 +451,14 @@ class ServerTest(RecordTest):
             t.join()
         self.assertEqual(codes.count(200), 1)
         self.assertEqual(codes.count(400), 19)
+
+    def test_start_line_reaches_a_pipe(self) -> None:
+        # Its output is a pipe here, as under a process manager or `| tee`.
+        ready, _, _ = select.select([self.server.stdout], [], [], SERVER_START_SECONDS)
+        self.assertTrue(ready, "serve printed nothing to the pipe")
+        self.assertIn(
+            b"Learning room at http://127.0.0.1:", self.server.stdout.readline()
+        )
 
     def test_bad_requests_are_refused(self) -> None:
         self.assertEqual(
