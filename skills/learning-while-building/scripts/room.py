@@ -422,9 +422,9 @@ def cmd_room_push(args: argparse.Namespace) -> None:
     )
 
 
-def pull_one(root: Path, attempt: dict, doc: dict) -> str:
-    """Apply one page document. Returns what changed: answered, graded, or ''."""
-    changed = ""
+def pull_one(root: Path, attempt: dict, doc: dict) -> set[str]:
+    """Apply one page document. Returns what changed: a set of 'answered' and 'graded'."""
+    changed = set()
     if state(attempt) == "open" and doc.get("answer"):
         save_response(
             root,
@@ -433,7 +433,7 @@ def pull_one(root: Path, attempt: dict, doc: dict) -> str:
             doc.get("confidence", "unknown"),
             doc.get("answeredAt") or now_stamp(None),
         )
-        changed = "answered"
+        changed.add("answered")
     graded_on_page = doc.get("status") == "graded" and doc.get("outcome") in OUTCOMES
     if state(attempt) == "answered" and graded_on_page:
         attempt["graded"] = {
@@ -449,7 +449,7 @@ def pull_one(root: Path, attempt: dict, doc: dict) -> str:
             "via": "page",
             "at": doc.get("gradedAt") or now_stamp(None),
         }
-        changed = "graded"
+        changed.add("graded")
     if (
         doc.get("restatement")
         and not attempt.get("restatement")
@@ -464,14 +464,14 @@ def cmd_room_pull(args: argparse.Namespace) -> None:
     """Read documents saved from a hosted page's store and apply answers and grades."""
     root = data_dir(args.dir)
     attempts = load_attempts(root)
-    counts = {"answered": 0, "graded": 0, "": 0}
+    counts = {"answered": 0, "graded": 0}
     for path in sorted(Path(args.dir_in).glob("*.json")):
         attempt = attempts.get(path.stem)
         if attempt is None or attempt.get("channel") != "async":
             continue
-        counts[
-            pull_one(root, attempt, json.loads(path.read_text(encoding="utf-8")))
-        ] += 1
+        doc = json.loads(path.read_text(encoding="utf-8"))
+        for change in pull_one(root, attempt, doc):
+            counts[change] += 1
     print(
         f"From the page: {counts['answered']} new answer(s), {counts['graded']} graded there."
     )
