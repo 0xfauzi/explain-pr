@@ -24,7 +24,7 @@ Terms used throughout:
 `python3 <skill>/scripts/learning.py ...`. (Claude Code also exposes this folder
 as `${CLAUDE_SKILL_DIR}`.) Below, `learning.py` is short for that command.
 
-Requires Python 3.9+ and git. Explainer checks also need node, and Playwright
+Requires Python 3.10+ and git. Explainer checks also need node, and Playwright
 for node for the browser half; without them, say which checks did not run.
 
 ## Voice
