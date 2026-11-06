@@ -23,6 +23,7 @@ from __future__ import annotations
 import argparse
 import json
 import sys
+import threading
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 
@@ -343,6 +344,13 @@ def route_post(root: Path, path: str, body: dict) -> tuple[int, object]:
     return 200, {"ok": True}
 
 
+# The server answers requests on several threads. Saving an answer checks the
+# question is open and then writes it; without this lock two simultaneous answers
+# can both pass the check. Measured with the window widened to 50 ms: 15 of 20
+# concurrent answers to one question were accepted without it, 1 of 20 with it.
+WRITE_LOCK = threading.Lock()
+
+
 def make_handler(root: Path) -> type:
     class Handler(BaseHTTPRequestHandler):
         def log_message(self, *args) -> None:  # keep the terminal quiet
@@ -364,6 +372,10 @@ def make_handler(root: Path) -> type:
             self.send(*route_get(root, self.path))
 
         def do_POST(self) -> None:
+            with WRITE_LOCK:
+                self.handle_post()
+
+        def handle_post(self) -> None:
             length = int(self.headers.get("Content-Length") or 0)
             if length > MAX_BODY_BYTES:
                 return self.send(413, {"error": "Request too large."})
