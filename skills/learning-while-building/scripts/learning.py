@@ -71,6 +71,10 @@ from record import (
     today,
 )
 
+# Independent review questions sent in one message. Same size as a practice
+# session, for the same reason: more than that and the reply becomes a chore.
+BATCH_LIMIT = DEFAULT_DUE_LIMIT
+
 # ---------------------------------------------------------------- git
 
 
@@ -190,7 +194,12 @@ def cmd_ask(args: argparse.Namespace) -> None:
     open_ones = [
         f"{k} ({a['topic']})" for k, a in load_attempts(root).items() if not a["graded"]
     ]
-    if open_ones:
+    if args.batch and len(open_ones) >= BATCH_LIMIT:
+        raise RecordError(
+            f"A batch holds at most {BATCH_LIMIT} open questions; open now: "
+            f"{', '.join(open_ones)}. Send them, then grade them."
+        )
+    if open_ones and not args.batch:
         raise RecordError(
             f"Still ungraded: {', '.join(open_ones)}. Grade each one first; "
             "use --outcome skipped if the learner never answered."
@@ -449,8 +458,24 @@ def topic_lines(
     return lines
 
 
+def short_line(
+    topic_id: str, topic: dict, attempts: dict[str, dict], now: dt.date
+) -> str:
+    history = scheduled_history(attempts, topic_id)
+    best = LEVEL_NAMES[level(history)]
+    return f"  {topic_id}: highest {best}; {current_evidence(topic, history, now)}"
+
+
+def needs_attention(
+    topic: dict, attempts: dict[str, dict], topic_id: str, now: dt.date
+) -> bool:
+    """Shown in the default map: anything not currently holding."""
+    history = scheduled_history(attempts, topic_id)
+    return not current_evidence(topic, history, now).startswith("holding")
+
+
 def dimension_lines(
-    dim: str, data: dict, attempts: dict[str, dict], now: dt.date
+    dim: str, data: dict, attempts: dict[str, dict], now: dt.date, detail: bool
 ) -> list[str]:
     topics = [
         (tid, t)
@@ -460,9 +485,17 @@ def dimension_lines(
     if not topics:
         return [f"{dim}: no evidence yet"]
     durable = sum(is_durable(t, scheduled_history(attempts, tid)) for tid, t in topics)
-    lines = [f"{dim}: {len(topics)} topic(s), {durable} with durable retention"]
-    for tid, topic in topics:
-        lines += topic_lines(tid, topic, attempts, now)
+    flagged = [(tid, t) for tid, t in topics if needs_attention(t, attempts, tid, now)]
+    holding = len(topics) - len(flagged)
+    lines = [
+        f"{dim}: {len(topics)} topic(s), {holding} holding, {durable} with durable retention"
+    ]
+    for tid, topic in topics if detail else flagged:
+        lines += (
+            topic_lines(tid, topic, attempts, now)
+            if detail
+            else [short_line(tid, topic, attempts, now)]
+        )
     return lines
 
 
@@ -500,8 +533,18 @@ def cmd_map(args: argparse.Namespace) -> None:
         "Durable retention: an unaided correct answer at least a week after the topic was added."
     )
     print()
+    if args.topic:
+        topic = require_topic(data, args.topic)
+        for line in topic_lines(args.topic, topic, attempts, now):
+            print(line)
+        return
+    if not args.all:
+        print(
+            "Showing only topics that are not holding. --all lists every topic; --topic ID details one."
+        )
+        print()
     for dim in data["dimensions"]:
-        for line in dimension_lines(dim, data, attempts, now):
+        for line in dimension_lines(dim, data, attempts, now, args.all):
             print(line)
     rates = interval_rows(attempts, data)
     if rates:
@@ -644,6 +687,11 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("--kind", required=True, choices=KINDS)
     p.add_argument("--question", required=True)
     p.add_argument("--rubric", required=True)
+    p.add_argument(
+        "--batch",
+        action="store_true",
+        help=f"allow up to {DEFAULT_DUE_LIMIT} open questions, for independent review questions sent together",
+    )
     p.set_defaults(func=cmd_ask)
 
     p = sub.add_parser("grade")
@@ -673,7 +721,10 @@ def build_parser() -> argparse.ArgumentParser:
     )
     p.set_defaults(func=cmd_import)
 
-    sub.add_parser("map").set_defaults(func=cmd_map)
+    p = sub.add_parser("map")
+    p.add_argument("--all", action="store_true", help="list every topic in full")
+    p.add_argument("--topic", help="full detail for one topic")
+    p.set_defaults(func=cmd_map)
     sub.add_parser("check").set_defaults(func=cmd_check)
     sub.add_parser("migrate").set_defaults(func=cmd_migrate)
     return parser

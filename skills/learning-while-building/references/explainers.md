@@ -17,7 +17,12 @@ the conversation; it never replaces the learner's own attempt in chat.
 
 ## When to build one, and when not to
 
-Build a page when the mechanism has a shape that text carries badly:
+A page is the most expensive thing this skill does: one test build took about
+138k tokens and 43 tool calls, against a few turns for a question in chat. The
+learning effect it relies on, committing to a prediction before the answer, works
+in chat too. What a page adds is the picture. So build one only when the learner
+asks for one, or when two chat attempts at the mechanism have failed and the
+mechanism has a shape that text carries badly:
 
 - state that changes over time (a request lifecycle, a retry, a migration)
 - ordering or interleaving (two writers, a crash between two steps)

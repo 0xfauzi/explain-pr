@@ -111,104 +111,34 @@ conflict markers, follow the resolution it prints.
 
 ## Choose the mode
 
-- **The learner is about to build something they want to learn from**: follow
-  Build mode below.
+Prefer the cheapest activity that does the job. A question in chat costs a few
+turns. An explainer page costs far more: one test build took about 138k tokens
+and 43 tool calls. A repair drill takes many turns of coaching.
+
+- **The learner is about to build something they want to learn from**: read
+  [references/build-mode.md](references/build-mode.md).
 - **A change already exists** (a PR, a commit range, or work just finished):
   read [references/studying-a-change.md](references/studying-a-change.md).
-- **"Quiz me", "test me", or the start of a session**: follow Practice mode.
-- **"What am I weak at?"**: follow Map mode.
-- **A debugging drill is requested or due**: read
+- **"Quiz me", "test me", or due reviews at the start of a session**: read
+  [references/practice.md](references/practice.md).
+- **"What am I weak at?"**: follow Map mode below.
+- **A debugging drill is requested**: read
   [references/repair-drills.md](references/repair-drills.md).
-- **A mechanism needs a picture** (state over time, ordering, a threshold,
-  topology) and the learner has already attempted it in chat: build an
-  explainer page by following
-  [references/explainers.md](references/explainers.md). Also when the learner
-  asks for one.
+- **An explainer page**: build one only when the learner asks for one, or when
+  their chat attempts at a mechanism with a visual shape (state over time,
+  ordering, a threshold, topology) have failed twice. Otherwise teach it in
+  chat. Read [references/explainers.md](references/explainers.md) first.
 
-Before writing any question, read
-[references/questions.md](references/questions.md). It covers question kinds,
-what makes a case novel, rubrics, hints and grading.
-
-## Build mode
-
-Copy this checklist and track it:
-
-```
-Build mode:
-- [ ] 1. Confirm the task is learning-critical
-- [ ] 2. Attempt first: one question before any design is shown (required)
-- [ ] 3. Optional: offer the learner the critical piece
-- [ ] 4. Build; optional: offer the first diagnosis of a bug
-- [ ] 5. Explain-back once it works (required, short)
-- [ ] 6. Record topics
-```
-
-Steps 2 and 5 are the two checkpoints. Steps 3 and 4 are single one-line offers;
-skip them when the learner is working remotely, has said they are busy, or has
-declined an offer earlier in the task.
-
-**1. Confirm the task is learning-critical.** Either the learner said so, or the
-task touches a dimension where `map` shows little evidence. In the second case,
-propose it once in one line ("This touches concurrency, where the record is
-thin. Make it a learning task?"). If they decline, build normally and stop here.
-
-**2. Attempt first.** Before showing a design, ask one question that makes the
-learner commit: sketch the approach, name the invariant that must hold, or
-predict where it will break. Do not walk through the relevant code first: point
-to the files and let the learner read them, because a walkthrough is a hint
-(H1 or H2) given before the attempt. Add the topic if it is new (`topic add`), then
-`ask` with kind `attempt`. A wrong attempt is expected and useful; it sets up
-the explanation. After grading, give the design and say where it differs from
-theirs and why.
-
-**3. Optional: offer the critical piece.** If there is a small piece on the
-critical path that carries the concept, offer the learner the chance to write it
-while Claude writes the rest. Review their code as a peer would. If they decline,
-Claude writes it.
-
-**4. Build, and optionally offer the first diagnosis.** When a bug or failing
-test appears that bears on the topic, show the symptom and ask in one line
-whether the learner wants to diagnose it first. If yes, run it as a `diagnosis`
-attempt with the hint ladder. If no, or for bugs unrelated to the topic, fix it
-and carry on.
-
-**5. Explain-back.** Once the change works, ask the learner to explain the
-mechanism that makes it correct, or what change would break it. Use kind
-`explain-back`. Do not summarise the change first; the learner's explanation
-comes before Claude's. If their answer shows a gap in a mechanism with a visual
-shape, offer an explainer page aimed at that gap.
-
-**6. Record topics.** Keep one to three topics per task: the concepts worth
-having in a month. Each one needs a `--concept` a stranger could understand and
-`--anchor` paths to the code that embodies it. Topics are scheduled
-automatically.
-
-## Practice mode
-
-```
-Practice mode:
-- [ ] 1. Run `due`
-- [ ] 2. For each topic shown: re-read the anchors, ask, grade, give feedback
-- [ ] 3. Close with a two-line summary
-```
-
-**1.** Run `python3 ${CLAUDE_SKILL_DIR}/scripts/learning.py due`. If it reports
-an ungraded attempt, grade it (`skipped` if the learner never answered) before
-anything else. If nothing is due, say so and offer a transfer question or a
-repair drill on the weakest dimension from `map`.
-
-**2.** For each topic, re-read its anchor files first, since the code may have
-changed. If an anchor is missing or the concept no longer applies, tell the
-learner and retire the topic with a reason. Then use the suggested kind from
-`due`: `retrieval` until the learner has one unassisted correct answer, then
-`transfer` or `repair`. Ask one at a time.
-
-**3.** Close with two lines: what the learner showed unaided, and the one gap to
-work on next.
+Before posing any question, read
+[references/questions.md](references/questions.md): rules, kinds, rubrics, hints
+and grading. When the right format or question shape is not obvious, read
+[references/question-design.md](references/question-design.md).
 
 ## Map mode
 
-Run `python3 ${CLAUDE_SKILL_DIR}/scripts/learning.py map`. Report the two
+Run `python3 ${CLAUDE_SKILL_DIR}/scripts/learning.py map`. By default it lists
+only topics that are not holding; use `--topic ID` for one topic's detail and
+`--all` only when the learner asks for everything. Report the two
 weakest dimensions with the evidence the map gives, any confident-and-wrong
 answers (these are misconceptions, not gaps), and suggest the next practice
 item. Dimensions with no evidence are unknown, not weak; say so.
@@ -231,17 +161,19 @@ goes through the script; never edit the data files by hand.
 | `topic add --id ID --dimension D --concept TEXT --anchor PATH` | Add a topic; `--anchor` repeats |
 | `topic add-dimension --name D` | Add a dimension the learner asked for |
 | `topic retire --id ID --reason TEXT` | Stop scheduling a topic |
-| `ask --topic ID --kind K --question TEXT --rubric TEXT` | Fix the rubric and open an attempt; prints its id |
+| `ask --topic ID --kind K --question TEXT --rubric TEXT [--batch]` | Fix the rubric and open an attempt; prints its id. `--batch` allows up to 3 open, for practice |
 | `grade --attempt ID --outcome O --hint H --confidence C --answer TEXT --gap TEXT [--evidence REF]` | Close an attempt; prints the next review date. `ID` may be a unique part of the id |
 | `import --file F` | Record results pasted from an explainer page (`-` reads stdin) |
 | `due [--limit N]` | Topics due now, mixed across dimensions |
-| `map` | Per-dimension evidence, misconceptions, and how the schedule is holding up |
+| `map [--topic ID] [--all]` | Per-dimension summary and the topics not holding; how the schedule is doing |
 | `check` | Validate the record; exits 1 with each problem named |
 | `migrate` | Convert a record from the old single-file format, once |
 
 Kinds: `attempt`, `explain-back`, `retrieval`, `transfer`, `diagnosis`,
 `repair`, `field`. Outcomes: `correct`, `partial`, `wrong`, `skipped`. The script
-refuses `correct` at H3, and refuses a new `ask` while one is ungraded.
+refuses `correct` at H3, and refuses a new `ask` while one is ungraded unless
+`--batch` is given. Chain related commands in one shell call (`grade ... && ask
+...`) rather than one call each.
 
 Explainer pages are checked with
 `python3 ${CLAUDE_SKILL_DIR}/scripts/check_explainer.py PAGE`; see
