@@ -1,0 +1,351 @@
+<title>Learning Room</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&family=Source+Serif+4:opsz,wght@8..60,500;8..60,600&display=swap">
+<style>
+/* Layout: one working column. The question in front of you is the page; the record sits below it. */
+:root {
+  --bg: #f6f7f8; --surface: #ffffff; --fg: #1b2026; --muted: #5a6470; --line: #d7dce1;
+  --accent: #1f5f7a; --accent-ink: #ffffff; --code-bg: #eef1f4;
+  --ok: #23703f; --ok-bg: #e5f2e9; --part: #8a5a00; --part-bg: #fbf0d9; --bad: #a2302a; --bad-bg: #f8e5e3;
+  --display: "Source Serif 4", Georgia, "Times New Roman", serif;
+  --body: "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --mono: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg: #121519; --surface: #1a1f25; --fg: #e3e7eb; --muted: #9aa4af; --line: #2e353d;
+  --accent: #7cc0dc; --accent-ink: #0f1418; --code-bg: #20262d;
+  --ok: #82d39c; --ok-bg: #1b3325; --part: #e9bd62; --part-bg: #3a2f17; --bad: #f0a29c; --bad-bg: #3d2220;
+  color-scheme: dark } }
+:root[data-theme="dark"] {
+  --bg: #121519; --surface: #1a1f25; --fg: #e3e7eb; --muted: #9aa4af; --line: #2e353d;
+  --accent: #7cc0dc; --accent-ink: #0f1418; --code-bg: #20262d;
+  --ok: #82d39c; --ok-bg: #1b3325; --part: #e9bd62; --part-bg: #3a2f17; --bad: #f0a29c; --bad-bg: #3d2220;
+  color-scheme: dark }
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--fg); font: 16px/1.55 var(--body); }
+.wrap { max-width: 42rem; margin: 0 auto; padding-block: 24px 64px;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px));
+  display: grid; gap: 28px; }
+header { display: grid; gap: 4px; }
+h1 { font: 600 1.75rem/1.2 var(--display); margin: 0; text-wrap: balance; }
+.sub { color: var(--muted); margin: 0; font-size: .95rem; }
+h2 { font: 600 .78rem/1 var(--body); letter-spacing: .08em; text-transform: uppercase; color: var(--muted); margin: 0 0 10px; }
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 18px; display: grid; gap: 14px; min-width: 0; }
+.meta { display: flex; flex-wrap: wrap; gap: 6px 10px; align-items: center; font-size: .85rem; color: var(--muted); }
+.kind { font: 500 .75rem/1 var(--mono); padding: 4px 7px; border-radius: 4px; background: var(--code-bg); color: var(--fg); }
+.question { font: 500 1.12rem/1.5 var(--display); margin: 0; white-space: pre-wrap; overflow-wrap: anywhere; }
+pre.context { margin: 0; background: var(--code-bg); border-radius: 6px; padding: 10px 12px; overflow-x: auto; font: .85rem/1.5 var(--mono); }
+label.field { display: grid; gap: 6px; font-weight: 500; }
+textarea { width: 100%; min-height: 7rem; font: inherit; color: var(--fg); background: var(--bg); border: 1px solid var(--line); border-radius: 6px; padding: 10px; resize: vertical; }
+textarea.short { min-height: 3.5rem; }
+fieldset { border: 0; padding: 0; margin: 0; display: grid; gap: 6px; }
+legend { padding: 0; font-weight: 500; margin-bottom: 6px; }
+.conf { display: flex; flex-wrap: wrap; gap: 8px; }
+.conf label { display: inline-flex; align-items: center; gap: 6px; min-height: 44px; padding: 0 14px; border: 1px solid var(--line); border-radius: 22px; cursor: pointer; }
+.conf input:checked + span { font-weight: 600; color: var(--accent); }
+.actions { display: flex; flex-wrap: wrap; gap: 10px; }
+button { font: 600 1rem var(--body); min-height: 44px; padding: 0 18px; border-radius: 8px; border: 1px solid var(--accent); background: var(--accent); color: var(--accent-ink); cursor: pointer; }
+button.quiet { background: transparent; color: var(--accent); }
+button:disabled { opacity: .5; cursor: default; }
+button:focus-visible, textarea:focus-visible, .conf label:focus-within { outline: 2px solid var(--accent); outline-offset: 2px; }
+.status { margin: 0; color: var(--muted); min-height: 1.4em; }
+.hint { margin: 0; color: var(--muted); font-size: .9rem; }
+.verdict { border-radius: 8px; padding: 12px 14px; display: grid; gap: 6px; }
+.verdict p { margin: 0; white-space: pre-wrap; overflow-wrap: anywhere; }
+.verdict.correct { background: var(--ok-bg); } .verdict.partial { background: var(--part-bg); } .verdict.wrong { background: var(--bad-bg); }
+.pill { font: 600 .75rem/1 var(--body); text-transform: uppercase; letter-spacing: .06em; }
+.correct .pill, .pill.correct { color: var(--ok); } .partial .pill, .pill.partial { color: var(--part); } .wrong .pill, .pill.wrong { color: var(--bad); }
+.yours { color: var(--muted); font-size: .9rem; margin: 0; white-space: pre-wrap; overflow-wrap: anywhere; }
+.empty { color: var(--muted); margin: 0; }
+ul.list { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
+ul.list li { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 10px 12px; min-width: 0; display: grid; gap: 6px; }
+details summary { cursor: pointer; display: flex; gap: 10px; align-items: baseline; list-style: none; }
+details summary::-webkit-details-marker { display: none; }
+details summary .q { flex: 1; min-width: 0; overflow-wrap: anywhere; }
+details[open] summary { margin-bottom: 8px; }
+.detail { display: grid; gap: 6px; font-size: .92rem; }
+.detail p { margin: 0; white-space: pre-wrap; overflow-wrap: anywhere; }
+.note { font-size: .85rem; color: var(--muted); margin: 0; }
+</style>
+
+<div class="wrap">
+  <header>
+    <h1>Learning Room</h1>
+    <p class="sub" id="project">Questions from your build sessions, answered when it suits you.</p>
+  </header>
+
+  <section aria-labelledby="now-h">
+    <h2 id="now-h">Now</h2>
+    <div id="now"><div class="card"><p class="empty" id="boot-msg">Loading your questions…</p></div></div>
+  </section>
+
+  <section aria-labelledby="waiting-h" id="waiting-sec" hidden>
+    <h2 id="waiting-h">Waiting for grading</h2>
+    <ul class="list" id="waiting"></ul>
+  </section>
+
+  <section aria-labelledby="done-h">
+    <h2 id="done-h">Answered</h2>
+    <ul class="list" id="done"></ul>
+    <p class="empty" id="done-empty">Nothing answered yet.</p>
+  </section>
+
+  <p class="note" id="footer-note">Claude posts a question here at a learning checkpoint in a build, with the expected answer fixed before you see it, and keeps building. Your answer locks when you submit.</p>
+</div>
+
+<script>
+(function () {
+  "use strict";
+  const $ = (id) => document.getElementById(id);
+  const el = (tag, props = {}, kids = []) => { const n = Object.assign(document.createElement(tag), props); n.append(...kids); return n; };
+  const OUTCOMES = ["correct", "partial", "wrong"];
+  const DONT_KNOW = "I don't know.";
+  const iso = () => new Date().toISOString();
+  let store = null, all = [], focusId = null, shownKey = null;
+  const deferred = new Set();   // "Not now" in this view only
+  const notes = {};             // status line per question, kept across re-renders
+
+  // ------------------------------------------------------------ stores
+
+  function gradePrompt(q) {
+    return [
+      "You are grading one answer from a software engineer practising their understanding of their own codebase.",
+      "Grade ONLY against the rubric. It was written from the code before the learner saw the question.",
+      "", "Question: " + q.question,
+      q.context ? "Context shown to the learner:\n" + q.context : "",
+      "Rubric (what a correct answer must contain, and what counts as partial):\n" + q.rubric,
+      "Learner's answer: " + q.answer, "Learner's confidence: " + q.confidence, "",
+      "Return JSON only: {\"outcome\": \"correct\" | \"partial\" | \"wrong\", \"feedback\": string, \"gap\": string}.",
+      "Feedback rules: start with \"Correct.\", \"Not quite.\" (partial) or \"No.\" (wrong). Respond to the learner's actual reasoning:",
+      "say which part holds, which inference fails, and the evidence from the rubric, citing file:line where the rubric gives one.",
+      "If the learner said they don't know, give the answer plainly without commenting on that.",
+      "If confidence is high and the outcome is wrong, name the belief behind the answer and say it is a misconception.",
+      "A correct answer gets one short sentence. No praise, no encouragement, no filler. At most 120 words. Plain text, no markdown.",
+      "gap: the missing idea in one line, or an empty string if correct.",
+    ].filter(Boolean).join("\n");
+  }
+
+  function hostedStore(db, sample) {
+    const ref = (id) => db.doc("questions/" + id);
+    return {
+      gradesHere: !!sample,
+      subscribe(onRows, onError) {
+        db.collection("questions").orderBy("createdAt", "asc").onSnapshot(
+          (snap) => onRows(snap.docs.map((d) => Object.assign({ id: d.id }, d.data()))),
+          (e) => onError(e.code));
+        db.doc("meta/project").onSnapshot((s) => {
+          if (s.exists && s.data().repo) $("project").textContent = "Questions from your build sessions on " + s.data().repo + ", answered when it suits you.";
+        });
+      },
+      answer: (id, answer, confidence) => ref(id).update({ status: "answered", answer, confidence, answeredAt: iso() }),
+      restate: (id, text) => ref(id).update({ restatement: text }),
+      async grade(q) {
+        if (!sample) return "Saved and locked. Your next session grades it.";
+        try {
+          const r = await sample.json(gradePrompt(q), { modelTier: "default", cache: false });
+          if (!r || !OUTCOMES.includes(r.outcome) || typeof r.feedback !== "string") throw { code: "bad_shape" };
+          await ref(q.id).update({ status: "graded", outcome: r.outcome, feedback: r.feedback, gap: typeof r.gap === "string" ? r.gap : "", gradedBy: "page", gradedAt: iso() });
+          return "";
+        } catch (e) {
+          const code = e && e.code;
+          if (code === "not_granted") return "Saved and locked. You chose not to let this page use Claude, so your next session grades it.";
+          if (code === "rate_limited") return "Saved and locked. Claude is busy for you right now; press Grade later, or your next session grades it.";
+          return "Saved and locked, but grading did not finish (" + (code || "error") + "). Press Grade to try again, or your next session grades it.";
+        }
+      },
+    };
+  }
+
+  function localStore() {
+    async function post(path, body) {
+      const r = await fetch(path, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
+      const j = await r.json().catch(() => ({}));
+      if (!r.ok) throw { code: j.error || "error " + r.status };
+    }
+    let push = () => {}, rows = [], timer = null;
+    async function refresh() {
+      try { const r = await fetch("api/questions", { cache: "no-store" }); if (r.ok) { rows = await r.json(); push(rows); } } catch (e) { /* server stopped; keep what is shown */ }
+    }
+    // The server is on this machine, so a check costs only a file read. Check often while
+    // an answer waits for grading, so feedback shows up soon after the session grades it.
+    function schedule() {
+      clearTimeout(timer);
+      const waiting = rows.some((q) => q.status === "answered");
+      timer = setTimeout(async () => { await refresh(); schedule(); }, waiting ? 5000 : 20000);
+    }
+    return {
+      gradesHere: false,
+      subscribe(onRows) {
+        push = onRows;
+        refresh().then(schedule);
+        document.addEventListener("visibilitychange", () => { if (!document.hidden) refresh(); });
+      },
+      answer: async (id, answer, confidence) => { await post("api/answer", { id, answer, confidence }); await refresh(); schedule(); },
+      restate: async (id, text) => { await post("api/restate", { id, text }); await refresh(); },
+      grade: async () => "Saved and locked. Your next session grades it, and the feedback appears here.",
+    };
+  }
+
+  async function openStore() {
+    if (window.claude && window.claude.use) {
+      const [db, sample] = await Promise.all([window.claude.use("db"), window.claude.use("sample")]);
+      if (!db) return { none: "Sign in to see your questions. They are kept in this page's private store." };
+      return hostedStore(db, sample);
+    }
+    if (location.protocol.startsWith("http")) {
+      try { const r = await fetch("api/questions", { cache: "no-store" }); if (r.ok) return localStore(); } catch (e) { /* fall through */ }
+    }
+    return { none: "This page needs its server. In your project, run `learning.py serve` and open the address it prints." };
+  }
+
+  // ------------------------------------------------------------ cards
+
+  function metaRow(q) {
+    const row = el("div", { className: "meta" }, [el("span", { className: "kind", textContent: q.kind || "question" })]);
+    if (q.topic) row.append(el("span", { textContent: q.topic }));
+    if (q.dimension) row.append(el("span", { textContent: q.dimension }));
+    return row;
+  }
+
+  function verdict(q) {
+    return el("div", { className: "verdict " + q.outcome }, [el("span", { className: "pill", textContent: q.outcome }), el("p", { textContent: q.feedback || "" })]);
+  }
+
+  async function submit(q, answer, confidence, card) {
+    const status = card.querySelector(".status");
+    card.querySelectorAll("button, textarea, input").forEach((n) => (n.disabled = true));
+    status.textContent = "Saving…";
+    focusId = q.id;
+    notes[q.id] = store.gradesHere ? "Saved and locked. Grading against the expected answer…" : "";
+    try { await store.answer(q.id, answer, confidence); }
+    catch (e) {
+      focusId = null;
+      status.textContent = "Could not save (" + (e && e.code) + "). Your answer is still here; try again.";
+      card.querySelectorAll("button, textarea, input").forEach((n) => (n.disabled = false));
+      return;
+    }
+    notes[q.id] = await store.grade(Object.assign({}, q, { answer, confidence }));
+    if (focusId === q.id) render(true);
+  }
+
+  function answerCard(q, waitingCount) {
+    const card = el("div", { className: "card" });
+    card.append(metaRow(q), el("p", { className: "question", textContent: q.question }));
+    if (q.context) card.append(el("pre", { className: "context", textContent: q.context }));
+    if (q.kind === "retrieval") card.append(el("p", { className: "hint", textContent: "Answer from memory. Opening the code first turns this into recognition." }));
+    const area = el("textarea", { id: "answer-" + q.id, placeholder: "Your answer, in your own words." });
+    card.append(el("label", { className: "field", htmlFor: area.id }, ["Your answer", area]));
+    const set = el("fieldset", {}, [el("legend", { textContent: "How sure are you?" })]);
+    const conf = el("div", { className: "conf" });
+    for (const level of ["low", "medium", "high"]) {
+      const input = el("input", { type: "radio", name: "conf-" + q.id, value: level, id: "conf-" + q.id + "-" + level });
+      conf.append(el("label", { htmlFor: input.id }, [input, el("span", { textContent: level })]));
+    }
+    set.append(conf);
+    const go = el("button", { type: "button", textContent: "Submit answer" });
+    const dunno = el("button", { type: "button", className: "quiet", textContent: "I don't know" });
+    const later = el("button", { type: "button", className: "quiet", textContent: "Not now" });
+    const status = el("p", { className: "status", role: "status" });
+    card.append(set, el("div", { className: "actions" }, [go, dunno, later]), status);
+    if (waitingCount > 1) card.append(el("p", { className: "note", textContent: (waitingCount - 1) + " more waiting after this one." }));
+    go.addEventListener("click", () => {
+      const picked = card.querySelector("input[type=radio]:checked");
+      if (area.value.trim().length < 3 || !picked) { status.textContent = "Write an answer and pick how sure you are. It locks when you submit."; return; }
+      submit(q, area.value.trim(), picked.value, card);
+    });
+    dunno.addEventListener("click", () => submit(q, DONT_KNOW, "low", card));
+    later.addEventListener("click", () => { deferred.add(q.id); render(true); });
+    return card;
+  }
+
+  function restateBox(q) {
+    const area = el("textarea", { id: "restate-" + q.id, className: "short", placeholder: "In one line, the corrected idea." });
+    const save = el("button", { type: "button", className: "quiet", textContent: "Save" });
+    const s = el("p", { className: "status", role: "status" });
+    save.addEventListener("click", async () => {
+      if (area.value.trim().length < 3) { s.textContent = "Write one line first."; return; }
+      save.disabled = true; area.disabled = true;
+      try { await store.restate(q.id, area.value.trim()); s.textContent = "Saved."; }
+      catch (e) { save.disabled = false; area.disabled = false; s.textContent = "Could not save (" + (e && e.code) + ")."; }
+    });
+    return el("div", { className: "field" }, [el("label", { htmlFor: area.id, textContent: "Restate it in your own words (optional)" }), area, save, s]);
+  }
+
+  function resultCard(q) {
+    const card = el("div", { className: "card" });
+    card.append(metaRow(q), el("p", { className: "question", textContent: q.question }));
+    card.append(el("p", { className: "yours", textContent: "You answered (" + q.confidence + " confidence): " + q.answer }));
+    if (q.status === "graded") {
+      card.append(verdict(q));
+      if (q.restatement) card.append(el("p", { className: "yours", textContent: "Your restatement: " + q.restatement }));
+      else if (q.outcome !== "correct") card.append(restateBox(q));
+    } else {
+      card.append(el("p", { className: "status", role: "status", textContent: notes[q.id] || "Saved and locked. Waiting for grading." }));
+    }
+    const next = el("button", { type: "button", className: "quiet", textContent: "Next" });
+    next.addEventListener("click", () => { focusId = null; render(true); });
+    card.append(el("div", { className: "actions" }, [next]));
+    return card;
+  }
+
+  function emptyCard() {
+    const text = deferred.size
+      ? "You put " + deferred.size + " question(s) aside for now. Reload the page to see them again."
+      : "No questions waiting. When a build reaches a learning checkpoint, Claude posts the question here and carries on building.";
+    return el("div", { className: "card" }, [el("p", { className: "empty", textContent: text })]);
+  }
+
+  // ------------------------------------------------------------ render
+
+  function renderNow(force) {
+    const open = all.filter((q) => q.status === "open");
+    const shown = open.filter((q) => !deferred.has(q.id));
+    const focus = focusId && all.find((q) => q.id === focusId);
+    const target = focus || shown[0] || null;
+    const key = target ? target.id + ":" + target.status + ":" + (target.restatement ? 1 : 0) : "empty";
+    if (!force && key === shownKey) return;   // never rebuild a card the learner may be typing into
+    shownKey = key;
+    $("now").replaceChildren(!target ? emptyCard() : target.status === "open" ? answerCard(target, shown.length) : resultCard(target));
+  }
+
+  function renderLists() {
+    const waiting = all.filter((q) => q.status === "answered" && q.id !== focusId);
+    $("waiting-sec").hidden = waiting.length === 0;
+    $("waiting").replaceChildren(...waiting.map((q) => {
+      const li = el("li", {}, [el("p", { className: "question", textContent: q.question })]);
+      if (store.gradesHere) {
+        const b = el("button", { type: "button", className: "quiet", textContent: "Grade" });
+        const s = el("p", { className: "status", role: "status" });
+        b.addEventListener("click", async () => { b.disabled = true; s.textContent = "Grading…"; s.textContent = await store.grade(q); b.disabled = false; });
+        li.append(el("div", { className: "actions" }, [b]), s);
+      } else {
+        li.append(el("p", { className: "note", textContent: "Your next session grades this." }));
+      }
+      return li;
+    }));
+    const done = all.filter((q) => q.status === "graded" && q.id !== focusId).sort((a, b) => (b.gradedAt || "").localeCompare(a.gradedAt || ""));
+    $("done-empty").hidden = done.length > 0;
+    $("done").replaceChildren(...done.map((q) => {
+      const body = el("div", { className: "detail" }, [
+        el("p", { className: "yours", textContent: "You (" + q.confidence + "): " + q.answer }),
+        el("p", { textContent: q.feedback || "" }),
+      ]);
+      if (q.restatement) body.append(el("p", { className: "yours", textContent: "Your restatement: " + q.restatement }));
+      const d = el("details", {}, [el("summary", {}, [el("span", { className: "pill " + q.outcome, textContent: q.outcome }), el("span", { className: "q", textContent: q.question })]), body]);
+      return el("li", {}, [d]);
+    }));
+  }
+
+  function render(force) { renderNow(force); renderLists(); }
+
+  async function boot() {
+    store = await openStore();
+    if (store.none) { $("boot-msg").textContent = store.none; return; }
+    if (!store.gradesHere) $("footer-note").textContent += " Grading happens in your next build session, and the feedback appears here.";
+    const slow = setTimeout(() => { if ($("boot-msg")) $("boot-msg").textContent = "Still loading your questions…"; }, 10000);
+    store.subscribe((rows) => { clearTimeout(slow); all = rows; render(false); },
+      (code) => { clearTimeout(slow); $("boot-msg").textContent = "Could not load your questions (" + code + ")."; });
+  }
+  boot();
+})();
+</script>

@@ -70,6 +70,11 @@ from record import (
     success_streak,
     today,
 )
+from room import add_commands as add_room_commands
+
+# Independent review questions sent in one message. Same size as a practice
+# session, for the same reason: more than that and the reply becomes a chore.
+BATCH_LIMIT = DEFAULT_DUE_LIMIT
 
 # ---------------------------------------------------------------- git
 
@@ -187,10 +192,18 @@ def cmd_ask(args: argparse.Namespace) -> None:
         raise RecordError(
             "--rubric is empty. Write the expected answer points before asking."
         )
+    # Posted questions wait for the learner by design, so they never block a chat question.
     open_ones = [
-        f"{k} ({a['topic']})" for k, a in load_attempts(root).items() if not a["graded"]
+        f"{k} ({a['topic']})"
+        for k, a in load_attempts(root).items()
+        if not a["graded"] and a.get("channel") != "async"
     ]
-    if open_ones:
+    if args.batch and len(open_ones) >= BATCH_LIMIT:
+        raise RecordError(
+            f"A batch holds at most {BATCH_LIMIT} open questions; open now: "
+            f"{', '.join(open_ones)}. Send them, then grade them."
+        )
+    if open_ones and not args.batch:
         raise RecordError(
             f"Still ungraded: {', '.join(open_ones)}. Grade each one first; "
             "use --outcome skipped if the learner never answered."
@@ -230,11 +243,19 @@ def cmd_grade(args: argparse.Namespace) -> None:
             "Hint level 3 means the answer was given. Grade it partial or wrong, not correct."
         )
     evidence = (args.evidence or "").strip()
+    response = attempt.get("response") or {}
+    answer = args.answer or response.get("answer")
+    confidence = args.confidence or response.get("confidence")
+    if not answer or not confidence:
+        raise RecordError(
+            "--answer and --confidence are required unless the learner saved an answer."
+        )
     attempt["graded"] = {
         "outcome": args.outcome,
         "hint": args.hint,
-        "confidence": args.confidence,
-        "answer": args.answer,
+        "confidence": confidence,
+        "answer": answer,
+        "feedback": args.feedback or "",
         "gap": args.gap or "",
         "evidence": evidence,
         "grader": grader_for(attempt, evidence),
@@ -400,7 +421,7 @@ def cmd_due(args: argparse.Namespace) -> None:
     data = load_record(root)
     attempts = load_attempts(root)
     for attempt in attempts.values():
-        if not attempt["graded"]:
+        if not attempt["graded"] and attempt.get("channel") != "async":
             print(
                 f"UNGRADED attempt {attempt['id']} on {attempt['topic']}: grade it "
                 "(--outcome skipped if never answered) before asking anything new."
@@ -449,8 +470,24 @@ def topic_lines(
     return lines
 
 
+def short_line(
+    topic_id: str, topic: dict, attempts: dict[str, dict], now: dt.date
+) -> str:
+    history = scheduled_history(attempts, topic_id)
+    best = LEVEL_NAMES[level(history)]
+    return f"  {topic_id}: highest {best}; {current_evidence(topic, history, now)}"
+
+
+def needs_attention(
+    topic: dict, attempts: dict[str, dict], topic_id: str, now: dt.date
+) -> bool:
+    """Shown in the default map: anything not currently holding."""
+    history = scheduled_history(attempts, topic_id)
+    return not current_evidence(topic, history, now).startswith("holding")
+
+
 def dimension_lines(
-    dim: str, data: dict, attempts: dict[str, dict], now: dt.date
+    dim: str, data: dict, attempts: dict[str, dict], now: dt.date, detail: bool
 ) -> list[str]:
     topics = [
         (tid, t)
@@ -460,9 +497,17 @@ def dimension_lines(
     if not topics:
         return [f"{dim}: no evidence yet"]
     durable = sum(is_durable(t, scheduled_history(attempts, tid)) for tid, t in topics)
-    lines = [f"{dim}: {len(topics)} topic(s), {durable} with durable retention"]
-    for tid, topic in topics:
-        lines += topic_lines(tid, topic, attempts, now)
+    flagged = [(tid, t) for tid, t in topics if needs_attention(t, attempts, tid, now)]
+    holding = len(topics) - len(flagged)
+    lines = [
+        f"{dim}: {len(topics)} topic(s), {holding} holding, {durable} with durable retention"
+    ]
+    for tid, topic in topics if detail else flagged:
+        lines += (
+            topic_lines(tid, topic, attempts, now)
+            if detail
+            else [short_line(tid, topic, attempts, now)]
+        )
     return lines
 
 
@@ -500,8 +545,18 @@ def cmd_map(args: argparse.Namespace) -> None:
         "Durable retention: an unaided correct answer at least a week after the topic was added."
     )
     print()
+    if args.topic:
+        topic = require_topic(data, args.topic)
+        for line in topic_lines(args.topic, topic, attempts, now):
+            print(line)
+        return
+    if not args.all:
+        print(
+            "Showing only topics that are not holding. --all lists every topic; --topic ID details one."
+        )
+        print()
     for dim in data["dimensions"]:
-        for line in dimension_lines(dim, data, attempts, now):
+        for line in dimension_lines(dim, data, attempts, now, args.all):
             print(line)
     rates = interval_rows(attempts, data)
     if rates:
@@ -644,6 +699,11 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("--kind", required=True, choices=KINDS)
     p.add_argument("--question", required=True)
     p.add_argument("--rubric", required=True)
+    p.add_argument(
+        "--batch",
+        action="store_true",
+        help=f"allow up to {DEFAULT_DUE_LIMIT} open questions, for independent review questions sent together",
+    )
     p.set_defaults(func=cmd_ask)
 
     p = sub.add_parser("grade")
@@ -652,9 +712,18 @@ def build_parser() -> argparse.ArgumentParser:
     )
     p.add_argument("--outcome", required=True, choices=OUTCOMES)
     p.add_argument("--hint", required=True, type=int, choices=HINT_LEVELS)
-    p.add_argument("--confidence", required=True, choices=CONFIDENCES)
-    p.add_argument("--answer", required=True, help="the learner's answer, paraphrased")
+    p.add_argument(
+        "--confidence", choices=CONFIDENCES, help="defaults to the saved answer's"
+    )
+    p.add_argument(
+        "--answer",
+        help="the learner's answer, paraphrased; defaults to the saved answer",
+    )
     p.add_argument("--gap", help="what was missing or wrong, in one line")
+    p.add_argument(
+        "--feedback",
+        help="the feedback, stored so the learner can read it outside chat",
+    )
     p.add_argument(
         "--evidence",
         help="an artifact Claude inspected: commit, PR, test output, trace",
@@ -673,8 +742,12 @@ def build_parser() -> argparse.ArgumentParser:
     )
     p.set_defaults(func=cmd_import)
 
-    sub.add_parser("map").set_defaults(func=cmd_map)
+    p = sub.add_parser("map")
+    p.add_argument("--all", action="store_true", help="list every topic in full")
+    p.add_argument("--topic", help="full detail for one topic")
+    p.set_defaults(func=cmd_map)
     sub.add_parser("check").set_defaults(func=cmd_check)
+    add_room_commands(sub)
     sub.add_parser("migrate").set_defaults(func=cmd_migrate)
     return parser
 

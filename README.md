@@ -23,6 +23,17 @@ Then, in a project repository:
 or say "make this a learning task", "quiz me", "help me understand what PR 128
 did", "draw me how this works", or "what am I weak at".
 
+**Answer when it suits you.** Claude can post a question and keep building. You
+answer later: in chat, in a terminal with `learning.py answer`, or on the
+learning room page, which runs on your own machine with `learning.py serve`.
+On claude.ai the same page can be published privately and grades your answer
+on the spot. The next session grades anything still waiting, and the feedback
+is stored so you can read it on any of those routes.
+
+Nothing here needs a particular harness: the skill uses the Agent Skills
+format, Python 3 and git. Claude Code, claude.ai pages and Playwright are used
+when present and skipped when not.
+
 The first run creates `.learning/` in the repository. Commit it. Cloud session
 containers are reclaimed, and an uncommitted record goes with them.
 
@@ -181,6 +192,26 @@ No evaluations ship. The real outcome is your capability, which nothing
 automated here can measure. This departs from Anthropic's skill guidance, which
 asks for at least three behavioural evaluations of the skill itself; those
 would be measurable and could be added.
+
+## What it costs
+
+Measured once, on three due topics with the same scripted learner answers (one
+right, one confidently wrong, one partial), counting every model request:
+
+| Practice run | Requests | Learner replies | Weighted tokens* |
+|---|---|---|---|
+| One question at a time, fresh session (0.3) | 21 | 5 | 318k |
+| Batched, fresh session (0.4) | 11 | 2 | 223k |
+| One at a time, after ~90 KB of earlier work (0.3) | 16 | 5 | 401k |
+
+*Input-token equivalents: cache writes x1.25, cache reads x0.1, output x5.
+
+All three graded the answers the same way. Batching saved about 30% and three
+waits; running practice in a session that already holds a long build cost about
+26% more than a fresh one. One explainer page cost about 138k tokens on its own.
+These are single runs with a simulated learner who replied within seconds; a
+real learner replying minutes later may find the cache expired, which adds cost
+to every reply and makes fewer replies worth more.
 
 ## What it cannot do
 
