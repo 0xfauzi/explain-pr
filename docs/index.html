@@ -97,7 +97,7 @@ h2 { font: 600 clamp(1.6rem, 3vw, 2.15rem)/1.2 var(--display); margin: 0 0 20px;
 h3 { font: 600 1.05rem/1.4 var(--body); margin: 0 0 6px; }
 .note { font-size: .93rem; color: var(--ink-2); }
 
-.bars { display: grid; gap: 12px; margin: 24px 0 26px; }
+.bars { display: grid; gap: 12px; margin: 24px 0 34px; }
 .bar { display: grid; grid-template-columns: 11rem minmax(0, 1fr) 3.4rem; gap: 14px; align-items: center; font-size: .95rem; }
 .bar .track { height: 24px; background: var(--sheet); border: 1px solid var(--rule); border-radius: 3px; overflow: hidden; }
 .bar .fill { display: block; height: 100%; background: var(--mark); }
@@ -156,6 +156,74 @@ th { font: 500 .78rem var(--mono); color: var(--ink-2); }
 td.num { font: 500 .92rem var(--mono); font-variant-numeric: tabular-nums; white-space: nowrap; }
 tr.best td { background: var(--pass-bg); }
 
+/* ---- motion and interaction ---- */
+:root { --ease: cubic-bezier(.2, .7, .2, 1); }
+h1 .pencil { position: relative; white-space: nowrap; }
+h1 .pencil svg { position: absolute; left: -2%; bottom: -.12em; width: 104%; height: .32em; overflow: visible; pointer-events: none; }
+h1 .pencil path { fill: none; stroke: var(--pencil); stroke-width: 5; stroke-linecap: round; stroke-dasharray: 420; stroke-dashoffset: 420; animation: draw 1.1s .35s var(--ease) forwards; }
+@keyframes draw { to { stroke-dashoffset: 0; } }
+header.top nav a { background: linear-gradient(var(--pencil), var(--pencil)) no-repeat 0 100% / 0 1.5px; transition: background-size .25s var(--ease), color .2s; }
+header.top nav a:hover { background-size: 100% 1.5px; text-decoration: none; }
+.opt { transition: border-color .2s, background-color .3s, transform .2s var(--ease); }
+.opt:active { transform: scale(.99); }
+.conf label { transition: border-color .2s, background-color .2s; }
+.conf label:has(input:checked), .opt:has(input:checked) { border-color: var(--mark); }
+.commit, .btn { transition: transform .15s var(--ease), opacity .2s, background-color .2s; }
+.commit:not(:disabled):active, .btn:not(:disabled):active { transform: translateY(1px); }
+.verdict { animation: rise .45s var(--ease) both; }
+@keyframes rise { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+.card-nav { display: flex; justify-content: space-between; align-items: center; gap: 12px; }
+.dots { display: flex; gap: 6px; }
+.dots span { width: 7px; height: 7px; border-radius: 50%; background: var(--rule); transition: background-color .3s, transform .3s var(--ease); }
+.dots span.on { background: var(--pencil); transform: scale(1.25); }
+.btn { font: 500 .92rem var(--body); min-height: 40px; padding: 0 14px; border-radius: 8px; border: 1px solid var(--rule); background: var(--sheet); color: var(--ink); cursor: pointer; }
+.btn:hover { border-color: var(--mark); }
+.btn.primary { background: var(--mark); color: var(--mark-ink); border-color: var(--mark); font-weight: 600; }
+.btn:disabled { opacity: .45; cursor: default; }
+.swap { animation: swapin .4s var(--ease) both; }
+@keyframes swapin { from { opacity: 0; transform: translateX(8px); } to { opacity: 1; transform: none; } }
+
+.guess { background: var(--sheet); border: 1px solid var(--rule); border-radius: 12px; padding: 18px 20px; margin: 22px 0 6px; display: grid; gap: 12px; }
+.guess p { margin: 0; }
+.guess .row { display: flex; flex-wrap: wrap; align-items: center; gap: 12px 16px; }
+.guess input[type=range] { flex: 1 1 14rem; accent-color: var(--pencil); min-height: 36px; }
+.guess output { font: 600 1.05rem var(--mono); min-width: 3.4rem; font-variant-numeric: tabular-nums; }
+.bar .fill { transition: width 1.1s var(--ease); }
+.bar .val { transition: opacity .4s .7s; }
+.bars.pending .bar.ai .val { opacity: 0; }
+.bars .marker { position: absolute; top: -5px; bottom: -5px; width: 2px; background: var(--ink); transform: translateX(-1px); transition: left .3s var(--ease); }
+.bars .marker::after { content: "your guess"; position: absolute; top: calc(100% + 3px); left: 50%; transform: translateX(-50%); font: 500 .68rem var(--mono); color: var(--ink-2); white-space: nowrap; }
+.bar .track { position: relative; overflow: visible; }
+.bar .track .fill { border-radius: 2px; }
+.guess-result { font-size: .97rem; animation: rise .45s var(--ease) both; }
+
+.sim { margin: 28px 0 8px; background: var(--sheet); border: 1px solid var(--rule); border-radius: 12px; padding: 18px 18px 14px; display: grid; gap: 14px; }
+.sim .controls { display: flex; flex-wrap: wrap; gap: 8px; }
+.sim .readout { display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px 14px; }
+.sim .readout b { font: 600 1.5rem/1.2 var(--display); color: var(--mark); font-variant-numeric: tabular-nums; }
+.sim .readout b.miss { color: var(--pencil); }
+.sim .readout span { color: var(--ink-2); font-size: .95rem; }
+.sim .history { display: flex; flex-wrap: wrap; gap: 6px; min-height: 26px; list-style: none; margin: 0; padding: 0; }
+.sim .history li { font: 500 .74rem var(--mono); padding: 3px 8px; border-radius: 5px; background: var(--code); animation: rise .3s var(--ease) both; }
+.sim .history li.bad { background: var(--pencil-bg); color: var(--pencil); }
+.sim .history li.good { background: var(--pass-bg); color: var(--pass); }
+.timeline { margin: 0; }
+.timeline .dot, .timeline .miss { transition: r .35s var(--ease), fill .3s; }
+.timeline .ring { fill: none; stroke: var(--pencil); stroke-width: 2.5; transition: cx .55s var(--ease); }
+.timeline .ring.at-good { stroke: var(--mark); }
+.steps li { transition: background-color .3s, color .3s, transform .3s var(--ease); }
+.steps li.here { background: var(--mark); color: var(--mark-ink); transform: translateY(-2px); }
+.steps li.miss.here { background: var(--pencil); color: var(--sheet); }
+
+td.bar-cell { width: 34%; }
+.mini { display: block; height: 10px; border-radius: 2px; background: var(--rule); transition: width 1s var(--ease); }
+tr.best .mini { background: var(--pass); }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: 1ms !important; animation-delay: 0ms !important; transition-duration: 1ms !important; transition-delay: 0ms !important; }
+  h1 .pencil path { stroke-dashoffset: 0; }
+}
+
 footer { border-top: 1px solid var(--rule); padding-block: 28px 40px; font-size: .92rem; color: var(--ink-2); }
 footer .wrap { display: flex; flex-wrap: wrap; gap: 8px 22px; }
 footer a { color: var(--ink-2); }
@@ -199,7 +267,7 @@ footer a { color: var(--ink-2); }
   <div class="wrap">
     <div>
       <p class="label">An Agent Skill, free and open source</p>
-      <h1>Keep learning while an agent writes your code</h1>
+      <h1><span class="pencil">Keep learning<svg viewBox="0 0 400 24" preserveAspectRatio="none" aria-hidden="true"><path d="M4 16 C 70 6, 150 20, 230 11 S 360 8, 396 14"/></svg></span> while an agent writes your code</h1>
       <div class="lede">
         <p>When an agent writes most of a feature, you can ship it and come away understanding less than when you started. One study measured exactly that, and the loss was biggest in debugging, the skill you need most when the agent gets something wrong.</p>
         <p>This skill keeps the speed and puts the thinking back. The agent still does most of the building, but at a few points it asks you to predict how something should work before you see it, to explain a change once it works, and to answer the same idea again days later, so that by the end of a project you can do the work without it.</p>
@@ -214,10 +282,13 @@ footer a { color: var(--ink-2); }
       </div>
     </div>
 
-    <div class="card" id="demo" aria-label="An example question">
-      <p class="label">Try the rule it runs on</p>
-      <p class="q">A worker charges a card through a payment gateway. It gives up waiting after 0.8 seconds, but the gateway takes 1.2 seconds to reply, so the worker sends the charge again, without any key that marks it as a repeat. What does the customer see?</p>
-      <fieldset class="opts">
+    <div class="card" id="demo" aria-label="Example questions">
+      <div class="card-nav"><p class="label" style="margin:0">Try the rule it runs on</p><div class="dots" id="dots" aria-hidden="true"><span class="on"></span><span></span><span></span></div></div>
+      <div id="qbox">
+        <p class="label" id="q-area" style="margin:0 0 6px">payments</p>
+        <p class="q" id="q-text">A worker charges a card through a payment gateway. It gives up waiting after 0.8 seconds, but the gateway takes 1.2 seconds to reply, so the worker sends the charge again, without any key that marks it as a repeat. What does the customer see?</p>
+      </div>
+      <fieldset class="opts" id="opts">
         <legend hidden>Your answer</legend>
         <label class="opt"><input type="radio" name="opt" value="a"><span>One charge, because the gateway spots the repeat and refuses it</span></label>
         <label class="opt"><input type="radio" name="opt" value="b"><span>No charge, because giving up cancelled the first request</span></label>
@@ -229,7 +300,10 @@ footer a { color: var(--ink-2); }
         <label><input type="radio" name="conf" value="medium"> fairly</label>
         <label><input type="radio" name="conf" value="high"> very</label>
       </fieldset>
-      <button class="commit" type="button" id="commit">Lock in my answer</button>
+      <div class="card-nav">
+        <button class="commit" type="button" id="commit">Lock in my answer</button>
+        <button class="btn" type="button" id="next" hidden>Try another question</button>
+      </div>
       <p class="status" id="demo-status" role="status"></p>
       <div class="verdict" id="demo-verdict" hidden><p id="demo-text"></p></div>
       <p class="card-foot">Nothing is explained until you have answered and said how sure you are. People who predict an outcome before they see it learn far more from it than people who only watch, and the skill is built around that.</p>
@@ -243,9 +317,19 @@ footer a { color: var(--ink-2); }
     <div class="body">
       <h2>Developers who learned a new library with an AI assistant scored a quarter lower afterwards</h2>
       <p>In a randomised study at Anthropic, 52 developers learned a library they had never used. Half had an AI assistant and half wrote the code themselves, and afterwards everyone took the same quiz without help. The AI group finished slightly faster and scored 50% against 67%, and the largest gap was on questions about debugging.</p>
-      <div class="bars" role="img" aria-label="Quiz scores afterwards: wrote the code themselves, 67 percent; had an AI assistant, 50 percent.">
-        <div class="bar"><span>Wrote it themselves</span><span class="track"><span class="fill" style="width:67%"></span></span><span class="val">67%</span></div>
-        <div class="bar ai"><span>Had an AI assistant</span><span class="track"><span class="fill" style="width:50%"></span></span><span class="val">50%</span></div>
+      <div class="guess" id="guess">
+        <p><b>Before you look:</b> the group that wrote the code themselves scored 67%. Where do you think the AI group landed?</p>
+        <div class="row">
+          <input type="range" id="guess-in" min="0" max="100" step="1" value="67" aria-label="Your guess for the AI group's score, in percent">
+          <output id="guess-out" for="guess-in">67%</output>
+          <button class="btn primary" type="button" id="guess-go">Lock in my guess</button>
+          <button class="btn" type="button" id="guess-skip">Just show me</button>
+        </div>
+        <p class="guess-result" id="guess-result" hidden></p>
+      </div>
+      <div class="bars" id="bars" role="img" aria-label="Quiz scores afterwards: wrote the code themselves, 67 percent; had an AI assistant, 50 percent.">
+        <div class="bar"><span>Wrote it themselves</span><span class="track"><span class="fill" data-w="67" style="width:67%"></span></span><span class="val">67%</span></div>
+        <div class="bar ai"><span>Had an AI assistant</span><span class="track"><span class="fill" data-w="50" style="width:50%"></span><span class="marker" id="marker" hidden></span></span><span class="val">50%</span></div>
       </div>
       <p>The part that matters for anyone building with an agent every day is that the AI group did not all score the same. How people used the assistant made more difference than whether they had one:</p>
       <div class="split">
@@ -269,6 +353,9 @@ footer a { color: var(--ink-2); }
         <li><span class="when">Once it works</span><p>You explain the change back in your own words, before the agent summarises anything. The feedback says which part of your answer holds, which step goes wrong, and which line of code to read.</p></li>
         <li><span class="when">Days later</span><p>The idea comes back as a fresh question. While you keep answering without help, the gaps grow, from 3 days to 7, then 21, 60 and 180. A miss, or an answer that needed a hint, brings it back the next day.</p></li>
       </ol>
+      <div class="sim" id="sim">
+        <p class="label" style="margin:0">Try the schedule</p>
+        <div class="readout" aria-live="polite"><b id="sim-gap">1 day</b><span id="sim-why">A new topic comes back the next day.</span></div>
       <div class="timeline" role="img" aria-label="Review gaps on a log scale: one day after a miss; after each unaided correct answer, 3, 7, 21, 60 and then 180 days.">
         <svg viewBox="0 0 640 110" preserveAspectRatio="xMidYMid meet">
           <line class="axis" x1="20" y1="58" x2="620" y2="58"/>
@@ -279,8 +366,17 @@ footer a { color: var(--ink-2); }
           <circle class="dot" cx="493" cy="58" r="6"/><text x="493" y="34" text-anchor="middle">60</text>
           <circle class="dot" cx="620" cy="58" r="6"/><text x="620" y="34" text-anchor="end">180 days</text>
           <text class="small" x="620" y="90" text-anchor="end">after each answer you give without help</text>
+          <circle class="ring" id="ring" cx="20" cy="58" r="13"/>
         </svg>
-        <ol class="steps" aria-hidden="true"><li class="miss">1 day after a miss</li><li>3</li><li class="arrow">→</li><li>7</li><li class="arrow">→</li><li>21</li><li class="arrow">→</li><li>60</li><li class="arrow">→</li><li>180 days</li></ol>
+        <ol class="steps" aria-hidden="true"><li class="miss here" data-step="0">1 day after a miss</li><li data-step="1">3</li><li class="arrow">→</li><li data-step="2">7</li><li class="arrow">→</li><li data-step="3">21</li><li class="arrow">→</li><li data-step="4">60</li><li class="arrow">→</li><li data-step="5">180 days</li></ol>
+      </div>
+        <div class="controls">
+          <button class="btn" type="button" data-answer="clean">Answered without help</button>
+          <button class="btn" type="button" data-answer="hint">Right, but needed a hint</button>
+          <button class="btn" type="button" data-answer="wrong">Got it wrong</button>
+          <button class="btn" type="button" id="sim-reset">Start again</button>
+        </div>
+        <ol class="history" id="sim-history" aria-label="Your answers so far"></ol>
       </div>
       <p class="note">The gaps are drawn to scale above. They come from spacing research on other kinds of material, so they are a starting point and not a measurement of you; your own record shows whether they suit you, and they are easy to change.</p>
     </div>
@@ -369,11 +465,11 @@ footer a { color: var(--ink-2); }
       <h2>Asking questions in batches roughly halved the number of model calls</h2>
       <p>Every question you answer costs some model calls, and the first version asked review questions one at a time, so each answer meant another round trip and another wait. I ran the same three review topics, with the same scripted answers, three ways and counted every call.</p>
       <div class="table"><table>
-        <thead><tr><th>How the review ran</th><th>Model calls</th><th>Your replies</th><th>Weighted tokens</th></tr></thead>
+        <thead><tr><th>How the review ran</th><th>Model calls</th><th>Your replies</th><th>Weighted tokens</th><th><span hidden>Relative cost</span></th></tr></thead>
         <tbody>
-          <tr><td>One question at a time, in a fresh session</td><td class="num">21</td><td class="num">5</td><td class="num">318k</td></tr>
-          <tr class="best"><td>All three at once, in a fresh session (what it does now)</td><td class="num">11</td><td class="num">2</td><td class="num">223k</td></tr>
-          <tr><td>One at a time, in a session that already held a long build</td><td class="num">16</td><td class="num">5</td><td class="num">401k</td></tr>
+          <tr><td>One question at a time, in a fresh session</td><td class="num">21</td><td class="num">5</td><td class="num">318k</td><td class="bar-cell"><span class="mini" data-w="79" style="width:79%"></span></td></tr>
+          <tr class="best"><td>All three at once, in a fresh session (what it does now)</td><td class="num">11</td><td class="num">2</td><td class="num">223k</td><td class="bar-cell"><span class="mini" data-w="56" style="width:56%"></span></td></tr>
+          <tr><td>One at a time, in a session that already held a long build</td><td class="num">16</td><td class="num">5</td><td class="num">401k</td><td class="bar-cell"><span class="mini" data-w="100" style="width:100%"></span></td></tr>
         </tbody>
       </table></div>
       <p class="note">Weighted tokens count cached reads at a tenth of the input price, cache writes at 1.25 times and output at 5 times. Each way was run once, with a simulated learner who replied within seconds, so treat these as a rough guide rather than a benchmark. One interactive explainer page cost about 138k tokens on its own, which is why the skill only builds one when you ask or when answering in the conversation has failed twice.</p>
@@ -406,30 +502,140 @@ footer a { color: var(--ink-2); }
 <script>
 (function () {
   "use strict";
-  var demo = document.getElementById("demo");
-  var status = document.getElementById("demo-status");
-  var commit = document.getElementById("commit");
+  var $ = function (id) { return document.getElementById(id); };
+
+  // ---- the demo: three questions, each locked before it is explained ----
+  var QUESTIONS = [
+    { area: "payments", q: "A worker charges a card through a payment gateway. It gives up waiting after 0.8 seconds, but the gateway takes 1.2 seconds to reply, so the worker sends the charge again, without any key that marks it as a repeat. What does the customer see?",
+      opts: ["One charge, because the gateway spots the repeat and refuses it", "No charge, because giving up cancelled the first request", "Two charges, because the second request looks like a new purchase"], right: 2,
+      why: "Giving up only means the worker stopped waiting. The gateway still finished the first charge, and with nothing to mark the second request as a repeat, it treats it as a new purchase." },
+    { area: "concurrency", q: "Two workers each read a counter that says 41, add one to it, and write their result back. Neither waits for the other. What does the counter say afterwards?",
+      opts: ["43, because both additions were made", "42, because the second write replaced the first", "It depends on which worker wrote last"], right: 1,
+      why: "Both workers computed 41 + 1 from the same starting value, so both wrote 42 and one addition was lost. Which one wrote last doesn't change the number, only which write survived." },
+    { area: "caching", q: "A product's price is cached. Every write path updates the cache, except an admin import script that writes straight to the database. A shopper loads the page right after an import changed the price. What do they see?",
+      opts: ["The new price, because the database is the source of truth", "The old price, until the cache entry expires or is replaced", "An error, because the cache and the database disagree"], right: 1,
+      why: "Reads come from the cache, and nothing told the cache the price changed. It keeps serving the old value until it expires or another write replaces it, which is why every write path has to touch it." }
+  ];
+  var qi = 0;
+  var demo = $("demo"), status = $("demo-status"), commit = $("commit"), next = $("next");
+
+  function showQuestion(i) {
+    var item = QUESTIONS[i];
+    $("q-area").textContent = item.area;
+    $("q-text").textContent = item.q;
+    var labels = demo.querySelectorAll(".opt");
+    labels.forEach(function (label, n) {
+      label.classList.remove("is-right", "is-wrong");
+      label.querySelector("span").textContent = item.opts[n];
+    });
+    demo.querySelectorAll("input").forEach(function (inp) { inp.checked = false; inp.disabled = false; });
+    commit.disabled = false; next.hidden = true; $("demo-verdict").hidden = true; status.textContent = "";
+    document.querySelectorAll("#dots span").forEach(function (d, n) { d.classList.toggle("on", n === i); });
+    ["qbox", "opts"].forEach(function (id) { var el = $(id); el.classList.remove("swap"); void el.offsetWidth; el.classList.add("swap"); });
+  }
+
   commit.addEventListener("click", function () {
     var picked = demo.querySelector("input[name=opt]:checked");
     var conf = demo.querySelector("input[name=conf]:checked");
     if (!picked || !conf) { status.textContent = "Choose an answer and say how sure you are first. Once you lock it in, it can't be changed."; return; }
-    demo.querySelectorAll("input").forEach(function (i) { i.disabled = true; });
+    var item = QUESTIONS[qi];
+    var pickedIndex = ["a", "b", "c"].indexOf(picked.value);
+    var right = pickedIndex === item.right;
+    demo.querySelectorAll("input").forEach(function (inp) { inp.disabled = true; });
     commit.disabled = true;
     status.textContent = "";
-    var right = picked.value === "c";
-    demo.querySelector("input[value=c]").closest(".opt").classList.add("is-right");
-    if (!right) picked.closest(".opt").classList.add("is-wrong");
-    var why = "Giving up only means the worker stopped waiting. The gateway still finished the first charge, and with nothing to mark the second request as a repeat, it treats it as a new purchase.";
-    var lead = right ? "<b>Right.</b> " : "<b>Not quite.</b> ";
-    if (!right && conf.value === "high") why = "You were very sure, which makes this the kind of mistake worth fixing properly. " + why;
-    document.getElementById("demo-text").innerHTML = lead + why;
-    var box = document.getElementById("demo-verdict");
+    var labels = demo.querySelectorAll(".opt");
+    labels[item.right].classList.add("is-right");
+    if (!right) labels[pickedIndex].classList.add("is-wrong");
+    var text = item.why;
+    if (!right && conf.value === "high") text = "You were very sure, which makes this the kind of mistake worth fixing properly. " + text;
+    var p = $("demo-text");
+    p.textContent = "";
+    var b = document.createElement("b"); b.textContent = right ? "Right. " : "Not quite. ";
+    p.append(b, document.createTextNode(text));
+    var box = $("demo-verdict");
     box.classList.toggle("pass", right);
-    box.hidden = false;
+    box.hidden = false; box.style.animation = "none"; void box.offsetWidth; box.style.animation = "";
+    next.hidden = false;
   });
-  var copy = document.getElementById("copy");
+  next.addEventListener("click", function () { qi = (qi + 1) % QUESTIONS.length; showQuestion(qi); });
+
+  // ---- the problem: guess before the bars ----
+  // The HTML carries the real widths so the page reads correctly without script;
+  // the script empties them before first paint so the reader can guess first.
+  var bars = $("bars"), guessIn = $("guess-in"), guessOut = $("guess-out"), marker = $("marker");
+  bars.classList.add("pending");
+  bars.querySelectorAll(".fill").forEach(function (f) { f.style.width = "0"; });
+  guessIn.addEventListener("input", function () { guessOut.textContent = guessIn.value + "%"; });
+  function revealBars(guess) {
+    bars.classList.remove("pending");
+    bars.querySelectorAll(".fill").forEach(function (f) { f.style.width = f.getAttribute("data-w") + "%"; });
+    ["guess-go", "guess-skip"].forEach(function (id) { $(id).disabled = true; });
+    guessIn.disabled = true;
+    if (guess === null) return;
+    marker.style.left = guess + "%"; marker.hidden = false;
+    var off = guess - 50, r = $("guess-result");
+    r.textContent = Math.abs(off) <= 3
+      ? "You guessed " + guess + "%. Close: it was 50%."
+      : "You guessed " + guess + "%. It was 50%, " + Math.abs(off) + " points " + (off > 0 ? "lower than you expected." : "higher than you expected.");
+    r.hidden = false;
+  }
+  $("guess-go").addEventListener("click", function () { revealBars(parseInt(guessIn.value, 10)); });
+  $("guess-skip").addEventListener("click", function () { revealBars(null); });
+
+  // ---- the schedule: the same rule as next_due() in scripts/record.py ----
+  var INTERVALS = [3, 7, 21, 60, 180];   // INTERVALS_AFTER_SUCCESS
+  var MISS_GAP = 1;                      // INTERVAL_AFTER_MISS
+  var STEP_X = [20, 149, 245, 372, 493, 620];
+  var streak = 0, history = [];
+  function gapFor(s) { return s === 0 ? MISS_GAP : INTERVALS[Math.min(s, INTERVALS.length) - 1]; }
+  function renderSim(kind) {
+    var gap = gapFor(streak), step = streak === 0 ? 0 : Math.min(streak, INTERVALS.length);
+    var gapEl = $("sim-gap");
+    gapEl.textContent = gap + (gap === 1 ? " day" : " days");
+    gapEl.classList.toggle("miss", streak === 0);
+    var why = {
+      none: "A new topic comes back the next day.",
+      clean: streak >= INTERVALS.length ? "Each further answer without help keeps it at 180 days." : "An answer without help moves it one step further out.",
+      hint: "A right answer that needed a hint doesn't count as unaided, so it comes back tomorrow.",
+      wrong: "A wrong answer brings it back tomorrow, and the climb starts again."
+    }[kind];
+    $("sim-why").textContent = why;
+    var ring = $("ring");
+    ring.setAttribute("cx", STEP_X[step]);
+    ring.classList.toggle("at-good", step > 0);
+    document.querySelectorAll(".steps li[data-step]").forEach(function (li) { li.classList.toggle("here", Number(li.getAttribute("data-step")) === step); });
+    var list = $("sim-history");
+    list.replaceChildren.apply(list, history.map(function (h) {
+      var li = document.createElement("li");
+      li.textContent = h === "clean" ? "unaided" : h === "hint" ? "with hint" : "wrong";
+      li.className = h === "clean" ? "good" : "bad";
+      return li;
+    }));
+  }
+  document.querySelectorAll("#sim [data-answer]").forEach(function (b) {
+    b.addEventListener("click", function () {
+      var kind = b.getAttribute("data-answer");
+      streak = kind === "clean" ? streak + 1 : 0;
+      history.push(kind); if (history.length > 12) history.shift();
+      renderSim(kind);
+    });
+  });
+  $("sim-reset").addEventListener("click", function () { streak = 0; history = []; renderSim("none"); });
+
+  // ---- bars that fill when they come into view ----
+  var minis = document.querySelectorAll(".mini");
+  minis.forEach(function (m) { m.style.width = "0"; });
+  function fillMinis() { minis.forEach(function (m) { m.style.width = m.getAttribute("data-w") + "%"; }); }
+  if ("IntersectionObserver" in window) {
+    var io = new IntersectionObserver(function (entries) { if (entries.some(function (e) { return e.isIntersecting; })) { fillMinis(); io.disconnect(); } }, { threshold: .3 });
+    io.observe(document.querySelector("#cost table"));
+  } else { fillMinis(); }
+
+  // ---- copy ----
+  var copy = $("copy");
   copy.addEventListener("click", function () {
-    var t = document.getElementById("install-cmd").textContent;
+    var t = $("install-cmd").textContent;
     if (navigator.clipboard) navigator.clipboard.writeText(t).then(function () { copy.textContent = "Copied"; setTimeout(function () { copy.textContent = "Copy"; }, 1500); }, function () {});
   });
 })();
