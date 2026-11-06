@@ -1,7 +1,7 @@
 {
   "name": "learning-while-building",
   "description": "Build software with Claude and become a better engineer while doing it: attempt-first questions, explain-backs, spaced retrieval and transfer, debugging drills, interactive explainers, a record of what you can do unaided, and the Human-Outward writing style.",
-  "version": "0.3.0",
+  "version": "0.4.0",
   "author": {
     "name": "0xfauzi"
   },

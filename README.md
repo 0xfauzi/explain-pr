@@ -182,6 +182,26 @@ automated here can measure. This departs from Anthropic's skill guidance, which
 asks for at least three behavioural evaluations of the skill itself; those
 would be measurable and could be added.
 
+## What it costs
+
+Measured once, on three due topics with the same scripted learner answers (one
+right, one confidently wrong, one partial), counting every model request:
+
+| Practice run | Requests | Learner replies | Weighted tokens* |
+|---|---|---|---|
+| One question at a time, fresh session (0.3) | 21 | 5 | 318k |
+| Batched, fresh session (0.4) | 11 | 2 | 223k |
+| One at a time, after ~90 KB of earlier work (0.3) | 16 | 5 | 401k |
+
+*Input-token equivalents: cache writes x1.25, cache reads x0.1, output x5.
+
+All three graded the answers the same way. Batching saved about 30% and three
+waits; running practice in a session that already holds a long build cost about
+26% more than a fresh one. One explainer page cost about 138k tokens on its own.
+These are single runs with a simulated learner who replied within seconds; a
+real learner replying minutes later may find the cache expired, which adds cost
+to every reply and makes fewer replies worth more.
+
 ## What it cannot do
 
 - Grading is Claude's judgement against a rubric Claude wrote. Treat the record
