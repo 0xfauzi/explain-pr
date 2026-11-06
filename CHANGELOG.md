@@ -13,9 +13,12 @@ All notable changes to this plugin. Versions follow the plugin manifest.
 - The learning room page (`assets/room.html`). `serve` runs it on 127.0.0.1
   using only the standard library; `room-push` and `room-pull` sync it when a
   harness can host it privately, where it grades answers on the spot.
-- A test suite (`tests/`) and a CI workflow running it on Python 3.9 and 3.13.
+- A test suite (`tests/`) and a CI workflow running it on Python 3.10 and 3.14.
 
 ### Changed
+- The minimum supported Python is now 3.10. Python 3.9 is past its end of
+  life and GitHub no longer provides it for current runners, so it can no
+  longer be tested in CI.
 - Script paths no longer depend on Claude Code: `<skill>/scripts/...` replaces
   `${CLAUDE_SKILL_DIR}`.
 

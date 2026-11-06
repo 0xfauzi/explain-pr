@@ -27,7 +27,7 @@ understand what PR 128 did", or "what am I weak at". The first run creates a
 
 Other harnesses that support the Agent Skills format can use
 `skills/learning-while-building/` directly. The skill needs only a shell,
-Python 3.9 or later, and git.
+Python 3.10 or later, and git.
 
 ## How it works
 

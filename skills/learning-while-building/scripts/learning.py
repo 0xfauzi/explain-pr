@@ -22,7 +22,7 @@ Commands:
   check
   migrate   (convert a record from the old single-file format)
 
-Only the standard library is used. Python 3.9 or later.
+Only the standard library is used. Python 3.10 or later.
 """
 
 from __future__ import annotations

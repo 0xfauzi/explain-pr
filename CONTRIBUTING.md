@@ -24,7 +24,7 @@ it relies on, or what it measured.
 
 ## Checks
 
-The scripts use only the Python standard library and support Python 3.9 and
+The scripts use only the Python standard library and support Python 3.10 and
 later.
 
     python3 -m unittest discover -s tests
