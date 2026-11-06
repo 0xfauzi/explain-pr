@@ -137,7 +137,6 @@ h3 { font: 600 1.05rem/1.4 var(--body); margin: 0 0 6px; }
 ol.rules { margin: 4px 0 0; padding-left: 1.4rem; display: grid; gap: 12px; }
 ol.rules li::marker { font: 600 .9rem var(--mono); color: var(--pencil); }
 
-.dead { border-left: 3px solid var(--pencil); padding-left: 20px; }
 
 .findings { list-style: none; margin: 8px 0 0; padding: 0; display: grid; gap: 0; }
 .findings li { display: grid; grid-template-columns: 6.5rem minmax(0, 1fr); gap: 4px 20px; padding-block: 18px; border-top: 1px solid var(--rule); }
@@ -254,7 +253,6 @@ footer a { color: var(--ink-2); }
     <nav aria-label="Site">
       <a href="#why">The problem</a>
       <a href="#how">How it works</a>
-      <a href="#first">What I tried first</a>
       <a href="#research">Research</a>
       <a href="https://github.com/0xfauzi/explain-pr">Source</a>
     </nav>
@@ -336,6 +334,7 @@ footer a { color: var(--ink-2); }
         <div><h3 class="keep">Those who kept their understanding</h3><ul><li>asked it how things worked</li><li>let it write code, then asked questions about that code</li><li>asked for explanations along with the code, and read them</li></ul></div>
         <div><h3 class="lose">Those who lost the most</h3><ul><li>handed it the whole task</li><li>started by asking questions, then gave up and handed it everything</li><li>let it do the debugging, and scored 24%</li></ul></div>
       </div>
+      <p>The obvious fix is to ask the agent to explain its code once it's done, but reading a good explanation is a lot like watching a demonstration, and students who watched physics demonstrations understood them no better than students who never saw them. Explanations also make you feel you understood, which is a poor sign that you did, so the skill asks you to answer first and explains only what you missed.</p>
       <p class="note">The study is <a href="https://www.anthropic.com/research/AI-assistance-coding-skills">Shen and Tamkin, 2026</a>. It tested people right after a short task, so it shows what happens in the first hour, not over months. The skill is designed to keep you in the left column without slowing the work down.</p>
     </div>
   </div>
@@ -427,17 +426,6 @@ footer a { color: var(--ink-2); }
   </div>
 </section>
 
-<section id="first">
-  <div class="wrap sec">
-    <span class="label">What I tried first</span>
-    <div class="body dead">
-      <h2>The first version wrote you a lesson, and that was the problem</h2>
-      <p>This project began as <code>explain-pr</code>, a tool that turned each pull request into a careful, illustrated lesson for you to read. It worked as writing: people could follow it, and it looked like exactly what someone trying to learn would want.</p>
-      <p>But reading a good explanation is close to watching a demonstration, and in a well-known physics study, students who watched demonstrations understood them no better than students who never saw them at all. A polished lesson also makes you feel you understood, and that feeling turns out to be a poor guide to whether you did. So the lessons were removed, and what stayed were the parts that make you answer first. The old version is still in the repository's history if you want to compare.</p>
-    </div>
-  </div>
-</section>
-
 <section id="research">
   <div class="wrap sec">
     <span class="label">Research</span>
@@ -463,7 +451,7 @@ footer a { color: var(--ink-2); }
     <span class="label">Cost</span>
     <div class="body">
       <h2>Asking questions in batches roughly halved the number of model calls</h2>
-      <p>Every question you answer costs some model calls, and the first version asked review questions one at a time, so each answer meant another round trip and another wait. I ran the same three review topics, with the same scripted answers, three ways and counted every call.</p>
+      <p>Every question you answer costs some model calls, and if review questions come one at a time, each answer means another round trip and another wait for you. So the skill sends due questions together, and to check that it helps, I ran the same three review topics, with the same scripted answers, three ways and counted every call.</p>
       <div class="table"><table>
         <thead><tr><th>How the review ran</th><th>Model calls</th><th>Your replies</th><th>Weighted tokens</th><th><span hidden>Relative cost</span></th></tr></thead>
         <tbody>
