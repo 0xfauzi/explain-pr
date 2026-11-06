@@ -2,275 +2,421 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>learning-while-building</title>
-<meta name="description" content="An Agent Skill for building a real project with an AI agent while getting better as an engineer, rather than only faster.">
+<meta name="description" content="An Agent Skill for building with an AI agent while getting better as an engineer, rather than only faster.">
 <meta property="og:title" content="learning-while-building">
-<meta property="og:description" content="Build with an AI agent and keep getting better as an engineer: questions before answers, spaced review, and a record of what you can do unaided.">
+<meta property="og:description" content="Build with an AI agent and keep getting better yourself: predict before you see, explain it back, review on a schedule.">
 <meta property="og:type" content="website">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&family=Source+Serif+4:opsz,wght@8..60,500;8..60,600&display=swap">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&family=Newsreader:opsz,wght@6..72,500;6..72,600&display=swap">
 <style>
-/* Layout: one reading column, wide enough for tables; code and the demo sit in it. */
+/* Layout: an engineer's notebook. Graph-paper ground, ink-blue text, red pencil for
+   corrections. Wide two-column hero; single column of sections below, each with a
+   mono margin label. Dark mode is the same notebook as a blueprint. */
 :root {
-  --bg: #f6f7f8; --surface: #ffffff; --fg: #1b2026; --muted: #59636e; --line: #d7dce1;
-  --accent: #1f5f7a; --accent-ink: #ffffff; --code-bg: #eef1f4;
-  --ok: #23703f; --ok-bg: #e5f2e9; --bad: #a2302a; --bad-bg: #f8e5e3;
-  --display: "Source Serif 4", Georgia, "Times New Roman", serif;
+  --paper: #f3f6f9; --sheet: #ffffff; --grid: #dfe6ee; --ink: #14233a; --ink-2: #4a5a70;
+  --rule: #c9d3df; --pencil: #c2412b; --pencil-bg: #fbe9e5; --pass: #1e7a4c; --pass-bg: #e3f3ea;
+  --mark: #1d4f91; --mark-ink: #ffffff; --code: #e9eef4;
+  --display: "Newsreader", Georgia, "Times New Roman", serif;
   --body: "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
   --mono: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
   color-scheme: light;
 }
 @media (prefers-color-scheme: dark) { :root {
-  --bg: #121519; --surface: #1a1f25; --fg: #e3e7eb; --muted: #9aa4af; --line: #2e353d;
-  --accent: #7cc0dc; --accent-ink: #0f1418; --code-bg: #20262d;
-  --ok: #82d39c; --ok-bg: #1b3325; --bad: #f0a29c; --bad-bg: #3d2220;
+  --paper: #0d1a2b; --sheet: #12233a; --grid: #1a2f4b; --ink: #e4ecf5; --ink-2: #9fb2c8;
+  --rule: #2a4466; --pencil: #ff8f78; --pencil-bg: #3a2128; --pass: #74d3a1; --pass-bg: #163528;
+  --mark: #8cc2ff; --mark-ink: #0d1a2b; --code: #172c47;
   color-scheme: dark } }
 * { box-sizing: border-box; }
 [hidden] { display: none !important; }
 html { scroll-behavior: smooth; }
 @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
-body { margin: 0; background: var(--bg); color: var(--fg); font: 17px/1.6 var(--body); }
-.wrap { max-width: 46rem; margin: 0 auto; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
-nav { border-bottom: 1px solid var(--line); background: var(--surface); }
-nav .wrap { display: flex; flex-wrap: wrap; gap: 6px 18px; align-items: center; padding-block: 12px; }
-nav .name { font: 600 1rem var(--mono); color: var(--fg); text-decoration: none; margin-right: auto; }
-nav .links { display: flex; flex-wrap: wrap; gap: 6px 18px; }
-@media (max-width: 34rem) { nav .links { flex-basis: 100%; } }
-nav a { color: var(--muted); text-decoration: none; font-size: .92rem; }
-nav a:hover, nav a:focus-visible { color: var(--accent); }
-main .wrap { display: grid; gap: 56px; padding-block: 48px 72px; }
-section { display: grid; gap: 14px; min-width: 0; }
-h1 { font: 600 clamp(2rem, 6vw, 2.8rem)/1.12 var(--display); margin: 0; text-wrap: balance; }
-h2 { font: 600 1.55rem/1.25 var(--display); margin: 0; text-wrap: balance; }
-h3 { font: 600 1.05rem/1.35 var(--body); margin: 8px 0 0; }
-p { margin: 0; }
-.lede { font-size: 1.15rem; color: var(--fg); }
-.muted { color: var(--muted); }
-a { color: var(--accent); }
-code { font: .88em var(--mono); background: var(--code-bg); padding: .1em .35em; border-radius: 4px; overflow-wrap: anywhere; }
-pre { margin: 0; background: var(--code-bg); border-radius: 8px; padding: 14px 16px; overflow-x: auto; font: .88rem/1.6 var(--mono); }
-pre code { background: none; padding: 0; }
-.table { overflow-x: auto; }
+body {
+  margin: 0; color: var(--ink); font: 17px/1.6 var(--body);
+  background-color: var(--paper);
+  background-image: linear-gradient(var(--grid) 1px, transparent 1px), linear-gradient(90deg, var(--grid) 1px, transparent 1px);
+  background-size: 24px 24px;
+}
+.wrap { max-width: 68rem; margin: 0 auto; padding-left: max(20px, env(safe-area-inset-left, 0px)); padding-right: max(20px, env(safe-area-inset-right, 0px)); }
+a { color: var(--mark); text-underline-offset: 3px; }
+code { font: .86em var(--mono); background: var(--code); padding: .12em .4em; border-radius: 4px; }
+pre { margin: 0; font: .9rem/1.65 var(--mono); overflow-x: auto; }
+:focus-visible { outline: 2px solid var(--mark); outline-offset: 3px; }
+.label { font: 600 .74rem/1 var(--mono); letter-spacing: .12em; text-transform: uppercase; color: var(--pencil); }
+
+/* ---- header ---- */
+header.top { padding-block: 18px; }
+header.top .wrap { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 24px; }
+.brand { font: 600 1rem var(--mono); color: var(--ink); text-decoration: none; margin-right: auto; }
+.brand span { color: var(--pencil); }
+header.top nav { display: flex; flex-wrap: wrap; gap: 6px 20px; }
+header.top nav a { color: var(--ink-2); text-decoration: none; font-size: .93rem; }
+header.top nav a:hover { color: var(--ink); }
+
+/* ---- hero ---- */
+.hero .wrap > * { min-width: 0; }
+.hero .wrap { display: grid; grid-template-columns: minmax(0, 1.05fr) minmax(0, .95fr); gap: 48px; align-items: center; padding-block: 40px 72px; }
+h1 { font: 600 clamp(2.3rem, 5.2vw, 3.9rem)/1.04 var(--display); letter-spacing: -.015em; margin: 14px 0 20px; text-wrap: balance; }
+h1 em { font-style: italic; color: var(--mark); }
+.lede { font-size: 1.15rem; color: var(--ink-2); max-width: 34rem; margin: 0 0 28px; }
+.install { background: var(--ink); color: var(--paper); border-radius: 10px; padding: 14px 16px; display: grid; gap: 8px; max-width: 34rem; }
+.install .row { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; min-width: 0; }
+.install .row pre { flex: 1; min-width: 0; overflow-x: auto; }
+.install .note-line { font-size: .82rem; }
+.install pre { color: var(--paper); }
+.install .muted { color: color-mix(in srgb, var(--paper) 65%, var(--ink)); }
+.copy { flex: none; font: 600 .78rem var(--mono); background: transparent; color: var(--paper); border: 1px solid color-mix(in srgb, var(--paper) 40%, transparent); border-radius: 6px; padding: 6px 10px; cursor: pointer; min-height: 32px; }
+.meta { margin-top: 14px; font-size: .9rem; color: var(--ink-2); }
+
+/* ---- the question card (demo) ---- */
+.card { background: var(--sheet); border: 1px solid var(--rule); border-radius: 14px; box-shadow: 0 1px 0 var(--rule), 0 18px 40px -24px rgba(20, 35, 58, .35); padding: 22px; display: grid; gap: 14px; min-width: 0; }
+.card-head { display: flex; justify-content: space-between; gap: 10px; align-items: baseline; }
+.card-head .tag { font: 500 .78rem var(--mono); color: var(--ink-2); }
+.card .q { font: 500 1.16rem/1.45 var(--display); margin: 0; }
+.opts { display: grid; gap: 8px; margin: 0; padding: 0; border: 0; }
+.opt { display: flex; gap: 10px; align-items: flex-start; padding: 11px 12px; border: 1px solid var(--rule); border-radius: 9px; cursor: pointer; font-size: .97rem; line-height: 1.45; }
+.opt:hover { border-color: var(--mark); }
+.opt input { margin-top: .25em; accent-color: var(--mark); }
+.conf { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; border: 0; margin: 0; padding: 0; }
+.conf legend { float: left; font-size: .9rem; color: var(--ink-2); margin-right: 6px; padding: 0; }
+.conf label { display: inline-flex; align-items: center; gap: 6px; min-height: 40px; padding: 0 14px; border: 1px solid var(--rule); border-radius: 20px; cursor: pointer; font-size: .92rem; }
+.conf input { accent-color: var(--mark); }
+.commit { font: 600 1rem var(--body); min-height: 46px; padding: 0 20px; border: 0; border-radius: 9px; background: var(--mark); color: var(--mark-ink); cursor: pointer; justify-self: start; }
+.commit:disabled { opacity: .45; cursor: default; }
+.status { margin: 0; min-height: 1.3em; font-size: .9rem; color: var(--ink-2); }
+.opt.is-right { border-color: var(--pass); background: var(--pass-bg); }
+.opt.is-wrong { border-color: var(--pencil); background: var(--pencil-bg); }
+.verdict { border-left: 3px solid var(--pencil); padding: 4px 0 4px 14px; display: grid; gap: 6px; }
+.verdict.pass { border-color: var(--pass); }
+.verdict b { font: 600 .78rem var(--mono); letter-spacing: .1em; text-transform: uppercase; color: var(--pencil); }
+.verdict.pass b { color: var(--pass); }
+.verdict p { margin: 0; font-size: .97rem; }
+.card-foot { font-size: .82rem; color: var(--ink-2); margin: 0; }
+
+/* ---- sections ---- */
+main section { padding-block: 64px; border-top: 1px solid var(--rule); }
+.sec { display: grid; grid-template-columns: 11rem minmax(0, 1fr); gap: 24px 40px; }
+.sec > .label { padding-top: 10px; }
+h2 { font: 600 clamp(1.7rem, 3.4vw, 2.35rem)/1.15 var(--display); margin: 0 0 14px; text-wrap: balance; letter-spacing: -.01em; }
+.sec p { margin: 0 0 14px; max-width: 42rem; }
+.note { font-size: .92rem; color: var(--ink-2); }
+
+/* evidence figure */
+.bars { display: grid; gap: 14px; margin: 26px 0 18px; max-width: 40rem; }
+.bar { display: grid; grid-template-columns: 9.5rem minmax(0, 1fr) 3.2rem; gap: 12px; align-items: center; font-size: .95rem; }
+.bar .track { height: 26px; background: var(--sheet); border: 1px solid var(--rule); border-radius: 4px; overflow: hidden; }
+.bar .fill { height: 100%; background: var(--mark); }
+.bar.ai .fill { background: var(--pencil); }
+.bar .val { font: 600 1rem var(--mono); font-variant-numeric: tabular-nums; text-align: right; }
+.patterns { display: grid; grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr)); gap: 14px; margin-top: 8px; }
+.pat { background: var(--sheet); border: 1px solid var(--rule); border-radius: 10px; padding: 14px 16px; }
+.pat h3 { font: 600 .95rem var(--body); margin: 0 0 6px; }
+.pat ul { margin: 0; padding-left: 1.1rem; font-size: .93rem; color: var(--ink-2); }
+.pat.keep h3 { color: var(--pass); } .pat.lose h3 { color: var(--pencil); }
+
+/* loop */
+.loop { list-style: none; margin: 18px 0 0; padding: 0; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 0; counter-reset: s; }
+.loop li { position: relative; padding: 18px 18px 18px 0; border-top: 2px solid var(--ink); counter-increment: s; }
+.loop li::before { content: "0" counter(s); position: absolute; top: -13px; left: 0; background: var(--paper); padding-right: 8px; font: 600 .8rem var(--mono); color: var(--pencil); }
+.loop .when { font: 600 .74rem var(--mono); letter-spacing: .1em; text-transform: uppercase; color: var(--ink-2); display: block; margin: 8px 0 6px; }
+.loop b { display: block; font: 600 1.15rem/1.3 var(--display); margin-bottom: 6px; }
+.loop p { font-size: .93rem; color: var(--ink-2); margin: 0; }
+
+/* schedule timeline, drawn to a log scale in SVG */
+.timeline { margin-top: 26px; background: var(--sheet); border: 1px solid var(--rule); border-radius: 12px; padding: 18px 18px 10px; }
+.timeline svg { display: block; width: 100%; height: auto; }
+.timeline .axis { stroke: var(--ink); stroke-width: 1.5; }
+.timeline .tick { stroke: var(--ink-2); }
+.timeline .dot { fill: var(--mark); }
+.timeline .miss { fill: var(--pencil); }
+.timeline text { fill: var(--ink); font: 13px var(--mono); }
+.timeline text.small { fill: var(--ink-2); font-size: 11.5px; }
+.steps-note { display: none; margin: 10px 0 4px; }
+@media (max-width: 520px) { .steps-note { display: block; } }
+
+/* routes + phones */
+.routes { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 36px; align-items: start; margin-top: 10px; }
+.route-list { display: grid; gap: 10px; }
+.route { background: var(--sheet); border: 1px solid var(--rule); border-radius: 10px; padding: 12px 14px; display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 2px 12px; }
+.route b { font-size: .98rem; }
+.route .when { font: 500 .78rem var(--mono); color: var(--ink-2); text-align: right; }
+.route span.how { grid-column: 1 / -1; font-size: .9rem; color: var(--ink-2); }
+.phones { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
+.phone { margin: 0; display: grid; gap: 8px; }
+.phone .frame { border: 8px solid var(--ink); border-radius: 26px; overflow: hidden; background: var(--sheet); }
+.phone img { display: block; width: 100%; height: auto; }
+.phone figcaption { font-size: .82rem; color: var(--ink-2); }
+
+/* rules sheet */
+.rules { counter-reset: r; list-style: none; padding: 0; margin: 10px 0 0; display: grid; grid-template-columns: repeat(auto-fit, minmax(17rem, 1fr)); gap: 14px; }
+.rules li { counter-increment: r; background: var(--sheet); border: 1px solid var(--rule); border-radius: 10px; padding: 14px 16px 14px 52px; position: relative; font-size: .96rem; }
+.rules li::before { content: counter(r); position: absolute; left: 16px; top: 13px; width: 24px; height: 24px; border-radius: 50%; border: 1.5px solid var(--pencil); color: var(--pencil); font: 600 .78rem/21px var(--mono); text-align: center; }
+
+/* research cards */
+.findings { display: grid; grid-template-columns: repeat(auto-fit, minmax(19rem, 1fr)); gap: 14px; margin-top: 10px; }
+.finding { background: var(--sheet); border: 1px solid var(--rule); border-radius: 12px; padding: 16px 18px; display: grid; gap: 8px; align-content: start; }
+.finding .num { font: 600 1.6rem/1 var(--display); color: var(--mark); }
+.finding h3 { font: 600 1rem/1.4 var(--body); margin: 0; }
+.finding .so { font-size: .9rem; color: var(--ink-2); margin: 0; border-top: 1px dashed var(--rule); padding-top: 8px; }
+.finding .src { font: .78rem var(--mono); color: var(--ink-2); }
+.finding .src a { color: var(--ink-2); }
+
+/* tables */
+.table { overflow-x: auto; background: var(--sheet); border: 1px solid var(--rule); border-radius: 12px; margin-top: 10px; }
 table { border-collapse: collapse; width: 100%; font-size: .95rem; }
-th, td { text-align: left; vertical-align: top; padding: 9px 10px; border-bottom: 1px solid var(--line); }
-th { font-weight: 600; color: var(--muted); font-size: .85rem; letter-spacing: .03em; }
-td.num { font-variant-numeric: tabular-nums; white-space: nowrap; }
-td code { white-space: nowrap; overflow-wrap: normal; }
-ol.loop { list-style: none; counter-reset: step; margin: 0; padding: 0; display: grid; gap: 12px; }
-ol.loop li { counter-increment: step; display: grid; grid-template-columns: 2.2rem 1fr; gap: 4px 12px; }
-ol.loop li::before { content: counter(step); font: 600 1rem var(--mono); color: var(--accent); border: 1px solid var(--line); border-radius: 50%; width: 2rem; height: 2rem; display: grid; place-items: center; grid-row: span 2; }
-ol.loop b { display: block; }
-ul.rules { margin: 0; padding-left: 1.2rem; display: grid; gap: 6px; }
-.findings { display: grid; gap: 18px; }
-.finding { display: grid; gap: 4px; }
-.finding .so { color: var(--muted); }
-.shots { display: grid; grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr)); gap: 16px; }
-figure { margin: 0; display: grid; gap: 8px; }
-figure img { width: 100%; height: auto; border-radius: 10px; border: 1px solid var(--line); background: var(--surface); }
-figcaption { font-size: .88rem; color: var(--muted); }
-.demo { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 18px; display: grid; gap: 14px; }
-.demo .tag { font: 500 .75rem var(--mono); color: var(--muted); }
-.demo .q { font: 500 1.12rem/1.5 var(--display); }
-.demo fieldset { border: 0; margin: 0; padding: 0; display: grid; gap: 8px; }
-.demo legend { font-weight: 500; margin-bottom: 6px; padding: 0; }
-.demo label.opt { display: flex; gap: 10px; align-items: flex-start; padding: 10px; border: 1px solid var(--line); border-radius: 8px; cursor: pointer; }
-.demo .conf { display: flex; flex-wrap: wrap; gap: 8px; }
-.demo .conf label { display: inline-flex; align-items: center; gap: 6px; min-height: 44px; padding: 0 14px; border: 1px solid var(--line); border-radius: 22px; cursor: pointer; }
-.demo .right { border-color: var(--ok); background: var(--ok-bg); }
-.demo .wrong { border-color: var(--bad); background: var(--bad-bg); }
-button { font: 600 1rem var(--body); min-height: 44px; padding: 0 18px; border-radius: 8px; border: 1px solid var(--accent); background: var(--accent); color: var(--accent-ink); cursor: pointer; justify-self: start; }
-button:disabled { opacity: .5; cursor: default; }
-:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
-.status { min-height: 1.4em; color: var(--muted); }
-.reveal { border-top: 1px dashed var(--line); padding-top: 12px; display: grid; gap: 8px; }
-footer { border-top: 1px solid var(--line); }
-footer .wrap { padding-block: 24px; font-size: .9rem; color: var(--muted); display: flex; flex-wrap: wrap; gap: 6px 18px; }
+th, td { text-align: left; padding: 11px 14px; border-bottom: 1px solid var(--rule); vertical-align: top; }
+tr:last-child td { border-bottom: 0; }
+th { font: 600 .74rem var(--mono); letter-spacing: .08em; text-transform: uppercase; color: var(--ink-2); }
+td.num { font: 500 .95rem var(--mono); font-variant-numeric: tabular-nums; white-space: nowrap; }
+tr.best td { background: var(--pass-bg); }
+
+.limits { list-style: none; margin: 10px 0 0; padding: 0; display: grid; gap: 10px; max-width: 44rem; }
+.limits li { padding-left: 22px; position: relative; }
+.limits li::before { content: "—"; position: absolute; left: 0; color: var(--pencil); }
+
+footer { border-top: 1px solid var(--rule); padding-block: 28px 40px; font-size: .9rem; color: var(--ink-2); }
+footer .wrap { display: flex; flex-wrap: wrap; gap: 8px 22px; }
+footer a { color: var(--ink-2); }
+
+@media (max-width: 860px) {
+  .hero .wrap { grid-template-columns: minmax(0, 1fr); gap: 36px; padding-block: 24px 56px; }
+  .sec { grid-template-columns: minmax(0, 1fr); gap: 6px; }
+  .sec > .label { padding-top: 0; }
+  .loop { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); row-gap: 28px; }
+  .routes { grid-template-columns: minmax(0, 1fr); }
+}
+.steps { display: none; list-style: none; margin: 0; padding: 0; gap: 8px; flex-wrap: wrap; align-items: center; }
+.steps li { font: 600 .9rem var(--mono); padding: 6px 10px; border-radius: 6px; background: var(--code); }
+.steps li.miss { background: var(--pencil-bg); color: var(--pencil); }
+.steps li.arrow { background: none; padding: 0; color: var(--ink-2); font-weight: 400; }
+@media (max-width: 520px) {
+  body { font-size: 16px; }
+  .install .row pre { white-space: pre-wrap; overflow-wrap: anywhere; font-size: .82rem; }
+  .timeline svg { display: none; }
+  .steps { display: flex; }
+  .loop { grid-template-columns: minmax(0, 1fr); }
+  .bar { grid-template-columns: 6.8rem minmax(0, 1fr) 2.8rem; font-size: .88rem; }
+  main section { padding-block: 48px; }
+  .card { padding: 18px; }
+}
 </style>
 </head>
 <body>
-<nav aria-label="Site">
+
+<header class="top">
   <div class="wrap">
-    <a class="name" href="#top">learning-while-building</a>
-    <div class="links">
-      <a href="#how">How it works</a>
+    <a class="brand" href="#top">learning<span>-</span>while<span>-</span>building</a>
+    <nav aria-label="Site">
       <a href="#why">Why</a>
+      <a href="#how">How it works</a>
+      <a href="#research">Research</a>
       <a href="#cost">Cost</a>
-      <a href="#install">Install</a>
       <a href="https://github.com/0xfauzi/explain-pr">GitHub</a>
-    </div>
+    </nav>
   </div>
-</nav>
+</header>
 
 <main id="top">
-<div class="wrap">
 
-<section aria-labelledby="hero">
-  <h1 id="hero">Build with an agent. Keep getting better yourself.</h1>
-  <p class="lede">An Agent Skill for working on a real project with an AI agent while your own engineering grows, rather than quietly eroding. The agent does most of the building. At a few chosen points, you do the thinking.</p>
-  <p class="muted">Open source under the MIT licence. Works in any harness that supports Agent Skills and can run Python 3.10 and git.</p>
-</section>
+<div class="hero">
+  <div class="wrap">
+    <div>
+      <span class="label">An Agent Skill · MIT</span>
+      <h1>Build with an agent. <em>Keep getting better</em> yourself.</h1>
+      <p class="lede">The agent does most of the building. At a few chosen points you do the thinking: predict the design, diagnose the bug, explain the change back. Then it comes back to you on a schedule, until you can do it without help.</p>
+      <div class="install">
+        <div class="row">
+          <pre id="install-cmd">/plugin marketplace add 0xfauzi/explain-pr
+/plugin install learning-while-building@learning-while-building</pre>
+          <button class="copy" type="button" id="copy">Copy</button>
+        </div>
+        <span class="muted note-line">In Claude Code. In other Agent Skills harnesses, use <code style="background:transparent;color:inherit;padding:0">skills/learning-while-building/</code> directly.</span>
+      </div>
+      <p class="meta">Needs a shell, Python 3.10 or later, and git.</p>
+    </div>
 
-<section aria-labelledby="demo-h">
-  <h2 id="demo-h">The rule everything follows</h2>
-  <p>You commit to an answer, and say how sure you are, before anything is revealed. Try it on an example question.</p>
-  <div class="demo" id="demo">
-    <span class="tag">example · reliability</span>
-    <p class="q">A worker sends a charge to a payment gateway. Its timeout is 0.8 s; the gateway replies after 1.2 s. The worker retries without an idempotency key. What does the customer see?</p>
-    <fieldset>
-      <legend>Your answer</legend>
-      <label class="opt"><input type="radio" name="opt" value="a"> <span>One charge: the gateway rejects the second request</span></label>
-      <label class="opt"><input type="radio" name="opt" value="b"> <span>No charge: the timeout cancelled the first request</span></label>
-      <label class="opt"><input type="radio" name="opt" value="c"> <span>Two charges: the retry looks like a new purchase</span></label>
-    </fieldset>
-    <fieldset>
-      <legend>How sure are you?</legend>
-      <div class="conf">
+    <div class="card" id="demo" aria-label="Example question">
+      <div class="card-head"><span class="label">Try it</span><span class="tag">example · reliability</span></div>
+      <p class="q">A worker charges a card through a payment gateway. Its timeout is 0.8 s; the gateway replies after 1.2 s. It retries without an idempotency key. What does the customer see?</p>
+      <fieldset class="opts">
+        <legend hidden>Your answer</legend>
+        <label class="opt"><input type="radio" name="opt" value="a"><span>One charge: the gateway rejects the repeat</span></label>
+        <label class="opt"><input type="radio" name="opt" value="b"><span>No charge: the timeout cancelled the first request</span></label>
+        <label class="opt"><input type="radio" name="opt" value="c"><span>Two charges: the retry looks like a new purchase</span></label>
+      </fieldset>
+      <fieldset class="conf">
+        <legend>How sure?</legend>
         <label><input type="radio" name="conf" value="low"> low</label>
         <label><input type="radio" name="conf" value="medium"> medium</label>
         <label><input type="radio" name="conf" value="high"> high</label>
+      </fieldset>
+      <button class="commit" type="button" id="commit">Commit answer</button>
+      <p class="status" id="demo-status" role="status"></p>
+      <div class="verdict" id="demo-verdict" hidden>
+        <b id="demo-outcome"></b>
+        <p id="demo-text"></p>
       </div>
-    </fieldset>
-    <button type="button" id="commit">Commit answer</button>
-    <p class="status" id="demo-status" role="status"></p>
-    <div class="reveal" id="demo-reveal" hidden>
-      <p id="demo-verdict"></p>
-      <p>A timeout only means the reply didn't arrive. The gateway finished the first charge anyway, and without a key it cannot tell the retry from a new purchase.</p>
+      <p class="card-foot">Nothing is explained until you commit an answer and say how sure you are.</p>
     </div>
   </div>
-  <p class="muted">Students who watched a demonstration understood it no better than students who never saw it; those who predicted the outcome first understood it significantly better (Crouch et al., 2004). That is why nothing here explains before you answer.</p>
-</section>
-
-<section id="how" aria-labelledby="how-h">
-  <h2 id="how-h">How it works</h2>
-  <ol class="loop">
-    <li><b>Before a learning task, you predict.</b><span class="muted">One question: sketch the design, name the invariant, or say where it will break. The expected answer is written from the code first.</span></li>
-    <li><b>While the agent builds, nothing stops.</b><span class="muted">If you're away, it posts a question and keeps going. Writing the critical piece yourself, or diagnosing a bug first, is offered once and never forced.</span></li>
-    <li><b>After it works, you explain it back.</b><span class="muted">In your own words, before the agent summarises anything. Feedback says what held, what didn't, and where in the code to look.</span></li>
-    <li><b>Later, it comes back.</b><span class="muted">Due topics return on a spaced schedule, batched, mixed across dimensions: recall first, then cases you haven't seen.</span></li>
-  </ol>
-
-  <h3>Answer wherever you are</h3>
-  <div class="table"><table>
-    <thead><tr><th>Route</th><th>Grading</th><th>Needs</th></tr></thead>
-    <tbody>
-      <tr><td>In chat with the agent</td><td>Immediate</td><td>Nothing extra</td></tr>
-      <tr><td>In a terminal: <code>learning.py answer</code></td><td>At the next checkpoint</td><td>Python</td></tr>
-      <tr><td>Local page: <code>learning.py serve</code></td><td>At the next checkpoint; shows up within seconds</td><td>Python; a tunnel to reach it from a phone</td></tr>
-      <tr><td>Hosted private page</td><td>Immediate, on the page</td><td>A harness that can publish one, such as claude.ai</td></tr>
-    </tbody>
-  </table></div>
-
-  <div class="shots">
-    <figure>
-      <picture>
-        <source srcset="assets/room-question-dark.png" media="(prefers-color-scheme: dark)">
-        <img src="assets/room-question-light.png" width="716" height="1268" alt="The learning room page showing one question, an answer box, a low, medium or high confidence choice, and buttons for Submit answer, I don't know, and Not now." loading="lazy">
-      </picture>
-      <figcaption>One question at a time. Your answer locks when you submit. Example data.</figcaption>
-    </figure>
-    <figure>
-      <picture>
-        <source srcset="assets/room-feedback-dark.png" media="(prefers-color-scheme: dark)">
-        <img src="assets/room-feedback-light.png" width="716" height="730" alt="A graded answer marked wrong, showing the learner's high-confidence answer and feedback that names the misconception and cites worker/charge.py line 41." loading="lazy">
-      </picture>
-      <figcaption>Feedback names the belief behind a confident wrong answer and points at the code. Example data.</figcaption>
-    </figure>
-  </div>
-
-  <h3>What every question follows</h3>
-  <ul class="rules">
-    <li>The expected answer is fixed from the code before you see the question.</li>
-    <li>You give a confidence with every answer. Confident wrong answers are reported as misconceptions.</li>
-    <li>Hints come one rung at a time, and only before you commit.</li>
-    <li>Feedback opens with the outcome, responds to your reasoning, cites the code, and never praises.</li>
-    <li>"I don't know", "Not now", "skip" and "just do it" always work.</li>
-  </ul>
-
-  <h3>What the record keeps</h3>
-  <p>A folder in your repository, one file per topic and per attempt, so records from separate sessions merge cleanly in git. For each topic it keeps two things apart: the <b>highest level you have ever demonstrated</b>, and the <b>current evidence</b> from your latest review. A topic you once explained perfectly and then failed last week shows as uncertain. Work you did alone counts only when there is a commit, test or trace to inspect.</p>
-</section>
-
-<section id="why" aria-labelledby="why-h">
-  <h2 id="why-h">Why it is built this way</h2>
-  <p>Each rule traces to a finding. Most of these studies used students or junior developers on short tasks, so treat the design as a hypothesis to test on yourself. The record is built to let you do that.</p>
-  <div class="findings">
-    <div class="finding">
-      <p><b>How you use AI matters more than whether you use it.</b> In Anthropic's randomised study of 52 developers learning a new library, the AI-assisted group scored 50% on a follow-up quiz against 67% for hand-coders, with the largest gap on debugging. Asking conceptual questions, or questioning generated code, kept scores high; full delegation and letting the AI debug lost the most (<a href="https://www.anthropic.com/research/AI-assistance-coding-skills">Shen and Tamkin, 2026</a>).</p>
-      <p class="so">So conceptual questions are answered freely, you explain generated code back, and you get first go at bugs.</p>
-    </div>
-    <div class="finding">
-      <p><b>Unguarded help raises practice scores and lowers later unaided ones.</b> Students with plain ChatGPT did 17% worse once it was removed; a tutor that gave hints rather than answers removed most of the harm (<a href="https://doi.org/10.1073/pnas.2422633122">Bastani et al., 2025</a>).</p>
-      <p class="so">So hints come one rung at a time, and no question shares a message with its answer.</p>
-    </div>
-    <div class="finding">
-      <p><b>Testing before teaching helps, even when the answer is wrong</b> (<a href="https://doi.org/10.1007/s10648-023-09814-5">Pan and Carpenter, 2023</a>; <a href="https://doi.org/10.1111/cogs.12107">Kapur, 2014</a>).</p>
-      <p class="so">So you predict before a learning task and before every explanation.</p>
-    </div>
-    <div class="finding">
-      <p><b>Explaining to yourself helps:</b> g = 0.55 across 64 reports on prompted self-explanation (<a href="https://doi.org/10.1007/s10648-018-9434-x">Bisra et al., 2018</a>).</p>
-      <p class="so">So you explain each change back, and restate the idea after a miss.</p>
-    </div>
-    <div class="finding">
-      <p><b>Retrieval, spaced out, makes things stick</b> (<a href="https://doi.org/10.1111/j.1467-9280.2006.01693.x">Roediger and Karpicke, 2006</a>; <a href="https://doi.org/10.1111/j.1467-9280.2008.02209.x">Cepeda et al., 2008</a>), and transfers to new cases better with elaborated feedback (<a href="https://doi.org/10.1037/bul0000151">Pan and Rickard, 2018</a>).</p>
-      <p class="so">So topics return on a growing schedule, moving from recall to cases you haven't seen.</p>
-    </div>
-    <div class="finding">
-      <p><b>Confident errors are the ones most likely to be corrected</b> (<a href="https://doi.org/10.1037/0278-7393.27.6.1491">Butterfield and Metcalfe, 2001</a>), and feeling you understood is a poor guide to whether you did (<a href="https://doi.org/10.1073/pnas.1821936116">Deslauriers et al., 2019</a>).</p>
-      <p class="so">So every answer carries a confidence, and confident wrong answers are surfaced.</p>
-    </div>
-    <div class="finding">
-      <p><b>Feedback works on average but varies widely; informative feedback works best:</b> d = 0.48 (<a href="https://doi.org/10.3389/fpsyg.2019.03087">Wisniewski et al., 2020</a>).</p>
-      <p class="so">So feedback says what was missing and cites the code, rather than only right or wrong.</p>
-    </div>
-    <div class="finding">
-      <p><b>What learners do with a visualisation matters more than what it shows</b> (<a href="https://doi.org/10.1006/jvlc.2002.0237">Hundhausen et al., 2002</a>), and animation beats static pictures only modestly: d = 0.37 (<a href="https://doi.org/10.1016/j.learninstruc.2007.09.013">Höffler and Leutner, 2007</a>; <a href="https://doi.org/10.1006/ijhc.2002.1017">Tversky et al., 2002</a>).</p>
-      <p class="so">So explainer pages are built from questions you must answer, and step through discrete frames at your own pace.</p>
-    </div>
-    <div class="finding">
-      <p><b>Guidance that helps a novice can slow down an expert</b> (<a href="https://doi.org/10.1518/001872098779480587">Kalyuga et al., 1998</a>; <a href="https://doi.org/10.1007/s10648-007-9054-3">Kalyuga, 2007</a>).</p>
-      <p class="so">So worked examples appear only where your record shows you are new to an area.</p>
-    </div>
-    <div class="finding">
-      <p><b>Programming tasks have an order:</b> tracing and explaining code predicted writing it (<a href="https://doi.org/10.1145/1404520.1404531">Lopez et al., 2008</a>; the strict hierarchy has been questioned since), and ordering tasks gave the same gains as writing code in less time (<a href="https://doi.org/10.1145/3141880.3141895">Ericson et al., 2017</a>).</p>
-      <p class="so">So unfamiliar code goes trace, then explain, then modify.</p>
-    </div>
-  </div>
-</section>
-
-<section id="cost" aria-labelledby="cost-h">
-  <h2 id="cost-h">What it costs</h2>
-  <p>Measured once, on three due topics with the same scripted answers (one right, one confidently wrong, one partial), counting every model request.</p>
-  <div class="table"><table>
-    <thead><tr><th>Practice run</th><th>Requests</th><th>Your replies</th><th>Weighted tokens</th></tr></thead>
-    <tbody>
-      <tr><td>One question at a time, fresh session</td><td class="num">21</td><td class="num">5</td><td class="num">318k</td></tr>
-      <tr><td>Batched, fresh session (current)</td><td class="num">11</td><td class="num">2</td><td class="num">223k</td></tr>
-      <tr><td>One at a time, after a long build context</td><td class="num">16</td><td class="num">5</td><td class="num">401k</td></tr>
-    </tbody>
-  </table></div>
-  <p class="muted">Weighted tokens count cache writes at 1.25, cache reads at 0.1 and output at 5 times the input price. Single runs with a simulated learner who replied within seconds; real replies minutes later can find the cache expired, which makes fewer replies worth more. An interactive explainer page cost about 138k tokens on its own, so the skill builds one only when you ask or chat has failed twice.</p>
-</section>
-
-<section id="install" aria-labelledby="install-h">
-  <h2 id="install-h">Install</h2>
-  <p>In Claude Code:</p>
-  <pre><code>/plugin marketplace add 0xfauzi/explain-pr
-/plugin install learning-while-building@learning-while-building</code></pre>
-  <p>Then, in your project, say "make this a learning task", "quiz me", "help me understand what PR 128 did", or "what am I weak at". The first run creates <code>.learning/</code> in the repository: commit it.</p>
-  <p>Other harnesses that support Agent Skills can use <code>skills/learning-while-building/</code> from the <a href="https://github.com/0xfauzi/explain-pr">repository</a> directly.</p>
-</section>
-
-<section aria-labelledby="limits-h">
-  <h2 id="limits-h">What it cannot do</h2>
-  <ul class="rules">
-    <li>Grading is the agent's judgement against a rubric it wrote. The record is evidence, not a certificate.</li>
-    <li>Nothing reminds you. Reviews happen when you run the skill.</li>
-    <li>The review intervals (1, 3, 7, 21, 60 and 180 days) are starting values; the record shows how well they fit you.</li>
-    <li>Whether it makes you a better engineer is not yet measured on real projects. The record is how you find out.</li>
-  </ul>
-</section>
-
 </div>
+
+<section id="why">
+  <div class="wrap sec">
+    <span class="label">The problem</span>
+    <div>
+      <h2>AI can make you faster and worse at the same time.</h2>
+      <p>In Anthropic's randomised study, 52 developers learned a new library with or without an AI assistant, then took a quiz without it. The assisted group finished slightly faster and understood less, and the gap was largest on debugging.</p>
+      <div class="bars" role="img" aria-label="Follow-up quiz scores: coded by hand 67 percent, with AI assistance 50 percent.">
+        <div class="bar"><span>Coded by hand</span><span class="track"><span class="fill" style="display:block;width:67%"></span></span><span class="val">67%</span></div>
+        <div class="bar ai"><span>With AI help</span><span class="track"><span class="fill" style="display:block;width:50%"></span></span><span class="val">50%</span></div>
+      </div>
+      <p>How people used the AI mattered more than whether they used it:</p>
+      <div class="patterns">
+        <div class="pat keep"><h3>Kept their understanding</h3><ul><li>Asked conceptual questions</li><li>Generated code, then questioned it</li><li>Asked for code with explanations, and read them</li></ul></div>
+        <div class="pat lose"><h3>Lost the most</h3><ul><li>Delegated the code entirely</li><li>Started asking, then handed everything over</li><li>Let the AI do the debugging (24% on the quiz)</li></ul></div>
+      </div>
+      <p class="note" style="margin-top:16px">Source: <a href="https://www.anthropic.com/research/AI-assistance-coding-skills">Shen and Tamkin, 2026</a>. This skill builds the first column into how you work, and keeps you out of the second.</p>
+    </div>
+  </div>
+</section>
+
+<section id="how">
+  <div class="wrap sec">
+    <span class="label">How it works</span>
+    <div>
+      <h2>Four moments, and the build never stops for them.</h2>
+      <ol class="loop">
+        <li><span class="when">Before</span><b>You predict.</b><p>One question: sketch the design, name the invariant, or say where it breaks. The expected answer is written from the code first.</p></li>
+        <li><span class="when">During</span><b>It keeps building.</b><p>If you're away, it leaves the question and carries on. Writing the hard part yourself is offered once, never forced.</p></li>
+        <li><span class="when">After</span><b>You explain it back.</b><p>In your own words, before it summarises anything. Feedback says what held, what didn't, and which line to read.</p></li>
+        <li><span class="when">Later</span><b>It comes back.</b><p>On a growing schedule, batched and mixed across topics: recall first, then cases you haven't seen.</p></li>
+      </ol>
+
+      <div class="timeline" role="img" aria-label="Review schedule on a log scale: after an unaided correct answer, the next review comes 3, 7, 21, 60 and then 180 days later. A wrong or hinted answer brings the topic back the next day.">
+        <svg viewBox="0 0 640 118" preserveAspectRatio="xMidYMid meet">
+          <line class="axis" x1="20" y1="58" x2="620" y2="58"/>
+          <!-- x = 20 + 600 * log10(days) / log10(180) -->
+          <g><line class="tick" x1="20" y1="50" x2="20" y2="66"/><circle class="miss" cx="20" cy="58" r="7"/><text x="20" y="34" text-anchor="start">1 day</text><text class="small" x="20" y="92" text-anchor="start">after a miss</text></g>
+          <g><circle class="dot" cx="149" cy="58" r="6"/><text x="149" y="34" text-anchor="middle">3</text></g>
+          <g><circle class="dot" cx="245" cy="58" r="6"/><text x="245" y="34" text-anchor="middle">7</text></g>
+          <g><circle class="dot" cx="372" cy="58" r="6"/><text x="372" y="34" text-anchor="middle">21</text></g>
+          <g><circle class="dot" cx="493" cy="58" r="6"/><text x="493" y="34" text-anchor="middle">60</text></g>
+          <g><circle class="dot" cx="620" cy="58" r="6"/><text x="620" y="34" text-anchor="end">180 days</text></g>
+          <text class="small" x="620" y="92" text-anchor="end">each unaided correct answer moves it out one step</text>
+        </svg>
+        <ol class="steps" aria-hidden="true">
+          <li class="miss">1 day after a miss</li>
+          <li>3</li><li class="arrow">→</li><li>7</li><li class="arrow">→</li><li>21</li><li class="arrow">→</li><li>60</li><li class="arrow">→</li><li>180 days</li>
+        </ol>
+        <p class="note steps-note">Each unaided correct answer moves a topic one step to the right.</p>
+      </div>
+      <p class="note" style="margin-top:12px">On wider screens, drawn to a log scale. These are starting values from spacing research; your own record shows whether they fit you.</p>
+    </div>
+  </div>
+</section>
+
+<section id="answer">
+  <div class="wrap sec">
+    <span class="label">Answer anywhere</span>
+    <div>
+      <h2>Answer in chat, a terminal, or on your phone.</h2>
+      <div class="routes">
+        <div class="route-list">
+          <div class="route"><b>In chat</b><span class="when">graded at once</span><span class="how">Reply to the agent whenever you're next there.</span></div>
+          <div class="route"><b>In a terminal</b><span class="when">graded next checkpoint</span><span class="how"><code>learning.py answer</code> asks the question and locks your reply. No model needed.</span></div>
+          <div class="route"><b>On a local page</b><span class="when">graded next checkpoint</span><span class="how"><code>learning.py serve</code> runs the learning room on your machine. Feedback appears within seconds of grading.</span></div>
+          <div class="route"><b>On a hosted page</b><span class="when">graded at once</span><span class="how">Where your harness can publish a private page, the page grades your answer itself.</span></div>
+        </div>
+        <div class="phones">
+          <figure class="phone">
+            <div class="frame"><picture><source srcset="assets/room-question-dark.png" media="(prefers-color-scheme: dark)"><img src="assets/room-question-light.png" width="716" height="1268" alt="The learning room showing one question, an answer box, a confidence choice, and Submit answer, I don't know, and Not now buttons." loading="lazy"></picture></div>
+            <figcaption>One question at a time.</figcaption>
+          </figure>
+          <figure class="phone">
+            <div class="frame"><picture><source srcset="assets/room-feedback-dark.png" media="(prefers-color-scheme: dark)"><img src="assets/room-feedback-light.png" width="716" height="730" alt="A graded answer marked wrong: the learner's confident answer and feedback naming the misconception, citing worker/charge.py line 41." loading="lazy"></picture></div>
+            <figcaption>Feedback names the belief and the line.</figcaption>
+          </figure>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="rules">
+  <div class="wrap sec">
+    <span class="label">The rules</span>
+    <div>
+      <h2>What every question follows.</h2>
+      <ol class="rules">
+        <li>The expected answer is fixed from the code before you see the question.</li>
+        <li>You say how sure you are. Confident wrong answers are flagged as misconceptions.</li>
+        <li>Your answer locks before any feedback appears.</li>
+        <li>Hints come one rung at a time, and only before you commit.</li>
+        <li>Feedback opens with the outcome, answers your reasoning, cites the code, and never praises.</li>
+        <li>"I don't know", "not now", "skip" and "just do it" always work.</li>
+      </ol>
+      <p class="note" style="margin-top:18px">The record lives in your repository and keeps two things apart: the best you have ever shown on a topic, and what your latest review shows. Work you did alone counts once there is a commit or test to point at.</p>
+    </div>
+  </div>
+</section>
+
+<section id="research">
+  <div class="wrap sec">
+    <span class="label">Research</span>
+    <div>
+      <h2>Every rule traces to a finding.</h2>
+      <p>Most of these studies used students or junior developers on short tasks. Treat the design as a hypothesis to test on yourself; the record is built to let you do that.</p>
+      <div class="findings">
+        <article class="finding"><span class="num">−17%</span><h3>Unguarded AI help raises practice scores and lowers later unaided ones.</h3><p class="so">A tutor that gave hints rather than answers removed most of the harm. So hints come one rung at a time.</p><span class="src"><a href="https://doi.org/10.1073/pnas.2422633122">Bastani et al., 2025</a></span></article>
+        <article class="finding"><h3>Students who watched a demonstration understood it no better than those who never saw it. Those who predicted first understood significantly more.</h3><p class="so">So nothing is explained before you commit an answer.</p><span class="src"><a href="https://doi.org/10.1119/1.1707018">Crouch et al., 2004</a></span></article>
+        <article class="finding"><span class="num">g = 0.55</span><h3>Explaining something to yourself improves learning.</h3><p class="so">So you explain each change back, and restate the idea after a miss.</p><span class="src"><a href="https://doi.org/10.1007/s10648-018-9434-x">Bisra et al., 2018</a></span></article>
+        <article class="finding"><h3>Questions before teaching help, even when answered wrongly.</h3><p class="so">So you predict before a learning task and before every explanation.</p><span class="src"><a href="https://doi.org/10.1007/s10648-023-09814-5">Pan and Carpenter, 2023</a> · <a href="https://doi.org/10.1111/cogs.12107">Kapur, 2014</a></span></article>
+        <article class="finding"><h3>Retrieval spread over time makes knowledge last, and transfers better with explained feedback.</h3><p class="so">So topics return on a growing schedule, moving from recall to new cases.</p><span class="src"><a href="https://doi.org/10.1111/j.1467-9280.2006.01693.x">Roediger and Karpicke, 2006</a> · <a href="https://doi.org/10.1111/j.1467-9280.2008.02209.x">Cepeda et al., 2008</a> · <a href="https://doi.org/10.1037/bul0000151">Pan and Rickard, 2018</a></span></article>
+        <article class="finding"><h3>Confident errors are the most likely to be corrected, and feeling you understood is a poor guide.</h3><p class="so">So every answer carries a confidence, and confident misses are surfaced.</p><span class="src"><a href="https://doi.org/10.1037/0278-7393.27.6.1491">Butterfield and Metcalfe, 2001</a> · <a href="https://doi.org/10.1073/pnas.1821936116">Deslauriers et al., 2019</a></span></article>
+        <article class="finding"><span class="num">d = 0.48</span><h3>Feedback helps on average, and informative feedback helps most.</h3><p class="so">So feedback says what was missing and where, never just right or wrong.</p><span class="src"><a href="https://doi.org/10.3389/fpsyg.2019.03087">Wisniewski et al., 2020</a></span></article>
+        <article class="finding"><span class="num">d = 0.37</span><h3>Animation beats still pictures only modestly; what learners do with a visual matters more than what it shows.</h3><p class="so">So explainer pages are built from questions, stepped through at your own pace.</p><span class="src"><a href="https://doi.org/10.1006/jvlc.2002.0237">Hundhausen et al., 2002</a> · <a href="https://doi.org/10.1016/j.learninstruc.2007.09.013">Höffler and Leutner, 2007</a></span></article>
+        <article class="finding"><h3>Guidance that helps a novice can slow down an expert.</h3><p class="so">So worked examples appear only where your record shows you are new.</p><span class="src"><a href="https://doi.org/10.1518/001872098779480587">Kalyuga et al., 1998</a> · <a href="https://doi.org/10.1007/s10648-007-9054-3">Kalyuga, 2007</a></span></article>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="cost">
+  <div class="wrap sec">
+    <span class="label">Cost</span>
+    <div>
+      <h2>Measured, not guessed.</h2>
+      <p>One practice session on three due topics, with the same scripted answers each time, counting every model request.</p>
+      <div class="table"><table>
+        <thead><tr><th>Practice run</th><th>Requests</th><th>Your replies</th><th>Weighted tokens</th></tr></thead>
+        <tbody>
+          <tr><td>One question at a time, fresh session</td><td class="num">21</td><td class="num">5</td><td class="num">318k</td></tr>
+          <tr class="best"><td>Batched, fresh session (current)</td><td class="num">11</td><td class="num">2</td><td class="num">223k</td></tr>
+          <tr><td>One at a time, after a long build</td><td class="num">16</td><td class="num">5</td><td class="num">401k</td></tr>
+        </tbody>
+      </table></div>
+      <p class="note" style="margin-top:12px">Weighted: cache writes ×1.25, cache reads ×0.1, output ×5 the input price. Single runs with a simulated learner. An interactive explainer page cost about 138k tokens, so the skill builds one only when you ask or chat has failed twice.</p>
+    </div>
+  </div>
+</section>
+
+<section id="limits">
+  <div class="wrap sec">
+    <span class="label">Limits</span>
+    <div>
+      <h2>What it cannot do.</h2>
+      <ul class="limits">
+        <li>Grading is the agent's judgement against a rubric it wrote. The record is evidence, not a certificate.</li>
+        <li>Nothing reminds you. Reviews happen when you run the skill.</li>
+        <li>Whether it makes you a better engineer has not been measured on real projects yet. Your record is how you find out.</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
 </main>
 
 <footer>
@@ -285,23 +431,32 @@ footer .wrap { padding-block: 24px; font-size: .9rem; color: var(--muted); displ
 <script>
 (function () {
   "use strict";
-  const demo = document.getElementById("demo");
-  const status = document.getElementById("demo-status");
-  const button = document.getElementById("commit");
-  button.addEventListener("click", function () {
-    const picked = demo.querySelector("input[name=opt]:checked");
-    const conf = demo.querySelector("input[name=conf]:checked");
-    if (!picked || !conf) { status.textContent = "Pick an answer and how sure you are. Your answer locks when you commit."; return; }
+  var demo = document.getElementById("demo");
+  var status = document.getElementById("demo-status");
+  var commit = document.getElementById("commit");
+  commit.addEventListener("click", function () {
+    var picked = demo.querySelector("input[name=opt]:checked");
+    var conf = demo.querySelector("input[name=conf]:checked");
+    if (!picked || !conf) { status.textContent = "Pick an answer and how sure you are. It locks when you commit."; return; }
     demo.querySelectorAll("input").forEach(function (i) { i.disabled = true; });
-    button.disabled = true;
-    const right = picked.value === "c";
-    demo.querySelector("input[value=c]").closest("label").classList.add("right");
-    if (!right) picked.closest("label").classList.add("wrong");
-    let verdict = right ? "Correct." : "No. The right answer is marked.";
-    if (!right && conf.value === "high") verdict += " You were sure, so this is a belief worth fixing, not just a gap.";
-    document.getElementById("demo-verdict").textContent = verdict;
+    commit.disabled = true;
     status.textContent = "";
-    document.getElementById("demo-reveal").hidden = false;
+    var right = picked.value === "c";
+    demo.querySelector("input[value=c]").closest(".opt").classList.add("is-right");
+    if (!right) picked.closest(".opt").classList.add("is-wrong");
+    var box = document.getElementById("demo-verdict");
+    box.classList.toggle("pass", right);
+    document.getElementById("demo-outcome").textContent = right ? "Correct" : "No";
+    var text = "A timeout only means the reply didn't arrive. The gateway finished the first charge, and without a key it can't tell the retry from a new purchase.";
+    if (!right && conf.value === "high") text = "You were sure, so this is a belief worth fixing, not just a gap. " + text;
+    document.getElementById("demo-text").textContent = text;
+    box.hidden = false;
+  });
+  var copy = document.getElementById("copy");
+  copy.addEventListener("click", function () {
+    var t = document.getElementById("install-cmd").textContent;
+    var done = function () { copy.textContent = "Copied"; setTimeout(function () { copy.textContent = "Copy"; }, 1500); };
+    if (navigator.clipboard) navigator.clipboard.writeText(t).then(done, function () {});
   });
 })();
 </script>
