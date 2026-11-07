@@ -73,7 +73,7 @@ args = ["/full/path/to/explain-pr/experiments/mcp-app/server.py"]
 
 | App | Card shown | Answer sent to the chat |
 |---|---|---|
-| Claude Code in the Claude app | | |
+| Claude Code in the Claude app | No, text only (2026-11-07). The agent received the tool's structuredContent as JSON. | Not applicable |
 | Claude desktop app, chat | | |
 | Codex app | | |
 | Codex CLI | | |
