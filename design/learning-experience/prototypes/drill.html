@@ -93,7 +93,7 @@ legend{font-size:15px;font-weight:600;margin-bottom:8px;padding:0}
 .pl{position:relative;display:flex;align-items:center;min-height:44px;padding:0 16px 0 13px;border-left:3px solid transparent;font:500 13px var(--mono);white-space:pre;cursor:pointer;min-width:max-content}
 .pl:hover{background:color-mix(in srgb,var(--field) 60%,transparent)}
 .pl input{position:absolute;opacity:0;inset:0;margin:0;cursor:pointer}
-.pl i{display:inline-block;width:2.4em;color:var(--text-dim);font-style:normal}
+.pl i{display:inline-block;width:2.4em;color:var(--text-3);font-style:normal}
 .pl:has(input:checked){background:var(--accent-wash);border-left-color:var(--ink)}
 .pl:has(input:focus-visible){outline:2px solid var(--accent);outline-offset:-2px}
 .pl.cause{box-shadow:inset 0 0 0 1.5px var(--ink)}
@@ -109,9 +109,16 @@ legend{font-size:15px;font-weight:600;margin-bottom:8px;padding:0}
 .mean{margin:8px 0 0;font-size:14px;color:var(--text-3);min-height:22px}
 .mean b{font-weight:600;color:var(--ink)}
 .hints{margin-top:20px;padding-top:12px;border-top:1px solid var(--rule);display:flex;flex-wrap:wrap;align-items:center;gap:4px 14px;font-size:14px;color:var(--text-3)}
-.ladder{display:inline-grid;grid-template-columns:repeat(3,28px);gap:4px;vertical-align:middle;margin-right:10px}
-.ladder span{height:10px;border-radius:3px;box-shadow:inset 0 0 0 1.5px var(--ink);transition:background .4s var(--ease-out)}
-.ladder span.on{background:var(--ink)}
+.ladder{display:inline-flex;gap:6px;vertical-align:middle;margin-right:10px}
+.ladder span{width:18px;height:18px;border-radius:50%;box-shadow:inset 0 0 0 1.5px var(--ink);font:500 10px/18px var(--mono);text-align:center;transition:background .4s var(--ease-out)}
+.ladder span.on{background:var(--ink);color:var(--on-ink)}
+.backto{margin:20px -24px 0;padding:16px 24px;border-top:1px solid var(--rule)}
+.backto .btn{width:100%}
+.backto .cue{margin:8px 0 0}
+.sec{display:flex;flex-wrap:wrap;gap:8px;margin-top:16px}
+.ask{margin-top:12px;padding:12px 16px;border:1.5px solid var(--ink);border-radius:14px;background:var(--card)}
+.ask p{margin:0 0 8px}
+.focus .tabs{display:none !important}
 .hints ol{flex:1 1 100%;margin:4px 0 0;padding:0;list-style:none;display:grid;gap:6px;font-size:15px;line-height:1.5;color:var(--text-2)}
 .hints ol li{padding:10px 14px;background:var(--paper);border-radius:10px}
 .hints ol li.in{animation:rise .5s var(--ease-out) both}
@@ -212,7 +219,10 @@ details.fix summary{min-height:44px;display:inline-flex;align-items:center;font-
 .toast p{margin:0;flex:1}
 .toast .x{width:44px;height:44px;border:0;background:none;cursor:pointer;border-radius:10px;font-size:20px;line-height:1}
 @media (max-width:640px){
-:root{--tabbar:calc(64px + env(safe-area-inset-bottom));--abar:120px}
+:root{--tabbar:calc(64px + env(safe-area-inset-bottom));--abar:76px}
+.focus{--tabbar:0px}
+.focus .tabs{display:none !important}
+.backto{margin:20px -16px 0;padding:14px 16px}
 .bar{padding:0 16px}
 .layout{padding:12px 16px calc(var(--tabbar) + 32px)}
 .tabs{position:fixed;left:0;right:0;bottom:0;z-index:30;padding:0 0 env(safe-area-inset-bottom);gap:0;background:var(--paper);border-top:1px solid var(--border);display:grid;grid-template-columns:repeat(4,1fr)}
@@ -222,7 +232,8 @@ details.fix summary{min-height:44px;display:inline-flex;align-items:center;font-
 .qcard{padding:16px 16px 0;border-radius:14px}
 .qq{font-size:20px}.vw{font-size:22px}.ph{font-size:31px}
 .part{grid-template-columns:minmax(0,1fr);gap:2px}.part .why{grid-column:1}.pk{line-height:1.6}
-.abar{position:sticky;bottom:var(--tabbar);z-index:20;margin:20px -16px 0;padding:12px 16px;border-radius:0 0 14px 14px;box-shadow:0 -10px 20px -14px rgba(22,22,26,.25);grid-template-columns:minmax(0,1fr);grid-template-areas:"acts" "lock" "help";gap:8px}
+.abar{position:sticky;bottom:var(--tabbar);z-index:20;margin:20px -16px 0;padding:12px 16px;border-radius:0 0 14px 14px;box-shadow:0 -10px 20px -14px rgba(22,22,26,.25);grid-template-columns:minmax(0,1fr);grid-template-areas:"lock" "help";gap:6px}
+.abar .row2{display:none !important}
 .abar .lock{justify-self:stretch}.abar .why2,.abar .kc{display:none}
 .abar .pill{white-space:nowrap;padding:0 12px}
 .abar .row2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
@@ -234,6 +245,7 @@ details.fix summary{min-height:44px;display:inline-flex;align-items:center;font-
 .ctas .btn{width:100%}
 .msgs{padding:8px 14px 4px}.reply{padding:12px 14px 14px}.reply .btn{flex:1 1 auto}
 }
+@media (max-height:560px){.abar,.top{position:static !important}.toastwrap{position:static}html{scroll-padding:16px}}
 @media (prefers-reduced-motion:reduce){
 .qcard.nudge,.verdict.in,.toast,.hints ol li.in,.dots::after,.run .term,.msg.in,.fc{animation:none !important}
 .seg,.ladder span,.btn,.sure,.steps li,.setup i{transition:none}
@@ -250,7 +262,8 @@ details.fix summary{min-height:44px;display:inline-flex;align-items:center;font-
 <span class="sp"></span>
 <label class="ck"><input type="checkbox" id="net"> Offline</label>
 <label class="ck"><input type="checkbox" id="lnk" checked> Session linked</label>
-<label>Width <select id="vw"><option value="">Fit</option><option value="390">390</option><option value="768">768</option></select></label>
+<label class="ck"><input type="checkbox" id="keys" checked> Shortcuts</label>
+<label>Width <select id="vw"><option value="">Fit</option><option value="390">390</option><option value="640x360">640 by 360</option><option value="768">768</option></select></label>
 <label>Theme <select id="theme"><option value="">System</option><option value="light">Light</option><option value="dark">Dark</option></select></label>
 </div>
 <div class="vpwrap" id="vpwrap" hidden><iframe id="vpf" title="The drill at the chosen width"></iframe></div>
@@ -272,7 +285,7 @@ details.fix summary{min-height:44px;display:inline-flex;align-items:center;font-
 <main id="main" tabindex="-1"></main>
 <aside class="rail" aria-label="About this prototype state"><h2>About this state</h2><p id="rnote"></p><pre id="rsys"></pre></aside>
 </div>
-<div class="toastwrap"><div id="toastslot" role="status" aria-live="polite"></div></div>
+<div class="toastwrap"><div id="toastslot"></div></div>
 <p class="vh" id="live" aria-live="polite"></p>
 </div>
 
@@ -291,44 +304,45 @@ var CHEV='<svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="cu
 var BACK='<svg width="14" height="14" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 2L4 6l4 4"/></svg>';
 var TICK='<svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 6.5l2.5 2.5L10 3"/></svg>';
 
-/* fixture: card c_d311 from fixture.js, inlined so this page stands alone */
-var CODE=['def charge(order):','    for attempt in range(3):','        try:','            return gateway.charge(','                order.card,','                order.amount,','                idempotency_key=f"{order.id}:{attempt}",','                timeout=0.8,','            )','        except gateway.Timeout:','            if attempt < 2:','                sleep(backoff(attempt))','    raise ChargeFailed(order.id)'];
-var D={id:'c_d311',kind:'repair',topic:'timeouts-vs-failures',dim:'Debugging and diagnosis',lv:1,path:'billing/charge.py:41-53',line:47,
- ctx:'A customer was charged twice after a gateway timeout. test_no_double_charge fails.',
- out:'<span class="cm">$ pytest tests/test_charge.py -k test_no_double_charge</span>\nFAILED tests/test_charge.py::test_no_double_charge\n    gateway.fail_reply_once("ord_1042")   # reply lost, charge ran\n    charge(order)\n&gt;   assert gateway.charges_for("ord_1042") == 1\n<b>E   AssertionError: assert 2 == 1</b>\n1 failed, 41 passed in 2.31s',
+/* fixture: the drill card from assets/orbit-pay.json, inlined so this page stands alone */
+var CODE=['@retry(attempts=3, backoff=(0.5, 1.0), jitter=0.1)','def charge(order, gateway):','    """Charge an order once, even when retried."""','    if order.charged_at:','        return order.receipt','    try:','        resp = gateway.charge(idempotency_key=order.id,','                              amount=order.total, timeout=0.8)','    except GatewayDeclined:','        return order.decline()','    except GatewayTimeout:','        return order.decline()','    order.mark_charged(resp)','    return resp.receipt'];
+var KEYS=true;
+var D={id:'c_d311',kind:'repair',topic:'timeouts-vs-failures',dim:'Debugging and diagnosis',lv:1,path:'billing/charge.py:41-54',line:52,
+ ctx:'A customer was charged, but the order shows Declined and the shop sent "payment declined". test_lost_reply fails.',
+ out:'<span class="cm">$ pytest tests/test_charge.py -k test_lost_reply</span>\nFAILED tests/test_charge.py::test_lost_reply\n    gateway.drop_reply_once("ord_1042")\n    charge(order)\n&gt;   assert order.status == "charged"\n<b>E   AssertionError: assert \'declined\' == \'charged\'</b>\n1 failed, 41 passed in 2.31s',
  files:['billing/charge.py','billing/retry.py','tests/test_charge.py','tests/fakes/gateway.py'],
- hints:['Look at what the key is made from.','Compare the key the first call sends with the key the retry sends.','billing/charge.py:47 builds the key. Does it change between attempts?'],
- why:{cause:['The key is built from the attempt number (billing/charge.py:47), so the gateway sees the retry as a new charge.','The key is the cause, yes. Say what makes it change: the attempt number at billing/charge.py:47 gives each retry a new key.','A timeout only means the reply did not arrive. The gateway ran the first charge. The retry charged again because its key is new (billing/charge.py:47).'],
-  check:['A test that makes the first reply time out and asserts both attempts send one key fails on this code and passes on the fix. That proves the cause.','Printing the key shows it changes, but the test that proves it is two calls with one order id.','A longer timeout hides the symptom. It does not show the cause. A test that sends two calls with one order id would.']},
- run:{right:'<span class="cm">$ pytest tests/test_charge.py -k test_retry_sends_same_key</span>\n&gt;   assert keys[1] == keys[0]\n<b>E   AssertionError: assert \'ord_1042:1\' == \'ord_1042:0\'</b>\n1 failed in 0.42s',
-  partial:'<span class="cm">$ pytest tests/test_charge.py -k test_no_double_charge -s</span>\ncharge attempt=0 key=ord_1042:0\ncharge attempt=1 key=ord_1042:1\n1 failed, 41 passed in 2.29s',
-  wrong:'<span class="cm">$ CHARGE_TIMEOUT=5 pytest tests/test_charge.py -k test_no_double_charge</span>\n<b>E   AssertionError: assert 2 == 1</b>\n1 failed, 41 passed in 11.80s'},
- runSays:{right:'It fails on the planted bug, so it shows the cause. On the fix it passes.',partial:'It shows the key changes between attempts. It does not yet prove that the change causes the second charge.',wrong:'The test still fails with a longer timeout, so the timeout is not the cause.'}};
-var A={right:['The idempotency key includes the attempt number, so the retry sends a new key and the gateway charges again.','A test that makes the first reply time out, then asserts both attempts send the same key.'],
- partial:['The idempotency key includes the attempt number, so the retry sends a new key and the gateway charges again.','Print the key in charge() on each attempt.'],
- wrong:['The 0.8 s timeout is too short, so the gateway fails and the retry charges again.','Raise the timeout to 5 s and run the test again.']};
+ hints:['What can the worker know when the reply does not arrive?','Look at what charge() does when the gateway does not answer in 0.8 s.','billing/charge.py:51 handles a timeout. Does the worker know the charge failed?'],
+ why:{cause:['The timeout branch declines the order (billing/charge.py:52). A timeout only means the reply did not arrive. The charge ran.','The timeout is part of it, yes. Say what the code does with it: billing/charge.py:52 treats it as a decline, but the charge may have run.','The key is the same on every attempt, so it is not the cause. The timeout branch at billing/charge.py:52 declines an order that was charged.'],
+  check:['A test where the fake gateway charges and drops the reply, then asserts the order is not Declined, fails on this code and passes on the fix. That proves the cause.','Printing the status shows Declined, but the test that proves it makes the fake gateway charge and then drop the reply.','A longer timeout hides the symptom. It does not show the cause. A test where the gateway charges and drops the reply would.']},
+ run:{right:'<span class="cm">$ pytest tests/test_charge.py -k test_lost_reply_not_declined</span>\n&gt;   assert order.status != "declined"\n<b>E   AssertionError: assert \'declined\' != \'declined\'</b>\n1 failed in 0.42s',
+  partial:'<span class="cm">$ pytest tests/test_charge.py -k test_lost_reply -s</span>\ncharge ord_1042: GatewayTimeout after 0.8 s\norder ord_1042 status=declined\n1 failed, 41 passed in 2.29s',
+  wrong:'<span class="cm">$ pytest tests/test_charge.py -k test_lost_reply -s</span>\ncharge ord_1042 key=ord_1042\n1 failed, 41 passed in 2.30s'},
+ runSays:{right:'It fails on this code, so it shows the cause.',partial:'It shows the order is declined after a timeout. It does not yet prove the charge ran.',wrong:'The key is the same on the one attempt it made. The key is not what changes the status.'}};
+var A={right:['The timeout branch declines the order, but a timeout does not mean the charge failed. The charge ran and only the reply was lost.','A test where the fake gateway charges and then drops the reply, and asserts the order is not Declined.'],
+ partial:['The timeout branch declines the order, but a timeout does not mean the charge failed. The charge ran and only the reply was lost.','Print order.status after the timeout.'],
+ wrong:['The idempotency key changes between attempts, so the gateway sees a new charge.','Print the key on each attempt.']};
 
 var ST=[
 ['empty drills tab',function(){reset();S.view='empty'},'The Drills tab before any drill. One sentence on where drills come from and two ways to start. The faint record field is the one place motion is allowed when nothing is waiting, and it stops under reduced motion.','drills: none\nmap.json read, no cards'],
-['loading: setting up a safe copy',function(){reset();S.phase='loading'},'After Drill this on the map. The agent copies the code, puts back a bug from this project, and fixes the answer key before Sam sees anything. Each step fills when it is done; the third is still running.','git worktree add .lwb/drill-c_d311\nrevert the fix (billing/charge.py)\nlwb_seal c_d311 parts=cause,check'],
-['waiting: symptom shown',function(){reset()},'The symptom is the real failing test from the safe copy. Two fields, an optional line picker, confidence. Lock stays aria-disabled with a reason until confidence is chosen. Type to see the step bar move. Keys: 1 2 3, D, H, '+MOD+' Enter.','lwb_post c_d311 kind=repair\nrubric sealed 14:15 (2 parts)'],
-['hint 1 of 3 used',function(){reset();S.hints=1},'One hint used. The ladder fills one cell and the card says once, plainly, that the attempt now counts as With help. The tone does not change.','lwb_hint c_d311 level=1\nattempt cap: with help'],
-['hint 3 of 3 used',function(){reset();S.hints=3;S.pick=47},'All three hints. The Hint button is gone; the cap line stays. H3 points at the line, so Sam has picked it.','lwb_hint c_d311 level=3\nattempt cap: with help'],
-['answered: locked, grading',function(){fill('partial','Fairly sure');S.phase='grading';S.hold=true},'Locked, then Grading, announced once. Held here so you can see it. Lock the waiting state to see a grade arrive.','lwb_lock c_d311 door=room 14:22\nsample: grading two parts'],
-['graded right on both parts',function(){fill('right','Fairly sure');graded()},'Both parts right and no hints, so the record moves. The new segment lights once; that motion is the only one on this view.','cause: correct  check: correct\nrecord: with help -> recalls'],
-['graded partial: check not quite',function(){fill('partial','Fairly sure');graded()},'Cause right, check not quite. Each part has its own word, so a right guess with a weak check is not a full pass (R16).','cause: correct  check: partial\nreview in 3 days'],
-['graded wrong: cause',function(){fill('wrong','Fairly sure');graded()},'Cause wrong. "No." and the evidence, then the fix behind Show the fix. No red, no warmth. It returns tomorrow.','cause: wrong  check: wrong\nreview tomorrow'],
-['confident and wrong',function(){fill('wrong','Sure');graded()},'The same answer at Sure. One belief line is added, and the topic gets the sure-miss mark on the map.','cause: wrong at sure\nmap: sure miss on timeouts-vs-failures'],
-['run my check output',function(){fill('partial','Fairly sure');graded();S.ran='partial'},'The agent runs Sam\'s check in the safe copy, not its own (R14), and shows the output as it printed. Clear Session linked in the bar to see the fallback.','lwb run-check c_d311 (in .lwb/drill-c_d311)\nexit 1, output posted to chat too'],
-['done: back on date, copy deleted',function(){reset();S.view='closed'},'After Close drill. The safe copy is gone and the real code was never touched. The drill sits under Done with its return date.','git worktree remove .lwb/drill-c_d311\nreview c_d311 due 10 Nov'],
-['offline: grading waits',function(){reset();S.cause=A.partial[0];S.net=false},'No network. Sam can write and lock. Grading waits. Clear Offline in the prototype bar after locking to see it send and grade.','page storage queue, retry on "online"'],
-['error: safe copy failed',function(){reset();S.phase='error'},'Setup failed. The message says what did not happen and that the code is safe. The technical reason is one tap away, not in the way.','git worktree add: failed\nno card posted, nothing sealed'],
-['in-build offer: call the cause first',function(){reset();S.view='chat'},'During a real build, when a test fails in a learning task. One line, once per failing test. Call the cause opens the same drill on the real failure; Not now lets the agent fix it and say nothing more.','pytest exit 1 in a learning task\noffer once: test_no_double_charge']
+['loading: setting up a safe copy',function(){reset();S.phase='loading'},'After Drill this on timeouts-vs-failures. The agent copies the code, puts back a bug from this project that exercises that topic, and fixes the answer key before Sam sees anything.','git worktree add .lwb/drill\nplant: timeout read as a decline\nlwb_post kind=repair parts=cause,check'],
+['waiting: symptom only, no code',function(){reset()},'The symptom is the real failing test. No code yet, and the topic is hidden: only the area shows. Sam writes the cause and a check first, because finding the cause is the skill (E7). Keys: 1 2 3, '+MOD+' Enter; D asks first.','show_topic=false\ncode hidden until the hypothesis is locked'],
+['hint 1 of 3 used',function(){reset();S.hints=1},'One hint used. One numbered dot fills and the card says once, plainly, that the attempt now counts as With help. The tone does not change.','lwb_hint level=1\nattempt cap: with help'],
+['hint 3 of 3 used',function(){reset();S.hints=3},'All three hints. The Hint button is gone; the cap line stays.','lwb_hint level=3\nattempt cap: with help'],
+['check ran: change your cause once',function(){fill('partial','Fairly sure');S.phase='ran';S.ran='partial'},'After the lock, the agent runs Sam\'s own check in the safe copy and shows what it printed. Sam may change the cause once. Then the code opens, with an optional line pick, and the result.','lwb run-check in .lwb/drill\noutput shown before the reveal'],
+['answered: locked, grading',function(){fill('partial','Fairly sure');S.phase='grading';S.hold=true},'Locked, then Grading, said once. Held here so you can see it.','sample: grading two parts'],
+['graded right on both parts',function(){fill('right','Fairly sure');S.ran='right';graded()},'Both parts right and no hints. The drill credits timeouts-vs-failures, the topic the bug exercises, and the topic name shows now. Sam met it on 14 Oct, so this counts.','cause: correct  check: correct\nrecord: timeouts-vs-failures with help -> recalls'],
+['graded partial: check not quite',function(){fill('partial','Fairly sure');S.ran='partial';graded()},'Cause right, check not quite. Each part has its own word (R16).','cause: correct  check: partial\nback tomorrow'],
+['graded wrong: cause',function(){fill('wrong','Fairly sure');S.ran='wrong';graded()},'Cause wrong. "No." and the evidence, then the fix behind Show the fix. It returns tomorrow.','cause: wrong  check: wrong\nreview tomorrow'],
+['confident and wrong',function(){fill('wrong','Sure');S.ran='wrong';graded()},'The same answer at Sure. One belief line, and the topic gets the sure-miss mark on the map.','cause: wrong at sure\nmap: sure miss on timeouts-vs-failures'],
+['done: back on date, copy deleted',function(){reset();S.view='closed'},'After Close drill. The safe copy is gone and the real code was never touched.','git worktree remove .lwb/drill\nreview due 10 Nov'],
+['offline: grading waits',function(){reset();S.cause=A.partial[0];S.net=false},'No network. Sam can write and lock. The page says Not sent until a write is confirmed.','db write pending\nSent only on a confirmed snapshot'],
+['error: safe copy failed',function(){reset();S.phase='error'},'Setup failed. The message says what did not happen and that the code is safe. The technical reason is one step away.','git worktree add: failed\nno card posted, nothing sealed'],
+['in-build offer: call the cause first',function(){reset();S.view='chat'},'During a real build, when a test fails in a learning task. One line, once per failing test, drawn as plain chat text. Not now lets the agent fix it and say nothing more.','pytest exit 1 in a learning task\noffer once: test_lost_reply']
 ];
 
 var S, timers=[], tt;
 function reset(){S={view:'drill',phase:'edit',cause:'',check:'',pick:null,conf:null,hints:0,dk:false,live:false,ran:null,hold:false,net:!$('#net').checked,chat:'offer'}}
-function fill(k,c){reset();S.cause=A[k][0];S.check=A[k][1];S.conf=c;if(k!=='wrong')S.pick=47;else S.pick=48}
+function fill(k,c){reset();S.cause=A[k][0];S.check=A[k][1];S.conf=c;S.pick=k!=='wrong'?52:47}
 function graded(){S.phase='graded';S.v=grade()}
 function later(fn,ms){timers.push(setTimeout(fn,ms))}
 function announce(t){var l=$('#live');l.textContent='';setTimeout(function(){l.textContent=t},40)}
@@ -337,44 +351,46 @@ function linked(){return $('#lnk').checked}
 /* grading: patterns stand in for the sealed two-part rubric */
 function grade(){
  if(S.dk)return {dk:true};
- var c=S.cause,k=S.check,cause=/attempt/i.test(c)&&/key|idempot/i.test(c)?0:/key|idempot/i.test(c)?1:2;
- var check=/assert|test|compare|same/i.test(k)&&/key|charge/i.test(k)?0:/print|log/i.test(k)&&/key/i.test(k)?1:2;
+ var c=S.cause,k=S.check,cause=/timeout|reply/i.test(c)&&/declin|fail/i.test(c)?0:/timeout/i.test(c)?1:2;
+ var check=/test|assert/i.test(k)&&/drop|lost|reply|charg/i.test(k)?0:/print|log/i.test(k)&&/status|declin/i.test(k)?1:2;
  return {cause:cause,check:check};
 }
 function outcome(){var v=S.v;if(v.dk)return 'dk';if(v.cause===2)return S.conf==='Sure'?'cw':'wrong';return v.cause+v.check===0?'right':'partial'}
 function canLock(){return !!S.conf&&!!S.cause.trim()&&!!S.check.trim()}
 function lock(dk){
  saveDraft();
- if(dk){S.dk=true;S.conf='Guess'}
+ if(dk){S.dk=true;S.conf=null}
  else if(!canLock()){var h=$('#helper');if(h){h.classList.add('warn');h.textContent=!S.cause.trim()?'Write what you think causes it first.':!S.check.trim()?'Write a check that would show it.':'Choose how sure you are first.'}
   var f=!S.cause.trim()?$('#cause'):!S.check.trim()?$('#check'):$('input[name="conf"]');if(f)f.focus();return}
- if(!S.net){S.phase='offline';render('#st1');nudge();announce('Locked. Grading waits until you are back online.');return}
- S.phase='grading';S.hold=false;render('#st1');nudge();announce('Locked. Grading.');later(finish,1600);
+ if(!S.net){S.phase='offline';render('#st1');nudge();return}
+ if(S.dk||!linked()){S.phase='grading';S.hold=false;render('#st1');nudge();later(finish,1600);return}
+ S.phase='ran';S.ran='busy';render('#st1');nudge();later(function(){S.ran=outcomeOf(grade());render('#runb');announce('Your check printed its output. You can change your cause once.')},RM.matches?300:1400);
 }
-function finish(){graded();render('#vt')}
+function finish(){graded();var inCard=document.activeElement&&document.activeElement.closest&&document.activeElement.closest('#card');render(inCard?'#vt':null);if(!inCard)announce('Result ready. '+nextText())}
+function outcomeOf(v){if(v.cause===2)return 'wrong';return v.cause+v.check===0?'right':'partial'}
 function nudge(){var q=$('.qcard');if(q&&!RM.matches){q.classList.remove('nudge');void q.offsetWidth;q.classList.add('nudge')}}
 function saveDraft(){var a=$('#cause'),b=$('#check');if(a)S.cause=a.value;if(b)S.check=b.value}
 
 /* render */
-function chip(t){var cls={Locked:'locked','Saved here':'saved','Not quite':'miss',No:'miss','No · sure':'miss'}[t]||'';return '<span class="chip '+cls+'">'+(t==='Correct'?TICK:'')+esc(t)+'</span>'}
-function chipNow(){var p=S.phase;if(p==='edit')return 'Open';if(p==='offline')return 'Saved here';if(p==='graded')return {right:'Correct',partial:'Not quite',wrong:'No',cw:'No · sure',dk:'Locked'}[outcome()];return 'Locked'}
+function chip(t){if(!t)return '';var cls={Locked:'locked','Not sent':'saved','Not quite':'miss',No:'miss','No · sure':'miss'}[t]||'';return '<span class="chip '+cls+'">'+(t==='Correct'?TICK:'')+esc(t)+'</span>'}
+function chipNow(){var p=S.phase;if(p==='edit')return 'Open';if(p==='offline')return 'Not sent';if(p==='graded')return {right:'Correct',partial:'Not quite',wrong:'No',cw:'No · sure',dk:'Locked'}[outcome()];return 'Locked'}
 function stepsBar(){
  var cur=S.phase==='graded'?3:!S.cause.trim()?1:!S.check.trim()?2:3,done=S.phase==='graded'?4:cur;
- if(S.phase!=='edit'&&S.phase!=='graded')cur=3,done=3;
- return '<ol class="steps" aria-label="Drill steps">'+['Symptom','Cause','Check','Reveal'].map(function(n,i){return '<li'+(i===cur&&S.phase!=='graded'?' aria-current="step"':i<done||(S.phase==='graded'&&i===3)?' class="ok"':'')+'>'+n+'</li>'}).join('')+'</ol>';
+ if(S.phase==='ran')cur=3,done=3;else if(S.phase!=='edit'&&S.phase!=='graded')cur=3,done=3;
+ return '<ol class="steps" aria-label="Drill steps">'+['Symptom','Cause','Check','Your check runs, then the reveal'].map(function(n,i){return '<li'+(i===cur&&S.phase!=='graded'?' aria-current="step"':i<done||(S.phase==='graded'&&i===3)?' class="ok"':'')+'>'+n+'</li>'}).join('')+'</ol>';
 }
 function head(){
- var eb=S.live?'A test fails · in the build':'Drill · '+D.dim+' · About 10 min';
- return '<div class="qhead"><div><div class="eb">'+esc(eb)+'</div><div class="lvl">'+D.topic+' · With help</div></div>'+chip(chipNow())+'</div>'+
-  '<h1 class="qq" id="qp">'+(S.live?'Call the cause before I fix it.':'Find the cause of the double charge.')+'</h1>'+stepsBar();
+ var eb=S.live?'A test fails · in the build':'Drill · About 10 min';
+ return '<div class="qhead"><div><div class="eb">'+esc(eb)+'</div><div class="lvl">'+(S.phase==='graded'?D.topic+' · <span class="lvw">With help</span>':D.dim)+'</div></div>'+chip(chipNow())+'</div>'+
+  '<h1 class="qq" id="qp">'+(S.live?'Call the cause before I fix it.':'Find why a charged order shows Declined.')+'</h1>'+stepsBar();
 }
 function symptom(){
  return '<section class="sym" aria-labelledby="sy"><h2 id="sy">Symptom</h2><p>'+esc(D.ctx)+'</p><pre class="term" tabindex="0" aria-label="Failing test output">'+D.out+'</pre>'+
-  (S.live?'<p class="files" style="margin-top:8px">This is your real code. Nothing is planted.</p>':'<details class="files"><summary>Safe copy · '+D.files.length+' files changed in this drill</summary><ul>'+D.files.map(function(f){return '<li>'+f+'</li>'}).join('')+'</ul></details>')+'</section>';
+  (S.live?'<p class="files" style="margin-top:8px">This is your real code. Nothing is planted.</p>':'<p class="files" style="margin-top:8px">A safe copy of your code. The code opens after you lock your cause and check.</p>')+'</section>';
 }
 function picker(ro){
  var d=ro?' disabled':'';
- return '<fieldset><legend>Optional: tap the line you suspect</legend><div class="pick"><div class="hd"><span>'+D.path+'</span>'+(S.pick&&!ro?'<button type="button" class="tbtn" data-act="clear" style="font-size:13px">Clear</button>':'<span style="min-height:44px"></span>')+'</div>'+
+ return '<p class="files" style="margin:16px 0 0">Files in the safe copy: '+D.files.join(', ')+'</p><fieldset><legend>Optional: select the line you suspect</legend><div class="pick"><div class="hd"><span>'+D.path+'</span>'+(S.pick&&!ro?'<button type="button" class="tbtn" data-act="clear" style="font-size:13px">Clear</button>':'<span style="min-height:44px"></span>')+'</div>'+
   CODE.map(function(l,i){var n=41+i,show=ro&&S.phase==='graded'&&n===D.line;return '<label class="pl'+(ro?' ro':'')+(show?' cause':'')+'"><input type="radio" name="line" value="'+n+'"'+(S.pick===n?' checked':'')+d+' aria-label="Line '+n+': '+esc(l.trim())+(show?'. The cause.':'')+'"><i aria-hidden="true">'+n+'</i><span aria-hidden="true">'+esc(l)+'</span></label>'}).join('')+'</div></fieldset>';
 }
 function fields(){
@@ -385,51 +401,55 @@ function confs(){
  return '<fieldset><legend>How sure are you?</legend><div class="confs">'+['Guess','Fairly sure','Sure'].map(function(n,i){return '<label class="sure"><input type="radio" name="conf" value="'+n+'"'+(S.conf===n?' checked':'')+' aria-describedby="mean">'+n+'<span class="kc" aria-hidden="true">'+(i+1)+'</span></label>'}).join('')+'</div>'+
   '<p class="mean" id="mean">'+(S.conf?'<b>'+S.conf+':</b> '+MEAN[S.conf]:'Guess, Fairly sure or Sure. Each one has a meaning.')+'</p></fieldset>';
 }
-function ladder(n){return '<span class="ladder" aria-hidden="true">'+[0,1,2].map(function(i){return '<span'+(i<n?' class="on"':'')+'></span>'}).join('')+'</span>'}
+function ladder(n){return '<span class="ladder" aria-hidden="true">'+[0,1,2].map(function(i){return '<span'+(i<n?' class="on"':'')+'>'+(i+1)+'</span>'}).join('')+'</span>'}
 function hints(){
  var n=S.hints;
  return '<div class="hints"><span>'+ladder(n)+'Hints used: '+n+' of 3</span>'+(n<3?'<button type="button" class="tbtn" data-act="hint">Hint</button>':'')+
   (n?'<ol>'+D.hints.slice(0,n).map(function(t,i){return '<li'+(i===n-1&&S.newHint?' class="in" tabindex="-1"':'')+'><b>H'+(i+1)+'</b>'+esc(t)+'</li>'}).join('')+'</ol><p class="cap">Using a hint is fine. This attempt now counts as With help.</p>':'')+'</div>';
 }
+function secRow(){
+ var h='<div class="sec"><button type="button" class="pill" data-act="notnow"'+(KEYS?' aria-keyshortcuts="H"':'')+'>Not now<span class="kc" aria-hidden="true"'+(KEYS?'':' hidden')+'>H</span></button>'+
+  '<button type="button" class="pill dk" data-act="dk"'+(KEYS?' aria-keyshortcuts="D"':'')+'>I do not know<span class="kc" aria-hidden="true"'+(KEYS?'':' hidden')+'>D</span></button></div>';
+ if(S.ask)h+='<div class="ask" role="alertdialog" aria-labelledby="askp"><p id="askp">Lock as I do not know?</p><button type="button" class="btn sm" data-act="dkyes">Lock it</button> <button type="button" class="btn ghost sm" data-act="dkno">Cancel</button></div>';
+ return h}
 function abar(){
- return '<div class="abar"><span class="why2">'+(S.live?'A test fails':'Drill')+' · '+D.topic+'</span>'+
-  '<div class="row2"><button type="button" class="pill" data-act="notnow">Not now<span class="kc" aria-hidden="true">H</span></button>'+
-  '<button type="button" class="pill dk" data-act="dk">I do not know<span class="kc" aria-hidden="true">D</span></button></div>'+
-  '<button type="submit" class="btn lock" aria-disabled="'+!canLock()+'" aria-describedby="helper">Lock my answer<span class="kc" aria-hidden="true">'+MOD+' Enter</span></button>'+
+ return '<div class="abar"><span class="why2">'+(S.live?'A test fails':'Drill')+' · '+D.dim+'</span>'+
+  '<button type="submit" class="btn lock" aria-disabled="'+!canLock()+'" aria-describedby="helper"'+(KEYS?' aria-keyshortcuts="'+(MOD==='Cmd'?'Meta':'Control')+'+Enter"':'')+'>Lock my cause and check<span class="kc" aria-hidden="true"'+(KEYS?'':' hidden')+'>'+MOD+' Enter</span></button>'+
   '<p class="helper" id="helper">'+(S.conf?'':'Choose how sure you are first.')+'</p></div>';
 }
 function said(){
- if(S.dk)return '<blockquote class="said"><span class="cap">You said</span>I do not know. '+chip('Guess')+'</blockquote>';
+ if(S.dk)return '<blockquote class="said"><span class="cap">You said</span>I do not know.</blockquote>';
  return '<blockquote class="said"><span class="cap">Cause</span>'+esc(S.cause)+'<span class="cap">Check</span>'+esc(S.check)+(S.pick?'<span class="cap">Line</span><span style="font-family:var(--mono);font-size:14px">'+S.pick+'</span>':'')+' '+chip(S.conf)+'</blockquote>';
 }
 function part(name,s,text){var w=['Correct.','Not quite.','No.'][s];return '<div class="part"><span class="pk">'+name+'</span><p class="vw'+(s===0?' ok':'')+'">'+w+'</p><p class="why">'+esc(text)+'</p></div>'}
-function nextText(){var o=outcome();return o==='right'?(S.hints?'Back on 10 Nov.':'Back on 14 Nov.'):o==='partial'?'Back on 10 Nov.':'Back tomorrow.'}
+function nextText(){var o=outcome();return o==='right'?(S.hints?'Back on 10 Nov.':'Back on 14 Nov.'):'Back tomorrow.'}
 function verdict(){
  var o=outcome(),v=S.v,h,nx;
  if(o==='dk'){nx='Back tomorrow.';h='<p class="vw ok" style="margin-top:8px">Not known yet.</p><p class="why">Cause: '+esc(D.why.cause[0])+'</p><p class="why">Check: '+esc(D.why.check[0])+'</p>'}
  else{
   h=part('Cause',v.cause,D.why.cause[v.cause])+part('Check',v.check,D.why.check[v.check]);
-  if(S.pick)h+='<p class="belief">'+(S.pick===D.line?'You picked line 47. The cause is on line 47.':'You picked line '+S.pick+'. The cause is on line 47.')+'</p>';
+  if(S.pick)h+='<p class="belief">'+(S.pick===D.line?'You picked line 52. The cause is on line 52.':'You picked line '+S.pick+'. The cause is on line 52.')+'</p>';
+  h+='<p class="belief">The idea: <b class="mono">'+D.topic+'</b>.</p>';
   nx=nextText();
   if(o==='cw')h+='<p class="belief">You chose Sure. It returns tomorrow and is marked on your map.</p>';
   if(o==='right'&&S.hints)h+='<p class="belief">You used '+(S.hints===1?'a hint':S.hints+' hints')+', so this attempt counts as With help.</p>';
-  if(o==='right'&&!S.hints)h+='<div class="delta"><span>Your record: <b>'+D.topic+'</b>With help'+CHEV+'Without help</span><span class="segs" aria-hidden="true"><span class="seg f1"></span><span class="seg" data-to="f2"></span><span class="seg"></span></span></div>';
+  if(o==='right'&&!S.hints)h+='<div class="delta"><span>Your record: <b>'+D.topic+'</b><span class="lvw">With help</span>'+CHEV+'<span class="lvw">Without help</span></span><span class="segs" aria-hidden="true"><span class="seg f1"></span><span class="seg" data-to="f2"></span><span class="seg"></span></span></div>';
  }
  h+='<p class="why" style="margin-top:12px">'+nx+(S.live?'':' The safe copy is deleted when you close this drill.')+'</p>';
- h+='<details class="fix"><summary>Show the fix</summary><pre class="term diff" tabindex="0" aria-label="The fix">billing/charge.py:47\n<span class="rm">-                idempotency_key=f"{order.id}:{attempt}",</span>\n<span class="ad">+                idempotency_key=order.id,</span></pre></details>';
- h+=runBlock()+'<p class="cue">'+CUE+'</p>';
- return '<section class="verdict in" role="status" aria-labelledby="vt"><h2 class="vt" id="vt" tabindex="-1">Result · two parts</h2>'+h+'</section>'+
-  '<div class="done">'+(S.live?'<button type="button" class="btn" data-act="build">Back to the build</button>':'<button type="button" class="btn" data-act="close">Close drill</button><button type="button" class="btn ghost sm" data-act="build">Back to the build</button>')+'</div>';
+ h+='<details class="fix"><summary>Show the fix</summary><pre class="term diff" tabindex="0" aria-label="The fix">billing/charge.py:51\n<span class="rm">-    except GatewayTimeout:</span>\n<span class="rm">-        return order.decline()</span>\n<span class="ad">+    except GatewayTimeout:</span>\n<span class="ad">+        return order.mark_unknown()   # look up the status, never decline</span></pre></details>';
+ return '<section class="verdict in" aria-labelledby="vt"><h2 class="vt" id="vt" tabindex="-1">Result · two parts</h2>'+h+'</section>'+
+  (S.live?'':'<div class="done"><button type="button" class="btn ghost sm" data-act="close">Close drill</button></div>')+backto();
 }
+function backto(){return '<div class="backto"><button type="button" class="btn" data-act="build">Back to the build</button><p class="cue">'+CUE+'</p></div>'}
 function runBlock(){
  if(S.dk)return '';
- var o=outcome(),k=o==='right'?'right':o==='partial'?'partial':'wrong';
- if(!linked())return '<div class="run"><p>Run my check works when this Room is linked to your session. Say "run my check" in chat.</p></div>';
- if(!S.ran)return '<div class="run"><p>The agent runs your check, not its own.</p><button type="button" class="btn ghost sm" data-act="run" style="margin-top:10px">Run my check</button></div>';
+ var k=S.ran;
+ if(!linked())return '<div class="run"><p>Your check runs when this Room is linked to your session. Say "run my check" in chat.</p></div>';
+ if(!S.ran)return '';
  if(S.ran==='busy')return '<div class="run" id="runb" tabindex="-1"><p><span class="dots">Running your check</span></p></div>';
  return '<div class="run" id="runb" tabindex="-1"><p>Your check printed:</p><pre class="term" tabindex="0" aria-label="Output of your check">'+D.run[k]+'</pre><p style="margin-top:8px">'+esc(D.runSays[k])+'</p></div>';
 }
-function linkLine(back){return '<div class="link"><a class="tbtn" href="'+(back||'map.html')+'" style="margin-left:-6px">'+BACK+(back?'Inbox':'Map')+'</a><span>Linked to: <b>orbit-pay</b> · cloud session</span></div>'}
+function linkLine(back){return '<a class="tbtn" href="'+(back||'map.html')+'" style="margin-left:-6px">'+BACK+(back?'Inbox':'Map')+'</a>'}
 function drillsTab(m){
  var h='<h1 class="ph">Drills</h1>';
  if(S.view==='empty'){
@@ -438,9 +458,9 @@ function drillsTab(m){
    '<div class="ctas"><a class="btn" href="map.html">Open the map</a><button type="button" class="btn ghost" data-act="start">Drill my weakest topic</button></div><span class="say">In chat: drill me on timeouts</span></div>';
  }else{
   h+='<div class="note" role="status" id="closed" tabindex="-1"><p>Drill closed. The safe copy is deleted. Your code is unchanged.</p></div>'+
-   '<h2 class="gh">Suggested</h2><ul class="list"><li><a class="ra" href="#" data-act="start"><span class="eb">Weakest now</span><span class="tp">retry-budget</span><span class="sub">About 10 min</span><span class="rt">'+chip('Open')+'</span></a></li></ul>'+
+   '<h2 class="gh">Suggested</h2><ul class="list"><li><a class="ra" href="#" data-act="start"><span class="eb">Weakest now</span><span class="tp">Debugging and diagnosis</span><span class="sub">About 10 min</span><span class="rt">'+chip('Open')+'</span></a></li></ul>'+
    '<h2 class="gh">Done</h2><ul class="list"><li><a class="ra" href="#" data-act="reopen"><span class="eb">'+D.dim+'</span><span class="tp">'+D.topic+'</span><span class="sub">Back on 10 Nov.</span><span class="rt">'+chip('Not quite')+'</span></a></li></ul>'+
-   '<p class="cue">'+CUE+'</p><div class="ctas"><button type="button" class="btn" data-act="build">Back to the build</button></div>';
+   '<div class="ctas" style="display:block"><button type="button" class="btn" data-act="build">Back to the build</button><p class="cue">'+CUE+'</p></div>';
  }
  m.innerHTML=h;
 }
@@ -448,40 +468,47 @@ function chatView(m){
  var h=linkLine('inbox.html')+'<div class="sess" role="region" aria-label="Session transcript, orbit-pay"><div class="sh"><span></span><span></span><span></span>Session · orbit-pay · cloud</div><div class="msgs" id="msgs">'+
   '<p class="msg you">Make charge() retry on gateway timeouts, then run the tests.</p>'+
   '<div class="msg">Starting the build now. I changed billing/charge.py and ran the tests.<pre class="term">'+D.out+'</pre></div>';
- if(S.chat==='offer')h+='<p class="msg offer" id="offer">test_no_double_charge fails. Call the cause first? Pick the line, or say \'not now\'.</p>';
- if(S.chat==='notnow')h+='<p class="msg offer">test_no_double_charge fails. Call the cause first? Pick the line, or say \'not now\'.</p><p class="msg you">not now</p><div class="msg in" id="ag" tabindex="-1">Fixing it. The key at billing/charge.py:47 now uses the order id only.<pre class="term">$ pytest tests/test_charge.py\n42 passed in 2.27s</pre>Next: the dead letter queue.</div>';
- if(S.chat==='back')h+='<p class="msg you">From the Room: c_d311 locked at '+esc(S.conf||'Guess')+'.</p><div class="msg in" id="ag" tabindex="-1">Cause: '+(['Correct.','Not quite.','No.'][S.v.cause]||'Not known yet.')+' Check: '+(['Correct.','Not quite.','No.'][S.v.check]||'Not known yet.')+' '+nextText()+' I ran your check first, then fixed line 47.<pre class="term">$ pytest tests/test_charge.py\n42 passed in 2.27s</pre>'+esc(CUE)+'</div>';
+ var OFFER='test_lost_reply fails. Call the cause first? Say it in a line, or say \'not now\'.';
+ if(S.chat==='offer')h+='<p class="msg offer" id="offer">'+OFFER+'</p>';
+ if(S.chat==='notnow')h+='<p class="msg offer">'+OFFER+'</p><p class="msg you">not now</p><div class="msg in" id="ag" tabindex="-1">Fixing it. A timeout now leaves the order Pending and looks up its status (billing/charge.py:51).<pre class="term">$ pytest tests/test_charge.py\n42 passed in 2.27s</pre>Next: the dead letter queue.</div>';
+ if(S.chat==='back')h+='<p class="msg you">Fix it.</p><pre class="term">lwb_sync  1 answer from the Room</pre><div class="msg in" id="ag" tabindex="-1">Cause: '+(['Correct.','Not quite.','No.'][S.v.cause]||'Not known yet.')+' Check: '+(['Correct.','Not quite.','No.'][S.v.check]||'Not known yet.')+' '+nextText()+' I ran your check first, then fixed line 51.<pre class="term">$ pytest tests/test_charge.py\n42 passed in 2.27s</pre>'+esc(CUE)+'</div>';
  h+='</div>';
  if(S.chat==='offer')h+='<div class="reply" role="group" aria-label="Reply"><span class="lbl">Reply in chat, or open it in the Room.</span><button type="button" class="btn sm" data-act="callcause">Call the cause</button><button type="button" class="btn ghost sm" data-act="chatnot">Not now</button></div>';
  m.innerHTML=h+'</div>';
 }
 function render(focusSel){
  clearTimeout(tt);var m=$('#main');m.removeAttribute('aria-busy');
+ document.documentElement.classList.toggle('focus',S.view==='drill');
  if(S.view==='empty'||S.view==='closed'){drillsTab(m);return focus(focusSel)}
  if(S.view==='chat'){chatView(m);return focus(focusSel)}
  var h=linkLine(S.live?'inbox.html':'');
  if(S.phase==='loading'){m.setAttribute('aria-busy','true');
-  h+='<div class="qcard"><div class="eb">Drill · '+D.dim+'</div><div class="lvl">'+D.topic+' · With help</div><h1 class="qq">Setting up a safe copy of the code. About 20 seconds.</h1><ol class="setup" id="setup">'+
+  h+='<div class="qcard"><div class="eb">Drill</div><div class="lvl">'+D.dim+'</div><h1 class="qq">Setting up a safe copy of the code. About 20 seconds.</h1><ol class="setup" id="setup">'+
    ['Copy the code to a safe place','Put back a bug from this project','Fix the answer before you see the question'].map(function(t,i){return '<li><i></i>'+t+'</li>'}).join('')+'</ol><p class="files" style="margin:16px 0 0">Your code is not changed. <span class="vh">Setting up the drill.</span></p><div class="tail"></div></div>';
   m.innerHTML=h;var li=$$('#setup li');li[0].className='now';
   later(function(){li[0].className='ok';li[1].className='now'},RM.matches?0:900);later(function(){li[1].className='ok';li[2].className='now'},RM.matches?0:2000);return}
  if(S.phase==='error'){
-  h+='<div class="qcard"><div class="eb">Drill · '+D.dim+'</div><div class="lvl">'+D.topic+'</div><h1 class="qq" id="qp" tabindex="-1">I could not make a safe copy of the code, so this drill did not start. Your code is unchanged.</h1>'+
-   '<details class="errd"><summary>Details</summary><pre class="term">$ git worktree add .lwb/drill-c_d311\nfatal: \'.lwb/drill-c_d311\' already exists</pre></details>'+
+  h+='<div class="qcard"><div class="eb">Drill</div><div class="lvl">'+D.dim+'</div><h1 class="qq" id="qp" tabindex="-1">I could not make a safe copy of the code, so this drill did not start. Your code is unchanged.</h1>'+
+   '<details class="errd"><summary>Details</summary><pre class="term">$ git worktree add .lwb/drill\nfatal: \'.lwb/drill\' already exists</pre></details>'+
    '<div class="done"><button type="button" class="btn sm" data-act="start">Try again</button><a class="btn ghost sm" href="map.html">Back to the map</a></div></div>';
   m.innerHTML=h;return focus(focusSel)}
  var ro=S.phase!=='edit';
- if(!S.net)h+='<div class="note" role="status"><p>You are offline. You can write your answer. Grading waits until you are back online.</p></div>';
+ if(!S.net)h+='<div class="note"><p>You are offline. You can write your answer. Grading waits until you are back online.</p></div>';
  h+='<form class="qcard" id="card" aria-labelledby="qp" novalidate>'+head()+symptom();
- if(!ro)h+=picker(false)+fields()+confs()+hints()+abar();
+ if(!ro)h+=fields()+confs()+secRow()+hints()+abar();
+ else if(S.phase==='ran'){
+  h+=said()+'<p class="state" id="st1" tabindex="-1"><b>Locked.</b> Your check runs first.</p>'+runBlock();
+  if(S.ran&&S.ran!=='busy'){h+='<label class="fl" for="cause">You can change your cause once</label><textarea id="cause" rows="3">'+esc(S.cause)+'</textarea>'+picker(false)+'<div class="sec"><button type="button" class="btn" data-act="reveal">Show the result</button></div>'}
+  h+='<div class="tail"></div>';
+ }
  else{
-  if(!S.dk)h+=picker(true);
+  if(!S.dk&&S.phase==='graded')h+=picker(true);
   h+=said();
   var p=S.phase,st='';
   if(p==='grading')st='<b>Locked.</b> <span class="dots">Grading</span>';
-  else if(p==='offline')st='<b>Locked.</b> Grading waits until you are back online. Your answer is saved on this device.';
+  else if(p==='offline')st='<b>Not sent yet.</b> Keep this page open until it says Sent.';
   if(st)h+='<p class="state" id="st1" tabindex="-1">'+st+'</p><div class="tail"></div>';
-  if(p==='graded')h+=verdict();
+  if(p==='graded')h+=runBlock()+verdict();
  }
  m.innerHTML=h+'</form>';S.newHint=false;
  var segs=$$('.seg[data-to]');
@@ -509,8 +536,12 @@ main.addEventListener('click',function(e){
  if(a.tagName==='A')e.preventDefault();
  if(k==='hint'){saveDraft();S.hints++;S.newHint=true;render(S.hints<3?'[data-act="hint"]':'.hints ol li.in');announce('Hint '+S.hints+' of 3 shown. This attempt now counts as With help.')}
  else if(k==='clear'){saveDraft();S.pick=null;render('input[name="line"]')}
- else if(k==='dk')lock(true);
+ else if(k==='dk'){saveDraft();S.ask=true;render('[data-act="dkyes"]')}
+ else if(k==='dkyes'){S.ask=false;lock(true)}
+ else if(k==='dkno'){S.ask=false;render('[data-act="dk"]')}
+ else if(k==='reveal'){saveDraft();S.phase='grading';render('#st1');later(finish,1200)}
  else if(k==='notnow'){saveDraft();var keep={c:S.cause,k:S.check};S.view='closed';render('#closed');toast('Moved to Later. The safe copy stays until you come back.','Undo',function(){S.view='drill';S.cause=keep.c;S.check=keep.k;render('#cause')})}
+ else if(k==='run'){}
  else if(k==='run'){S.ran='busy';render('#runb');announce('Running your check.');later(function(){var o=outcome();S.ran=o;render('#runb');announce('Your check printed its output.')},RM.matches?300:1400)}
  else if(k==='close'){S.view='closed';render('#closed');announce('Drill closed. The safe copy is deleted.')}
  else if(k==='start'||k==='reopen'){reset();S.phase='loading';render();later(function(){S.phase='edit';render('#qp')},3200)}
@@ -522,13 +553,9 @@ $('.me').onclick=function(){toast('Settings has its own prototype.')};
 function toast(msg,act,fn){
  var slot=$('#toastslot');clearTimeout(tt);
  slot.innerHTML='<div class="toast"><p>'+esc(msg)+'</p>'+(act?'<button type="button" class="btn ghost sm" id="tact">'+esc(act)+'</button>':'')+'<button type="button" class="x" id="tx" aria-label="Dismiss">&times;</button></div>';
- var t=$('.toast',slot),left=8000,start=Date.now();
- function arm(){start=Date.now();tt=setTimeout(function(){slot.innerHTML=''},left)}
- function pause(){clearTimeout(tt);left-=Date.now()-start}
- t.addEventListener('mouseenter',pause);t.addEventListener('focusin',pause);t.addEventListener('mouseleave',arm);t.addEventListener('focusout',function(e){if(!t.contains(e.relatedTarget))arm()});
+ announce(msg);
  $('#tx').onclick=function(){clearTimeout(tt);slot.innerHTML='';$('#main').focus()};
- if(act)$('#tact').onclick=function(){clearTimeout(tt);slot.innerHTML='';fn()};
- arm();
+ if(act){$('#tact').onclick=function(){slot.innerHTML='';fn()};$('#tact').focus()}
 }
 document.addEventListener('keydown',function(e){
  var t=e.target,tag=(t.tagName||'').toLowerCase(),typing=tag==='textarea'||(tag==='input'&&t.type==='text')||tag==='select';
@@ -536,17 +563,20 @@ document.addEventListener('keydown',function(e){
  if((e.metaKey||e.ctrlKey)&&e.key==='Enter'&&S.view==='drill'&&S.phase==='edit'){e.preventDefault();lock(false);return}
  if(typing||e.metaKey||e.ctrlKey||e.altKey)return;
  if(e.key==='['||e.key===']'){step(e.key===']'?1:-1);return}
- if(e.key==='?'){toast('1 2 3: how sure. D: I do not know. H: Not now. '+MOD+' Enter: lock. [ and ]: prototype state.');return}
+ if(e.key==='Escape'&&S.ask){S.ask=false;render('[data-act="dk"]');return}
+ if(!KEYS)return;
+ if(e.key==='?'){toast('1 2 3: how sure. D: I do not know (asks first). H: Not now. '+MOD+' Enter: lock. [ and ]: prototype state.');return}
  if(S.view!=='drill'||S.phase!=='edit')return;
  var m={'1':'Guess','2':'Fairly sure','3':'Sure'}[e.key];
  if(m){saveDraft();S.conf=m;render('input[name="conf"][value="'+m+'"]');return}
- if(e.key.toLowerCase()==='d'){lock(true);return}
+ if(e.key.toLowerCase()==='d'){$('[data-act="dk"]').click();return}
  if(e.key.toLowerCase()==='h'){$('[data-act="notnow"]').click()}
 });
 window.addEventListener('online',function(){$('#net').checked=false;netChange()});
 window.addEventListener('offline',function(){$('#net').checked=true;netChange()});
 function netChange(){if(!S)return;S.net=!$('#net').checked;if(S.net&&S.phase==='offline'){announce('Sent. Grading.');S.phase='grading';render('#st1');later(finish,1400)}else if(S.view==='drill'&&S.phase==='edit'){saveDraft();render()}}
 $('#net').onchange=netChange;
+$('#keys').onchange=function(){KEYS=$('#keys').checked;if(S&&S.view==='drill'){saveDraft();render()}};
 $('#lnk').onchange=function(){if(S&&S.phase==='graded')render()};
 
 /* prototype switcher */
@@ -564,7 +594,7 @@ sel.onchange=function(){apply(+sel.value)};$('#prev').onclick=function(){step(-1
 var th=$('#theme'),vw=$('#vw');
 try{th.value=Q.get('theme')||localStorage.getItem('room-theme')||''}catch(err){}
 function setTheme(){if(th.value)document.documentElement.setAttribute('data-theme',th.value);else document.documentElement.removeAttribute('data-theme');try{if(!EMBED)localStorage.setItem('room-theme',th.value)}catch(err){};syncFrame()}
-function syncFrame(){var w=vw.value;$('#vpwrap').hidden=!w;$('#app').hidden=!!w;if(!w)return;var f=$('#vpf');f.style.width=w+'px';
+function syncFrame(){var w=vw.value;$('#vpwrap').hidden=!w;$('#app').hidden=!!w;if(!w)return;var f=$('#vpf'),wh=w.split('x');f.style.width=wh[0]+'px';f.style.height=(wh[1]||820)+'px';
  var src='drill.html?embed=1&state='+slug(ST[+sel.value][0])+'&theme='+th.value;if(f.getAttribute('src')!==src)f.setAttribute('src',src)}
 th.onchange=setTheme;vw.onchange=syncFrame;
 var q=Q.get('state'),start=2;ST.forEach(function(s,i){if(q&&(slug(s[0])===q||String(i+1)===q))start=i});

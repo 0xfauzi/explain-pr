@@ -1,6 +1,7 @@
 # Recommended architecture: Room first, agent native
 
-Status: recommendation, 2026-11-07. Written by a review panel (a staff platform
+Status: recommendation, revised 2026-11-07 after the expert panel review
+(`../critique/`). Written by a review panel (a staff platform
 engineer, a learning scientist and a product designer) after scoring the three
 proposals in this folder: `agent-native.md`, `companion.md` and
 `protocol-bridge.md`. Nothing in this document is built yet. Each claim has a tag.
@@ -78,19 +79,25 @@ sealed phone mailbox for the end state, behind experiments.
    The skill already tells the agent when to ask [T]. Hooks make it automatic
    once one test in a cloud session passes.
 5. **Answers come home with nothing copied.** In chat, the reply is the answer.
-   In the Room, the answer is locked in the artifact db, graded on the page with
-   `sample` [T], and pulled into the record by the session at its next turn. In
-   phase 2, the Submit tap also rings the session (`room.sendToClaudeSession`).
+   In the Room, the page creates one answer doc (never updated, with a sha256 of
+   the text), grades it with `sample` [T], and the session pulls it with one
+   `lwb_sync` call at its next turn. In phase 2 a bell ladder tells the session
+   sooner (section 8). Every doc has one writer.
 6. **The rubric is sealed before the question and never seen before the lock.**
-   It goes through an MCP tool input, not a Bash command. Only a sha256 commit
-   goes into the record. `learning.py check` verifies it afterwards.
+   By default a subagent writes it from the code and calls `lwb_post`, so the
+   main transcript and the main agent's context see only a hash. Only a sha256
+   commit goes into the record. `learning.py check` verifies it afterwards.
 7. **The record is private.** If the project remote is public, the record lives
    in a private `learning-record` repo, not in the project.
 8. **Calm by default.** One question at a time, a count in the periphery, the
    centre only at the two research moments (before a build, after it works) or
    on the learner's gesture. Every detour ends with a one-line resume cue.
 9. **Every upgrade is behind a named experiment with a fallback that already
-   works.** Phase 1 depends on nothing that is untested.
+   works.** Phase 1 is built only on tested parts, and five one-hour
+   experiments (E-SEAL, E-REPO, E-OFFLINE, E-PERM, E-CCR-SEND) run before its
+   copy promises anything they cover.
+10. **The record is measured on learning, not only on friction.** Each phase
+   ships with outcome gates computed from the record it already writes.
 
 ---
 
@@ -112,10 +119,20 @@ Acceptance tests, one per phase:
 - **Phase 1:** the owner starts a build in Claude Code in the Claude app on the
   laptop, answers the prediction in chat, answers the explain-back on the phone
   in the Room, reads the page's feedback on the phone, and on the next message
-  on the laptop the session has the grade in the record. Zero typed commands,
-  zero copied strings. One extra turn is allowed.
-- **Phase 2:** the same, but the Submit tap on the phone rings the session, and
-  the session posts the grade and the resume cue with no extra turn.
+  on the laptop the session has the grade in the record (one `lwb_sync` row,
+  then the work). The record is committed and pushed to the private record
+  repo. Zero typed commands, zero copied strings, zero permission prompts after
+  the first approval. The same run passes keyboard only on the desktop and with
+  VoiceOver on the phone (E-A11Y).
+- **Phase 2:** the same, but the Lock tap on the phone tells the session. If
+  E-CCR-SEND passes, with no extra tap; if only `sendToClaudeSession` works,
+  with one confirmation tap, said honestly on the page.
+- **Learning gates (every phase):** from the record, per month: unaided
+  success at the first spaced review on topics with and without an
+  explain-back; unaided success at 21 days; share of Sure answers that are
+  right; drill success at 7 and 21 days. A phase that improves the seamless
+  tests and lowers these is rolled back. Experiments E2 (Compare shown or not)
+  and E7 (hypothesis before code) run from phase 1, one flag each.
 - **End state:** the same in the Codex app with the answer given on the phone,
   and in the local desktop Code tab with the answer given in the mod pane while
   the agent keeps building.
@@ -161,21 +178,28 @@ from agent-native, the `return` block from companion, and `moment` and
   "dimension": "distributed-systems",
   "level_at_ask": "with help",
   "support": "completion",
-  "prompt": "When test_retry runs, which assertion fails first, and why?",
-  "excerpt": {"path": "src/client.py", "lines": [41, 58], "text": "..."},
-  "observable": {"tool": "Bash", "match": "pytest .*test_retry"},
+  "prompt": "With a dead gateway and the test's fixed clock, how long does test_retry_budget wait before charge() gives up?",
+  "excerpt": {"path": "billing/charge.py", "lines": [41, 52], "text": "..."},
+  "observable": {"tool": "Bash", "match": "pytest .*test_retry_budget", "deterministic": true},
+  "misconception_check": false,
+  "show_topic": true,
+  "distance": null,
   "answer_shape": "text",
   "confidence": ["guess", "fairly sure", "sure"],
   "actions": ["answer", "dont_know", "not_now"],
   "rubric_commit": "sha256:9c1e...",
   "return": {"claude_session": "session_013c...", "room": "https://claude.ai/code/artifact/..."},
-  "resume_cue": "Back to: the retry budget in client.py. Next: the backoff cap.",
+  "resume_cue": "Back to: retries in the payment worker. Next: the cap on total retry time.",
   "state": "sealed"
 }
 ```
 
 Kinds: `predict`, `explain`, `diagnose`, `review`, `transfer`, `repair`,
-`explainer-prompt`. Answer shapes: `text`, `choice`, `line-pick`, `order`.
+`completion` (the learner's marked line), `explainer-prompt`. Answer shapes:
+`text`, `number`, `choice` (predictions at Not yet only), `line-pick` (second
+step only), `order` (Not yet only). `show_topic` is false for transfer,
+diagnose, repair and interleaved cards until the lock. `distance` is the
+transfer note the grader checks. The id is internal and never shown.
 
 Confidence uses certainty-based marking, and every door shows the meaning:
 **guess** ("I would not bet on it"), **fairly sure** ("more likely right than
@@ -187,15 +211,16 @@ before the reveal.
 ```
 drafted -> sealed -> delivered(door) -> locked -> revealed -> graded -> consolidated -> scheduled
               \-> not_now  (moves to Later; not offered again this session)
-              \-> dont_know (locks as a real answer at "guess")
+              \-> dont_know (prediction: asks for a best guess first; review: locks as a miss; never in calibration)
               \-> skipped  (session ended unseen; no penalty; expires after 7 days)
 ```
 
 - Nothing is delivered before it is sealed. This turns the ground rule "fix the
   rubric first" into code.
 - `locked` is final. If two doors lock the same card, the earliest `locked_at`
-  wins and the later one is kept as `also_answered` ("You also answered on your
-  phone: ..."). This is the rule `record.py` already uses.
+  wins and the later one is kept as `also_answered`. A chat lock uses the
+  timestamp of the learner's message, not the time of the tool call. A Room
+  lock uses the answer doc's creation time.
 - `revealed` happens after the observable shows for a prediction (the test ran),
   and right after the lock for everything else (from protocol-bridge).
 - `consolidated` means the learner saw "You said / It did" side by side. For a
@@ -203,17 +228,23 @@ drafted -> sealed -> delivered(door) -> locked -> revealed -> graded -> consolid
   consolidation is just failure).
 - `scheduled` uses the existing ladder: 3, 7, 21, 60, 180 days, a miss returns
   next day, a miss at "sure" returns next day and gets a mark on the map.
+- **Level evidence (one rule, `experience.md` D10).** Only reviews move a
+  level. An explain-back in the session where the agent wrote the code
+  confirms With help at most. Without help needs an unaided correct review at
+  least `DURABLE_AFTER_DAYS` (7) after the topic was first recorded. New
+  situation needs a transfer item with a distance note that does not restate
+  earlier feedback. A hint or opened code caps the attempt at With help. A
+  drill credits the topic its bug exercises.
 
 ### 4.3 Store
 
 ```
 <record root>/                    the project's .learning/, or a private learning-record repo
   dimensions.json, topics/, attempts/     unchanged layout and record.py
-  events.jsonl                    NEW: one line per state change (merge=union)
+  events.jsonl                    NEW: one line per state change, each with a uuid (merge=union; readers drop duplicates)
   reviews.jsonl                   NEW: FSRS-compatible log (topic, ts, rating 1-4, confidence, door)
-  config.json                     NEW: mode quiet | normal | deep | paused, nudge ledger
-  open.json                       NEW: open card ids and their doors (the "something is waiting" flag)
-  map.json                        NEW: read-only snapshot for the Room (no answers, no rubrics)
+  config.json                     NEW: mode, pause, nudge ledger; written only by Settings
+  open.json, map.json             NEW: derived from events, rebuilt on read, never committed
 <sealed root>/sealed/<card>.json  rubric + salt until lock; never in the project working tree
 .gitattributes                    *.jsonl merge=union  [T]
 ```
@@ -222,7 +253,11 @@ Where the sealed root is: in a local session, `~/.lwb/sealed/` (from
 protocol-bridge). In a cloud session, the home folder does not survive, so the
 sealed root is a `sealed/` folder in the private record repo, outside the
 project checkout. After the lock, `lwb` copies the rubric and salt into the
-attempt file.
+attempt file. **Persistence:** after every grade, `lwb` commits and pushes the
+record repo (`git pull --rebase`, retry once). One branch only. If E-REPO fails,
+the Room db is the system of record for public projects (one doc per event),
+and `learning.py export` rebuilds the files from it. No phase ships with the
+store undefined.
 
 ### 4.4 Privacy of the record
 
@@ -246,7 +281,7 @@ learning rule behind it is in the last column.
 
 | Moment | Job | Trigger (phase 1, then phase 2) | Door at the machine | Door away | Blocks the build? | Basis |
 |---|---|---|---|---|---|---|
-| Before a build | One prediction about the one observable the build will show. | Skill rule, then `UserPromptSubmit` hook. | Chat card; later AskUserQuestion, elicitation or mod pane. | Not asked away. | Only at the gate, and only if the learner has not answered or said "Not now". | Prequestions help only what they ask about (St. Hilaire 2024); productive failure (Kapur). |
+| Before a build | One prediction about the one observable the build will show: answerable from the card, deterministic, aimed at the known misconception when there is one. | Skill rule, then `UserPromptSubmit` hook. | Chat card; later AskUserQuestion, elicitation or mod pane. | Not asked away. | Only at the gate, and only if the learner has not answered or said "Not now". | Prequestions help only what they ask about (St. Hilaire 2024); productive failure (Kapur). |
 | During | Answer the prediction or one due review while the agent works. | The card is posted with `mode=wait`. | Chat card stays answerable; Room "Now"; later mod band count. | Room. | No. | Wait-learning (Cai 2015) [S for agents, E1]. |
 | It fails | The learner names the cause before the agent debugs. Offered once per failing test. | Skill rule, then `PostToolUseFailure` hook. | "Call the cause first? Pick the line, or say not now." | Not offered. | No. "Not now" means the agent debugs and says nothing more. | Shen and Tamkin 2026: delegated debugging lost the most. |
 | It works | Explain-back, then "You said / It did". | Skill rule, then `Stop` hook. | Chat card, Room Compare. | One push, then the Room. | The turn ends with the question. The work is done, so it does not hold anything up. | Generation, then consolidation. |
@@ -260,8 +295,8 @@ Support follows the level (Kalyuga, expertise reversal):
 
 | Level | Question type | Support |
 |---|---|---|
-| not yet | worked example, then a completion question | labelled steps |
-| with help | completion problem | one hint offered |
+| not yet | worked example, then your line (one marked line in the real build, graded by its test) | labelled steps |
+| with help | your line, explain-back (confirms With help only) | one hint offered; opening the code counts as a hint |
 | recalls | predict and explain | no hint unless asked |
 | transfers | design first, new context, planted bug | no explainer offered |
 
@@ -304,45 +339,51 @@ use. It follows the approved site exactly (`docs/index.html`, `site.css`).
 | Screen | Contents |
 |---|---|
 | Inbox | Three groups: Now (max 1), Due (max 5, then "3 more move to tomorrow"), Later. The only number on the page is the due count. |
-| Card | Kind and topic line, prompt, excerpt with `path:line` header, answer field (or choices or line picker), confidence as a radio group with meanings, "I don't know", "Not now", Submit. After Submit: "Locked." |
-| Compare | Two columns, "You said" and "It did", then the verdict word, the gap, the next date and "Back to the build". Stacks on the phone. |
+| Card | Reason line, topic (or area), prompt, answer field, confidence with meanings, Lock my answer, one row of "Not now" and "I do not know", excerpt (behind Show the code on explain and review cards, recorded as a hint). No tab bar. |
+| Compare | "You said", "It did", "The gap", one Back to the build with the resume cue. No verdict word on predictions. |
 | Map | Dimensions by topics grid, glyphs and outlines, a table toggle, calibration as three bars (share correct at guess, fairly sure, sure). Faint weekly cells with no counter. |
 | Drill | Symptom, hypothesis field, line picker, then the reveal. |
 | Settings | Mode (Quiet, Normal, Deep), Pause, pushes on or off. |
 
 ### 6.3 Keys
 
-Shown in an action bar on every card, in key caps, Linear and Raycast style:
-J and K move, Enter opens, 1 2 3 set confidence, D "I don't know", H "Not now",
-Esc back, Cmd or Ctrl plus Enter submits, G then M opens the map. Every action
-is also a button at least 44px tall.
+Shown in key caps, Linear and Raycast style, when shortcuts are on (Settings):
+J and K move, Enter opens, 1 2 3 set confidence, Esc back, Cmd or Ctrl plus
+Enter locks, G then M opens the map. D and H ask once before they act; no
+single letter key locks an attempt (WCAG 2.1.4). Every action is also a button
+at least 44px tall.
 
 ### 6.4 Accessibility
 
-The card is a `form`. Confidence is a labelled `fieldset` of radios, never
-colour only. The verdict is in a `role="status"` region, and focus moves to
-the verdict heading after Submit. Every control is reachable by keyboard.
-Colour is never the only cue.
+The card is a `form`. Confidence is a labelled `fieldset` of radios. Each page
+has one polite live region, present at load, with one line per state change;
+focus moves to the verdict heading only right after the learner's own Lock.
+Sheets are modal on the phone. On short viewports nothing is sticky. The host
+iframe (focus in and out, keys the app takes, VoiceOver and TalkBack) is
+experiment E-A11Y. Full rules: `../design-system.md` section 4.
 
 ### 6.5 Copy samples
 
 "1 question about retries." / "Answer before you look at the change." /
-"Locked. Shown after the test runs." / "Saved. Claude adds it to your record
-on your next message." / "No. A timeout means the reply did not arrive. It
+"Locked. Shown after the test runs." / "Locked. Claude adds it on your next
+message." / "Correct. This counts when it holds at your review on 10 Nov." /
+"No. A timeout means the reply did not arrive. It
 does not tell us whether the charge ran. billing/charge.py:47. Back tomorrow."
-/ "Back to the build: Claude is running the billing tests."
+/ "Not sent yet. Keep this page open until it says Sent."
 
 ### 6.6 The same card as text
 
 Chat, terminal and push bodies use one text layout with the same parts:
 
 ```
-Question · retry-budget · predict
-When test_retry runs, which assertion fails first, and why?
-src/client.py:41-58
-Reply with your answer and how sure you are: guess, fairly sure or sure.
-Or reply "don't know" or "not now". Or answer in the Room: <link>#c=c_3f9c
+**Question · retry-budget · before the build**
+With a dead gateway and the test's fixed clock, how long does test_retry_budget wait before charge() gives up?
+`billing/charge.py:41-52`
+Answer + how sure · not now · Open card
 ```
+
+The long instruction line shows on the learner's first 3 cards only. The Open
+card link carries the card id in its URL; no id is shown as text.
 
 ---
 
@@ -360,12 +401,17 @@ The skill's existing Voice and ground rules apply.
 |---|---|
 | `SessionStart` | Runs `learning.py due --count` and `lwb status`; injects one line: "2 due. 1 answer from the Room to add." |
 | `UserPromptSubmit` | Cheap rule: does the prompt touch a tracked topic's anchors or name a new dimension? If yes and no card is open, injects "prediction due for retry-budget (with help)". |
-| `PreToolUse` gate | If a `predict` card is open on this tool's observable, deny once with "Prediction c_3f9c is open. Ask it now or mark it not now, then rerun." |
-| `PostToolUse` | When the observable ran, inject "Reveal c_3f9c now." (from protocol-bridge). |
+| `PreToolUse` gate | Only for cards marked `misconception_check`: if the card is open on this tool's observable, deny once with "The retry-budget prediction is open. Ask it now or mark it not now, then rerun." |
+| `PostToolUse` | When the observable ran, inject "Reveal the retry-budget prediction now." (from protocol-bridge). |
 | `PostToolUseFailure` | Once per failing test on a tracked topic: "Offer the diagnosis once. Do not diagnose first." |
 | `Stop` | Tests passed this turn, topic touched, no explain-back yet: "Ask the explain-back once, then stop." |
 | `PreCompact` | Writes the open card and resume cue to `open.json` so compaction cannot lose it. |
-| `PreToolUse` on Read and Bash | Denies reads of the sealed root. `lwb_reveal` is the only way in, and it refuses before the lock. |
+| `PreToolUse` on Read and Bash | Denies reads of the sealed root. `lwb_reveal` is the only way in, and it refuses before the lock. This is a path string match, so `python -c` or `git show` gets past it; that is acceptable for the accidental-glance threat model, and no plaintext key sits in a path a project search touches. |
+
+**Permissions.** The repo ships `.claude/settings.json` with an allow list for
+`mcp__lwb__*` and the ArtifactData read, so no learning step stops for approval
+after the first one. E-PERM counts the prompts in a fresh cloud session in
+default mode; the target is 0 after the first approval.
 
 **Rate rule (from protocol-bridge).** One open card at a time. At most one
 unprompted learning turn per 10 minutes per session. Quiet mode: one
@@ -378,27 +424,51 @@ exactly for the rest of the session.
 
 Data and bells are separate (from companion). Data goes into the record or an
 inbox, keyed by card id. A bell only says "card X changed", so a lost bell
-delays feedback but never loses an answer. Exactly one bell per event, the
-first one the session supports (from protocol-bridge).
+delays feedback but never loses an answer.
+
+**The Room db, one writer per doc** (the db is last-writer-wins with no
+transactions [D], so two writers on one doc can lose an answer):
+
+| Doc | Written by | Read by |
+|---|---|---|
+| `cards/<id>` | the agent only (`lwb_post` through ArtifactData) | the page (subscribed) |
+| `keys/<id>` | the agent, at post time | the page, once, with `get()` after its answer doc exists; never subscribed |
+| `answers/<id>/<uuid>` | the page only; created once, never updated; holds the text, confidence, `created_at` and `sha256(text)` | `lwb_sync` |
+| `grades/<id>` | the page, after `sample` | `lwb_sync`, the page |
+
+Code review enforces that the agent never writes `answers/`. Import takes the
+earliest answer doc and keeps the others as `also_answered`. `learning.py
+import` reads the docs as JSON on stdin, recomputes each hash and rejects a
+mismatch ("Answer changed in transit. Not imported."), so a model that
+truncates or paraphrases an answer on the way is caught. The residual risk of
+`keys/` (the owner can read their own db) is stated in Settings.
 
 | Rank | Where the answer was given | Data path | Bell | Status | Phase |
 |---|---|---|---|---|---|
-| 1 | Chat reply | the agent calls `lwb_lock` with the text | none needed | [T] | 1 |
-| 2 | Room, session at the machine | artifact db row (locked) | the agent pulls `open.json` cards with ArtifactData at the start of its next turn | [T] db read and write; the pull rule is a skill rule | 1 |
-| 3 | Room, any device | artifact db row | Submit calls `room.sendToClaudeSession` (the tap is the required gesture) | [D] | 2 |
-| 4 | AskUserQuestion | tool result | none needed | [D] | 2 |
-| 5 | Elicitation form | tool result | none needed | [T] CLI and Codex; app [D] | 2 |
-| 6 | Mod pane (local desktop) | `.learning/inbox/` or `/learn answer` | `$.prompt.submit` at idle | [D], mod validated [T] | 3 |
-| 7 | Local page (`serve`) | `.learning/inbox/` | plugin monitor, `asyncRewake` hook or inbox socket | [D] | 3 |
-| 8 | Wait-mode card | MCP task | task completion | [D] CLI | 3 |
-| 9 | Codex | tool result, `request_user_input_async` reply, `turn/steer` from a companion | as listed | [T] form, [D] the rest | 3 |
-| 10 | Any harness, phone PWA | sealed mailbox | drained at session start or by the cloud task | [S] | 3 |
-| 11 | Anything else | inbox | `SessionStart` line "1 answer waiting" | [D] | 1 (as a skill rule), 2 (as a hook) |
+| 1 | Chat reply | `lwb_lock` with the text and the message time | none needed | [T] | 1 |
+| 2 | Room, any device | `answers/` doc | pull: `lwb_sync` at the start of the agent's next turn, one transcript row | [T] db read and write; pull is a skill rule | 1 |
+| 3 | Room, any device | `answers/` doc | the page calls Claude Code Remote `send_message(return.claude_session, {card, event: "locked"})`, never the answer; `listTools()` first | [D] capability guidance; E-CCR-SEND | 2 |
+| 4 | Room, any device | `answers/` doc | `room.sendToClaudeSession({deliver: "send"})`: one confirmation tap in the platform's dialog, said on the page | [D]; E-SEND | 2 |
+| 5 | AskUserQuestion | tool result | none needed | [D] | 2 |
+| 6 | Elicitation form | tool result | none needed | [T] CLI and Codex; app [D] | 2 |
+| 7 | Mod pane (local desktop) | `.learning/inbox/` or `/learn answer` | `$.prompt.submit` at idle | [D], mod validated [T] | 3 |
+| 8 | Local page (`serve`) | `.learning/inbox/` | plugin monitor, `asyncRewake` hook or inbox socket | [D] | 3 |
+| 9 | Codex | tool result, `request_user_input_async` when the tool is present | as listed | [T] form, [D] the rest | 3 |
+| 10 | Any harness, phone page | sealed mailbox | drained at session start or by the cloud task | [S] | 3 |
 
-On any bell the agent does the same five steps: import, reveal, grade, write
-feedback (to chat if the learner is there, to the Room db as well), end with
-the resume cue. Grades on the page by `sample` show immediately on the phone
-and count as reviews. Level changes still follow `record.py`'s evidence rules.
+Exactly one bell per event: the highest rung that passed its experiment. The
+door choice depends on which tools are present, not on the harness name.
+
+On any bell the agent does the same steps in one `lwb_sync` call: read, check
+hashes, import, check the seal, reveal, write feedback (to chat if the learner
+is there, to `grades/` as well), then the resume cue. Grades on the page by
+`sample` count as Claude grades against a fixed rubric; level changes follow
+the level rule (section 4.2).
+
+**Offline.** Browser storage can come back empty [D], and the db does not say
+that pending writes survive a closed page. Until E-OFFLINE passes, the page
+watches `hasPendingWrites` and says "Not sent yet. Keep this page open until it
+says Sent." It shows "Sent" only on a confirmed snapshot.
 
 ---
 
@@ -408,21 +478,20 @@ Threat model (shared by all three proposals): not a cheating learner, but an
 accidental glance. Seeing the rubric before answering destroys the retrieval.
 The rubric must also be provably fixed before the question.
 
-1. **No rubric in Bash.** Today `learning.py ask --rubric "..."` shows the
-   rubric in a visible command [S, likely]. Phase 1: the agent passes the
-   rubric as input to `lwb_seal`, an MCP tool. Where E-SEAL shows the app
-   expands tool inputs, a subagent calls `lwb_seal`, so the main transcript
-   shows only "Card sealed (sha256 9c1e...)".
+1. **No rubric in Bash and none in the main context.** Default: a subagent
+   writes the rubric from the code and calls `lwb_post`; the main transcript
+   shows one row with a hash. This works whatever the app shows for tool
+   inputs (E-SEAL checks it), and it keeps the key out of the main agent's
+   context, so a hint cannot leak it.
 2. **Commit and reveal.** The card holds `sha256(salt + rubric)`. The rubric
    lives in the sealed root, outside the project tree. After the lock it is
    copied into the attempt file, and `learning.py check` verifies the hash.
-   The map can show "Rubric fixed 14:15. Answer locked 14:22."
-3. **Pages get the rubric only after the lock.** In the Room db, the rubric is
-   a separate doc that `room-push` writes only after the page reports a lock
-   for on-page grading. The page states the residual risk in Settings: the
-   owner can read their own db.
+3. **Pages read the key once, after the answer exists.** `keys/<id>` is
+   written at post time (no server exists to write it after the lock). The page
+   never subscribes to `keys/`; it calls `get()` once after creating its answer
+   doc. Settings states the residual risk.
 4. **The agent cannot peek.** A `PreToolUse` hook (phase 2) denies reads of the
-   sealed root. Before that, the skill rule says the same.
+   sealed root (a string match; see section 7). Before that, the skill rule.
 5. **Push bodies** never hold code, answers or rubric text.
 
 ---
@@ -432,38 +501,37 @@ The rubric must also be provably fixed before the question.
 - The record is plain files in git, written only through `record.py` (by
   `learning.py` or `lwb`). Agents never hand-edit it.
 - Inboxes, not replicas: the Room db, the mod inbox folder, the phone mailbox.
-  `learning.py import` is idempotent on card id and keeps the earliest lock.
-  Answers whose seal does not match are rejected and logged.
-- One file per attempt plus union-merged JSONL lets laptop sessions, cloud
-  sessions and scheduled-task branches merge with no conflicts [T].
-- `map.json` is rewritten on every grade, so the Room can show the record
-  without the history.
-- No network: every local door still works. The Room and scheduled tasks pause.
-  Answers on the phone wait in the db.
+  Import is idempotent on card id and keeps the earliest lock.
+- Conflict-free only where files are append-only: one file per attempt and
+  union-merged JSONL with a uuid per line [T]. Derived files (`open.json`,
+  `map.json`) are rebuilt, never committed. Only Settings writes `config.json`.
+  Scheduled tasks write to the Room db only, never to git. One branch, pull,
+  rebase, retry.
+- No network: chat still works. The Room says what is not sent.
 
 ---
 
 ## 11. Phases
 
-### Phase 1: ships first, verified technology only (about 8 days)
+### Phase 1: ships first, built only on tested parts (about 10 days)
 
-Everything here is [T], or is a skill rule that only uses [T] parts.
+Day 0 is five one-hour experiments. Their results set the copy; nothing in
+phase 1 promises a state that did not pass.
 
 | # | Build | Uses | Days |
 |---|---|---|---|
-| P1.1 | `record.py` and `learning.py`: `events.jsonl`, `open.json`, `map.json`, `reviews.jsonl`, `config.json` modes and pause, `rubric_commit` and the check, `.gitattributes`, `import --from-room` idempotent on card id, `status --line`. | Python stdlib [T] | 2 |
-| P1.2 | `lwb` stdio MCP server, tools only: `lwb_seal`, `lwb_post`, `lwb_lock`, `lwb_reveal` (refuses before lock), `lwb_grade`, `lwb_hint`, `lwb_status`, `lwb_due`, `lwb_map`. Shares `record.py`. Registered in `.mcp.json` and in the plugin. | project stdio server in a Claude app session [T] | 2 |
-| P1.3 | Room v2 artifact: Inbox, Card, Compare, Map, Drill, Settings; the db as inbox; on-page grading with `sample` after lock; keys and accessibility in section 6. One HTML for the artifact and for `serve`. | artifact with `db` and `sample` [T] | 3 |
-| P1.4 | Skill: a "Moments" section, the text card layout, the level to support table, the rate rule, the pull rule ("if `open.json` lists Room cards, read them with ArtifactData before you reply"), the resume cue. | the skill [T] | 0.5 |
-| P1.5 | Privacy: `init` checks the remote. A public project gets a private record repo. Until E-REPO passes, a public project keeps the record in a Room db mirror and in local files only, and nothing is committed to the public repo. | `gh` [T], artifact db [T] | 0.5 |
+| P1.0 | Experiments: E-SEAL (subagent path as default), E-REPO, E-OFFLINE, E-PERM, E-CCR-SEND, E-A11Y. | this session's tools [T] | 1 |
+| P1.1 | `record.py` and `learning.py`: events with uuids, `reviews.jsonl`, `config.json`, `rubric_commit` and check, `import` from JSON on stdin with hash check, `export`, the level rule (same-session explain-back caps at with help; hint and opened code cap; drill credits its bug's topic), `completion` kind, daily cap 3, dont_know out of calibration. | Python stdlib [T] | 2.5 |
+| P1.2 | `lwb` stdio MCP server: `lwb_post` (seals and posts), `lwb_lock`, `lwb_reveal`, `lwb_grade`, `lwb_hint`, `lwb_sync`, `lwb_due`, `lwb_map`. `.claude/settings.json` allow list. Commit and push after each grade. | project stdio server [T] | 2 |
+| P1.3 | Room v2 from `assets/room.css`: Inbox, focused Card, Compare, Map, Drill, Settings; single-writer docs; `sample` grading; one live region; shortcuts setting; short-viewport layout. Capabilities `db` and `sample` only. | artifact with `db` and `sample` [T] | 3 |
+| P1.4 | Skill: Moments, the text card, your line at Not yet and With help, question quality rules (D12), the rate rule, the pull rule, the resume cue. | the skill [T] | 1 |
+| P1.5 | Privacy: `init` checks the remote; a public project gets the private record repo (E-REPO) or, if it fails, the Room db as the system of record. | `gh` [T], `add_repo` [D] | 0.5 |
 
-Phase 1 acceptance test: section 2. What the learner feels: questions in the
-conversation at the two moments, one link to the Room for everything else, the
-phone works through the same Room, and the session catches up on the next
-message.
+Learning gates from day 1 (section 2), with E2 and E7 behind flags.
 
-What phase 1 does not have: automatic triggers (the skill decides), instant
-ringing from the phone, pushes, a daily review clock with the laptop closed.
+What phase 1 does not have: automatic triggers (the skill decides), a bell
+from the phone (unless E-CCR-SEND passes on day 0, then it moves into P1.3),
+pushes, a review clock with the laptop closed.
 
 ### Phase 2: after named experiments (about 6 days of build, 1 day of tests)
 
@@ -473,18 +541,16 @@ fails.
 
 | Experiment | Unlocks if it passes | If it fails |
 |---|---|---|
-| E-SEND: Room Submit calls `room.sendToClaudeSession` on desktop and phone; log `canSendToClaudeSession()`. | Instant bell from the Room. Phase 2 acceptance test. | Keep the pull rule. Try `comments.sendToClaude`. |
+| E-SEND: Room Lock calls `room.sendToClaudeSession({deliver: "send"})` on desktop and phone; log `canSendToClaudeSession()`; note whether the phone leaves the page. | Second rung of the bell, one confirmation tap. | Keep the pull rule. |
 | E-HOOKS: commit a hooks file in a cloud session branch that logs every event and adds one context line. | Section 7 hook engine on the owner's real surface. | Keep the skill rules. Try the plugin's hooks instead of the repo file. |
-| E-SEAL: screenshot what the Claude app shows for a `lwb_seal` input, for a subagent call, and for `learning.py ask`. | Pick the sealing path for each surface. | Rubric written only at grading time by a subagent, with commit and reveal kept for audit. |
 | E-AUQ: AskUserQuestion in a cloud session on desktop and phone, prediction choices plus confidence as a second question. | Native in-chat card for `predict` and `diagnose`. | Chat text card. |
 | E-ELICIT: `lwb_ask mode=block` sends an elicitation form (answer, confidence enum, dont_know) in a cloud session on desktop and phone. | Structured answers with the rubric kept on the server. | AskUserQuestion or chat text. |
-| E-REPO: attach `learning-record` to a cloud session, clone, commit, push. | Private record in git for public projects. | Keep the db mirror and add an export command. |
 | E-PUSH: `PushNotification` from a cloud session reaches the phone; check that it is skipped while the learner is at the terminal. | The away moment. | No pushes. The Room badge or the due line at session start. |
 | E-SCHED: daily cloud scheduled task with `create_new_session_on_fire` and push: `learning.py due`, write at most 5 cards to the Room db, one push, three ignored pushes stop it. | Review on the platform clock with the laptop closed. | Due list at session start only. |
 | E1 (learning): alternate wait-time and before-build prediction for two weeks; log skips, answer time, 7-day recall. | Keep wait mode as the default. | Default to the gate blocking in Normal mode; wait mode only in Deep. |
 | E2 (learning): Compare screen on half of the predictions. | Keep Compare for all predictions. | Keep it anyway for misses (strong prior), drop it for hits. |
 
-Phase 2 build: hooks (2 days), Submit bell and feedback write back (1 day),
+Phase 2 build: hooks (2 days), the bell ladder and feedback write back (1 day),
 AskUserQuestion and elicitation doors in `lwb` with door choice from client
 capabilities (2 days), push and scheduled review prompt with the nudge ledger
 (1 day).
@@ -532,18 +598,18 @@ owner.
 | 1 | Project stdio MCP server from `.mcp.json` loads in Claude Code sessions in the Claude app | [T] `learning-question` server present in this session | done | 1 | `learning.py` in Bash |
 | 2 | MCP tool results show as text in Claude Code | [T] | done | 1 | none needed |
 | 3 | MCP Apps render in Claude Code | [T] no, text only | re-test when release notes mention it | never for Claude Code | Room |
-| 4 | Artifact with `db`, `sample`, `room`, `user`, `mcp` capabilities publishes from a Claude Code session and opens on the phone | [T] | done | 1 | `learning.py serve` locally |
+| 4 | Artifact with `db`, `sample`, `room`, `user`, `mcp` capabilities publishes from a Claude Code session and opens on the phone | [T]; phase 1 declares only `db` and `sample`, since each grant can ask for consent on the phone | done | 1 | `learning.py serve` locally |
 | 5 | Session reads and writes the artifact db with ArtifactData | [T] (existing room-push path) | done | 1 | none |
 | 6 | Union merge for `*.jsonl` | [T] | add to CI as a regression test | 1 | one file per event |
 | 7 | WCAG contrast of the record ramp | [T] two of three fail 3:1 | done | 1 | outline, glyph and table |
-| 8 | `room.sendToClaudeSession` / `comments.sendToClaude` from the Room | [D] | E-SEND | 2 | pull rule |
+| 8 | `room.sendToClaudeSession` from the Room | [D] defaults to `stage`; `send` asks the viewer in a dialog; cloud session as target not stated | E-SEND | 2 | pull rule |
 | 9 | Repo-committed hooks run in cloud sessions | [D] | E-HOOKS | 2 | skill rules |
-| 10 | Tool inputs and subagent calls hidden or collapsed in the Claude app | [S] | E-SEAL | 1 (choice), 2 | rubric written at grading time |
+| 10 | Subagent sealing keeps the key out of the main transcript in the Claude app | [S] | E-SEAL | 1 | rubric written at grading time |
 | 11 | AskUserQuestion renders in the Claude app on desktop and phone; kept open under Remote Control | [D] | E-AUQ | 2 | chat text |
 | 12 | Elicitation form as a card in cloud sessions, desktop and phone | [D] | E-ELICIT | 2 | AskUserQuestion |
 | 13 | Elicitation forwarded through Remote Control | [S] | E-RC: trigger a form, open on the phone | 3 | AskUserQuestion |
 | 14 | Elicitation form in Claude Code CLI; hook receives it | [T] 2.1.319 | done | 2 | text |
-| 15 | Second private repo attached to a cloud session | [D] | E-REPO | 2 | db mirror |
+| 15 | Second private repo attached to a cloud session; commit and push after each grade | [D], `add_repo` present [T] | E-REPO | 1 | Room db as system of record plus `export` |
 | 16 | `PushNotification` reaches the phone; skipped while present | [D], tool present [T] | E-PUSH | 2 | due line at session start |
 | 17 | Cloud scheduled task with fresh session, repo access and push | [D], tool present [T] | E-SCHED | 2 | due line at session start |
 | 18 | Mods draw band and pane in local desktop Code tab, CLI, VS Code | [D], validated and unit tested [T] | E-MOD: `claude --plugin-dir ./lwb-mod` on the laptop with a fake `open.json` | 3 | chat and Room |
@@ -566,22 +632,37 @@ owner.
 | 35 | Web Push and badge on an installed page on iOS 16.4+ (Declarative on 18.4+) | [D] | E-PWA: one push from a `workflow_dispatch` Action | 3 | Room on Claude, no push elsewhere |
 | 36 | WebCrypto P-256 and AES-GCM interop with Python without extra packages | [S] | E-CRYPTO: seal in Safari, open in Python | 3 | one vetted dependency |
 | 37 | ntfy relay: publish [T], retention and CORS [S] | [T] / [S] | E-RELAY: poll after 1 h and 13 h | 3 | GitHub Actions relay |
-| 38 | Artifact `mcp` capability reaching a local server | [S] | E-HOSTMCP | 3 | db inbox |
+| 38 | Artifact `mcp` capability reaching a local server | [D] local desktop only: `host:` servers answer only in a Claude app with that server connected, so never a cloud session's `lwb` | E-HOSTMCP on the laptop | 3 | db inbox |
 | 39 | `navigator.setAppBadge` on an installed artifact or page | [S] | feature-detect on iOS and Android | 3 | due count on the page |
 | 40 | Wait-time prediction is not worse than before-build | [S] | E1 | 2 | gate blocks in Normal mode |
-| 41 | Compare view improves 7-day recall | [D] literature | E2 | 2 | keep for misses |
+| 41 | Compare view improves 7-day recall | [D] literature | E2 | 1 | keep for misses |
+| 42 | Page calls Claude Code Remote `send_message` to the card's session | [D] capability guidance | E-CCR-SEND: declare `mcp` with that one tool, `listTools()`, send `{card, event}` from the phone, see the session wake | 1 | `sendToClaudeSession`, then pull |
+| 43 | Page answers survive offline, app close and reopen | [S] | E-OFFLINE: airplane mode, lock, close the app, reopen, go online, read the db | 1 | "Keep this page open" copy |
+| 44 | No permission prompts after the first in default mode | [S] | E-PERM: fresh cloud session runs journey 2.a and counts prompts | 1 | allow list in `.claude/settings.json` |
+| 45 | Keyboard and screen reader through the host iframe (desktop and phone app) | [S] | E-A11Y: keyboard only from Open card to Lock to Back to the build; VoiceOver on iPhone answering one card | 1 | re-plan trigger |
+| 46 | Hypothesis before code improves drill success at 7 and 21 days | [D] literature | E7 | 1 | keep the line pick as step two |
+| 47 | Artifact db is last-writer-wins, no transactions | [D] `db.d.ts` | done (design is single-writer) | 1 | none needed |
 
 ---
 
 ## 13. Re-plan triggers
 
+- **E-CCR-SEND passes on day 0:** the bell moves into phase 1, and the phone
+  verdict says "Sent to your session."
+- **E-REPO fails:** the Room db becomes the system of record for public
+  projects; `export` rebuilds the files.
+- **E-A11Y fails** (the host traps focus or takes our keys): the chat door is
+  the accessible default and the Room keys move to buttons only.
+- **A learning gate drops for a month:** roll back the last change to the
+  moments, whatever the seamless tests say.
 - **E-SEND fails:** the phone stays one turn behind. Make the pull rule
   stronger: a `SessionStart` and `UserPromptSubmit` hook line says "1 answer
-  in the Room", and the Room says "Saved. Claude adds it on your next message."
+  in the Room", and the Room says "Claude adds this on your next message."
 - **E-HOOKS fails in cloud sessions:** keep the skill rules for cloud, and use
   hooks only in local sessions through the plugin.
-- **E-SEAL shows tool inputs everywhere:** move rubric writing to grading time
-  in a subagent that returns only the verdict. Keep the commit for audit.
+- **E-SEAL shows subagent calls in the main transcript:** move rubric writing
+  to grading time in a subagent that returns only the verdict. Keep the commit
+  for audit.
 - **E-MOD passes on the owner's laptop:** the local desktop Code tab gets the
   mod as its first door, ahead of chat cards. Cloud sessions keep the Room.
 - **Claude Code ships MCP App rendering:** the card becomes an MCP App in

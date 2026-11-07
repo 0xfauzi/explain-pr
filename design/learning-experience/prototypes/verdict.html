@@ -39,7 +39,7 @@ button{font-family:inherit;color:inherit}
 .tab[aria-current="page"]{color:var(--ink);border-color:var(--accent)}
 .tab svg{display:none}
 .offbar{max-width:1180px;margin:0 auto;padding:0 32px 10px}
-.offbar p{margin:0;padding:10px 14px;background:#FFFFFF;color:#16161A;border:1.5px solid #16161A;border-radius:12px;font-size:15px;line-height:1.5}
+.offbar p{margin:0;padding:10px 14px;background:var(--card);color:var(--ink);border:1.5px solid var(--ink);border-radius:12px;font-size:15px;line-height:1.5}
 .main{max-width:760px;margin:0 auto;padding:24px 32px 140px}
 .link{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:4px 16px;font-size:14px;color:var(--text-3);padding:0 0 14px;border-bottom:1px solid var(--rule)}
 .link b{font-weight:500;color:var(--ink)}
@@ -101,7 +101,7 @@ blockquote{margin:0;padding:12px 16px;border-left:3px solid var(--border);font-s
 pre.ex{margin:4px 0 0;padding:12px 16px;background:var(--paper);border:1.5px solid var(--border);border-radius:14px;font:500 13px/1.8 var(--mono);overflow-x:auto}
 pre.ex .hd{display:block;color:var(--text-3)}
 pre.ex .ln{display:block;margin:0 -16px;padding:0 16px;white-space:pre}
-pre.ex i{display:inline-block;width:2.4em;color:var(--text-dim);font-style:normal}
+pre.ex i{display:inline-block;width:2.4em;color:var(--text-3);font-style:normal}
 pre.ex .hl{background:var(--accent-wash);box-shadow:inset 3px 0 0 var(--ink)}
 .next{margin:12px 0 0;font-size:16px;font-weight:600}
 .belief{margin:10px 0 0;padding:10px 14px;border-left:3px solid var(--accent);font-size:15px;line-height:1.6;color:var(--ink)}
@@ -126,7 +126,12 @@ pre.ex .hl{background:var(--accent-wash);box-shadow:inset 3px 0 0 var(--ink)}
 .cell.f3 i{background:#F5F4F0}
 .cell i:nth-child(1){left:6px}.cell i:nth-child(2){left:10px}.cell i:nth-child(3){left:14px}
 .cell b{position:absolute;top:4px;right:4px;width:6px;height:6px;border-radius:50%;background:var(--ink)}
-.cue{margin:18px 0 0;padding-top:16px;border-top:1px solid var(--rule);font:500 13px/1.7 var(--mono);color:var(--ink)}
+.cue{margin:8px 0 0;font:500 13px/1.7 var(--mono);color:var(--text-2)}
+.backto{margin:20px 0 0;padding-top:18px;border-top:1px solid var(--rule)}
+.backto .btn{width:100%}
+.appeal{margin:10px 0 0 -6px;font-size:14px;font-weight:500;color:var(--text-3)}
+.cchip{display:inline-flex;align-items:center;height:28px;padding:0 12px;border-radius:999px;border:1.5px solid var(--ink);font:500 13px var(--mono)}
+.seg.pend,.cell.pend{outline:1.5px dashed var(--ink);outline-offset:2px}
 .acts{display:flex;flex-wrap:wrap;align-items:center;gap:10px;margin-top:14px}
 label.fl{display:block;margin-top:18px;font-weight:600;font-size:15px}
 textarea{display:block;width:100%;margin-top:8px;padding:12px 14px;font:400 16px/1.5 var(--sans);color:var(--ink);background:var(--card);border:1.5px solid var(--control-border);border-radius:14px;resize:vertical}
@@ -151,7 +156,7 @@ textarea[readonly]{background:var(--paper)}
 .toast p{margin:0;flex:1}
 .toast .x{flex:none;width:44px;height:44px;border:0;background:none;cursor:pointer;border-radius:10px;font-size:20px;line-height:1}
 @media (max-width:640px){
-:root{--tabbar:calc(64px + env(safe-area-inset-bottom))}
+:root{--tabbar:0px}
 .bar,.offbar{padding-left:16px;padding-right:16px}
 .main{padding:16px 16px calc(var(--tabbar) + 110px)}
 .tabs{position:fixed;left:0;right:0;bottom:0;z-index:30;padding:0 0 env(safe-area-inset-bottom);gap:0;background:var(--paper);border-top:1px solid var(--border);display:grid;grid-template-columns:repeat(4,1fr)}
@@ -191,17 +196,18 @@ textarea[readonly]{background:var(--paper)}
 
 <header class="top">
 <div class="bar"><span class="word">Room</span><span class="proj">orbit-pay</span><button type="button" class="me" aria-label="Sam. Open settings">S</button></div>
-<nav class="tabs" aria-label="Room">
+<nav class="tabs" aria-label="Room" hidden>
 <button type="button" class="tab" aria-current="page"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" aria-hidden="true"><path d="M3 13l3-8h12l3 8v6H3z"/><path d="M3 13h5l1 2h6l1-2h5"/></svg>Inbox</button>
 <button type="button" class="tab"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><rect x="4" y="4" width="6" height="6" rx="1.5"/><rect x="14" y="4" width="6" height="6" rx="1.5"/><rect x="4" y="14" width="6" height="6" rx="1.5"/><rect x="14" y="14" width="6" height="6" rx="1.5"/></svg>Map</button>
 <button type="button" class="tab"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M9 9h6v7a3 3 0 0 1-6 0z"/><path d="M12 9V6M5 12h4M15 12h4M6 7l3 2M18 7l-3 2M6 19l3-2M18 19l-3-2"/></svg>Drills</button>
 <button type="button" class="tab"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" aria-hidden="true"><path d="M6 3h9l3 3v15H6z"/><path d="M9 10h6M9 14h6M9 18h4"/></svg>Explainers</button>
 </nav>
-<div class="offbar" id="offbar" hidden><p>You are offline. Answers are saved on this device and sent when you are back online.</p></div>
+<div class="offbar" id="offbar" hidden><p>You are offline. Answers you lock now are not sent until you are back online. Keep this page open.</p></div>
 </header>
 
 <main class="main" id="main" tabindex="-1"></main>
-<div class="toastwrap"><div id="toastslot" role="status" aria-live="polite"></div></div>
+<div class="toastwrap"><div id="toastslot"></div></div>
+<div id="live" class="vh" aria-live="polite"></div>
 
 <script>
 (function(){
@@ -216,33 +222,34 @@ var BACKCHEV='<svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke
 /* fixture: orbit-pay code and graded attempts (the shared fixture.js, inlined so this page stands alone) */
 var CODE={
  charge:{path:'billing/charge.py',from:41,lines:[
- 'def charge(order, gateway, budget=None):',
- '    """Charge an order once, even when the call is retried."""',
- '    budget = budget or RetryBudget(attempts=3)',
- '    last_error = None',
- '    for attempt in budget:',
- '        # one key for every attempt of this order',
- '        key = f"charge:{order.id}"',
- '        try:',
- '            return gateway.charge(order.amount,',
- '                                  idempotency_key=key, timeout=0.8)',
- '        except GatewayTimeout as e:',
- '            last_error = e   # unknown: the charge may have run',
- '            budget.backoff()',
- '        except GatewayDeclined:',
- '            raise            # a real failure: do not retry',
- '    raise RetryBudgetSpent(order.id) from last_error']},
+ '@retry(attempts=3, backoff=(0.5, 1.0), jitter=0.1)',
+ 'def charge(order, gateway):',
+ '    """Charge an order once, even when retried."""',
+ '    if order.charged_at:',
+ '        return order.receipt',
+ '    resp = gateway.charge(',
+ '        idempotency_key=order.id,',
+ '        amount=order.total,',
+ '        timeout=0.8,',
+ '    )',
+ '    order.mark_charged(resp)',
+ '    return resp.receipt']},
  retry:{path:'billing/retry.py',from:14,lines:[
- 'class RetryBudget:',
- '    def __init__(self, attempts=3, base=0.5, jitter=0.1):',
- '        self.attempts, self.base, self.jitter = attempts, base, jitter',
- '        self.n = 0',
- '',
- '    def backoff(self):',
- '        # sleep before the next attempt: 0.5 s, then 1 s, plus jitter',
- '        self.n += 1',
- '        delay = self.base * 2 ** (self.n - 1) + random.uniform(0, self.jitter)',
- '        time.sleep(delay)']},
+ 'def retry(attempts, backoff, jitter):',
+ '    def wrap(fn):',
+ '        def run(*args, **kwargs):',
+ '            for n in range(attempts):',
+ '                try:',
+ '                    return fn(*args, **kwargs)',
+ '                except GatewayTimeout:',
+ '                    pass   # unknown: the charge may have run',
+ '                except GatewayDeclined:',
+ '                    raise  # a real answer: do not retry',
+ '                if n < attempts - 1:',
+ '                    clock.sleep(backoff[n] + jitter)',
+ '            raise RetryBudgetSpent()',
+ '        return run',
+ '    return wrap']},
  outbox:{path:'orders/outbox.py',from:28,lines:[
  'def relay_once(db, broker):',
  '    for row in db.unsent_outbox(limit=100):',
@@ -254,51 +261,50 @@ var CODE={
 var CUE_PRED='Back to: retries in the payment worker. Next: the cap on total retry time.';
 var CUE_EXPL='Back to: retries in the payment worker. Next: the dead letter queue.';
 var CUE_DLQ='Back to: the dead letter queue for failed charges. Next: the retry count on the queue.';
-var PRED={kind:'predict',id:'c_3f9c',eb:'Before the build',topic:'retry-budget',level:1,
- q:'Each attempt times out at 0.8 s and the backoff is 0.5 s, then 1 s. When test_retry_budget runs against a dead gateway, how long until charge() gives up?',
+var PRED={kind:'predict',eb:'Before the build',topic:'retry-budget',level:1,
+ q:'With a dead gateway and the test\'s fixed clock, how long does test_retry_budget wait before charge() gives up?',
  said:'about 3.9 s',conf:'Fairly sure',cmd:'pytest -k test_retry_budget -q',
- out:['charge() gave up after 3 attempts in <k>4.1 s</k>','1 passed in 4.32s'],
- vw:'Not quite.',why:'You added three timeouts and the two backoffs: 2.4 + 1.5 = 3.9 s. The test also waits for the jitter, up to 0.1 s per backoff.',ev:['retry',22],
- next:'Back on 10 Nov.',delta:{topic:'retry-budget',from:1,to:1,best:2,note:'Predictions do not change your record. The gap is what you learn from.'},cue:CUE_PRED,
- chatYou:'about 3.9 s, fairly sure',chatDid:'gave up at 4.1 s'};
-var EXPL={kind:'explain',id:'c_7a21',eb:'After it works',topic:'idempotency',level:1,q:'Why can the worker retry charge() without charging the customer twice?',cue:CUE_EXPL,
+ out:['charge() gave up after 3 attempts in <k>4.1 s</k>','1 passed in 4.13s'],
+ gap:'You added three timeouts and two backoffs, 3.9 s, and left out the jitter on line 41, 0.1 s per backoff.',ev:['charge',41],
+ cue:CUE_PRED,chatYou:'about 3.9 s, fairly sure',chatDid:'gave up at 4.1 s'};
+var EXPL={kind:'explain',eb:'After it works',topic:'idempotency',level:1,q:'Why can the worker retry charge() without charging the customer twice?',cue:CUE_EXPL,
  full:'A retry sends the same request again. If the first call timed out, the gateway may already have charged. charge() builds the key once from the order id, so every attempt for one order carries the same key. The gateway stores the result under that key and returns it for a repeat.'};
 function ext(a,b){var o={},k;for(k in a)o[k]=a[k];for(k in b)o[k]=b[k];return o}
 var S=[
  {key:'loading',label:'loading: waiting for the test output',d:ext(PRED,{phase:'wait'})},
- {key:'right',label:'graded right',d:{kind:'review',id:'c_9b04',eb:'Review, 7 days',topic:'idempotency',level:2,
-  q:'A refund call now retries too. It uses a new UUID as its key on every attempt. What happens when the first attempt times out but the refund ran?',
-  said:'The second attempt has a different key, so the gateway treats it as a new refund and the customer is refunded twice.',conf:'Sure',
-  vw:'Correct.',why:'A new key per attempt means the gateway cannot match the retry to the first call. The key has to come from the refund, the way charge() builds it from the order id.',ev:['charge',47],
-  next:'Back on 28 Nov.',delta:{topic:'idempotency',from:2,to:2,best:2,note:'No change. A level moves when a review is right at a longer gap, or when you use the idea in a new situation.'},
-  wrote:{date:'31 Oct',text:'The key is the order id, so a second attempt sends the same key and the gateway returns the first charge.'},cue:CUE_DLQ}},
+ {key:'right',label:'graded right after it works: counts at the review',d:ext(EXPL,{said:'The idempotency key is the order id, so the gateway sees the same key and returns the first charge.',conf:'Sure',
+  vw:'Correct.',ok:true,why:'The key is the order id, and the gateway returns the stored result for a repeated key.',ev:['charge',47],
+  next:'This counts when it holds at your review on 10 Nov.',saved:'Claude adds this on your next message.',
+  delta:{topic:'idempotency',from:1,to:1,best:1,pend:true,note:'Still With help. An answer in the session where the code was written shows you understood it. Without help needs a right answer at a review.'}})},
  {key:'partial',label:'graded partial with say it again',d:ext(EXPL,{said:'Because we send an idempotency key with the charge, so the gateway removes the duplicate.',conf:'Fairly sure',
   vw:'Not quite.',why:'The key is what makes it safe, yes. But the key must be the order id, not a new UUID per attempt; a new UUID per attempt charges twice.',ev:['charge',47],
-  next:'Back on 10 Nov.',restate:true,delta:{topic:'idempotency',from:1,to:1,best:1,note:'No change. Your one-line restatement is part of this attempt, not a new one.'}})},
+  next:'Back tomorrow.',restate:true,delta:{topic:'idempotency',from:1,to:1,best:1,note:'No change. The question comes back tomorrow in new words.'}})},
  {key:'wrong',label:'graded wrong',d:ext(EXPL,{said:'The 0.8 s timeout cancels the first call, so only one charge can go through.',conf:'Fairly sure',
   vw:'No.',why:'The timeout does not make it safe. A timeout only means the reply did not arrive; the charge may have run.',ev:['charge',47],evPre:'The key is what stops a second charge:',
   next:'Back tomorrow.',answer:'The key is the order id, the same on every attempt. The gateway stores the first result for a key and returns it for a repeat, so a retry cannot charge twice.',
   delta:{topic:'idempotency',from:1,to:1,best:1,note:'No change. The question comes back tomorrow, then in 3 days.'}})},
- {key:'sure',label:'confident and wrong',d:{kind:'explain',id:'c_8e12',eb:'After it works',topic:'timeouts-vs-failures',level:1,
-  q:'charge() catches GatewayTimeout and GatewayDeclined in different branches. Why does only one of them retry?',
+ {key:'sure',label:'confident and wrong',d:{kind:'explain',eb:'After it works',topic:'timeouts-vs-failures',level:1,
+  q:'retry() catches GatewayTimeout and GatewayDeclined in different branches. Why does only one of them retry?',
   said:'A timeout means the gateway rejected the call, so it is safe to try again. Declined means the card is bad.',conf:'Sure',
-  vw:'No.',why:'A timeout is not a rejection. It means the reply did not arrive, and the charge may have run. The retry is safe only because the key is the same; a declined charge is a real answer, so retrying cannot help.',ev:['charge',52],
+  vw:'No.',why:'A timeout is not a rejection. It means the reply did not arrive, and the charge may have run. The retry is safe only because the key is the same; a declined charge is a real answer, so retrying cannot help.',ev:['retry',20],
   next:'Back tomorrow.',belief:'You chose Sure. It returns tomorrow and is marked on your map.',
   answer:'Timeout: the result is unknown, so retry with the same key and let the gateway return the first result. Declined: the result is known, so stop.',
   full:'A timeout tells you only that no reply came back in 0.8 s. The gateway may have charged, declined or never seen the call. Retrying with the same key is safe for all three. A decline is an answer from the gateway, so a retry would get the same answer.',delta:{topic:'timeouts-vs-failures',from:1,to:1,best:1,mark:true,note:'No level change. The cell now has a sure miss mark until you get this right.'},cue:CUE_EXPL}},
- {key:'dk',label:'dont know: not known yet, this is the answer',d:{kind:'transfer',id:'c_5c30',eb:'New situation',topic:'outbox-ordering',level:1,
+ {key:'dk',label:'dont know: not known yet, this is the answer',d:{kind:'transfer',eb:'Review · a new case · Data and storage',topic:'outbox-ordering',level:1,
   q:'The order service writes the order and an outbox row in one transaction. The relay crashes after it publishes the event but before it marks the row sent. What does the consumer see?',
   said:null,dk:true,vw:'Not known yet.',ok:true,why:'This is the answer: the consumer gets the event twice. On restart the row is still unsent, so the relay publishes it again. Delivery is at least once, so the consumer must drop an event id it has seen.',ev:['outbox',33],
-  next:'Back tomorrow.',delta:{topic:'outbox-ordering',from:1,to:1,best:1,note:'No change. I do not know counts as a Guess for your reviews, so it comes back sooner.'},cue:CUE_DLQ}},
+  next:'Back tomorrow.',delta:{topic:'outbox-ordering',from:1,to:1,best:1,note:'No change. It comes back tomorrow. I do not know is not counted in How sure vs how right.'},cue:CUE_DLQ}},
  {key:'pred',label:'prediction compared: gap named, record unchanged',d:ext(PRED,{phase:'done'})},
- {key:'up',label:'record delta up with cell lighting',d:ext(EXPL,{said:'The idempotency key is the order id, so the gateway sees the same key and returns the first charge.',conf:'Sure',
-  vw:'Correct.',ok:true,why:'The key is the order id, and the gateway returns the stored result for a repeated key.',ev:['charge',47],
-  next:'Back on 10 Nov.',saved:'Saved. Claude adds this to your record on your next message.',
-  delta:{topic:'idempotency',from:1,to:2,best:2,note:'Without help for the first time. The next question about this idea is on 10 Nov.'}})},
- {key:'down',label:'record delta down (decay)',d:{kind:'review',id:'c_9b05',eb:'Review, 21 days',topic:'retry-budget',level:2,
-  q:'A webhook sender makes 5 attempts. Each times out at 2 s, and the backoffs are 1, 2, 4 and 8 s. Against a dead endpoint, how long until it gives up?',
-  said:'About 15 s.',conf:'Fairly sure',vw:'No.',why:'You added the backoffs only: 1 + 2 + 4 + 8 = 15 s. Each of the 5 attempts also waits for its 2 s timeout, so it is 10 + 15 = 25 s, plus jitter.',evPre:'RetryBudget adds them the same way:',ev:['retry',22],
-  next:'Back tomorrow.',wrote:{date:'17 Oct',text:'Three timeouts plus the backoffs between them: 2.4 + 1.5 = 3.9 s, plus a little jitter.'},
+ {key:'up',label:'review right: level up with cell lighting',d:{kind:'review',eb:'Review · 3 days',topic:'idempotency',level:1,
+  q:'After a timeout, why is it safe for charge() to send the same request again? Say what the gateway uses and what it does with it.',
+  said:'It sends the order id as the idempotency key. The gateway has seen that key, so it returns the result it stored instead of charging again.',conf:'Sure',
+  vw:'Correct.',ok:true,why:'The gateway sees the same order id as the key and returns the stored result.',ev:['charge',47],
+  next:'Back on 17 Nov.',wrote:{date:'7 Nov',text:'The idempotency key is the order id, so the gateway sees the same key and returns the first charge.'},
+  delta:{topic:'idempotency',from:1,to:2,best:2,note:'Now Without help. This was a review, a month after you first met the idea, with no hint and no code open.'},cue:CUE_DLQ}},
+ {key:'down',label:'record delta down (decay)',d:{kind:'review',eb:'Review · 21 days',topic:'retry-budget',level:2,
+  q:'Same retry, but each attempt times out at 2 s and the backoff is 1 s, then 2 s. With the fixed clock, how long until charge() gives up?',
+  said:'About 3.2 s.',conf:'Fairly sure',vw:'No.',why:'You added the backoffs and the jitter only: 3.2 s. Each of the 3 attempts also waits for its 2 s timeout, so it is 6 + 3.2 = 9.2 s.',evPre:'retry() waits like this between attempts:',ev:['retry',25],
+  next:'Back tomorrow.',wrote:{date:'12 Oct',text:'Three timeouts plus the two backoffs and their jitter: 2.4 + 1.5 + 0.2 = 4.1 s.'},
   delta:{topic:'retry-budget',from:2,to:1,best:2,note:'Your best stays on the map as the outline. Get it right at the next reviews and the fill comes back.'},cue:CUE_DLQ}},
  {key:'offline',label:'offline: result shown when back online',d:ext(EXPL,{said:'The idempotency key is the order id, so the gateway sees the same key and returns the first charge.',conf:'Sure',offline:true})},
  {key:'error',label:'error: output missing',d:ext(PRED,{phase:'error'})}
@@ -310,18 +316,18 @@ function clear(){timers.forEach(clearTimeout);timers=[]}
 function excerpt(k,line){var c=CODE[k],h='<span class="hd">'+esc(c.path)+':'+c.from+'-'+(c.from+c.lines.length-1)+'</span>';
  c.lines.forEach(function(t,i){var n=c.from+i;h+='<span class="ln'+(n===line?' hl':'')+'"><i>'+n+'</i>'+esc(t)+'</span>'});
  return '<pre class="ex" id="exc" hidden aria-label="'+esc(c.path)+', line '+line+' marked">'+h+'</pre>'}
-function cellHTML(lv,best,mark){var h='<span class="cell'+(lv?' f'+lv:'')+(best>lv?' ring':'')+'" aria-hidden="true">';for(var i=0;i<lv;i++)h+='<i></i>';return h+(mark?'<b></b>':'')+'</span>'}
+function cellHTML(lv,best,mark,pend){var h='<span class="cell'+(lv?' f'+lv:'')+(best>lv?' ring':'')+(pend?' pend':'')+'" aria-hidden="true">';for(var i=0;i<lv;i++)h+='<i></i>';return h+(mark?'<b></b>':'')+'</span>'}
 function segsHTML(lv,best){var h='<div class="segs" aria-hidden="true">';for(var i=1;i<=3;i++)h+='<span class="seg'+(i<=lv?' f'+i:(i<=best?' ring':''))+'"></span>';return h+'</div>'}
-function deltaHTML(x){var t=x.from!==x.to?LV[x.from]+CHEV+LV[x.to]:LV[x.to]+(x.mark?'. Sure miss marked.':'. No change.');
+function deltaHTML(x){var t=x.from!==x.to?'<span class="lvw">'+LV[x.from]+'</span>'+CHEV+'<span class="lvw">'+LV[x.to]+'</span>':'<span class="lvw">'+LV[x.to]+'</span>'+(x.pend?'. Without help pending the review on 10 Nov.':x.mark?'. Sure miss marked.':'. No change.');
  var name=x.topic+': now '+LV[x.to]+(x.best>x.to?', best '+LV[x.best]:'')+(x.mark?', sure miss':'');
- return '<div class="delta" id="delta"><div class="lab">Your record</div><div class="dl"><b>'+esc(x.topic)+'</b>'+t+'<span class="vh"> ('+esc(name)+')</span></div>'+segsHTML(x.from,x.from===x.to?x.best:x.from)+cellHTML(x.from,x.from===x.to?x.best:x.from,x.mark)+'<p class="note">'+esc(x.note)+'</p></div>'}
+ return '<div class="delta" id="delta"><div class="lab">Your record</div><div class="dl"><b>'+esc(x.topic)+'</b>'+t+'<span class="vh"> ('+esc(name)+')</span></div>'+segsHTML(x.from,x.from===x.to?x.best:x.from)+cellHTML(x.from,x.from===x.to?x.best:x.from,x.mark,x.pend)+'<p class="note">'+esc(x.note)+'</p></div>'}
 function animateDelta(x){if(x.from===x.to)return;var dl=$('#delta');if(!dl)return;
  var go=function(){var segs=dl.querySelectorAll('.seg');for(var i=0;i<3;i++){var n=i+1;segs[i].className='seg'+(n<=x.to?' f'+n:(n<=x.best?' ring':''))+(n===Math.max(x.to,x.from)&&!RM.matches?' lit':'')}
   var c=dl.querySelector('.cell');c.outerHTML=cellHTML(x.to,x.best,x.mark);c=dl.querySelector('.cell');if(!RM.matches){c.classList.add('lit');}
   later(function(){dl.querySelectorAll('.lit').forEach(function(e){e.classList.remove('lit')})},550)};
  if(RM.matches)go();else later(go,900)}
 
-function saidHTML(d,locked){var chip=d.offline?'<span class="chip saved">Saved here</span>':(d.dk?'':'<span class="chip'+(locked?' locked':'')+'">'+esc(d.conf)+'</span>');
+function saidHTML(d,locked){var chip=d.offline?'<span class="chip saved">Not sent</span>':(d.dk?'':'<span class="chip'+(locked?' locked':'')+'">'+esc(d.conf)+'</span>');
  return '<figure class="said"><figcaption>You said</figcaption><blockquote>'+(d.dk?'I do not know.':esc(d.said))+'</blockquote>'+chip+'</figure>'}
 function didHTML(d){var h='<figure><figcaption>It did</figcaption>';
  if(d.phase==='wait')h+='<div class="out wait"><span class="mono" style="font:500 13px var(--mono);color:var(--text-3)">$ '+esc(d.cmd)+'</span><span class="sk"></span><span class="sk"></span><p class="state" style="margin-top:12px">Waiting for the test output.</p></div>';
@@ -330,73 +336,74 @@ function didHTML(d){var h='<figure><figcaption>It did</figcaption>';
  return h+'</figure>'}
 function gapHTML(){var parts=[['t',.8],['b',.5],['j',.1],['t',.8],['b',1],['j',.1],['t',.8]],tot=4.3,h='';
  parts.forEach(function(p){h+='<span class="'+p[0]+'" style="width:'+(p[1]/tot*100).toFixed(2)+'%"></span>'});
- return '<div class="gap"><h3 id="gapt">Where the time went</h3><p class="vh">Three timeouts of 0.8 s and backoffs of 0.5 s and 1 s make 3.9 s. Jitter of up to 0.1 s after each backoff makes 4.1 s.</p><div aria-hidden="true"><div class="track">'+h+'</div><div class="marks"><span style="left:'+(3.9/tot*100).toFixed(2)+'%" class="r">You said 3.9 s</span><span style="left:'+(4.1/tot*100).toFixed(2)+'%;top:24px;padding-top:4px" class="r">It did 4.1 s</span></div></div><div class="gkey" aria-hidden="true"><span><i style="background:var(--field);box-shadow:inset 0 0 0 1.5px var(--control-border)"></i>timeout 0.8 s</span><span><i style="background:var(--lv1);box-shadow:inset 0 0 0 1.5px var(--ink)"></i>backoff</span><span><i style="background:var(--accent)"></i>jitter, the part you left out</span></div></div>'}
-function backBtn(){return '<div class="acts"><button type="button" class="btn" data-act="back">Back to the build</button></div>'}
+ return '<div class="gap"><h3 id="gapt">Where the time went</h3><p class="vh">Three timeouts of 0.8 s and backoffs of 0.5 s and 1 s make 3.9 s. Jitter of up to 0.1 s after each backoff makes 4.1 s.</p><div aria-hidden="true"><div class="track">'+h+'</div><div class="marks"><span style="left:'+(3.9/tot*100).toFixed(2)+'%" class="r">You said 3.9 s</span><span style="left:'+(4.1/tot*100).toFixed(2)+'%;top:24px;padding-top:4px" class="r">It did 4.1 s</span></div></div><div class="gkey" aria-hidden="true"><span><i style="background:var(--field);box-shadow:inset 0 0 0 1.5px var(--control-border)"></i>timeout 0.8 s</span><span><i style="background:var(--lv1);box-shadow:inset 0 0 0 1.5px var(--ink)"></i>backoff</span><span><i style="background:var(--accent)"></i>jitter on line 41, the part you left out</span></div></div>'}
+function backBtn(cue){return '<div class="backto"><button type="button" class="btn" data-act="back">Back to the build</button><p class="cue">'+esc(cue)+'</p></div>'}
+function compareHTML(d){var c=CODE[d.ev[0]],path=c.path+':'+d.ev[1];
+ return '<section class="verdict'+(ui.anim?' in':'')+'" aria-labelledby="vw"><h2 class="vw ok" id="vw" tabindex="-1"><span class="cchip">Compared</span></h2><p class="why"><b>The gap:</b> '+esc(d.gap)+'</p><p class="evl">Evidence: <button type="button" class="ev" data-act="ev" aria-expanded="false" aria-controls="exc">'+esc(path)+CHEV+'</button></p>'+excerpt(d.ev[0],d.ev[1])+'<p class="state">Predictions do not change your record.</p>'+backBtn(d.cue)+'</section>'}
 
 function verdictHTML(d){var c=CODE[d.ev[0]],path=c.path+':'+d.ev[1];
- var h='<section class="verdict'+(ui.anim?' in':'')+'" role="status" aria-live="polite" aria-labelledby="vw"><h2 class="vw'+(d.ok||d.vw==='Correct.'?' ok':'')+'" id="vw" tabindex="-1">'+esc(d.vw)+'</h2>';
+ var h='<section class="verdict'+(ui.anim?' in':'')+'" aria-labelledby="vw"><h2 class="vw'+(d.ok||d.vw==='Correct.'?' ok':'')+'" id="vw" tabindex="-1">'+esc(d.vw)+'</h2>';
  h+='<p class="why">'+esc(d.why)+'</p><p class="evl">'+(d.evPre?esc(d.evPre):'Evidence:')+' <button type="button" class="ev" data-act="ev" aria-expanded="false" aria-controls="exc">'+esc(path)+CHEV+'</button></p>'+excerpt(d.ev[0],d.ev[1]);
  h+='<p class="next">'+esc(d.next)+'</p>';
  if(d.belief)h+='<p class="belief">'+esc(d.belief)+'</p>';
  if(d.answer)h+='<div class="ans"><h3>The answer</h3><p>'+esc(d.answer)+'</p></div>';
  if(d.wrote)h+='<button type="button" class="tbtn" data-act="wrote" aria-expanded="false" aria-controls="wrote" style="margin-top:8px;margin-left:-6px">What you wrote on '+esc(d.wrote.date)+'</button><div class="ans" id="wrote" hidden><p>'+esc(d.wrote.text)+'</p></div>';
- if(d.restate){h+='<form id="rs"><label class="fl" for="rst">Your answer, with the missing part</label><textarea id="rst" rows="3" aria-describedby="rsh">'+esc(ui.rsText||d.said)+'</textarea><p class="helper" id="rsh">One line. You can say it again once.</p><div class="acts"><button type="submit" class="btn sm">Lock my answer</button><button type="button" class="btn ghost sm" data-act="skip">Next</button></div></form><div id="rsout" aria-live="polite"></div>'}
+ if(d.restate){h+='<form id="rs"><label class="fl" for="rst">Your answer, with the missing part</label><textarea id="rst" rows="3" aria-describedby="rsh">'+esc(ui.rsText||d.said)+'</textarea><p class="helper" id="rsh">Not graded. It helps it stick.</p><div class="acts"><button type="submit" class="btn sm">Save it</button><button type="button" class="btn ghost sm" data-act="skip">Next</button></div></form><div id="rsout"></div>'}
  h+=deltaHTML(d.delta);
  if(d.saved)h+='<p class="state">'+esc(d.saved)+'</p>';
  if(d.full)h+='<button type="button" class="tbtn" data-act="explain" aria-expanded="false" aria-controls="full" style="margin:10px 0 0 -6px">Explain it</button><div class="ans" id="full" hidden><h3>Full explanation, after the grade</h3><p>'+esc(d.full)+' Explaining it now does not change the grade.</p></div>';
- return h+'<p class="cue">'+esc(d.cue)+'</p>'+backBtn()+'</section>'}
+ if(!d.dk)h+='<button type="button" class="tbtn appeal" data-act="appeal">I think this grade is wrong</button>';
+ return h+backBtn(d.cue)+'</section>'}
 
-function roomHTML(d){var h='<div class="link"><span>Linked to: <b>orbit-pay</b> · cloud session</span><button type="button" class="tbtn" data-act="back">Back to the build</button></div>';
- h+='<button type="button" class="tbtn back" data-act="inbox">'+BACKCHEV+'Inbox</button>';
- h+='<article class="card" aria-labelledby="qq"><div class="eb">'+esc(d.eb)+' · <span class="mono" style="font-size:12.5px">'+esc(d.id)+'</span></div><div class="lvl">'+esc(d.topic)+' · '+LV[d.level]+'</div><h1 class="qq" id="qq">'+esc(d.q)+'</h1>';
- if(d.kind==='predict'){h+='<div class="cmp">'+saidHTML(d,true)+didHTML(d)+'</div>';if(d.phase==='done')h+=gapHTML()}
+function roomHTML(d){var h='<button type="button" class="tbtn back" data-act="inbox">'+BACKCHEV+'Inbox</button>';
+ h+='<article class="card" aria-labelledby="qq"><div class="eb">'+esc(d.eb)+'</div><div class="lvl">'+esc(d.topic)+' · <span class="lvw">'+LV[d.level]+'</span></div><h1 class="qq" id="qq">'+esc(d.q)+'</h1>';
+ if(d.kind==='predict'){h+='<div class="cmp">'+saidHTML(d,true)+didHTML(d)+'</div>';if(d.phase==='done')h+=gapHTML()+compareHTML(d)}
  else h+='<div class="cmp one">'+saidHTML(d,true)+'</div>';
- if(d.phase==='wait')h+='<p class="state">Locked. Shown after the test runs.</p><p class="cue">'+esc(d.cue)+'</p>'+backBtn();
- else if(d.phase==='error')h+='<p class="cue">'+esc(d.cue)+'</p>'+backBtn();
- else if(d.offline)h+='<p class="state" role="status">Saved here. The result is shown when you are back online.</p><p class="cue">'+esc(d.cue)+'</p>'+backBtn();
- else h+=verdictHTML(d);
+ if(d.phase==='wait')h+='<p class="state">Locked. Shown after the test runs.</p>'+backBtn(d.cue);
+ else if(d.phase==='error')h+=backBtn(d.cue);
+ else if(d.offline)h+='<p class="state">Not sent yet. Keep this page open until it says Sent.</p>'+backBtn(d.cue);
+ else if(d.kind!=='predict')h+=verdictHTML(d);
  return h+'</article>'}
 
 function chatLines(d){var you=d.chatYou||(d.dk?"don't know":d.said+' '+d.conf+'.'),L=[['you',you]];
  if(d.offline)return null;
  if(d.phase==='wait'){L.push(['ag','Locked. Shown after test_retry_budget runs.']);return L}
- if(d.kind==='predict'){L.push(['cmd','$ '+d.cmd]);L.push(['ag','You said: '+d.said+' ('+d.conf.toLowerCase()+')\nIt did: '+d.chatDid+'\n'+d.vw+' '+d.why+' billing/retry.py:22.\nPredictions do not change your record.\n'+d.next+'\n'+d.cue]);return L}
- if(d.saved){L=[['you','Now add a dead letter queue for failed charges.'],['ag','From the Room: idempotency, Correct, now Without help. Back on 10 Nov.\n\nI will add a dead letter queue table and move a charge there when RetryBudgetSpent is raised.']];return L}
+ if(d.kind==='predict'){L.push(['cmd','Bash  pytest -k test_retry_budget']);L.push(['ag','You said: '+d.said+' ('+d.conf.toLowerCase()+')\nIt did: '+d.chatDid+'\nThe gap: '+d.gap+' billing/charge.py:41.\n'+d.cue]);return L}
+ if(d.saved){L=[['you','Now add a dead letter queue for failed charges.'],['cmd','lwb_sync  1 answer from the Room'],['ag','From the Room: idempotency, Correct. It counts at your review on 10 Nov.\n\nI will add a dead letter queue table and move a charge there when RetryBudgetSpent is raised.']];return L}
  var p=CODE[d.ev[0]].path+':'+d.ev[1],t=d.vw+' '+d.why+' '+p+'. '+d.next;
- if(d.restate)t=d.vw+' '+d.why+' '+p+'. Say it again in one line with that part, or say \'next\'.';
+ if(d.restate)t+='\nSay it again in one line if you like. Not graded. It helps it stick.';
  if(d.belief)t+='\nYou chose Sure. This one returns tomorrow and is marked on your map.';
- if(d.delta.from!==d.delta.to)t+='\nYour record: '+d.delta.topic+' is now '+LV[d.delta.to]+'.';
+ if(d.delta.from!==d.delta.to)t+='\nNow '+LV[d.delta.to]+'.';
  L.push(['ag',t+'\n'+d.cue]);return L}
 function chatHTML(d){var L=chatLines(d),h='<p class="fn" style="margin-top:4px">The same card in the session transcript. One card, one state, every door.</p><div class="frame" role="region" aria-label="Session transcript, generic frame"><div class="fh"><i></i>session · orbit-pay</div><div class="msgs">';
  if(!L)h+='<p class="msg ag">Chat is the session itself, so it has no offline state. An answer saved on the phone reaches it when the phone is back online.</p>';
  else L.forEach(function(m){h+=m[0]==='cmd'?'<div class="cmd">'+esc(m[1])+'</div>':'<p class="msg '+(m[0]==='you'?'you':'ag')+'"><span class="who">'+(m[0]==='you'?'Sam':'Agent')+'</span>'+esc(m[1])+'</p>'});
  return h+'</div></div>'}
 
-var SIM={loading:['Simulate: the test runs','pred'],offline:['Simulate: back online','up'],up:['Replay the record change','up'],down:['Replay the record change','down']};
+var SIM={loading:['Simulate: the test runs','pred'],offline:['Simulate: back online','right'],up:['Replay the record change','up'],down:['Replay the record change','down']};
 function render(focusV){clear();var s=S[cur],d=s.d,door=$('#door').value;
  $('#st').value=String(cur);$('#offbar').hidden=!d.offline;
  var sim=SIM[s.key];$('#sim').hidden=!sim||door!=='room';if(sim)$('#sim').textContent=sim[0];
  $('#main').innerHTML=door==='chat'?chatHTML(d):roomHTML(d);
  if(door==='room'&&d.delta&&!d.offline&&!d.phase)animateDelta(d.delta);
  if(focusV){var v=$('#vw');if(v)v.focus({preventScroll:false})}
+ else if(ui.anim===false&&ui.say){$('#live').textContent=ui.say}
  ui.anim=false;
  try{history.replaceState(null,'','?state='+s.key+(door==='chat'?'&door=chat':''))}catch(e){}}
 function go(i,focusV,anim){cur=(i+S.length)%S.length;ui={anim:!!anim};render(focusV)}
 
 function toast(msg){var slot=$('#toastslot');slot.innerHTML='<div class="toast"><p>'+esc(msg)+'</p><button type="button" class="x" aria-label="Dismiss">&times;</button></div>';
- var t=slot.firstChild,tm=setTimeout(function(){slot.innerHTML=''},8000);
- t.addEventListener('mouseenter',function(){clearTimeout(tm)});t.addEventListener('focusin',function(){clearTimeout(tm)});
- t.querySelector('.x').addEventListener('click',function(){slot.innerHTML=''})}
+ $('#live').textContent=msg;
+ slot.querySelector('.x').addEventListener('click',function(){slot.innerHTML=''})}
 
 $('#main').addEventListener('click',function(e){var b=e.target.closest('[data-act]');if(!b)return;var a=b.getAttribute('data-act'),d=S[cur].d;
  if(a==='ev'||a==='wrote'||a==='explain'){var id=b.getAttribute('aria-controls'),el=document.getElementById(id),open=b.getAttribute('aria-expanded')!=='true';b.setAttribute('aria-expanded',String(open));el.hidden=!open}
- else if(a==='back'){toast(d.phase==='wait'?'Opening the session. The result is shown there after the test runs.':d.phase==='error'?'Opening the session. Claude shows the result there.':d.offline?'The session opens when you are back online. Your answer is saved here.':'Opening the session. Your next message there starts with this result.')}
+ else if(a==='back'){toast(d.phase==='wait'?'Opening the session. The result is shown there after the test runs.':d.phase==='error'?'Opening the session. Claude shows the result there.':d.offline?'The session opens when you are back online. Keep this page open until it says Sent.':'Opening the session. Your next message there starts with this result.')}
+ else if(a==='appeal'){toast('Sent to your session with your answer and the answer key. Claude looks again on your next message. The grade stands until then.')}
  else if(a==='inbox'){toast('In the product this returns to the Inbox. This card has left Now.')}
- else if(a==='skip'){$('#rs').hidden=true;$('#rsout').innerHTML='<p class="re">OK. The grade for this attempt stays Not quite.</p>'}});
+ else if(a==='skip'){$('#rs').hidden=true;$('#rsout').innerHTML='<p class="re">OK. Back tomorrow.</p>'}});
 $('#main').addEventListener('submit',function(e){e.preventDefault();var t=$('#rst').value.trim();ui.rsText=t;$('#rs').hidden=true;var out=$('#rsout');
- out.innerHTML='<p class="re">Locked. Grading…</p>';
- later(function(){var has=/order[ ._-]?id|same (key|on every)/i.test(t);
-  out.innerHTML='<p class="re"><b>'+(has?'That has the missing part.':'Still missing: the key must be the same on every attempt, so build it from the order id.')+'</b> Your restatement is part of this attempt, so the grade stays Not quite. '+esc(S[cur].d.next)+'</p>'},RM.matches?300:1200)});
+ out.innerHTML='<p class="re">Saved. Not graded. Back tomorrow.</p>';$('#live').textContent='Saved. Not graded. Back tomorrow.'});
 
 var sel=$('#st');S.forEach(function(s,i){var o=document.createElement('option');o.value=String(i);o.textContent=(i+1)+'. '+s.label;sel.appendChild(o)});
 sel.addEventListener('change',function(){go(+sel.value)});

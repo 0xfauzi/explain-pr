@@ -77,7 +77,9 @@ button,input,textarea{font-family:inherit;color:inherit}
 .ex pre{margin:0;padding:6px 0 12px;font:500 13px/1.8 var(--mono);overflow-x:auto}
 .ex .ln{display:block;padding:0 18px;white-space:pre}
 .ex .ln.hl{background:var(--accent-wash)}
-.ex i{display:inline-block;width:2.4em;color:var(--text-dim);font-style:normal}
+.ex i{display:inline-block;width:2.4em;color:var(--text-3);font-style:normal}
+.ex .ln.hl{white-space:pre-wrap;padding-left:calc(18px + 2.4em);text-indent:-2.4em}
+.ex pre{-webkit-mask-image:linear-gradient(90deg,#000 calc(100% - 24px),transparent);mask-image:linear-gradient(90deg,#000 calc(100% - 24px),transparent)}
 details.code{margin-top:14px}
 details.code summary{min-height:44px;display:inline-flex;align-items:center;font-weight:600;cursor:pointer;text-decoration:underline;text-underline-offset:4px}
 .fl{display:block;margin-top:20px;font-weight:600;font-size:15px}
@@ -102,7 +104,7 @@ legend{font-size:15px;font-weight:600;margin-bottom:8px;padding:0}
 .pl{position:relative;display:flex;align-items:center;min-height:44px;padding:0 16px 0 13px;border-left:3px solid transparent;font:500 13px var(--mono);white-space:pre;cursor:pointer;min-width:max-content}
 .pl:hover{background:color-mix(in srgb,var(--field) 60%,transparent)}
 .pl input{position:absolute;opacity:0;inset:0;margin:0;cursor:pointer}
-.pl i{display:inline-block;width:2.4em;color:var(--text-dim);font-style:normal}
+.pl i{display:inline-block;width:2.4em;color:var(--text-3);font-style:normal}
 .pl:has(input:checked){background:var(--accent-wash);border-left-color:var(--ink)}
 .pl:has(input:focus-visible){outline:2px solid var(--accent);outline-offset:-2px}
 /* order */
@@ -127,9 +129,9 @@ legend{font-size:15px;font-weight:600;margin-bottom:8px;padding:0}
 .mean b{font-weight:600;color:var(--ink)}
 /* hints */
 .hints{margin-top:20px;padding-top:12px;border-top:1px solid var(--rule);display:flex;flex-wrap:wrap;align-items:center;gap:4px 14px;font-size:14px;color:var(--text-3)}
-.ladder{display:inline-grid;grid-template-columns:repeat(3,28px);gap:4px;vertical-align:middle;margin-right:10px}
-.ladder span{height:10px;border-radius:3px;box-shadow:inset 0 0 0 1.5px var(--ink);transition:background .4s var(--ease-out)}
-.ladder span.on{background:var(--ink)}
+.ladder{display:inline-flex;gap:6px;vertical-align:middle;margin-right:10px}
+.ladder span{width:18px;height:18px;border-radius:50%;box-shadow:inset 0 0 0 1.5px var(--ink);font:500 10px/18px var(--mono);text-align:center;color:var(--ink);transition:background .4s var(--ease-out)}
+.ladder span.on{background:var(--ink);color:var(--on-ink)}
 .hints ol{flex:1 1 100%;margin:4px 0 0;padding:0;list-style:none;display:grid;gap:6px;font-size:15px;line-height:1.5;color:var(--text-2)}
 .hints ol li{padding:10px 14px;background:var(--paper);border-radius:10px}
 .hints ol li.in{animation:rise .5s var(--ease-out) both}
@@ -139,7 +141,7 @@ details.more summary{list-style:none;min-height:44px;display:inline-flex;align-i
 details.more summary::-webkit-details-marker{display:none}
 /* action bar */
 .quiet{font-size:14px;color:var(--text-3);margin:14px 0 0}
-.abar{display:grid;grid-template-columns:minmax(0,1fr) auto;grid-template-areas:"why acts" "help lock" "snz snz";align-items:center;gap:10px 16px;margin:20px -24px 0;padding:14px 24px;border-top:1px solid var(--rule);background:var(--card);border-radius:0 0 18px 18px}
+.abar{display:grid;grid-template-columns:minmax(0,1fr) auto;grid-template-areas:"why lock" "help help";align-items:center;gap:10px 16px;margin:20px -24px 0;padding:14px 24px;border-top:1px solid var(--rule);background:var(--card);border-radius:0 0 18px 18px}
 .abar .why2{grid-area:why;font-size:13px;color:var(--text-3);min-width:0}
 .abar .row2{grid-area:acts;justify-content:flex-end}.abar .lock{grid-area:lock;justify-self:end}.abar .helper{grid-area:help}.abar .snooze{grid-area:snz}
 .abar .row2{display:flex;gap:10px}
@@ -193,12 +195,25 @@ details.more summary::-webkit-details-marker{display:none}
 .rail p{margin:0 0 10px}
 .rail pre{margin:0;font:500 12px/1.7 var(--mono);white-space:pre-wrap;overflow-wrap:anywhere;color:var(--text-3)}
 /* toast */
+.sec{display:flex;flex-wrap:wrap;gap:8px;margin-top:16px}
+.sec .pill{min-height:44px;padding:0 16px;border-radius:999px;border:1.5px solid var(--control-border);background:transparent;font:500 15px var(--sans);cursor:pointer;display:inline-flex;align-items:center;gap:8px;color:var(--ink)}
+.sec .pill:hover{border-color:var(--ink)}
+.sec .pill.dk{border-style:dashed}
+.sec .pill[aria-expanded="true"]{background:var(--ink);color:var(--on-ink);border-color:var(--ink)}
+.ask{margin-top:12px;padding:12px 16px;border:1.5px solid var(--ink);border-radius:14px;background:var(--card);font-size:15px}
+.ask p{margin:0 0 8px}
+.backto{margin:20px -24px 0;padding:16px 24px;border-top:1px solid var(--rule)}
+.backto .btn{width:100%}
+.backto .cue{margin:8px 0 0}
+.nowslot{margin-top:16px;padding:14px 16px;background:var(--card);border:1.5px solid var(--ink);border-radius:14px;display:flex;flex-wrap:wrap;align-items:center;gap:6px 14px}
+.nowslot p{margin:0;flex:1}
 .toastwrap{position:fixed;left:0;right:0;bottom:calc(var(--tabbar) + 20px);z-index:40;display:flex;justify-content:center;padding:0 16px;pointer-events:none}
 .toast{pointer-events:auto;display:flex;align-items:center;gap:6px 14px;width:100%;max-width:576px;padding:8px 8px 8px 18px;background:var(--card);border:1.5px solid var(--ink);border-radius:14px;font-size:16px;box-shadow:0 8px 24px rgba(22,22,26,.08);animation:rise .3s var(--ease-out) both}
 .toast p{margin:0;flex:1}
 .toast .x{width:44px;height:44px;border:0;background:none;cursor:pointer;border-radius:10px;font-size:20px;line-height:1}
 @media (max-width:640px){
-:root{--tabbar:calc(64px + env(safe-area-inset-bottom));--abar:120px}
+:root{--tabbar:0px;--abar:76px}
+.tabs{display:none !important}
 .bar{padding:0 16px}
 .layout{padding:12px 16px calc(var(--tabbar) + 32px)}
 .tabs{position:fixed;left:0;right:0;bottom:0;z-index:30;padding:0 0 env(safe-area-inset-bottom);gap:0;background:var(--paper);border-top:1px solid var(--border);display:grid;grid-template-columns:repeat(4,1fr)}
@@ -209,7 +224,9 @@ details.more summary::-webkit-details-marker{display:none}
 .qq{font-size:20px}
 .vw{font-size:22px}
 .opt{font-size:17px}
-.abar{position:sticky;bottom:var(--tabbar);z-index:20;margin:20px -16px 0;padding:12px 16px;border-radius:0 0 14px 14px;box-shadow:0 -10px 20px -14px rgba(22,22,26,.25);grid-template-columns:minmax(0,1fr);grid-template-areas:"snz" "acts" "lock" "help";gap:8px}
+.abar{position:sticky;bottom:0;z-index:20;margin:20px -16px 0;padding:12px 16px calc(12px + env(safe-area-inset-bottom));border-radius:0 0 14px 14px;box-shadow:0 -10px 20px -14px rgba(22,22,26,.25);grid-template-columns:minmax(0,1fr);grid-template-areas:"lock" "help";gap:6px}
+.qcard.typing .sec{display:none}
+.backto{margin:20px -16px 0;padding:14px 16px}
 .abar .lock{justify-self:stretch}
 .abar .why2,.abar .kc{display:none}
 .abar .pill{white-space:nowrap;padding:0 12px}
@@ -222,6 +239,7 @@ details.more summary::-webkit-details-marker{display:none}
 .delta{grid-template-columns:minmax(0,1fr)}
 .ra{padding:12px 16px}
 }
+@media (max-height:560px){.abar,.top{position:static !important}.toastwrap{position:static}html{scroll-padding:16px}}
 @media (prefers-reduced-motion:reduce){
 .qcard.nudge,.verdict.in,.toast,.ord li.moved,.hints ol li.in,.dots::after{animation:none !important}
 .seg,.ladder span,.btn,.sure,.opt{transition:none}
@@ -237,7 +255,8 @@ details.more summary::-webkit-details-marker{display:none}
 <button type="button" id="next" aria-label="Next state">]</button>
 <span class="sp"></span>
 <label class="ck"><input type="checkbox" id="net"> Offline</label>
-<label>Width <select id="vw"><option value="">Fit</option><option value="390">390</option><option value="768">768</option></select></label>
+<label class="ck"><input type="checkbox" id="keys" checked> Shortcuts</label>
+<label>Width <select id="vw"><option value="">Fit</option><option value="390">390</option><option value="640x360">640 by 360</option><option value="768">768</option></select></label>
 <label>Theme <select id="theme"><option value="">System</option><option value="light">Light</option><option value="dark">Dark</option></select></label>
 </div>
 <div class="vpwrap" id="vpwrap" hidden><iframe id="vpf" title="The card at the chosen width"></iframe></div>
@@ -248,7 +267,7 @@ details.more summary::-webkit-details-marker{display:none}
 <span class="word">Room</span><span class="proj">orbit-pay</span>
 <button type="button" class="me" data-act="settings" aria-label="Sam. Open settings">S</button>
 </div>
-<nav class="tabs" aria-label="Room">
+<nav class="tabs" aria-label="Room" hidden>
 <a class="tab" href="inbox.html" aria-current="page"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" aria-hidden="true"><path d="M3 13l3-8h12l3 8v6H3z"/><path d="M3 13h5l1 2h6l1-2h5"/></svg>Inbox</a>
 <a class="tab" href="map.html"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><rect x="4" y="4" width="6" height="6" rx="1.5"/><rect x="14" y="4" width="6" height="6" rx="1.5"/><rect x="4" y="14" width="6" height="6" rx="1.5"/><rect x="14" y="14" width="6" height="6" rx="1.5"/></svg>Map</a>
 <a class="tab" href="drill.html"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M9 9h6v7a3 3 0 0 1-6 0z"/><path d="M12 9V6M5 12h4M15 12h4M6 7l3 2M18 7l-3 2M6 19l3-2M18 19l-3-2"/></svg>Drills</a>
@@ -259,7 +278,7 @@ details.more summary::-webkit-details-marker{display:none}
 <main id="main" tabindex="-1"></main>
 <aside class="rail" aria-label="About this prototype state"><h2>About this state</h2><p id="rnote"></p><pre id="rsys"></pre></aside>
 </div>
-<div class="toastwrap"><div id="toastslot" role="status" aria-live="polite"></div></div>
+<div class="toastwrap"><div id="toastslot"></div></div>
 <p class="vh" id="live" aria-live="polite"></p>
 </div>
 
@@ -279,60 +298,65 @@ var BACK='<svg width="14" height="14" viewBox="0 0 12 12" fill="none" stroke="cu
 var UP='<svg width="14" height="14" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2.5 7.5L6 4l3.5 3.5"/></svg>';
 var DOWN='<svg width="14" height="14" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2.5 4.5L6 8l3.5-3.5"/></svg>';
 var TICK='<svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 6.5l2.5 2.5L10 3"/></svg>';
-var CHARGE=['def charge(order):','    for attempt in range(3):','        try:','            return gateway.charge(','                order.card,','                order.amount,','                idempotency_key=order.id,','                timeout=0.8,','            )','        except gateway.Timeout:','            if attempt < 2:','                sleep(backoff(attempt))','    raise ChargeFailed(order.id)'];
-var BUGGY=CHARGE.slice();BUGGY[6]='                idempotency_key=f"{order.id}:{attempt}",';
+var CHARGE=['@retry(attempts=3, backoff=(0.5, 1.0), jitter=0.1)','def charge(order, gateway):','    """Charge an order once, even when retried."""','    if order.charged_at:','        return order.receipt','    resp = gateway.charge(','        idempotency_key=order.id,','        amount=order.total,','        timeout=0.8,','    )','    order.mark_charged(resp)','    return resp.receipt'];
+var BUGGY=CHARGE.slice();BUGGY[6]='        idempotency_key=uuid4().hex,';
+var AREA={c_9b06:'Distributed systems',c_9b07:'Distributed systems'};
 
 /* fixture: orbit-pay cards (the shared fixture.js, inlined so this page stands alone) */
 var CARDS={
-c_3f9c:{kind:'predict',shape:'text',topic:'retry-budget',lv:1,reason:'Before the build',code:CHARGE,path:'billing/charge.py:41-53',hl:[42,48,52],showCode:true,
- q:'Each attempt times out at 0.8 s and the backoff is 0.5 s, then 1 s. When test_retry_budget runs against a dead gateway, how long until charge() gives up?',
- ans:'test_retry_budget shows it: about 4.1 s. Three timeouts of 0.8 s, backoffs of 0.5 s and 1 s, and up to 0.1 s of jitter on each backoff. billing/retry.py:22.'},
-c_7a21:{kind:'explain',shape:'text',topic:'idempotency',lv:1,reason:'After it works',code:CHARGE,path:'billing/charge.py:41-53',hl:[47],
+c_3f9c:{kind:'predict',shape:'text',topic:'retry-budget',lv:1,reason:'Before the build',code:CHARGE,path:'billing/charge.py:41-52',hl:[41,49],showCode:true,
+ q:'With a dead gateway and the test\'s fixed clock, how long does test_retry_budget wait before charge() gives up?',
+ guess:'Write your best guess in a few words. It costs nothing.',
+ ans:'4.1 s. Three timeouts of 0.8 s, backoffs of 0.5 s and 1 s, and the jitter on line 41, 0.1 s per backoff.'},
+c_7a21:{kind:'explain',shape:'text',topic:'idempotency',lv:1,reason:'After it works',code:CHARGE,path:'billing/charge.py:41-52',hl:[47],
  q:'Why can the worker retry charge() without charging the customer twice?',
  hints:['Look at what the worker sends with every charge call.','billing/charge.py:47 passes a key. Where does its value come from?','The gateway keeps the result for each key it has seen.'],
- rx:[/order.?id/i,/key|idempot/i],next:['10 Nov','8 Nov'],
- why:['The key is the order id (billing/charge.py:47), and the gateway returns the stored result for a repeated key.','The key is what makes it safe, yes. But the key must be the order id, not a new UUID per attempt; a new UUID per attempt charges twice. billing/charge.py:47.','The timeout does not make it safe. A timeout only means the reply did not arrive; the charge may have run. The key at billing/charge.py:47 is what stops a second charge.'],
+ rx:[/order.?id/i,/key|idempot/i],next:['10 Nov','tomorrow'],
+ why:['The key is the order id (billing/charge.py:47), and the gateway returns the stored result for a repeated key.','The key is what makes it safe, yes. It must be the order id, not a new value per attempt. billing/charge.py:47.','The timeout does not make it safe. A timeout only means the reply did not arrive; the charge may have run. The key at billing/charge.py:47 is what stops a second charge.'],
  ans:'The key is the order id (billing/charge.py:47). The gateway returns the stored result for a repeated key, so a retry does not charge again.'},
-c_9b04:{kind:'review',shape:'choice',topic:'retry-budget',lv:1,reason:'Review · 3 days',
- q:'A refund call uses the same retry: 0.8 s timeout per attempt, a backoff of 0.5 s that doubles, 4 attempts and no wait after the last. How long until refund() gives up on a dead gateway?',
- opts:[['3.2 s',1],['3.5 s',1],['6.7 s',2],['10.7 s',0]],rx:[/6[.,]7/,/6[.,]7/],next:['28 Nov','10 Nov'],
- why:['Four timeouts of 0.8 s and three backoffs: 3.2 + 0.5 + 1 + 2 = 6.7 s. billing/retry.py:22.','You have one part of it. Add the four timeouts (3.2 s) and the three backoffs (3.5 s): 6.7 s. billing/retry.py:22.','There is no wait after the last attempt, so there are three backoffs, not four. 3.2 + 0.5 + 1 + 2 = 6.7 s. billing/retry.py:22.'],
- ans:'Four timeouts of 0.8 s (3.2 s) plus backoffs of 0.5, 1 and 2 s (3.5 s): 6.7 s. billing/retry.py:22.'},
-c_9b05:{kind:'review',shape:'order',topic:'timeouts-vs-failures',lv:1,reason:'Review · 1 day',
- q:'charge() timed out after 0.8 s, but the gateway ran the charge. Put these in the order they happen.',
- items:['The worker sends charge() with key ord_1042.','The gateway charges the card.','The reply is lost. The worker gets gateway.Timeout.','The worker waits 0.5 s.','The worker sends key ord_1042 again.','The gateway returns the stored result. No second charge.'],start:[2,0,4,1,5,3],next:['10 Nov','8 Nov'],
- why:['The charge ran before the reply was lost, so the timeout is not a failure. The repeat is safe because the key is the same. worker/charge_job.py:31.','Most of it holds. The gateway charges the card before the reply is lost: a timeout comes after the work, not instead of it. worker/charge_job.py:31.','A timeout means the reply did not arrive. The charge ran first, then the reply was lost, then the worker sent the same key. worker/charge_job.py:31.'],
- ans:'Send, charge, reply lost and Timeout, wait 0.5 s, send the same key, stored result returned. worker/charge_job.py:31.'},
-c_9b06:{kind:'diagnose',shape:'line',topic:'idempotency',lv:1,reason:'A test fails',code:BUGGY,path:'billing/charge.py:41-53',right:47,near:[44,51,52],
- q:'test_no_double_charge fails: after a gateway timeout, the customer is charged twice. Which line causes it?',
- hints:['The second charge comes from the retry, not the first call.','What does the gateway compare to know a call is a repeat?','Read the key on each attempt: is it the same both times?'],next:['10 Nov','8 Nov'],
- why:['The key includes the attempt number, so the retry has a new key and the gateway charges again. billing/charge.py:47.','That line is on the retry path, yes. But it only repeats the call. The call is a new charge because the key at billing/charge.py:47 changes on each attempt.','That line does not decide if a call is a repeat. The key at billing/charge.py:47 includes the attempt number, so every retry is a new charge.'],
- ans:'Line 47. The key includes the attempt number, so the gateway sees each retry as a new charge.'},
-c_9b07:{kind:'transfer',shape:'text',topic:'idempotency',lv:2,reason:'In new code',
- q:'A refund call now retries too. It uses a new UUID as its key on every attempt. What happens when the first attempt times out but the refund ran?',
- hints:['What does the gateway use to know a call is a repeat?','billing/refund.py:19 makes the key. When is it made?','A new key looks like a new refund to the gateway.'],
- rx:[/twice|two|double|second refund|again/i,/key|uuid/i],next:['28 Nov','10 Nov'],
- why:['Each attempt has a new key, so the gateway sees a new refund and pays it again. billing/refund.py:19.','The key is the cause, yes. Say the result: a new key per attempt means a second refund. billing/refund.py:19.','The gateway cannot match a new UUID to the first attempt, so it refunds twice. billing/refund.py:19.'],
- ans:'The second attempt has a new key, so the gateway refunds twice. billing/refund.py:19.'}
+c_9b04:{kind:'predict',shape:'choice',topic:'dead-letter-queue',lv:0,reason:'Before the build',
+ q:'The gateway is down for 10 minutes. With the dead letter queue in place, what happens to a new charge?',
+ opts:[['It waits in the job queue and runs when the gateway is back',1],['It fails at once and the customer sees an error message',0],['It goes to the dead letter queue after three attempts',2],['It retries without a limit and blocks the worker',0]],rx:[/./,/./],next:['10 Nov','tomorrow'],
+ guess:'Write your best guess in a few words. It costs nothing.',
+ ans:'It goes to the dead letter queue after three attempts. worker/charge_job.py:31.'},
+c_9b05:{kind:'explain',shape:'order',topic:'dead-letter-queue',lv:0,reason:'After it works',
+ q:'Put the steps of a charge that keeps failing in the order the worker runs them.',
+ items:['The worker takes the job from the queue.','The worker calls charge() with the order id as the key.','All three attempts time out.','retry() raises RetryBudgetSpent.','The worker moves the job to the dead letter queue.','An alert names the order id.'],start:[2,0,4,1,5,3],next:['10 Nov','tomorrow'],
+ why:['That is the order. The job reaches the dead letter queue only after retry() gives up. worker/charge_job.py:31.','Most of it holds. retry() gives up before the worker moves the job. worker/charge_job.py:31.','The worker can move the job only after retry() raises RetryBudgetSpent. worker/charge_job.py:31.'],
+ ans:'Take the job, call charge(), three timeouts, RetryBudgetSpent, move to the dead letter queue, alert. worker/charge_job.py:31.'},
+c_9b06:{kind:'diagnose',shape:'line',topic:'idempotency',lv:1,reason:'A test fails',code:BUGGY,path:'billing/charge.py:41-52',right:47,near:[46,49,51],
+ q:'test_no_double_charge fails: after a gateway timeout, the customer is charged twice. What do you think causes it?',
+ hints:['The second charge comes from the retry, not the first call.','What does the gateway compare to know a call is a repeat?','Read the key on each attempt: is it the same both times?'],next:['10 Nov','tomorrow'],
+ why:['A new key on every call means the gateway sees each retry as a new charge. billing/charge.py:47.','That line is on the call path, yes. But the call is a new charge because the key at billing/charge.py:47 changes on each attempt.','That line does not decide if a call is a repeat. The key at billing/charge.py:47 is new on every call, so every retry is a new charge.'],
+ ans:'Line 47. The key is new on every call, so the gateway sees each retry as a new charge.'},
+c_9b07:{kind:'transfer',shape:'text',topic:'idempotency',lv:2,reason:'Review · a new case',
+ q:'A webhook handler saves each event, then emails the customer. The sender retries when it gets no 200 within 5 s. Some customers get two emails. What would you change, and why?',
+ hints:['What tells the handler that it has seen this event before?','The sender sends the same event id on every retry.','Store what you have handled, keyed by something that does not change.'],
+ rx:[/event.?id|id/i,/skip|seen|store|dedup|once|key/i],next:['17 Nov','tomorrow'],
+ why:['Store the event id and skip one you have seen, so a retry from the sender does nothing new. webhooks/handler.py:22.','The cause is right: the sender retries. Say the change: keep the event id and skip a repeat. webhooks/handler.py:22.','A faster reply does not stop a retry that already left. Keep the event id and skip a repeat. webhooks/handler.py:22.'],
+ ans:'Save the event id with the event and skip any event id already saved. The retry then does nothing new. webhooks/handler.py:22.'}
 };
 var GOOD='The key is the order id, so the gateway sees the same key and returns the first charge.';
 var PRED='About 3.9 s. Three timeouts of 0.8 s plus 0.5 s and 1 s of backoff.';
+var KEYS=true;
 
 var ST=[
 ['loading',function(){use('c_7a21');S.phase='loading'},'The card is fetched from the Room db. A skeleton in the shape of the card, no spinner. The region is aria-busy and says "Loading the question."','GET cards/c_7a21 (Room db)\nthe card shape is known, so the skeleton matches it'],
-['waiting: lock disabled until confidence',function(){use('c_3f9c')},'A prediction before the build. The code is shown. Lock my answer is aria-disabled, not removed, so it stays in the focus order and says why. Try the keys 1, 2, 3, D, H and '+MOD+' Enter.','c_3f9c sealed 13:57 (rubric 9c1e4b07)\nstate: delivered(room)'],
+['waiting: lock disabled until confidence',function(){use('c_3f9c')},'A prediction before the build. The code is shown, with the jitter on line 41, so the answer can be worked out from the card. The fixed clock makes the result exact. Lock my answer is aria-disabled, not removed. Keys: 1, 2, 3 and '+MOD+' Enter; D asks before it acts.','lwb_post: sealed and posted in one row\nobservable deterministic: fake clock\nstate: delivered(room)'],
 ['waiting: confidence chosen',function(){use('c_3f9c');S.draft=PRED;S.conf='Fairly sure'},'With a confidence chosen, its meaning is shown under the pills and Lock is active. The meaning is the radio\'s description for screen readers.','confidence: fairly sure\nlock not sent yet'],
-['choice shape',function(){use('c_9b04')},'A review 3 days later. No code, no old answer on screen. Letter keys A to D choose; Other opens a text field. On choice cards I do not know moves to key X, because D is an option.','c_9b04 review, interval 3 days\nshape: choice'],
-['line-pick shape',function(){use('c_9b06')},'A diagnose card from a failing test. The excerpt becomes a group of lines; each line is a 44px target. Arrow keys move the choice.','c_9b06 diagnose, shape: line-pick\ncorrect line sealed in the rubric'],
-['order shape',function(){use('c_9b05')},'Put the events in order with move up and move down. No drag only. The moved item flashes once, so you can see where it went.','c_9b05 review, shape: order\nannounces "Moved to 2 of 6."'],
-['transfer: the idea in new code',function(){use('c_9b07')},'At Without help, the question moves to code you have not seen. Hint is under More here, and is never offered at New situation.','c_9b07 transfer, level_at_ask: recalls'],
-['hint 1 of 3 shown',function(){use('c_7a21');S.hints=1},'One hint used. The ladder fills one cell. The attempt is now capped at With help, and the card says so once, plainly.','lwb_hint c_7a21 level=1\nattempt cap: with help'],
+['choice shape: a prediction at Not yet',function(){use('c_9b04')},'Options only appear on predictions at Not yet, and they are of similar length. Reviews are always free text or a number, because recall beats recognition. Letter keys A to D choose when shortcuts are on.','c_9b04 predict, level_at_ask: not yet\nshape: choice'],
+['line-pick: hypothesis first, then the line',function(){use('c_9b06')},'A diagnose card from a failing test. The topic is hidden; only the area shows. Sam writes the cause before any code is shown. Then the module opens and the line pick is a second step.','c_9b06 diagnose, show_topic=false\nstep 1 hypothesis, step 2 line-pick'],
+['order shape: at Not yet only',function(){use('c_9b05')},'Order is a Not yet shape: it supports a learner who is new to the idea. Move up and move down, no drag. No item states the answer as fact.','c_9b05 explain, level_at_ask: not yet\nannounces "Moved to 2 of 6."'],
+['transfer: a new case, topic hidden',function(){use('c_9b07')},'At Without help, the idea comes back in a case unlike the ones Sam has seen: a new object, a new failure, new code. The topic is hidden until the lock, so noticing which idea applies is part of the task.','c_9b07 transfer, level_at_ask: recalls\ndistance note in the key\nshow_topic=false'],
+['hint 1 of 3 shown',function(){use('c_7a21');S.hints=1},'One hint used. The ladder fills one numbered dot. The attempt is now capped at With help, and the card says so once, plainly. Opening the code does the same.','lwb_hint c_7a21 level=1\nattempt cap: with help'],
+['show the code counts as a hint',function(){use('c_7a21');S.codeOpen=true;S.hints=1},'On explain, review and transfer cards the code is behind Show the code. Opening it is recorded as H1, so the record does not call reading the code recall.','lwb_hint c_7a21 level=1 reason=code\nattempt cap: with help'],
 ['answered: prediction locked, shown after the test runs',function(){use('c_3f9c');S.draft=PRED;S.conf='Fairly sure';S.phase='locked'},'Locked is final. The controls go read only and the answer is quoted back. Nothing is shown until test_retry_budget runs; then the Compare appears here and in chat.','lwb_lock c_3f9c door=room 13:59\nobservable: pytest -k test_retry_budget'],
-['answered: explain locked, grading',function(){use('c_7a21');S.draft=GOOD;S.conf='Sure';S.phase='grading';S.hold=true},'Locked, then Grading, announced once. Held here so you can see it. Lock any other card to see the grade arrive.','rubric doc read after lock\nsample: grading on the page'],
-['answered: saved, Claude adds it on your next message',function(){use('c_7a21');S.draft=GOOD;S.conf='Sure';S.phase='saved'},'Phase 1 when the page cannot grade: the answer is saved in the Room db and the session grades it on the next message.','Room db: c_7a21 locked 14:02 door=room-phone\npull rule on the next message'],
-['dont know',function(){use('c_7a21');S.dk=true;S.conf='Guess';S.phase='graded';S.v=grade()},'I do not know locks a real answer at Guess. The verdict is "Not known yet." with the answer. No red, no "No.", and it returns tomorrow.','lwb_lock c_7a21 dont_know=true confidence=guess\nreview: tomorrow'],
-['not now with undo',function(){use('c_7a21');S.draft='The key is';S.phase='notnow';S.when='After this build'},'Not now offers three times. The card closes to the Inbox and a toast offers Undo for 8 s; it pauses on hover and focus. Undo brings back the draft.','lwb_snooze c_7a21 until=after-build\nsnooze never counts as a miss'],
-['offline: saved here',function(){use('c_7a21');S.draft=GOOD;S.conf='Sure';S.phase='offline';S.net=false},'No network. Lock still works and the answer waits on this phone. Clear Offline in the prototype bar to see it send and grade.','page storage queue, retry on "online"\nchat still shows c_7a21 as Open'],
+['answered: explain locked, grading',function(){use('c_7a21');S.draft=GOOD;S.conf='Sure';S.phase='grading';S.hold=true},'Locked, then Grading, said once in the page\'s one live region. Held here so you can see it. Lock any other card to see the grade arrive.','answers/<id>/<uuid> created once, sha256 stored\nkeys/<id> read once with get()\nsample: grading on the page'],
+['answered: Claude grades it on your next message',function(){use('c_7a21');S.draft=GOOD;S.conf='Sure';S.phase='saved'},'Phase 1 when the page cannot grade: the answer doc is written and the session grades it with one lwb_sync row on the next message.','answers/c_7a21/<uuid> 14:02 door=room-phone\npull rule on the next message'],
+['dont know on a prediction: best guess first',function(){use('c_3f9c');S.phase='guess'},'On a prediction, I do not know asks for a best guess first, because a wrong guess followed by the answer teaches more than the answer alone. Show the answer is one step away. It is never counted in calibration.','no lock yet\ndont_know excluded from calibration'],
+['dont know on an explain card',function(){use('c_7a21');S.dk=true;S.conf=null;S.phase='graded';S.v=grade()},'On explain and review cards, I do not know locks at once. The verdict is "Not known yet." with the answer. No red, no "No.", and it returns tomorrow.','lwb_lock c_7a21 dont_know=true\nnot counted in calibration\nreview: tomorrow'],
+['not now with undo in place',function(){use('c_7a21');S.draft='The key is';S.phase='notnow';S.when='After this build'},'Not now offers three times. The card closes to the Inbox, and the Now slot says "Moved to Later. Undo". Focus goes there. It stays until the next action: no timer.','lwb_snooze c_7a21 until=after-build\nsnooze never counts as a miss'],
+['offline: not sent',function(){use('c_7a21');S.draft=GOOD;S.conf='Sure';S.phase='offline';S.net=false},'No network. Lock still works, but the page does not promise to keep the answer if it is closed. It says Not sent until a write is confirmed. Clear Offline in the prototype bar to see it send and grade.','db write pending (hasPendingWrites)\nSent only on a confirmed snapshot (E-OFFLINE)'],
 ['error: grader failed',function(){use('c_7a21');S.draft=GOOD;S.conf='Sure';S.phase='gerr'},'The answer is locked and safe. The error says what failed and what still works. Try again runs the grader again.','sample: error\nlocked answer kept; session can grade'],
 ['error: already answered in chat',function(){use('c_7a21');S.phase='elsewhere'},'Sam answered in chat at 14:01. The earliest lock wins, so the Room shows that, not a second form.','lwb_lock c_7a21 door=chat 14:01 (wins)\nRoom form not offered']
 ];
@@ -345,6 +369,7 @@ function announce(t){var l=$('#live');l.textContent='';setTimeout(function(){l.t
 function hasAnswer(){var c=C();if(c.shape==='text')return !!S.draft.trim();if(c.shape==='choice')return S.choice!==null&&(S.choice!=='o'||!!S.other.trim());if(c.shape==='line')return S.pick!==null;return true}
 function canLock(){return !!S.conf&&hasAnswer()}
 function dkKey(){return C().shape==='choice'?'X':'D'}
+function shown(c){return AREA[S.id]&&S.phase!=='graded'?'a new case · '+AREA[S.id]:c.topic}
 
 /* ---------- grading (prototype: patterns stand in for the sealed rubric) ---------- */
 function grade(){
@@ -357,36 +382,41 @@ function grade(){
  var w=['wrong','partial','right'][s];if(w==='wrong'&&S.conf==='Sure')w='cw';return {w:w};
 }
 function lock(dk){
- if(dk){S.dk=true;S.conf='Guess'}
+ if(dk&&C().kind==='predict'&&S.phase==='edit'){saveDraft();S.phase='guess';S.ask=null;render('#ans');return}
+ if(dk){S.dk=true;S.conf=null}
  else if(!canLock()){var h=$('#helper');if(h){h.classList.add('warn');h.textContent=S.conf?'Write your answer first, or choose I do not know.':'Choose how sure you are first.'}
   var f=S.conf?($('#ans')||$('.opts input,.pick input,.ord button')):$('input[name="conf"]');if(f)f.focus();return}
  if(!dk)saveDraft();
  S.snz=false;
  var kind=C().kind;
- if(kind==='predict'&&!dk){S.phase='locked';render('#st1');nudge();announce('Locked. Shown after the test runs.');return}
- if(!S.net){S.phase='offline';render('#st1');nudge();announce('Locked. Saved on this phone.');return}
- S.phase='grading';S.hold=false;render('#st1');nudge();announce('Locked. Grading.');
+ if(kind==='predict'&&!dk){S.phase='locked';render('#st1');nudge();return}
+ if(!S.net){S.phase='offline';render('#st1');nudge();return}
+ S.phase='grading';S.hold=false;render('#st1');nudge();
  later(finish,1600);
 }
-function finish(){S.v=grade();S.phase='graded';render('#vh')}
+function finish(){S.v=grade();S.phase='graded';var inCard=document.activeElement&&document.activeElement.closest&&document.activeElement.closest('#card');render(inCard?'#vh':null);if(!inCard)announce(vline())}
+function vline(){var w=S.v.w,c=C();if(w==='dk')return 'Not known yet. Back tomorrow.';return {right:'Correct.',partial:'Not quite.',wrong:'No.',cw:'No.'}[w]+' '+(w==='right'?(c.kind==='explain'?'This counts when it holds at your review on 10 Nov.':'Back on '+c.next[0]+'.'):'Back tomorrow.')}
 function nudge(){var q=$('.qcard');if(q){q.classList.remove('nudge');void q.offsetWidth;q.classList.add('nudge')}}
 function saveDraft(){var a=$('#ans');if(a)S.draft=a.value;var o=$('#other');if(o)S.other=o.value}
 
 /* ---------- render ---------- */
-function chip(t){var cls={Locked:'locked','Saved here':'saved','Not quite':'miss',No:'miss','No · sure':'miss'}[t]||'';return '<span class="chip '+cls+'">'+(t==='Correct'?TICK:'')+esc(t)+'</span>'}
-function chipNow(){var p=S.phase;if(p==='edit')return 'Open';if(p==='offline')return 'Saved here';if(p==='graded'){var w=S.v.w;return {right:'Correct',partial:'Not quite',wrong:'No',cw:'No · sure',dk:'Locked'}[w]}return 'Locked'}
+function chip(t){if(!t)return '';var cls={Locked:'locked','Not sent':'saved','Not quite':'miss',No:'miss','No · sure':'miss'}[t]||'';return '<span class="chip '+cls+'">'+(t==='Correct'?TICK:'')+esc(t)+'</span>'}
+function chipNow(){var p=S.phase;if(p==='edit')return 'Open';if(p==='offline')return 'Not sent';if(p==='graded'){var w=S.v.w;return {right:'Correct',partial:'Not quite',wrong:'No',cw:'No · sure',dk:'Locked'}[w]}return 'Locked'}
 function excerpt(c,lines){return '<div class="ex"><span class="hd">'+esc(c.path)+'</span><pre>'+lines.map(function(l,i){var n=41+i;return '<span class="ln'+(c.hl&&c.hl.indexOf(n)>=0?' hl':'')+'"><i>'+n+'</i>'+esc(l)+'</span>'}).join('')+'</pre></div>'}
 function head(c){
- return '<div class="qhead"><div><div class="eb">'+esc(c.reason)+'</div><div class="lvl">'+esc(c.topic)+' · '+LV[c.lv]+'</div></div>'+chip(chipNow())+'</div>'+
+ return '<div class="qhead"><div><div class="eb">'+esc(c.reason)+'</div><div class="lvl">'+esc(shown(c))+(AREA[S.id]&&S.phase!=='graded'?'':' · <span class="lvw">'+LV[c.lv]+'</span>')+'</div></div>'+chip(chipNow())+'</div>'+
   '<h1 class="qq" id="qp">'+esc(c.q)+'</h1>';
 }
 function control(c,ro){
  var d=ro?' disabled':'',h='';
+ if(S.phase==='guess')return '<label class="fl" for="ans">Your best guess</label><textarea id="ans" rows="2" aria-describedby="gh">'+esc(S.draft)+'</textarea><p class="helper" id="gh">'+esc(c.guess||'Write your best guess in a few words. It costs nothing.')+'</p>';
+ if(c.shape==='line'&&!S.hypo)return '<label class="fl" for="ans">Your hypothesis, before you see the code</label><textarea id="ans" rows="3">'+esc(S.draft)+'</textarea><div class="sec"><button type="button" class="pill" data-act="hypo">Next: find the line</button></div>';
+ if(c.shape==='line')h='<blockquote class="said"><span class="cap">Your hypothesis</span>'+esc(S.draft)+'</blockquote>';
  if(c.shape==='text')h='<label class="fl" for="ans">Your answer</label><textarea id="ans" rows="4"'+(ro?' readonly':'')+'>'+esc(S.draft)+'</textarea>';
  else if(c.shape==='choice'){h='<fieldset><legend>Choose one</legend><div class="opts">'+c.opts.map(function(o,i){var k='ABCD'[i];return '<label class="opt"><input type="radio" name="ch" value="'+i+'"'+(S.choice===i?' checked':'')+d+'><span class="k">'+k+'</span><span>'+esc(o[0])+'</span></label>'}).join('')+
   '<label class="opt"><input type="radio" name="ch" value="o"'+(S.choice==='o'?' checked':'')+d+'><span class="k">E</span><span>Other</span></label></div></fieldset>'+
   (S.choice==='o'?'<label class="fl" for="other">Your answer</label><input class="other" id="other" type="text" value="'+esc(S.other)+'"'+(ro?' readonly':'')+'>':'')}
- else if(c.shape==='line')h='<fieldset><legend>Tap the line</legend><div class="pick"><span class="hd">'+esc(c.path)+'</span>'+c.code.map(function(l,i){var n=41+i;return '<label class="pl"><input type="radio" name="line" value="'+n+'"'+(S.pick===n?' checked':'')+d+' aria-label="Line '+n+': '+esc(l.trim())+'"><i aria-hidden="true">'+n+'</i><span aria-hidden="true">'+esc(l)+'</span></label>'}).join('')+'</div></fieldset>';
+ else if(c.shape==='line')h+='<fieldset><legend>Now select the line</legend><div class="pick"><span class="hd">'+esc(c.path)+'</span>'+c.code.map(function(l,i){var n=41+i;return '<label class="pl"><input type="radio" name="line" value="'+n+'"'+(S.pick===n?' checked':'')+d+' aria-label="Line '+n+': '+esc(l.trim())+'"><i aria-hidden="true">'+n+'</i><span aria-hidden="true">'+esc(l)+'</span></label>'}).join('')+'</div></fieldset>';
  else h='<fieldset><legend>Put these in order</legend><ol class="ord">'+S.order.map(function(v,i){var t=c.items[v];return '<li data-i="'+i+'"><span class="n" aria-hidden="true">'+(i+1)+'</span><span>'+esc(t)+'</span>'+(ro?'':'<span class="mv"><button type="button" data-mv="-1" data-i="'+i+'" aria-label="Move up: '+esc(t)+'"'+(i===0?' disabled':'')+'>'+UP+'</button><button type="button" data-mv="1" data-i="'+i+'" aria-label="Move down: '+esc(t)+'"'+(i===S.order.length-1?' disabled':'')+'>'+DOWN+'</button></span>')+'</li>'}).join('')+'</ol></fieldset>';
  return h;
 }
@@ -396,70 +426,79 @@ function confs(){
 }
 function hints(c){
  if(!c.hints||c.lv>2)return '';
- var n=S.hints,l='<span class="ladder" aria-hidden="true">'+[0,1,2].map(function(i){return '<span'+(i<n?' class="on"':'')+'></span>'}).join('')+'</span>';
- var body='<span>'+l+'Hints used: '+n+' of 3</span>'+(n<3?'<button type="button" class="tbtn" data-act="hint">Hint</button>':'')+
+ var n=S.hints,l='<span class="ladder" aria-hidden="true">'+[0,1,2].map(function(i){return '<span'+(i<n?' class="on"':'')+'>'+(i+1)+'</span>'}).join('')+'</span>';
+ var body='<span>'+l+'Hints used: '+n+' of 3</span>'+(n<3?'<button type="button" class="tbtn" data-act="hint">Hint</button>':'')+(S.codeOpen?'<span>(H1: you opened the code)</span>':'')+
   (n?'<ol>'+c.hints.slice(0,n).map(function(t,i){return '<li'+(i===n-1&&S.newHint?' class="in"':'')+'><b>H'+(i+1)+'</b>'+esc(t)+'</li>'}).join('')+'</ol><p class="cap">Using a hint is fine. This attempt now counts as With help.</p>':'');
  if(c.lv===2&&!n)return '<div class="hints"><details class="more"><summary>More</summary><div class="hints" style="border:0;margin-top:4px;padding-top:0">'+body+'</div></details></div>';
  return '<div class="hints">'+body+'</div>';
 }
-function abar(c){
+function sec(c){
+ if(S.phase==='guess')return '<div class="sec"><button type="button" class="pill dk" data-act="showans">Show the answer</button></div>';
  var dk=dkKey();
- var h='<div class="abar"><span class="why2">'+esc(c.reason)+' · '+esc(c.topic)+'</span>'+
-  '<div class="row2"><button type="button" class="pill" data-act="notnow" aria-expanded="'+S.snz+'" aria-controls="snz">Not now<span class="kc" aria-hidden="true">H</span></button>'+
-  '<button type="button" class="pill dk" data-act="dk">I do not know<span class="kc" aria-hidden="true">'+dk+'</span></button></div>'+
-  '<button type="submit" class="btn lock" aria-disabled="'+!S.conf+'" aria-describedby="helper">Lock my answer<span class="kc" aria-hidden="true">'+MOD+' Enter</span></button>';
+ var h='<div class="sec"><button type="button" class="pill" data-act="notnow" aria-expanded="'+S.snz+'"'+(S.snz?' aria-controls="snz"':'')+(KEYS?' aria-keyshortcuts="H"':'')+'>Not now<span class="kc" aria-hidden="true"'+(KEYS?'':' hidden')+'>H</span></button>'+
+  '<button type="button" class="pill dk" data-act="dk"'+(KEYS?' aria-keyshortcuts="'+dk+'"':'')+'>I do not know<span class="kc" aria-hidden="true"'+(KEYS?'':' hidden')+'>'+dk+'</span></button></div>';
  if(S.snz)h+='<div class="snooze" id="snz" role="group" aria-label="Move to Later"><span>Ask again</span>'+['After this build','Tomorrow','Next week'].map(function(w){return '<button type="button" class="btn ghost sm" data-snz="'+w+'">'+w+'</button>'}).join('')+'</div>';
- h+='<p class="helper" id="helper">'+(S.conf?'':'Choose how sure you are first.')+'</p></div>';
+ if(S.ask==='dk')h+='<div class="ask" role="alertdialog" aria-labelledby="askp"><p id="askp">Lock as I do not know?</p><button type="button" class="btn sm" data-act="dkyes">Lock it<span class="kc" aria-hidden="true">Enter</span></button> <button type="button" class="btn ghost sm" data-act="dkno">Cancel<span class="kc" aria-hidden="true">Esc</span></button></div>';
+ return h;
+}
+function abar(c){
+ var guess=S.phase==='guess',dis=guess?!S.draft.trim():!S.conf;
+ var h='<div class="abar"><span class="why2">'+esc(c.reason)+' · '+esc(shown(c))+'</span>'+
+  '<button type="submit" class="btn lock" aria-disabled="'+dis+'" aria-describedby="helper"'+(KEYS?' aria-keyshortcuts="'+(MOD==='Cmd'?'Meta':'Control')+'+Enter"':'')+'>'+(guess?'Lock my guess':'Lock my answer')+'<span class="kc" aria-hidden="true"'+(KEYS?'':' hidden')+'>'+MOD+' Enter</span></button>';
+ h+='<p class="helper" id="helper">'+(guess||S.conf?'':'Choose how sure you are first.')+'</p></div>';
  return h;
 }
 function said(c,who){
- var t=S.dk?'I do not know.':c.shape==='text'?S.draft:c.shape==='choice'?(S.choice==='o'?S.other:c.opts[S.choice][0]):c.shape==='line'?'Line '+S.pick:'The order above';
+ var t=S.dk?'I do not know.':c.shape==='line'?'Line '+S.pick+'. '+S.draft:c.shape==='text'?S.draft:c.shape==='choice'?(S.choice==='o'?S.other:c.opts[S.choice][0]):c.shape==='line'?'Line '+S.pick:'The order above';
  return '<blockquote class="said"><span class="cap">'+(who||'You said')+'</span>'+esc(t)+' '+chip(S.conf)+'</blockquote>';
 }
+function backto(){return '<div class="backto"><button type="button" class="btn" data-act="build">Back to the build</button><p class="cue">'+CUE+'</p></div>'}
 function verdict(c){
- var w=S.v.w,lvUp=w==='right'&&!S.hints&&c.lv<3,h;
+ var w=S.v.w,capped=S.hints||S.codeOpen,lvUp=w==='right'&&!capped&&c.lv<3&&(c.kind==='review'||c.kind==='transfer'),h;
  if(w==='dk')h='<h2 class="vw ok" id="vh" tabindex="-1">Not known yet.</h2><p class="why">This is the answer: '+esc(c.ans)+'</p><p class="why">Back tomorrow.</p>';
- else{var word={right:'Correct.',partial:'Not quite.',wrong:'No.',cw:'No.'}[w],why=c.why[{right:0,partial:1,wrong:2,cw:2}[w]],nx=w==='right'?'Back on '+c.next[0]+'.':w==='partial'?'Back on '+c.next[1]+'.':'Back tomorrow.';
+ else{var word={right:'Correct.',partial:'Not quite.',wrong:'No.',cw:'No.'}[w],why=c.why[{right:0,partial:1,wrong:2,cw:2}[w]],
+  nx=w!=='right'?'Back tomorrow.':c.kind==='explain'||c.kind==='diagnose'?'This counts when it holds at your review on '+c.next[0]+'.':'Back on '+c.next[0]+'.';
   h='<h2 class="vw'+(w==='right'?' ok':'')+'" id="vh" tabindex="-1">'+word+'</h2><p class="why">'+esc(why)+' '+nx+'</p>';
   if(w==='cw')h+='<p class="belief">You chose Sure. This is the kind of error that is easiest to fix when you see the reason. It returns tomorrow.</p>';
-  if(w==='right'&&S.hints)h+='<p class="belief">You used a hint, so this attempt counts as With help.</p>';
-  if(lvUp){var to=c.lv+1;h+='<div class="delta"><span>Your record: <b>'+esc(c.topic)+'</b>'+LV[c.lv]+CHEV+LV[to]+'</span><span class="segs" aria-hidden="true">'+[1,2,3].map(function(i){return '<span class="seg'+(i<=c.lv?' f'+i:'')+'" data-to="'+(i===to?'f'+i:'')+'"></span>'}).join('')+'</span></div>'}}
- return '<section class="verdict in" role="status" aria-labelledby="vh">'+h+(S.phase==='elsewhere'?'':'<p class="belief">Saved. Claude adds this to your record on your next message.</p>')+'<p class="cue">'+CUE+'</p></section>'+
-  '<div class="done"><button type="button" class="btn" data-act="build">Back to the build</button><a class="tbtn" href="inbox.html">Inbox</a></div>';
+  if(w==='right'&&capped)h+='<p class="belief">You used a hint or opened the code, so this attempt counts as With help.</p>';
+  if(AREA[S.id])h+='<p class="belief">The idea: <b class="mono">'+esc(c.topic)+'</b>.</p>';
+  if(lvUp){var to=c.lv+1;h+='<div class="delta"><span>Your record: <b>'+esc(c.topic)+'</b><span class="lvw">'+LV[c.lv]+'</span>'+CHEV+'<span class="lvw">'+LV[to]+'</span></span><span class="segs" aria-hidden="true">'+[1,2,3].map(function(i){return '<span class="seg'+(i<=c.lv?' f'+i:'')+'" data-to="'+(i===to?'f'+i:'')+'"></span>'}).join('')+'</span></div>'}}
+ return '<section class="verdict in" aria-labelledby="vh">'+h+(S.phase==='elsewhere'?'':'<p class="belief">Claude adds this on your next message.</p>')+'</section>'+backto();
 }
 function render(focusSel){
  clearTimeout(tt);
- var c=C(),m=$('#main'),h='<div class="link"><a class="tbtn" href="inbox.html" style="margin-left:-6px">'+BACK+'Inbox</a><span>Linked to: <b>orbit-pay</b> · cloud session</span></div>';
+ var c=C(),m=$('#main'),h='<a class="tbtn" href="inbox.html" style="margin-left:-6px">'+BACK+'Inbox</a>';
  m.removeAttribute('aria-busy');
  if(S.phase==='loading'){m.setAttribute('aria-busy','true');
   h+='<div class="qcard" aria-hidden="true"><span class="sk" style="width:120px;height:13px"></span><span class="sk" style="width:180px;height:13px;margin-top:8px"></span><span class="sk" style="width:96%;height:24px;margin-top:20px"></span><span class="sk" style="width:70%;height:24px;margin-top:8px"></span><span class="sk" style="width:120px;height:15px;margin-top:28px"></span><span class="sk" style="height:120px;margin-top:10px;border-radius:14px"></span><span class="sk" style="width:60%;height:44px;margin-top:20px;border-radius:999px"></span><div class="tail"></div></div><p class="vh">Loading the question.</p>';
   m.innerHTML=h;return}
- if(S.phase==='notnow'){h+='<h2 class="gh">Now</h2><p class="empty">Nothing is open now.</p><h2 class="gh">Later</h2><ul class="list"><li><a class="ra" href="#" data-act="reopen"><span class="eb">Later</span><span class="tp">'+esc(c.topic)+'</span><span class="sub">'+esc(S.when)+'</span><span class="rt">'+chip('Open')+'</span></a></li></ul>';
-  m.innerHTML=h;return}
- var ro=S.phase!=='edit';
- if(S.phase==='offline')h+='<div class="note" role="status"><p>You are offline. Answers are saved on this device and sent when you are back online.</p></div>';
+ if(S.phase==='notnow'){h+='<h2 class="gh">Now</h2><div class="nowslot" id="nowslot" tabindex="-1"><p>Moved to Later.</p><button type="button" class="btn ghost sm" data-act="undo">Undo</button></div><h2 class="gh">Later</h2><ul class="list"><li><a class="ra" href="#" data-act="reopen"><span class="eb">Later</span><span class="tp">'+esc(c.topic)+'</span><span class="sub">'+esc(S.when)+'</span><span class="rt">'+chip('Open')+'</span></a></li></ul>';
+  m.innerHTML=h;if(focusSel){var f0=$(focusSel);if(f0)f0.focus()}return}
+ var ro=S.phase!=='edit'&&S.phase!=='guess';
+ if(S.phase==='offline'||(!S.net&&S.phase==='edit'))h+='<div class="note"><p>You are offline. Answers you lock now are not sent until you are back online. Keep this page open.</p></div>';
  h+='<form class="qcard" id="card" aria-labelledby="qp" novalidate>'+head(c);
  if(S.phase==='elsewhere'){
   h+='<div class="note" style="border-color:var(--border)"><p>This question was answered in chat at 14:01.</p><button type="button" class="tbtn" data-act="result">Open the result</button></div>';
   if(S.v){h+=said(c,'You said in chat, 14:01')+verdict(c)}else h+='<div class="tail"></div>';
   return paint(m,h+'</form>',focusSel);
  }
- if(c.code){var ex=excerpt(c,c.code);if(c.shape==='line')ex='';else if(c.showCode)h+=ex;else h+='<details class="code"'+(S.codeOpen?' open':'')+'><summary>Show the code</summary>'+ex+'</details>'}
+ var ex=c.code?excerpt(c,c.code):'',codeLater=c.code&&!c.showCode&&c.shape!=='line';
+ if(c.code&&c.showCode)h+=ex;
  if(ro&&c.shape==='text'&&!S.dk){/* answer is quoted below instead */}
  else if(!(ro&&S.dk))h+=control(c,ro);
- if(!ro){h+=confs()+hints(c);if(c.kind==='predict')h+='<p class="quiet">A wrong guess here costs nothing.</p>';h+=abar(c)}
+ if(!ro){if(S.phase!=='guess'&&!(c.shape==='line'&&!S.hypo))h+=confs();h+=sec(c);if(codeLater)h+='<details class="code"'+(S.codeOpen?' open':'')+'><summary>Show the code</summary>'+ex+(S.codeOpen?'':'<p class="quiet">Opening the code makes this attempt count as With help.</p>')+'</details>';h+=hints(c);if(c.kind==='predict')h+='<p class="quiet">A wrong guess here costs nothing.</p>';if(!(c.shape==='line'&&!S.hypo))h+=abar(c)}
  else{
   h+=said(c);
   var p=S.phase,st='';
   if(p==='locked')st='<b>Locked.</b> Shown after the test runs.';
   else if(p==='grading')st='<b>Locked.</b> <span class="dots">Grading</span>';
-  else if(p==='saved')st='<b>Saved.</b> Claude adds it to your record on your next message.';
-  else if(p==='offline')st='Your answer is saved on this phone and sent when you are back online.';
+  else if(p==='saved')st='<b>Locked.</b> Claude grades it on your next message.';
+  else if(p==='offline')st='<b>Not sent yet.</b> Keep this page open until it says Sent.';
   else if(p==='gerr')st='<b>Locked.</b> Grading failed. Try again, or Claude grades it on your next message.';
   if(st)h+='<p class="state" id="st1" tabindex="-1">'+st+'</p>';
-  if(p==='gerr')h+='<div class="done"><button type="button" class="btn sm" data-act="retry">Try again</button><button type="button" class="btn ghost sm" data-act="build">Back to the build</button></div>';
+  if(p==='gerr')h+='<div class="done"><button type="button" class="btn ghost sm" data-act="retry">Try again</button></div>'+backto();
   else if(p==='graded')h+=verdict(c);
-  else h+='<div class="done"><button type="button" class="btn ghost sm" data-act="build">Back to the build</button></div>';
+  else h+=backto();
  }
  paint(m,h+'</form>',focusSel);
 }
@@ -472,13 +511,15 @@ function paint(m,h,focusSel){
 
 /* ---------- events ---------- */
 var main=$('#main');
-main.addEventListener('submit',function(e){e.preventDefault();lock(false)});
+main.addEventListener('submit',function(e){e.preventDefault();saveDraft();if(S.phase==='guess'){if(!S.draft.trim()){$('#ans').focus();return}S.conf='Guess';S.phase='edit';lock(false);return}lock(false)});
 main.addEventListener('input',function(e){
- if(e.target.id==='ans')S.draft=e.target.value;
+ if(e.target.id==='ans'){S.draft=e.target.value;if(S.phase==='guess'){var lb=$('.lock');if(lb)lb.setAttribute('aria-disabled',String(!S.draft.trim()))}}
  if(e.target.id==='other')S.other=e.target.value;
  var h=$('#helper');if(h&&h.classList.contains('warn')&&canLock()){h.classList.remove('warn');h.textContent=''}
 });
-main.addEventListener('toggle',function(e){if(e.target.classList.contains('code'))S.codeOpen=e.target.open},true);
+main.addEventListener('toggle',function(e){if(e.target.classList.contains('code')&&e.target.open&&!S.codeOpen){S.codeOpen=true;if(!S.hints)S.hints=1;saveDraft();render('details.code summary');announce('Code shown. This attempt now counts as With help.')}},true);
+main.addEventListener('focusin',function(e){var f=$('#card');if(f)f.classList.toggle('typing',e.target.tagName==='TEXTAREA')});
+main.addEventListener('focusout',function(){var f=$('#card');if(f)f.classList.remove('typing')});
 main.addEventListener('change',function(e){
  var t=e.target;saveDraft();
  if(t.name==='conf'){S.conf=t.value;render('input[name="conf"][value="'+t.value+'"]')}
@@ -493,7 +534,12 @@ main.addEventListener('click',function(e){
  var s=e.target.closest('[data-snz]');if(s){notNow(s.dataset.snz);return}
  var a=e.target.closest('[data-act]');if(!a)return;var k=a.dataset.act;
  if(k==='hint'){saveDraft();S.hints++;S.newHint=true;render('[data-act="hint"]');if(!$('[data-act="hint"]'))$('.hints ol li:last-child').setAttribute('tabindex','-1'),$('.hints ol li:last-child').focus();announce('Hint '+S.hints+' of 3 shown.')}
- else if(k==='dk')lock(true);
+ else if(k==='dk'){if(C().kind==='predict'||S.phase==='guess')lock(true);else{saveDraft();S.ask='dk';render('[data-act="dkyes"]')}}
+ else if(k==='dkyes'){S.ask=null;lock(true)}
+ else if(k==='dkno'){S.ask=null;render('[data-act="dk"]')}
+ else if(k==='showans'){S.dk=true;S.conf=null;S.phase='graded';S.v={w:'dk'};render('#vh')}
+ else if(k==='hypo'){saveDraft();if(!S.draft.trim()){$('#ans').focus();return}S.hypo=true;render('input[name="line"]')}
+ else if(k==='undo'){S.phase='edit';render('#ans');announce('Back in Now.')}
  else if(k==='notnow'){saveDraft();S.snz=!S.snz;render(S.snz?'[data-snz]':'[data-act="notnow"]')}
  else if(k==='retry'){S.phase='grading';render('#st1');announce('Grading.');later(finish,1400)}
  else if(k==='result'){S.draft=GOOD;S.conf='Sure';S.v={w:'right'};render('#vh')}
@@ -501,37 +547,36 @@ main.addEventListener('click',function(e){
  else if(k==='build')toast('In the product this opens the orbit-pay session.');
 });
 $('.me').onclick=function(){toast('Settings has its own prototype: onboarding.html.')};
-function notNow(when){S.phase='notnow';S.when=when;S.snz=false;render();$('#main').focus();
- toast('Moved to Later.','Undo',function(){S.phase='edit';render('#ans')||0;var f=$('#ans')||$('input[name="conf"]');if(f)f.focus();announce('Back in Now.')})}
+function notNow(when){S.phase='notnow';S.when=when;S.snz=false;render('#nowslot')}
 function toast(msg,act,fn){
  var slot=$('#toastslot');clearTimeout(tt);
  slot.innerHTML='<div class="toast"><p>'+esc(msg)+'</p>'+(act?'<button type="button" class="btn ghost sm" id="tact">'+esc(act)+'</button>':'')+'<button type="button" class="x" id="tx" aria-label="Dismiss">&times;</button></div>';
- var t=$('.toast',slot),left=8000,start=Date.now();
- function arm(){start=Date.now();tt=setTimeout(function(){slot.innerHTML=''},left)}
- function pause(){clearTimeout(tt);left-=Date.now()-start}
- t.addEventListener('mouseenter',pause);t.addEventListener('focusin',pause);t.addEventListener('mouseleave',arm);t.addEventListener('focusout',function(e){if(!t.contains(e.relatedTarget))arm()});
+ announce(msg);
  $('#tx').onclick=function(){clearTimeout(tt);slot.innerHTML='';$('#main').focus()};
  if(act)$('#tact').onclick=function(){clearTimeout(tt);slot.innerHTML='';fn()};
- arm();
 }
 document.addEventListener('keydown',function(e){
  var t=e.target,tag=(t.tagName||'').toLowerCase(),typing=tag==='textarea'||(tag==='input'&&t.type==='text')||tag==='select';
  if(!S)return;
- if((e.metaKey||e.ctrlKey)&&e.key==='Enter'&&S.phase==='edit'){e.preventDefault();saveDraft();lock(false);return}
+ if((e.metaKey||e.ctrlKey)&&e.key==='Enter'&&(S.phase==='edit'||S.phase==='guess')){e.preventDefault();saveDraft();if(S.phase==='guess'){if(S.draft.trim()){S.conf='Guess';S.phase='edit';lock(false)}}else lock(false);return}
+ if(e.key==='Escape'&&S.ask){S.ask=null;render('[data-act="dk"]');return}
  if(e.key==='Escape'&&S.snz){S.snz=false;render('[data-act="notnow"]');return}
+ if(e.key==='Escape'&&typing){t.blur();return}
  if(typing||e.metaKey||e.ctrlKey||e.altKey)return;
  if(e.key==='['||e.key===']'){step(e.key===']'?1:-1);return}
- if(e.key==='?'){toast('1 2 3: how sure. '+dkKey()+': I do not know. H: Not now. '+MOD+' Enter: lock. [ and ]: prototype state.');return}
+ if(!KEYS)return;
+ if(e.key==='?'){toast('1 2 3: how sure. '+dkKey()+': I do not know (asks first). H: Not now. '+MOD+' Enter: lock. [ and ]: prototype state.');return}
  if(S.phase!=='edit')return;
  var c=C(),k=e.key.toLowerCase(),m={'1':'Guess','2':'Fairly sure','3':'Sure'}[e.key];
  if(m){saveDraft();S.conf=m;render('input[name="conf"][value="'+m+'"]');return}
  if(c.shape==='choice'&&'abcde'.indexOf(k)>=0&&k.length===1){saveDraft();S.choice=k==='e'?'o':'abcd'.indexOf(k);render(S.choice==='o'?'#other':'input[name="ch"][value="'+S.choice+'"]');e.preventDefault();return}
- if(k===dkKey().toLowerCase()){lock(true);return}
+ if(k===dkKey().toLowerCase()){$('[data-act="dk"]').click();return}
  if(k==='h'){$('[data-act="notnow"]').click()}
 });
 window.addEventListener('online',function(){$('#net').checked=false;netChange()});
 window.addEventListener('offline',function(){$('#net').checked=true;netChange()});
-function netChange(){if(!S)return;S.net=!$('#net').checked;if(S.net&&S.phase==='offline'){announce('Sent.');S.phase='grading';render('#st1');later(finish,1400)}}
+function netChange(){if(!S)return;S.net=!$('#net').checked;if(S.net&&S.phase==='offline'){announce('Sent.');S.phase='grading';render();later(finish,1400)}else if(!S.net){announce('You are offline. Answers you lock now are not sent until you are back online.');saveDraft();if(S.phase==='edit')render()}}
+$('#keys').onchange=function(){KEYS=$('#keys').checked;saveDraft();render()};
 $('#net').onchange=netChange;
 
 /* ---------- prototype switcher ---------- */
@@ -543,7 +588,6 @@ function apply(i){
  x[1]();$('#rnote').textContent=x[2];$('#rsys').textContent=x[3];
  try{var u=new URL(location.href);u.searchParams.set('state',slug(x[0]));history.replaceState(null,'',u)}catch(err){}
  render();
- if(S.phase==='notnow')toast('Moved to Later.','Undo',function(){S.phase='edit';render('#ans');announce('Back in Now.')});
  syncFrame();
 }
 function step(d){apply((+sel.value+d+ST.length)%ST.length)}
@@ -551,7 +595,7 @@ sel.onchange=function(){apply(+sel.value)};$('#prev').onclick=function(){step(-1
 var th=$('#theme'),vw=$('#vw');
 try{th.value=Q.get('theme')||localStorage.getItem('room-theme')||''}catch(err){}
 function setTheme(){if(th.value)document.documentElement.setAttribute('data-theme',th.value);else document.documentElement.removeAttribute('data-theme');try{if(!EMBED)localStorage.setItem('room-theme',th.value)}catch(err){};syncFrame()}
-function syncFrame(){var w=vw.value;$('#vpwrap').hidden=!w;$('#app').hidden=!!w;if(!w)return;var f=$('#vpf');f.style.width=w+'px';
+function syncFrame(){var w=vw.value;$('#vpwrap').hidden=!w;$('#app').hidden=!!w;if(!w)return;var f=$('#vpf'),wh=w.split('x');f.style.width=wh[0]+'px';f.style.height=(wh[1]||820)+'px';
  var src='card.html?embed=1&state='+slug(ST[+sel.value][0])+'&theme='+th.value;if(f.getAttribute('src')!==src)f.setAttribute('src',src)}
 th.onchange=setTheme;vw.onchange=syncFrame;
 var q=Q.get('state'),start=1;ST.forEach(function(s,i){if(q&&(slug(s[0])===q||String(i+1)===q))start=i});

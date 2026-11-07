@@ -1,0 +1,64 @@
+{
+  "about": "The one story every prototype tells. Pages copy these facts; when a fact changes, change it here first, then in the pages. No card ids appear in learner-facing text.",
+  "today": "2026-11-07",
+  "project": "orbit-pay",
+  "learner": "Sam",
+  "session": "orbit-pay · cloud session",
+  "record_location": "0xfauzi/learning-record (private)",
+  "level_rule": "Levels change only at reviews: right without help at a review a week or more after you first met the idea gives Without help, and right on a case unlike any you have seen gives New situation.",
+  "excerpt": {
+    "path": "billing/charge.py:41-52",
+    "lines": {
+      "41": "@retry(attempts=3, backoff=(0.5, 1.0), jitter=0.1)",
+      "42": "def charge(order, gateway):",
+      "43": "    \"\"\"Charge an order once, even when retried.\"\"\"",
+      "44": "    if order.charged_at:",
+      "45": "        return order.receipt",
+      "46": "    resp = gateway.charge(",
+      "47": "        idempotency_key=order.id,",
+      "48": "        amount=order.total,",
+      "49": "        timeout=0.8,",
+      "50": "    )",
+      "51": "    order.mark_charged(resp)",
+      "52": "    return resp.receipt"
+    }
+  },
+  "dimensions": ["Distributed systems", "Data and storage", "Debugging and diagnosis", "Correctness and testing", "Security", "Reading code"],
+  "topics": {
+    "idempotency": {"dimension": "Distributed systems", "first_met": "2026-10-07", "best": "with help", "latest": "with help", "next_review": "2026-11-10"},
+    "retry-budget": {"dimension": "Distributed systems", "first_met": "2026-10-07", "best": "recalls", "latest": "with help", "dropped_on": "2026-11-02", "next_review": "2026-11-10"},
+    "timeouts-vs-failures": {"dimension": "Debugging and diagnosis", "first_met": "2026-10-14", "best": "recalls", "latest": "with help", "sure_miss_on": "2026-11-04", "right_since": "2026-11-06"},
+    "outbox": {"dimension": "Data and storage", "first_met": "2026-10-09", "best": "transfers", "latest": "transfers"}
+  },
+  "cards": {
+    "prediction": {
+      "topic": "retry-budget",
+      "moment": "before the build",
+      "prompt": "With a dead gateway and the test's fixed clock, how long does test_retry_budget wait before charge() gives up?",
+      "answer": "about 3.9 s",
+      "confidence": "fairly sure",
+      "observed": "gave up at 4.1 s",
+      "gap": "You added three timeouts and two backoffs, 3.9 s, and left out the jitter on line 41, 0.1 s per backoff. billing/charge.py:41."
+    },
+    "explain_back": {
+      "topic": "idempotency",
+      "moment": "after it works",
+      "prompt": "Why can the worker retry charge() without charging the customer twice?",
+      "answer": "The idempotency key is the order id, so the gateway sees the same key and returns the first charge.",
+      "confidence": "sure",
+      "verdict": "Correct.",
+      "counts_line": "This counts when it holds at your review on 10 Nov."
+    },
+    "drill": {
+      "topic": "timeouts-vs-failures",
+      "area": "Debugging and diagnosis",
+      "symptom": "A customer was charged, but the order shows Declined and the shop sent 'payment declined'. test_lost_reply fails.",
+      "bug_line": "billing/charge.py:51  except GatewayTimeout: return Declined(order.id)"
+    }
+  },
+  "calibration": {"guess": [2, 6], "fairly_sure": [5, 8], "sure": [9, 11], "targets": {"guess": "under 1 in 2", "fairly_sure": "about 2 in 3", "sure": "4 in 5 or better"}},
+  "resume_cues": {
+    "after_prediction": "Back to: retries in the payment worker. Next: the cap on total retry time.",
+    "after_explain": "Back to: retries in the payment worker. Next: the dead letter queue."
+  }
+}
