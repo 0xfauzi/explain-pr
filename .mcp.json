@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "learning-question": {
+      "command": "python3",
+      "args": ["experiments/mcp-app/server.py"]
+    }
+  }
+}
