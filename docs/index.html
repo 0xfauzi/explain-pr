@@ -2,631 +2,285 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <title>learning-while-building</title>
-<meta name="description" content="An Agent Skill that keeps you learning while an AI agent writes your code: you predict before you see, explain the change back, and return to it on a schedule.">
+<meta name="description" content="A skill for Claude Code and other coding agents. The agent does most of the work. At some points, it stops and you do the thinking. It records what you can do without the agent.">
 <meta property="og:title" content="learning-while-building">
-<meta property="og:description" content="Keep learning while an agent writes your code.">
+<meta property="og:description" content="Build your project with AI. Become a better engineer while you do it.">
 <meta property="og:type" content="website">
+<script>document.documentElement.className += ' js';</script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Literata:ital,opsz,wght@0,7..72,400;0,7..72,500;0,7..72,600;1,7..72,400;1,7..72,500&family=JetBrains+Mono:wght@400;500;600&display=swap">
-<style>
-/* Layout: an engineer's notebook. Faint graph paper, ink-blue text, red pencil for
-   corrections. A wide hero with the live question beside the headline, then one
-   reading column with a margin label per section. Boxes only where something is
-   an object: the question card, the screenshots, the cost table. */
-:root {
-  --paper: #f3f6f9; --sheet: #ffffff; --grid: #e2e8ef; --ink: #14233a; --ink-2: #4b5b70;
-  --rule: #cdd6e1; --pencil: #bf3f2a; --pencil-bg: #fbe9e5; --pass: #1e7a4c; --pass-bg: #e3f3ea;
-  --mark: #1d4f91; --mark-ink: #ffffff; --code: #e8edf3;
-  --display: "Literata", Georgia, "Times New Roman", serif;
-  --body: "Literata", Georgia, "Times New Roman", serif;
-  --mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
-  color-scheme: light;
-}
-@media (prefers-color-scheme: dark) { :root {
-  --paper: #0d1a2b; --sheet: #12233a; --grid: #172b45; --ink: #e4ecf5; --ink-2: #a3b5ca;
-  --rule: #2a4466; --pencil: #ff8f78; --pencil-bg: #3a2128; --pass: #74d3a1; --pass-bg: #163528;
-  --mark: #8cc2ff; --mark-ink: #0d1a2b; --code: #172c47;
-  color-scheme: dark } }
-* { box-sizing: border-box; }
-[hidden] { display: none !important; }
-html { scroll-behavior: smooth; }
-@media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
-body {
-  margin: 0; color: var(--ink); font: 18px/1.65 var(--body);
-  background-color: var(--paper);
-  background-image: linear-gradient(var(--grid) 1px, transparent 1px), linear-gradient(90deg, var(--grid) 1px, transparent 1px);
-  background-size: 24px 24px;
-}
-.wrap { max-width: 68rem; margin: 0 auto; padding-left: max(20px, env(safe-area-inset-left, 0px)); padding-right: max(20px, env(safe-area-inset-right, 0px)); }
-a { color: var(--mark); text-underline-offset: 3px; }
-code { font: .82em var(--mono); background: var(--code); padding: .12em .4em; border-radius: 4px; }
-pre { margin: 0; font: .86rem/1.65 var(--mono); overflow-x: auto; }
-:focus-visible { outline: 2px solid var(--mark); outline-offset: 3px; }
-.label { font: 500 .78rem/1.3 var(--mono); color: var(--pencil); }
-p { margin: 0 0 16px; }
-
-header.top { padding-block: 18px; }
-header.top .wrap { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 24px; }
-.brand { font: 600 .95rem var(--mono); color: var(--ink); text-decoration: none; margin-right: auto; }
-header.top nav { display: flex; flex-wrap: wrap; gap: 6px 22px; }
-header.top nav a { color: var(--ink-2); text-decoration: none; font-size: .95rem; }
-header.top nav a:hover { color: var(--ink); text-decoration: underline; }
-
-.hero .wrap { display: grid; grid-template-columns: minmax(0, 1.05fr) minmax(0, .95fr); gap: 56px; align-items: start; padding-block: 48px 80px; }
-.hero .wrap > * { min-width: 0; }
-h1 { font: 600 clamp(2.2rem, 4.6vw, 3.5rem)/1.08 var(--display); letter-spacing: -.012em; margin: 0 0 24px; text-wrap: balance; }
-.lede p { font-size: 1.08rem; color: var(--ink); max-width: 36rem; }
-.lede p + p { color: var(--ink-2); }
-.install { background: var(--ink); color: var(--paper); border-radius: 10px; padding: 14px 16px; display: grid; gap: 8px; max-width: 36rem; margin-top: 8px; }
-.install .row { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; min-width: 0; }
-.install .row pre { flex: 1; min-width: 0; overflow-x: auto; color: var(--paper); }
-.install .note-line { font-size: .85rem; color: color-mix(in srgb, var(--paper) 70%, var(--ink)); }
-.install code { background: transparent; color: inherit; padding: 0; }
-.copy { flex: none; font: 500 .78rem var(--mono); background: transparent; color: var(--paper); border: 1px solid color-mix(in srgb, var(--paper) 40%, transparent); border-radius: 6px; padding: 6px 10px; cursor: pointer; min-height: 32px; }
-
-.card { background: var(--sheet); border: 1px solid var(--rule); border-radius: 14px; box-shadow: 0 1px 0 var(--rule), 0 18px 40px -24px rgba(20, 35, 58, .35); padding: 24px; display: grid; gap: 14px; min-width: 0; }
-.card .label { color: var(--ink-2); }
-.card .q { font: 500 1.12rem/1.5 var(--display); margin: 0; }
-.opts { display: grid; gap: 8px; margin: 0; padding: 0; border: 0; }
-.opt { display: flex; gap: 10px; align-items: flex-start; padding: 11px 12px; border: 1px solid var(--rule); border-radius: 9px; cursor: pointer; font-size: .97rem; line-height: 1.45; }
-.opt:hover { border-color: var(--mark); }
-.opt input, .conf input { margin-top: .3em; accent-color: var(--mark); }
-.conf { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; border: 0; margin: 0; padding: 0; }
-.conf legend { float: left; font-size: .95rem; color: var(--ink-2); margin-right: 6px; padding: 0; }
-.conf label { display: inline-flex; align-items: center; gap: 6px; min-height: 40px; padding: 0 14px; border: 1px solid var(--rule); border-radius: 20px; cursor: pointer; font-size: .93rem; }
-.commit { font: 600 1rem var(--body); min-height: 46px; padding: 0 20px; border: 0; border-radius: 9px; background: var(--mark); color: var(--mark-ink); cursor: pointer; justify-self: start; }
-.commit:disabled { opacity: .45; cursor: default; }
-.status { margin: 0; min-height: 1.3em; font-size: .92rem; color: var(--ink-2); }
-.opt.is-right { border-color: var(--pass); background: var(--pass-bg); }
-.opt.is-wrong { border-color: var(--pencil); background: var(--pencil-bg); }
-.verdict { border-left: 3px solid var(--pencil); padding: 2px 0 2px 14px; }
-.verdict.pass { border-color: var(--pass); }
-.verdict p { margin: 0; font-size: .97rem; }
-.verdict b { color: var(--pencil); }
-.verdict.pass b { color: var(--pass); }
-.card-foot { font-size: .88rem; color: var(--ink-2); margin: 0; }
-
-main section { padding-block: 72px; border-top: 1px solid var(--rule); }
-.sec { display: grid; grid-template-columns: 11rem minmax(0, 1fr); gap: 20px 44px; }
-.sec > .label { padding-top: 12px; }
-.sec .body { max-width: 44rem; }
-h2 { font: 600 clamp(1.6rem, 3vw, 2.15rem)/1.2 var(--display); margin: 0 0 20px; text-wrap: balance; letter-spacing: -.008em; }
-h3 { font: 600 1.05rem/1.4 var(--body); margin: 0 0 6px; }
-.note { font-size: .93rem; color: var(--ink-2); }
-
-.bars { display: grid; gap: 12px; margin: 24px 0 34px; }
-.bar { display: grid; grid-template-columns: 11rem minmax(0, 1fr) 3.4rem; gap: 14px; align-items: center; font-size: .95rem; }
-.bar .track { height: 24px; background: var(--sheet); border: 1px solid var(--rule); border-radius: 3px; overflow: hidden; }
-.bar .fill { display: block; height: 100%; background: var(--mark); }
-.bar.ai .fill { background: var(--pencil); }
-.bar .val { font: 600 .95rem var(--mono); font-variant-numeric: tabular-nums; text-align: right; }
-.split { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 28px; margin: 6px 0 22px; }
-.split ul { margin: 0; padding-left: 1.1rem; color: var(--ink-2); font-size: .97rem; }
-.split h3.keep { color: var(--pass); } .split h3.lose { color: var(--pencil); }
-
-.moments { list-style: none; margin: 8px 0 0; padding: 0; display: grid; gap: 22px; }
-.moments li { display: grid; grid-template-columns: 7.5rem minmax(0, 1fr); gap: 4px 18px; padding-top: 18px; border-top: 1px solid var(--rule); }
-.moments .when { font: 500 .8rem var(--mono); color: var(--pencil); padding-top: 4px; }
-.moments p { margin: 0; }
-
-.timeline { margin: 30px 0 10px; }
-.timeline svg { display: block; width: 100%; height: auto; }
-.timeline .axis { stroke: var(--ink); stroke-width: 1.5; }
-.timeline .dot { fill: var(--mark); }
-.timeline .miss { fill: var(--pencil); }
-.timeline text { fill: var(--ink); font: 13px var(--mono); }
-.timeline text.small { fill: var(--ink-2); font-size: 11.5px; }
-.steps { display: none; list-style: none; margin: 0; padding: 0; gap: 8px; flex-wrap: wrap; align-items: center; }
-.steps li { font: 600 .88rem var(--mono); padding: 6px 10px; border-radius: 6px; background: var(--code); }
-.steps li.miss { background: var(--pencil-bg); color: var(--pencil); }
-.steps li.arrow { background: none; padding: 0; color: var(--ink-2); font-weight: 400; }
-
-.routes { list-style: none; margin: 4px 0 30px; padding: 0; display: grid; gap: 14px; }
-.routes li { display: grid; grid-template-columns: 11rem minmax(0, 1fr); gap: 2px 18px; }
-.routes b { font-weight: 600; }
-.routes span { color: var(--ink-2); font-size: .97rem; }
-.phones { display: grid; grid-template-columns: repeat(2, minmax(0, 15rem)); gap: 22px; }
-.phone { margin: 0; display: grid; gap: 8px; align-content: start; }
-.phone .frame { border: 8px solid var(--ink); border-radius: 26px; overflow: hidden; background: var(--sheet); }
-.phone img { display: block; width: 100%; height: auto; }
-.phone figcaption { font-size: .85rem; color: var(--ink-2); }
-
-ol.rules { margin: 4px 0 0; padding-left: 1.4rem; display: grid; gap: 12px; }
-ol.rules li::marker { font: 600 .9rem var(--mono); color: var(--pencil); }
-
-
-.findings { list-style: none; margin: 8px 0 0; padding: 0; display: grid; gap: 0; }
-.findings li { display: grid; grid-template-columns: 6.5rem minmax(0, 1fr); gap: 4px 20px; padding-block: 18px; border-top: 1px solid var(--rule); }
-.findings .num { font: 600 1.05rem/1.4 var(--mono); color: var(--mark); font-variant-numeric: tabular-nums; }
-.findings .topic { font: 500 .8rem/1.8 var(--mono); color: var(--ink-2); }
-.findings p { margin: 0 0 6px; }
-.findings .so { color: var(--ink-2); font-size: .97rem; }
-.findings .src { font: .78rem var(--mono); color: var(--ink-2); }
-.findings .src a { color: var(--ink-2); }
-
-.table { overflow-x: auto; background: var(--sheet); border: 1px solid var(--rule); border-radius: 12px; margin: 6px 0 16px; }
-table { border-collapse: collapse; width: 100%; font-size: .95rem; }
-th, td { text-align: left; padding: 11px 14px; border-bottom: 1px solid var(--rule); vertical-align: top; }
-tr:last-child td { border-bottom: 0; }
-th { font: 500 .78rem var(--mono); color: var(--ink-2); }
-td.num { font: 500 .92rem var(--mono); font-variant-numeric: tabular-nums; white-space: nowrap; }
-tr.best td { background: var(--pass-bg); }
-
-/* ---- motion and interaction ---- */
-:root { --ease: cubic-bezier(.2, .7, .2, 1); }
-h1 .pencil { position: relative; white-space: nowrap; }
-h1 .pencil svg { position: absolute; left: -2%; bottom: -.12em; width: 104%; height: .32em; overflow: visible; pointer-events: none; }
-h1 .pencil path { fill: none; stroke: var(--pencil); stroke-width: 5; stroke-linecap: round; stroke-dasharray: 420; stroke-dashoffset: 420; animation: draw 1.1s .35s var(--ease) forwards; }
-@keyframes draw { to { stroke-dashoffset: 0; } }
-header.top nav a { background: linear-gradient(var(--pencil), var(--pencil)) no-repeat 0 100% / 0 1.5px; transition: background-size .25s var(--ease), color .2s; }
-header.top nav a:hover { background-size: 100% 1.5px; text-decoration: none; }
-.opt { transition: border-color .2s, background-color .3s, transform .2s var(--ease); }
-.opt:active { transform: scale(.99); }
-.conf label { transition: border-color .2s, background-color .2s; }
-.conf label:has(input:checked), .opt:has(input:checked) { border-color: var(--mark); }
-.commit, .btn { transition: transform .15s var(--ease), opacity .2s, background-color .2s; }
-.commit:not(:disabled):active, .btn:not(:disabled):active { transform: translateY(1px); }
-.verdict { animation: rise .45s var(--ease) both; }
-@keyframes rise { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
-.card-nav { display: flex; justify-content: space-between; align-items: center; gap: 12px; }
-.dots { display: flex; gap: 6px; }
-.dots span { width: 7px; height: 7px; border-radius: 50%; background: var(--rule); transition: background-color .3s, transform .3s var(--ease); }
-.dots span.on { background: var(--pencil); transform: scale(1.25); }
-.btn { font: 500 .92rem var(--body); min-height: 40px; padding: 0 14px; border-radius: 8px; border: 1px solid var(--rule); background: var(--sheet); color: var(--ink); cursor: pointer; }
-.btn:hover { border-color: var(--mark); }
-.btn.primary { background: var(--mark); color: var(--mark-ink); border-color: var(--mark); font-weight: 600; }
-.btn:disabled { opacity: .45; cursor: default; }
-.swap { animation: swapin .4s var(--ease) both; }
-@keyframes swapin { from { opacity: 0; transform: translateX(8px); } to { opacity: 1; transform: none; } }
-
-.guess { background: var(--sheet); border: 1px solid var(--rule); border-radius: 12px; padding: 18px 20px; margin: 22px 0 6px; display: grid; gap: 12px; }
-.guess p { margin: 0; }
-.guess .row { display: flex; flex-wrap: wrap; align-items: center; gap: 12px 16px; }
-.guess input[type=range] { flex: 1 1 14rem; accent-color: var(--pencil); min-height: 36px; }
-.guess output { font: 600 1.05rem var(--mono); min-width: 3.4rem; font-variant-numeric: tabular-nums; }
-.bar .fill { transition: width 1.1s var(--ease); }
-.bar .val { transition: opacity .4s .7s; }
-.bars.pending .bar.ai .val { opacity: 0; }
-.bars .marker { position: absolute; top: -5px; bottom: -5px; width: 2px; background: var(--ink); transform: translateX(-1px); transition: left .3s var(--ease); }
-.bars .marker::after { content: "your guess"; position: absolute; top: calc(100% + 3px); left: 50%; transform: translateX(-50%); font: 500 .68rem var(--mono); color: var(--ink-2); white-space: nowrap; }
-.bar .track { position: relative; overflow: visible; }
-.bar .track .fill { border-radius: 2px; }
-.guess-result { font-size: .97rem; animation: rise .45s var(--ease) both; }
-
-.sim { margin: 28px 0 8px; background: var(--sheet); border: 1px solid var(--rule); border-radius: 12px; padding: 18px 18px 14px; display: grid; gap: 14px; }
-.sim .controls { display: flex; flex-wrap: wrap; gap: 8px; }
-.sim .readout { display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px 14px; }
-.sim .readout b { font: 600 1.5rem/1.2 var(--display); color: var(--mark); font-variant-numeric: tabular-nums; }
-.sim .readout b.miss { color: var(--pencil); }
-.sim .readout span { color: var(--ink-2); font-size: .95rem; }
-.sim .history { display: flex; flex-wrap: wrap; gap: 6px; min-height: 26px; list-style: none; margin: 0; padding: 0; }
-.sim .history li { font: 500 .74rem var(--mono); padding: 3px 8px; border-radius: 5px; background: var(--code); animation: rise .3s var(--ease) both; }
-.sim .history li.bad { background: var(--pencil-bg); color: var(--pencil); }
-.sim .history li.good { background: var(--pass-bg); color: var(--pass); }
-.timeline { margin: 0; }
-.timeline .dot, .timeline .miss { transition: r .35s var(--ease), fill .3s; }
-.timeline .ring { fill: none; stroke: var(--pencil); stroke-width: 2.5; transition: cx .55s var(--ease); }
-.timeline .ring.at-good { stroke: var(--mark); }
-.steps li { transition: background-color .3s, color .3s, transform .3s var(--ease); }
-.steps li.here { background: var(--mark); color: var(--mark-ink); transform: translateY(-2px); }
-.steps li.miss.here { background: var(--pencil); color: var(--sheet); }
-
-td.bar-cell { width: 34%; }
-.mini { display: block; height: 10px; border-radius: 2px; background: var(--rule); transition: width 1s var(--ease); }
-tr.best .mini { background: var(--pass); }
-
-@media (prefers-reduced-motion: reduce) {
-  *, *::before, *::after { animation-duration: 1ms !important; animation-delay: 0ms !important; transition-duration: 1ms !important; transition-delay: 0ms !important; }
-  h1 .pencil path { stroke-dashoffset: 0; }
-}
-
-footer { border-top: 1px solid var(--rule); padding-block: 28px 40px; font-size: .92rem; color: var(--ink-2); }
-footer .wrap { display: flex; flex-wrap: wrap; gap: 8px 22px; }
-footer a { color: var(--ink-2); }
-
-@media (max-width: 860px) {
-  .hero .wrap { grid-template-columns: minmax(0, 1fr); gap: 36px; padding-block: 24px 56px; }
-  .sec { grid-template-columns: minmax(0, 1fr); gap: 4px; }
-  .sec > .label { padding-top: 0; }
-}
-@media (max-width: 560px) {
-  body { font-size: 17px; }
-  main section { padding-block: 52px; }
-  .card { padding: 18px; }
-  .install .row pre { white-space: pre-wrap; overflow-wrap: anywhere; font-size: .8rem; }
-  .bar { grid-template-columns: 7rem minmax(0, 1fr) 2.8rem; font-size: .88rem; }
-  .split, .moments li, .routes li, .findings li { grid-template-columns: minmax(0, 1fr); }
-  .phones { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
-  .timeline svg { display: none; }
-  .steps { display: flex; }
-}
-</style>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="anonymous">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wdth,wght@75..100,400..700&amp;family=JetBrains+Mono:wght@400;500&amp;display=swap">
+<link rel="stylesheet" href="assets/site.css">
 </head>
 <body>
+<div class="tex page">
 
-<header class="top">
-  <div class="wrap">
-    <a class="brand" href="#top">learning-while-building</a>
-    <nav aria-label="Site">
-      <a href="#why">The problem</a>
-      <a href="#how">How it works</a>
-      <a href="#research">Research</a>
-      <a href="https://github.com/0xfauzi/explain-pr">Source</a>
-    </nav>
-  </div>
+<div class="stage">
+<div class="field" id="field" aria-hidden="true"></div>
+
+<header class="wrap top">
+<a href="#top" class="brand">learning-while-building</a>
+<nav class="navl" aria-label="Sections">
+<a href="#why">Why</a>
+<a href="#how">How it works</a>
+<a href="#try">Try it</a>
+<a href="#record">Your record</a>
+<a href="https://github.com/0xfauzi/explain-pr" class="gh">GitHub</a>
+</nav>
 </header>
 
-<main id="top">
-
-<div class="hero">
-  <div class="wrap">
-    <div>
-      <p class="label">An Agent Skill, free and open source</p>
-      <h1><span class="pencil">Keep learning<svg viewBox="0 0 400 24" preserveAspectRatio="none" aria-hidden="true"><path d="M4 16 C 70 6, 150 20, 230 11 S 360 8, 396 14"/></svg></span> while an agent writes your code</h1>
-      <div class="lede">
-        <p>When an agent writes most of a feature, you can ship it and come away understanding less than when you started. One study measured exactly that, and the loss was biggest in debugging, the skill you need most when the agent gets something wrong.</p>
-        <p>This skill keeps the speed and puts the thinking back. The agent still does most of the building, but at a few points it asks you to predict how something should work before you see it, to explain a change once it works, and to answer the same idea again days later, so that by the end of a project you can do the work without it.</p>
-      </div>
-      <div class="install">
-        <div class="row">
-          <pre id="install-cmd">/plugin marketplace add 0xfauzi/explain-pr
+<!-- HERO -->
+<section id="top" class="wrap hero" style="padding-top: 64px; padding-bottom: 40px;">
+<div>
+<h1 class="h1 rise">Build your project with AI. Become a better engineer while you do it.</h1>
+<p class="p rise lead">This is a skill for Claude Code and other coding agents. The agent does most of the work. At some points, it stops and you do the thinking. It records what you can do without the agent.</p>
+<div class="rise install">
+<div class="cmd">
+<pre class="mono">/plugin marketplace add 0xfauzi/explain-pr
 /plugin install learning-while-building@learning-while-building</pre>
-          <button class="copy" type="button" id="copy">Copy</button>
-        </div>
-        <span class="note-line">That installs it in Claude Code. Any other agent that reads Agent Skills can use the <code>skills/learning-while-building/</code> folder as it is. Either way you need Python 3.10 or later and git.</span>
-      </div>
-    </div>
-
-    <div class="card" id="demo" aria-label="Example questions">
-      <div class="card-nav"><p class="label" style="margin:0">Try the rule it runs on</p><div class="dots" id="dots" aria-hidden="true"><span class="on"></span><span></span><span></span></div></div>
-      <div id="qbox">
-        <p class="label" id="q-area" style="margin:0 0 6px">payments</p>
-        <p class="q" id="q-text">A worker charges a card through a payment gateway. It gives up waiting after 0.8 seconds, but the gateway takes 1.2 seconds to reply, so the worker sends the charge again, without any key that marks it as a repeat. What does the customer see?</p>
-      </div>
-      <fieldset class="opts" id="opts">
-        <legend hidden>Your answer</legend>
-        <label class="opt"><input type="radio" name="opt" value="a"><span>One charge, because the gateway spots the repeat and refuses it</span></label>
-        <label class="opt"><input type="radio" name="opt" value="b"><span>No charge, because giving up cancelled the first request</span></label>
-        <label class="opt"><input type="radio" name="opt" value="c"><span>Two charges, because the second request looks like a new purchase</span></label>
-      </fieldset>
-      <fieldset class="conf">
-        <legend>How sure are you?</legend>
-        <label><input type="radio" name="conf" value="low"> not very</label>
-        <label><input type="radio" name="conf" value="medium"> fairly</label>
-        <label><input type="radio" name="conf" value="high"> very</label>
-      </fieldset>
-      <div class="card-nav">
-        <button class="commit" type="button" id="commit">Lock in my answer</button>
-        <button class="btn" type="button" id="next" hidden>Try another question</button>
-      </div>
-      <p class="status" id="demo-status" role="status"></p>
-      <div class="verdict" id="demo-verdict" hidden><p id="demo-text"></p></div>
-      <p class="card-foot">Nothing is explained until you have answered and said how sure you are. People who predict an outcome before they see it learn far more from it than people who only watch, and the skill is built around that.</p>
-    </div>
-  </div>
+<button type="button" class="btn cpy needs-js" data-copy="Copy">Copy</button>
+</div>
+<p class="small">Other agents that can read Agent Skills can use the skills folder directly. You need Python 3.10 or later and git. It is free, with an MIT licence.</p>
+</div>
 </div>
 
-<section id="why">
-  <div class="wrap sec">
-    <span class="label">The problem</span>
-    <div class="body">
-      <h2>Developers who learned a new library with an AI assistant scored a quarter lower afterwards</h2>
-      <p>In a randomised study at Anthropic, 52 developers learned a library they had never used. Half had an AI assistant and half wrote the code themselves, and afterwards everyone took the same quiz without help. The AI group finished slightly faster and scored 50% against 67%, and the largest gap was on questions about debugging.</p>
-      <div class="guess" id="guess">
-        <p><b>Before you look:</b> the group that wrote the code themselves scored 67%. Where do you think the AI group landed?</p>
-        <div class="row">
-          <input type="range" id="guess-in" min="0" max="100" step="1" value="67" aria-label="Your guess for the AI group's score, in percent">
-          <output id="guess-out" for="guess-in">67%</output>
-          <button class="btn primary" type="button" id="guess-go">Lock in my guess</button>
-          <button class="btn" type="button" id="guess-skip">Just show me</button>
-        </div>
-        <p class="guess-result" id="guess-result" hidden></p>
-      </div>
-      <div class="bars" id="bars" role="img" aria-label="Quiz scores afterwards: wrote the code themselves, 67 percent; had an AI assistant, 50 percent.">
-        <div class="bar"><span>Wrote it themselves</span><span class="track"><span class="fill" data-w="67" style="width:67%"></span></span><span class="val">67%</span></div>
-        <div class="bar ai"><span>Had an AI assistant</span><span class="track"><span class="fill" data-w="50" style="width:50%"></span><span class="marker" id="marker" hidden></span></span><span class="val">50%</span></div>
-      </div>
-      <p>The part that matters for anyone building with an agent every day is that the AI group did not all score the same. How people used the assistant made more difference than whether they had one:</p>
-      <div class="split">
-        <div><h3 class="keep">Those who kept their understanding</h3><ul><li>asked it how things worked</li><li>let it write code, then asked questions about that code</li><li>asked for explanations along with the code, and read them</li></ul></div>
-        <div><h3 class="lose">Those who lost the most</h3><ul><li>handed it the whole task</li><li>started by asking questions, then gave up and handed it everything</li><li>let it do the debugging, and scored 24%</li></ul></div>
-      </div>
-      <p>The obvious fix is to ask the agent to explain its code once it's done, but reading a good explanation is a lot like watching a demonstration, and students who watched physics demonstrations understood them no better than students who never saw them. Explanations also make you feel you understood, which is a poor sign that you did, so the skill asks you to answer first and explains only what you missed.</p>
-      <p class="note">The study is <a href="https://www.anthropic.com/research/AI-assistance-coding-skills">Shen and Tamkin, 2026</a>. It tested people right after a short task, so it shows what happens in the first hour, not over months. The skill is designed to keep you in the left column without slowing the work down.</p>
-    </div>
-  </div>
+<div class="panel rise">
+<div class="phead">
+<div>
+<div class="ptitle">What you can do without the agent</div>
+<div class="small" style="margin-top: 2px;">Example: one project</div>
+</div>
+<div class="toggle needs-js" role="group" aria-label="Time in the project">
+<button type="button" class="tg" id="wk" aria-pressed="false">Week 1</button>
+<button type="button" class="tg on" id="mo" aria-pressed="true">Month 3</button>
+</div>
+</div>
+<div class="dims" id="dims">
+<div class="row"><span class="nm">Architecture and design</span><div class="segs" aria-hidden="true"><span class="seg lit f1"></span><span class="seg lit f2"></span><span class="seg"></span></div><span class="mono lv">without help</span></div>
+<div class="row"><span class="nm">Domain model</span><div class="segs" aria-hidden="true"><span class="seg lit f1"></span><span class="seg lit f2"></span><span class="seg lit f3"></span></div><span class="mono lv ink3">new situation</span></div>
+<div class="row"><span class="nm">Correctness and testing</span><div class="segs" aria-hidden="true"><span class="seg lit f1"></span><span class="seg lit f2"></span><span class="seg"></span></div><span class="mono lv">without help</span></div>
+<div class="row"><span class="nm">Debugging and diagnosis</span><div class="segs" aria-hidden="true"><span class="seg lit f1"></span><span class="seg lit f2"></span><span class="seg"></span></div><span class="mono lv">without help</span></div>
+<div class="row"><span class="nm">Performance</span><div class="segs" aria-hidden="true"><span class="seg lit f1"></span><span class="seg"></span><span class="seg"></span></div><span class="mono lv">with help</span></div>
+<div class="row"><span class="nm">Reliability and operations</span><div class="segs" aria-hidden="true"><span class="seg lit f1"></span><span class="seg lit f2"></span><span class="seg"></span></div><span class="mono lv">without help</span></div>
+<div class="row"><span class="nm">Security</span><div class="segs" aria-hidden="true"><span class="seg"></span><span class="seg"></span><span class="seg"></span></div><span class="mono lv ink0">not yet</span></div>
+<div class="row"><span class="nm">Data and storage</span><div class="segs" aria-hidden="true"><span class="seg lit f1"></span><span class="seg lit f2"></span><span class="seg lit f3"></span></div><span class="mono lv ink3">new situation</span></div>
+<div class="row"><span class="nm">Concurrency</span><div class="segs" aria-hidden="true"><span class="seg lit f1"></span><span class="seg lit f2"></span><span class="seg lit f3"></span></div><span class="mono lv ink3">new situation</span></div>
+<div class="row"><span class="nm">Reading code</span><div class="segs" aria-hidden="true"><span class="seg lit f1"></span><span class="seg lit f2"></span><span class="seg"></span></div><span class="mono lv">without help</span></div>
+</div>
+<div class="pfoot">
+<div class="legend">
+<span><i style="background: #F6C9AF;"></i>with help</span>
+<span><i style="background: #EE8B5B;"></i>without help</span>
+<span><i style="background: #C2410C;"></i>in a new situation</span>
+</div>
+<span class="count"><span id="alone">8</span> of 10 areas without help</span>
+</div>
+</div>
+</section>
+</div>
+
+<!-- WHY -->
+<section id="why" class="sec">
+<div class="wrap">
+<h2 class="h2 sv" style="max-width: 860px;">When you use AI the usual way, you can learn less.</h2>
+<div class="two" style="margin-top: 48px;">
+<div>
+<p class="p" style="margin-top: 0;">A study at Anthropic examined 52 developers. Each developer learned a new Python library. Half of them used an AI assistant. The other half did not. Then all of them did the same test without help.</p>
+<p class="p">The developers with the assistant got lower scores. The largest difference was in debugging. You need debugging most when the agent makes an error.</p>
+<p class="small" style="margin-top: 20px;">Source: <a href="https://www.anthropic.com/research/AI-assistance-coding-skills">Shen and Tamkin, 2026</a>. The test was immediately after a short task. It does not show the effect over months.</p>
+</div>
+<div class="stats">
+<div><div class="bignum">67%</div><div class="meter"><span style="width: 67%; background: #16161A;"></span></div><p class="small">without an AI assistant</p></div>
+<div><div class="bignum hot">50%</div><div class="meter"><span style="width: 50%; background: #C2410C;"></span></div><p class="small">with an AI assistant</p></div>
+</div>
+</div>
+
+<div style="margin-top: 120px;">
+<h2 class="h2 sv" style="max-width: 860px;">The important factor was how they used the AI.</h2>
+<p class="p">Some developers with the assistant got good scores. The study found that they used it in a different way.</p>
+<div class="cols" style="margin-top: 40px;">
+<div class="sv" style="border-top: 3px solid #16161A; padding-top: 20px;">
+<div class="ctitle">They kept their understanding</div>
+<ul>
+<li>They asked how the code works.</li>
+<li>They let the AI write code. Then they asked questions about that code.</li>
+<li>They asked for explanations with the code. Then they read them.</li>
+</ul>
+</div>
+<div class="sv" style="border-top: 3px solid #C2410C; padding-top: 20px;">
+<div class="ctitle" style="color: #C2410C;">They learned the least</div>
+<ul>
+<li>They gave all of the task to the AI.</li>
+<li>They asked questions at first. Then they gave all of the task to the AI.</li>
+<li>They let the AI do the debugging. Their score was 24%.</li>
+</ul>
+</div>
+</div>
+<p class="p" style="max-width: 760px; margin-top: 40px; color: #16161A;">It is difficult to work like the first group every day. This skill puts those habits into the agent. Then you use them every time, without effort.</p>
+</div>
+</div>
 </section>
 
-<section id="how">
-  <div class="wrap sec">
-    <span class="label">How it works</span>
-    <div class="body">
-      <h2>It asks you to think at a few chosen points, and lets the agent build the rest</h2>
-      <p>You mark the tasks you want to learn from, usually the ones in parts of the system you know least. Everything else is built as usual, and the skill stays out of the way.</p>
-      <ol class="moments">
-        <li><span class="when">Before it builds</span><p>You get one question: sketch the design, name the thing that must stay true, or say where you expect it to break. The expected answer is written from the code before you see the question, so the grading can't drift towards whatever you said.</p></li>
-        <li><span class="when">While it builds</span><p>Nothing waits for you. If you are away, the question is left for later and the agent carries on. It may offer once to let you write the hardest piece yourself, and it won't ask again if you say no.</p></li>
-        <li><span class="when">Once it works</span><p>You explain the change back in your own words, before the agent summarises anything. The feedback says which part of your answer holds, which step goes wrong, and which line of code to read.</p></li>
-        <li><span class="when">Days later</span><p>The idea comes back as a fresh question. While you keep answering without help, the gaps grow, from 3 days to 7, then 21, 60 and 180. A miss, or an answer that needed a hint, brings it back the next day.</p></li>
-      </ol>
-      <div class="sim" id="sim">
-        <p class="label" style="margin:0">Try the schedule</p>
-        <div class="readout" aria-live="polite"><b id="sim-gap">1 day</b><span id="sim-why">A new topic comes back the next day.</span></div>
-      <div class="timeline" role="img" aria-label="Review gaps on a log scale: one day after a miss; after each unaided correct answer, 3, 7, 21, 60 and then 180 days.">
-        <svg viewBox="0 0 640 110" preserveAspectRatio="xMidYMid meet">
-          <line class="axis" x1="20" y1="58" x2="620" y2="58"/>
-          <circle class="miss" cx="20" cy="58" r="7"/><text x="20" y="34">1 day</text><text class="small" x="20" y="90">after a miss</text>
-          <circle class="dot" cx="149" cy="58" r="6"/><text x="149" y="34" text-anchor="middle">3</text>
-          <circle class="dot" cx="245" cy="58" r="6"/><text x="245" y="34" text-anchor="middle">7</text>
-          <circle class="dot" cx="372" cy="58" r="6"/><text x="372" y="34" text-anchor="middle">21</text>
-          <circle class="dot" cx="493" cy="58" r="6"/><text x="493" y="34" text-anchor="middle">60</text>
-          <circle class="dot" cx="620" cy="58" r="6"/><text x="620" y="34" text-anchor="end">180 days</text>
-          <text class="small" x="620" y="90" text-anchor="end">after each answer you give without help</text>
-          <circle class="ring" id="ring" cx="20" cy="58" r="13"/>
-        </svg>
-        <ol class="steps" aria-hidden="true"><li class="miss here" data-step="0">1 day after a miss</li><li data-step="1">3</li><li class="arrow">→</li><li data-step="2">7</li><li class="arrow">→</li><li data-step="3">21</li><li class="arrow">→</li><li data-step="4">60</li><li class="arrow">→</li><li data-step="5">180 days</li></ol>
-      </div>
-        <div class="controls">
-          <button class="btn" type="button" data-answer="clean">Answered without help</button>
-          <button class="btn" type="button" data-answer="hint">Right, but needed a hint</button>
-          <button class="btn" type="button" data-answer="wrong">Got it wrong</button>
-          <button class="btn" type="button" id="sim-reset">Start again</button>
-        </div>
-        <ol class="history" id="sim-history" aria-label="Your answers so far"></ol>
-      </div>
-      <p class="note">The gaps are drawn to scale above. They come from spacing research on other kinds of material, so they are a starting point and not a measurement of you; your own record shows whether they suit you, and they are easy to change.</p>
-    </div>
-  </div>
+<!-- HOW -->
+<section id="how" class="sec">
+<div class="wrap">
+<h2 class="h2 sv" style="max-width: 860px;">How it works</h2>
+<p class="p">You select the tasks that you want to learn from. Usually, these are the parts of the project that you know least. The agent builds all other tasks as usual.</p>
+<div style="margin-top: 40px; max-width: 900px; border-bottom: 1px solid #DAD8D0;">
+<div class="habit sv"><span class="num">1</span><div><div class="ht">Before the agent builds, it asks you a question.</div><p>For example: How do you design this? What must not change? Where can it fail? The agent writes the correct answer before it asks. It does not explain until you give your answer.</p></div></div>
+<div class="habit sv"><span class="num">2</span><div><div class="ht">When the code works, you explain it.</div><p>Use your own words. Do this before the agent gives a summary. The agent tells you which parts are correct and which parts are missing. It also tells you which line to read.</p></div></div>
+<div class="habit sv"><span class="num">3</span><div><div class="ht">When something is broken, you find the problem first.</div><p>Ask for a debugging drill. The agent puts a bug into a safe copy of the code. You find the bug. You can ask for hints, one at a time.</p></div></div>
+<div class="habit sv"><span class="num">4</span><div><div class="ht">Some days later, the agent asks again.</div><p>First, you recall the answer. Later questions use the same idea in a new situation. If your answer is correct without help, the next question comes later: after 3 days, then 7, 21, 60 and 180. If your answer is wrong, the question comes back the next day.</p></div></div>
+</div>
+<p class="small" style="margin-top: 18px; max-width: 720px;">The agent does not ask frequently. For a selected task, it asks one question before and one short question after. You can always say "skip" or "just do it".</p>
+</div>
 </section>
 
-<section id="anywhere">
-  <div class="wrap sec">
-    <span class="label">Answering</span>
-    <div class="body">
-      <h2>You can answer later, wherever you happen to be</h2>
-      <p>A question you can only answer at your desk is a question you will skip, so there are four ways in, and they all write to the same record.</p>
-      <ul class="routes">
-        <li><b>In the conversation</b><span>Reply to the agent the next time you're there. It grades your answer straight away.</span></li>
-        <li><b>In a terminal</b><span><code>learning.py answer</code> shows the question and saves your reply. No AI is involved, and the agent grades it at its next checkpoint.</span></li>
-        <li><b>On a page on your machine</b><span><code>learning.py serve</code> opens the learning room in your browser. Feedback shows up there a few seconds after the agent grades it.</span></li>
-        <li><b>On a private hosted page</b><span>Where your agent can publish one, as Claude can, the page grades your answer the moment you send it.</span></li>
-      </ul>
-      <div class="phones">
-        <figure class="phone">
-          <div class="frame"><picture><source srcset="assets/room-question-dark.png" media="(prefers-color-scheme: dark)"><img src="assets/room-question-light.png" width="716" height="1268" alt="The learning room showing one question, an answer box, a choice of how sure you are, and buttons to submit, say I don't know, or leave it for now." loading="lazy"></picture></div>
-          <figcaption>One question at a time, with an honest way out.</figcaption>
-        </figure>
-        <figure class="phone">
-          <div class="frame"><picture><source srcset="assets/room-feedback-dark.png" media="(prefers-color-scheme: dark)"><img src="assets/room-feedback-light.png" width="716" height="730" alt="A graded answer marked wrong. The learner was very sure; the feedback names the mistaken belief and points to line 41 of worker/charge.py." loading="lazy"></picture></div>
-          <figcaption>A confident wrong answer, and the line to read.</figcaption>
-        </figure>
-      </div>
-    </div>
-  </div>
+<!-- TRY -->
+<section id="try" class="sec">
+<div class="wrap">
+<div class="mono eyebrow">try a question</div>
+<h2 class="h2" style="margin-top: 10px; max-width: 860px;">The agent asks about the design and about the code.</h2>
+<div class="tabs needs-js" role="tablist" aria-label="Question level">
+<button type="button" role="tab" class="tab on" id="tab-comp" aria-controls="q-comp" aria-selected="true" data-ex="comp">Component level</button>
+<button type="button" role="tab" class="tab" id="tab-code" aria-controls="q-code" aria-selected="false" data-ex="code" tabindex="-1">Code level</button>
+</div>
+
+<div class="two qpanel" id="q-comp" data-ex="comp">
+<div>
+<p class="qctx">Before you add confirmation emails to the checkout.</p>
+<div class="flow" role="img" aria-label="Four parts: database, API, queue and email worker. The API saves the order in the database. Then it puts a message on the queue. The worker reads the message and sends the email.">
+<div class="boxes">
+<div class="box">Database</div>
+<div class="box api">API</div>
+<div class="box">Queue</div>
+<div class="box">Email worker</div>
+</div>
+<div class="track">
+<div class="line"></div>
+<span class="tick" style="left: 12.5%;"></span><span class="tick" style="left: 37.5%;"></span><span class="tick" style="left: 62.5%;"></span><span class="tick" style="left: 87.5%;"></span>
+<div class="dot"></div>
+<div class="cut" hidden><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#C2410C" stroke-width="2.6" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"></path></svg></div>
+</div>
+<div class="steps"><span class="step" style="grid-column: 2 / span 2;">1 save order</span><span class="step" style="grid-column: 4 / span 2;">2 send message</span><span class="step" style="grid-column: 6 / span 2;">3 send email</span></div>
+</div>
+<p class="small flownote">The orange dot shows the normal path of one order.</p>
+</div>
+<div class="qside">
+<p class="qq">The API saves the order. Then it puts a message on the queue. The API stops after the save and before the message. What does the customer see?</p>
+<div class="opts">
+<div class="opt"><span class="k">A</span><span>No order and no email</span></div>
+<div class="opt"><span class="k">B</span><span>An order, but no confirmation email</span></div>
+<div class="opt"><span class="k">C</span><span>An order and two emails</span></div>
+</div>
+</div>
+</div>
+
+<div class="two qpanel" id="q-code" data-ex="code">
+<div>
+<p class="qctx">Before you add retries to a payment worker.</p>
+<pre class="mono code">def backoff(attempt):
+    return 0.5 * 2 ** attempt
+
+def charge(order):
+    for attempt in range(3):
+        try:
+            return gateway.charge(
+                order.card,
+                order.amount,
+                timeout=0.8,
+            )
+        except gateway.Timeout:
+            sleep(backoff(attempt))
+    raise ChargeFailed(order.id)</pre>
+</div>
+<div class="qside">
+<p class="qq">Each attempt stops after 0.8 seconds. How long does the customer wait before the charge fails?</p>
+<div class="opts">
+<div class="opt"><span class="k">A</span><span>About 2.4 seconds</span></div>
+<div class="opt"><span class="k">B</span><span>About 5.9 seconds</span></div>
+<div class="opt"><span class="k">C</span><span>It tries again until it works</span></div>
+</div>
+</div>
+</div>
+
+<template id="tpl-controls">
+<p class="sure-l">How sure are you?</p>
+<div class="confs">
+<button type="button" class="sure" data-conf="low">Not sure</button><button type="button" class="sure" data-conf="mid">Almost sure</button><button type="button" class="sure" data-conf="high">Sure</button><button type="button" class="sure" data-conf="dk">I do not know</button>
+</div>
+<div class="lockrow">
+<button type="button" class="btn" data-act="lock">Lock my answer</button>
+<span class="small status" role="status"></span>
+</div>
+<div class="reveal result" hidden>
+<div class="verdict" tabindex="-1"></div>
+<p class="why"></p>
+<p class="belief" hidden>You were sure, but your answer was wrong. The agent marks this question to come back. People correct this type of error most easily when they see the reason.</p>
+<div class="delta">
+<div class="small">Your record:</div>
+<div class="row">
+<span class="nm"></span>
+<div class="segs" aria-hidden="true"><span class="seg"></span><span class="seg"></span><span class="seg"></span></div>
+<span class="mono lv"></span>
+</div>
+<div class="small dnote"></div>
+</div>
+<button type="button" class="btn ghost" data-act="reset">Try again</button>
+</div>
+</template>
+</div>
 </section>
 
-<section id="rules">
-  <div class="wrap sec">
-    <span class="label">The rules</span>
-    <div class="body">
-      <h2>Every question is handled the same way</h2>
-      <ol class="rules">
-        <li>The expected answer is written from the code before you see the question.</li>
-        <li>You say how sure you are. A wrong answer you were sure of is treated as a belief to fix, because those are the mistakes people correct most readily once they see them.</li>
-        <li>Your answer is locked before any feedback appears, so you can't revise it after seeing the answer.</li>
-        <li>If you ask for a hint you get the smallest useful one, and you can ask again. Hints are only given before you answer.</li>
-        <li>Feedback starts with whether you were right, then deals with your actual reasoning and points to the code. It doesn't praise you, because praise tells you nothing you can use.</li>
-        <li>"I don't know", "not now", "skip" and "just do it" always work.</li>
-      </ol>
-      <p class="note" style="margin-top:22px">Your record lives in the repository, in plain files. For each idea it keeps the best answer you have ever given apart from what your latest answer shows, so a topic you explained perfectly in March and got wrong last week shows as shaky rather than learned. Work you did on your own counts once there is a commit or a test to point at.</p>
-    </div>
-  </div>
+<!-- RECORD -->
+<section id="record" class="sec">
+<div class="wrap two">
+<div>
+<h2 class="h2 sv">You can see your progress.</h2>
+</div>
+<div>
+<p class="p" style="margin-top: 0;">The skill records each answer. It keeps the record as plain files in your repository. The record has areas, for example design, data, concurrency, debugging and security. You select the areas at the start.</p>
+<p class="p">For each idea, the record shows your best answer and your latest answer. If your answer was good in March and wrong last week, the record shows that idea as weak. Work that you do without the agent also counts, if a commit or a test shows it.</p>
+<p class="p">To see the record, ask the agent: "What am I weak at?"</p>
+</div>
+</div>
 </section>
 
-<section id="research">
-  <div class="wrap sec">
-    <span class="label">Research</span>
-    <div class="body">
-      <h2>Where each rule comes from</h2>
-      <p>Most of these studies were run with students or junior developers on short tasks, and none of them tested this exact design. So read the design as a reasoned bet, not a proven method; your own record is how you find out whether it works for you.</p>
-      <ul class="findings">
-        <li><span class="num">−17%</span><div><p>Students given an unrestricted chatbot for maths practice did better while they had it and 17% worse once it was taken away. A version that gave hints instead of answers removed most of that harm.</p><p class="so">So hints come one small step at a time.</p><span class="src"><a href="https://doi.org/10.1073/pnas.2422633122">Bastani et al., 2025</a></span></div></li>
-        <li><span class="topic">prediction</span><div><p>Students who watched a physics demonstration understood it no better than those who never saw it. Those who predicted the result first understood significantly more.</p><p class="so">So nothing is explained until you have answered.</p><span class="src"><a href="https://doi.org/10.1119/1.1707018">Crouch et al., 2004</a></span></div></li>
-        <li><span class="num">g = 0.55</span><div><p>Asking people to explain material to themselves improved what they learned, averaged across 64 studies.</p><p class="so">So you explain each change back in your own words.</p><span class="src"><a href="https://doi.org/10.1007/s10648-018-9434-x">Bisra et al., 2018</a></span></div></li>
-        <li><span class="topic">pretesting</span><div><p>Answering questions before being taught helps you learn the material afterwards, even when your first answers are wrong.</p><p class="so">So the question comes before the build, not after it.</p><span class="src"><a href="https://doi.org/10.1007/s10648-023-09814-5">Pan and Carpenter, 2023</a></span></div></li>
-        <li><span class="topic">spacing</span><div><p>Recalling something from memory makes it last, recalling it again after a gap makes it last longer, and feedback that explains why helps it carry over to new cases.</p><p class="so">So ideas come back on a growing schedule, and later questions use cases you haven't seen.</p><span class="src"><a href="https://doi.org/10.1111/j.1467-9280.2006.01693.x">Roediger and Karpicke, 2006</a> · <a href="https://doi.org/10.1111/j.1467-9280.2008.02209.x">Cepeda et al., 2008</a> · <a href="https://doi.org/10.1037/bul0000151">Pan and Rickard, 2018</a></span></div></li>
-        <li><span class="topic">confidence</span><div><p>Mistakes made with high confidence are the ones people most often correct after feedback, and feeling that you understood is a poor sign that you did.</p><p class="so">So every answer comes with how sure you were.</p><span class="src"><a href="https://doi.org/10.1037/0278-7393.27.6.1491">Butterfield and Metcalfe, 2001</a> · <a href="https://doi.org/10.1073/pnas.1821936116">Deslauriers et al., 2019</a></span></div></li>
-        <li><span class="num">d = 0.48</span><div><p>Feedback improves learning on average, but by very different amounts, and feedback that carries information does best.</p><p class="so">So feedback says what was missing and where to look, not just right or wrong.</p><span class="src"><a href="https://doi.org/10.3389/fpsyg.2019.03087">Wisniewski et al., 2020</a></span></div></li>
-        <li><span class="topic">expertise</span><div><p>Worked examples help beginners, but the same step-by-step help slows down people who already know the area.</p><p class="so">So worked examples only appear where your record shows you are new.</p><span class="src"><a href="https://doi.org/10.1518/001872098779480587">Kalyuga et al., 1998</a> · <a href="https://doi.org/10.1007/s10648-007-9054-3">Kalyuga, 2007</a></span></div></li>
-      </ul>
-    </div>
-  </div>
+<!-- LIMITS -->
+<section class="sec">
+<div class="wrap two">
+<div><h2 class="h2 sv">What it cannot prove</h2></div>
+<div>
+<p class="p" style="margin-top: 0;">The agent grades your answers. It compares each answer with an answer that it wrote before it asked you. Thus, the record is good evidence, but it is not proof.</p>
+<p class="p">Each habit comes from research: predict before you see the answer, explain in your own words, and answer again after some days. But most of these studies used students and short tasks. No study has measured the effect on engineers over months on a real project. Your record will show the effect for you.</p>
+</div>
+</div>
 </section>
 
-<section id="cost">
-  <div class="wrap sec">
-    <span class="label">Cost</span>
-    <div class="body">
-      <h2>Asking questions in batches roughly halved the number of model calls</h2>
-      <p>Every question you answer costs some model calls, and if review questions come one at a time, each answer means another round trip and another wait for you. So the skill sends due questions together, and to check that it helps, I ran the same three review topics, with the same scripted answers, three ways and counted every call.</p>
-      <div class="table"><table>
-        <thead><tr><th>How the review ran</th><th>Model calls</th><th>Your replies</th><th>Weighted tokens</th><th><span hidden>Relative cost</span></th></tr></thead>
-        <tbody>
-          <tr><td>One question at a time, in a fresh session</td><td class="num">21</td><td class="num">5</td><td class="num">318k</td><td class="bar-cell"><span class="mini" data-w="79" style="width:79%"></span></td></tr>
-          <tr class="best"><td>All three at once, in a fresh session (what it does now)</td><td class="num">11</td><td class="num">2</td><td class="num">223k</td><td class="bar-cell"><span class="mini" data-w="56" style="width:56%"></span></td></tr>
-          <tr><td>One at a time, in a session that already held a long build</td><td class="num">16</td><td class="num">5</td><td class="num">401k</td><td class="bar-cell"><span class="mini" data-w="100" style="width:100%"></span></td></tr>
-        </tbody>
-      </table></div>
-      <p class="note">Weighted tokens count cached reads at a tenth of the input price, cache writes at 1.25 times and output at 5 times. Each way was run once, with a simulated learner who replied within seconds, so treat these as a rough guide rather than a benchmark. One interactive explainer page cost about 138k tokens on its own, which is why the skill only builds one when you ask or when answering in the conversation has failed twice.</p>
-    </div>
-  </div>
-</section>
-
-<section id="limits">
-  <div class="wrap sec">
-    <span class="label">Limits</span>
-    <div class="body">
-      <h2>What it can't tell you</h2>
-      <p>The grading is the agent's judgement against an answer the agent wrote, so the record is evidence about you and not a certificate. Nothing reminds you to come back, either; reviews happen when you open the skill.</p>
-      <p>The biggest open question is the one the project exists for. Nobody has yet measured whether working this way makes people better engineers over months on a real project. I think it will, because each rule rests on a finding that has held up in other settings, but that is a judgement and not a result, and your own record is the most direct way to check it for yourself.</p>
-    </div>
-  </div>
-</section>
-
-</main>
-
+<!-- CLOSE -->
+<div class="stage close">
+<div class="field low" id="field2" aria-hidden="true"></div>
+<section>
+<div class="wrap">
+<h2 class="h1 sv">Try it on your next task.</h2>
+<p class="p sv">Install the skill. Then select a task in a part of the project that you do not know well. Tell the agent:</p>
+<pre class="mono sv prompt"><span>&gt;</span> Add confirmation emails to the checkout. Make this a learning task.</pre>
+<p class="small sv" style="margin-top: 14px;">The agent asks you one question. Then it starts to build.</p>
+<div class="ctas">
+<button type="button" class="btn needs-js" data-copy="Copy the install commands">Copy the install commands</button>
+<a href="https://github.com/0xfauzi/explain-pr" class="btn ghost">See it on GitHub</a>
+</div>
 <footer>
-  <div class="wrap">
-    <span>MIT licence</span>
-    <a href="https://github.com/0xfauzi/explain-pr">Source</a>
-    <a href="https://github.com/0xfauzi/explain-pr/blob/main/CHANGELOG.md">Changelog</a>
-    <a href="https://github.com/0xfauzi/explain-pr/blob/main/CONTRIBUTING.md">Contributing</a>
-  </div>
+<span>learning-while-building · MIT licence</span>
+<span class="links"><a href="https://github.com/0xfauzi/explain-pr">Source</a><a href="https://github.com/0xfauzi/explain-pr/blob/main/CHANGELOG.md">Changelog</a></span>
 </footer>
+</div>
+</section>
+</div>
 
-<script>
-(function () {
-  "use strict";
-  var $ = function (id) { return document.getElementById(id); };
-
-  // ---- the demo: three questions, each locked before it is explained ----
-  var QUESTIONS = [
-    { area: "payments", q: "A worker charges a card through a payment gateway. It gives up waiting after 0.8 seconds, but the gateway takes 1.2 seconds to reply, so the worker sends the charge again, without any key that marks it as a repeat. What does the customer see?",
-      opts: ["One charge, because the gateway spots the repeat and refuses it", "No charge, because giving up cancelled the first request", "Two charges, because the second request looks like a new purchase"], right: 2,
-      why: "Giving up only means the worker stopped waiting. The gateway still finished the first charge, and with nothing to mark the second request as a repeat, it treats it as a new purchase." },
-    { area: "concurrency", q: "Two workers each read a counter that says 41, add one to it, and write their result back. Neither waits for the other. What does the counter say afterwards?",
-      opts: ["43, because both additions were made", "42, because the second write replaced the first", "It depends on which worker wrote last"], right: 1,
-      why: "Both workers computed 41 + 1 from the same starting value, so both wrote 42 and one addition was lost. Which one wrote last doesn't change the number, only which write survived." },
-    { area: "caching", q: "A product's price is cached. Every write path updates the cache, except an admin import script that writes straight to the database. A shopper loads the page right after an import changed the price. What do they see?",
-      opts: ["The new price, because the database is the source of truth", "The old price, until the cache entry expires or is replaced", "An error, because the cache and the database disagree"], right: 1,
-      why: "Reads come from the cache, and nothing told the cache the price changed. It keeps serving the old value until it expires or another write replaces it, which is why every write path has to touch it." }
-  ];
-  var qi = 0;
-  var demo = $("demo"), status = $("demo-status"), commit = $("commit"), next = $("next");
-
-  function showQuestion(i) {
-    var item = QUESTIONS[i];
-    $("q-area").textContent = item.area;
-    $("q-text").textContent = item.q;
-    var labels = demo.querySelectorAll(".opt");
-    labels.forEach(function (label, n) {
-      label.classList.remove("is-right", "is-wrong");
-      label.querySelector("span").textContent = item.opts[n];
-    });
-    demo.querySelectorAll("input").forEach(function (inp) { inp.checked = false; inp.disabled = false; });
-    commit.disabled = false; next.hidden = true; $("demo-verdict").hidden = true; status.textContent = "";
-    document.querySelectorAll("#dots span").forEach(function (d, n) { d.classList.toggle("on", n === i); });
-    ["qbox", "opts"].forEach(function (id) { var el = $(id); el.classList.remove("swap"); void el.offsetWidth; el.classList.add("swap"); });
-  }
-
-  commit.addEventListener("click", function () {
-    var picked = demo.querySelector("input[name=opt]:checked");
-    var conf = demo.querySelector("input[name=conf]:checked");
-    if (!picked || !conf) { status.textContent = "Choose an answer and say how sure you are first. Once you lock it in, it can't be changed."; return; }
-    var item = QUESTIONS[qi];
-    var pickedIndex = ["a", "b", "c"].indexOf(picked.value);
-    var right = pickedIndex === item.right;
-    demo.querySelectorAll("input").forEach(function (inp) { inp.disabled = true; });
-    commit.disabled = true;
-    status.textContent = "";
-    var labels = demo.querySelectorAll(".opt");
-    labels[item.right].classList.add("is-right");
-    if (!right) labels[pickedIndex].classList.add("is-wrong");
-    var text = item.why;
-    if (!right && conf.value === "high") text = "You were very sure, which makes this the kind of mistake worth fixing properly. " + text;
-    var p = $("demo-text");
-    p.textContent = "";
-    var b = document.createElement("b"); b.textContent = right ? "Right. " : "Not quite. ";
-    p.append(b, document.createTextNode(text));
-    var box = $("demo-verdict");
-    box.classList.toggle("pass", right);
-    box.hidden = false; box.style.animation = "none"; void box.offsetWidth; box.style.animation = "";
-    next.hidden = false;
-  });
-  next.addEventListener("click", function () { qi = (qi + 1) % QUESTIONS.length; showQuestion(qi); });
-
-  // ---- the problem: guess before the bars ----
-  // The HTML carries the real widths so the page reads correctly without script;
-  // the script empties them before first paint so the reader can guess first.
-  var bars = $("bars"), guessIn = $("guess-in"), guessOut = $("guess-out"), marker = $("marker");
-  bars.classList.add("pending");
-  bars.querySelectorAll(".fill").forEach(function (f) { f.style.width = "0"; });
-  guessIn.addEventListener("input", function () { guessOut.textContent = guessIn.value + "%"; });
-  function revealBars(guess) {
-    bars.classList.remove("pending");
-    bars.querySelectorAll(".fill").forEach(function (f) { f.style.width = f.getAttribute("data-w") + "%"; });
-    ["guess-go", "guess-skip"].forEach(function (id) { $(id).disabled = true; });
-    guessIn.disabled = true;
-    if (guess === null) return;
-    marker.style.left = guess + "%"; marker.hidden = false;
-    var off = guess - 50, r = $("guess-result");
-    r.textContent = Math.abs(off) <= 3
-      ? "You guessed " + guess + "%. Close: it was 50%."
-      : "You guessed " + guess + "%. It was 50%, " + Math.abs(off) + " points " + (off > 0 ? "lower than you expected." : "higher than you expected.");
-    r.hidden = false;
-  }
-  $("guess-go").addEventListener("click", function () { revealBars(parseInt(guessIn.value, 10)); });
-  $("guess-skip").addEventListener("click", function () { revealBars(null); });
-
-  // ---- the schedule: the same rule as next_due() in scripts/record.py ----
-  var INTERVALS = [3, 7, 21, 60, 180];   // INTERVALS_AFTER_SUCCESS
-  var MISS_GAP = 1;                      // INTERVAL_AFTER_MISS
-  var STEP_X = [20, 149, 245, 372, 493, 620];
-  var streak = 0, history = [];
-  function gapFor(s) { return s === 0 ? MISS_GAP : INTERVALS[Math.min(s, INTERVALS.length) - 1]; }
-  function renderSim(kind) {
-    var gap = gapFor(streak), step = streak === 0 ? 0 : Math.min(streak, INTERVALS.length);
-    var gapEl = $("sim-gap");
-    gapEl.textContent = gap + (gap === 1 ? " day" : " days");
-    gapEl.classList.toggle("miss", streak === 0);
-    var why = {
-      none: "A new topic comes back the next day.",
-      clean: streak >= INTERVALS.length ? "Each further answer without help keeps it at 180 days." : "An answer without help moves it one step further out.",
-      hint: "A right answer that needed a hint doesn't count as unaided, so it comes back tomorrow.",
-      wrong: "A wrong answer brings it back tomorrow, and the climb starts again."
-    }[kind];
-    $("sim-why").textContent = why;
-    var ring = $("ring");
-    ring.setAttribute("cx", STEP_X[step]);
-    ring.classList.toggle("at-good", step > 0);
-    document.querySelectorAll(".steps li[data-step]").forEach(function (li) { li.classList.toggle("here", Number(li.getAttribute("data-step")) === step); });
-    var list = $("sim-history");
-    list.replaceChildren.apply(list, history.map(function (h) {
-      var li = document.createElement("li");
-      li.textContent = h === "clean" ? "unaided" : h === "hint" ? "with hint" : "wrong";
-      li.className = h === "clean" ? "good" : "bad";
-      return li;
-    }));
-  }
-  document.querySelectorAll("#sim [data-answer]").forEach(function (b) {
-    b.addEventListener("click", function () {
-      var kind = b.getAttribute("data-answer");
-      streak = kind === "clean" ? streak + 1 : 0;
-      history.push(kind); if (history.length > 12) history.shift();
-      renderSim(kind);
-    });
-  });
-  $("sim-reset").addEventListener("click", function () { streak = 0; history = []; renderSim("none"); });
-
-  // ---- bars that fill when they come into view ----
-  var minis = document.querySelectorAll(".mini");
-  minis.forEach(function (m) { m.style.width = "0"; });
-  function fillMinis() { minis.forEach(function (m) { m.style.width = m.getAttribute("data-w") + "%"; }); }
-  if ("IntersectionObserver" in window) {
-    var io = new IntersectionObserver(function (entries) { if (entries.some(function (e) { return e.isIntersecting; })) { fillMinis(); io.disconnect(); } }, { threshold: .3 });
-    io.observe(document.querySelector("#cost table"));
-  } else { fillMinis(); }
-
-  // ---- copy ----
-  var copy = $("copy");
-  copy.addEventListener("click", function () {
-    var t = $("install-cmd").textContent;
-    if (navigator.clipboard) navigator.clipboard.writeText(t).then(function () { copy.textContent = "Copied"; setTimeout(function () { copy.textContent = "Copy"; }, 1500); }, function () {});
-  });
-})();
-</script>
+</div>
+<script src="assets/site.js"></script>
 </body>
 </html>
