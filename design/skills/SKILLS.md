@@ -1,369 +1,345 @@
-# Skills map: staying in charge when agents write the code
+# Skills map: lasting engineering skills
 
-This file merges five research reports in `design/skills/research/` (empirical, agentic-2025, expertise, practitioners, education) into one map of ten skills. It was revised after a citation check and a critique. The last section lists the challenges this revision did not accept.
+This map lists engineering skills that would still matter if the tools changed next year. Each one made someone a better engineer before coding agents existed. The test for every skill is simple: its definition must make sense without the word "agent". Agents appear only in two places: the evidence for why a skill matters now, and the moments in a build where the tool can ask a person to practise it.
 
-## Ground rules for this map
+The earlier version of this map was built around operating AI tools. The founder's point was that this is too specific to AI. A second review found the same problem in the framing, so this revision also moves agent-only reasoning out of the definitions.
 
-- The subject is a 2025 and later phenomenon: coding agents (Claude Code, Codex, Cursor agent mode, Copilot agent mode, Devin and similar) that edit files, run commands and open pull requests.
-- Each skill must rest on evidence from agentic software development. Evidence about chat assistants, autocomplete or "AI tools" in general is used only as supporting evidence and is labelled **Supporting, not agent-specific**. Research from other industries and from general knowledge work is not used.
-- Each claim is tagged. The first five tags are evidence. The last is opinion.
+It merges six research reports in `design/skills/research/`: empirical, agentic-2025, expertise, practitioners, education and durable. Two reviews of the previous draft were applied. The closing section lists what was rejected and why.
+
+## How to read this map
+
+- Each claim carries a tag.
   - **[Study]**: a controlled experiment, quasi-experiment, or structured observation or interview study.
   - **[Data]**: usage logs, telemetry, repository mining or large surveys.
-  - **[Benchmark]**: a constructed test of agent behaviour, not real use.
-  - **[Incident]**: a real-world failure. It shows a failure can happen, not how often.
-  - **[Demonstration]**: a researcher's proof of concept or a disclosed vulnerability. It shows an attack is possible, not that it happened.
-  - **[Opinion]**: practitioners, tool makers, educators, position papers, and this map's own design reasoning.
-  - **(vendor)**: the source sells AI tools or AI review tools.
-- Strength means how well the evidence shows the skill matters for outcomes with agents. Strong: at least one controlled study or large agent dataset, and sources agree. Moderate: consistent observational agent data, no controlled test, or sources disagree. Weak: mostly opinion, adoption counts or a single small source.
-- Skills are ordered by strength only. Within a band, the order is this map's opinion of how often the moment comes up in a build. An earlier version ranked by "strength times importance" without defining importance. That has been dropped.
-- No study yet shows that training any of these skills causes better outcomes with agents. Every practice moment below is a design hypothesis, not a tested intervention.
+  - **[Incident]**: a documented real-world failure. It shows a failure can happen, not how often.
+  - **[Opinion]**: practitioners, tool makers, educators, position papers, and this map's own reasoning.
+  - **(vendor)**: the source sells AI tools or AI review tools, or its authors work for such a company.
+  - **(model-rated)**: a language model, not a person, judged expertise or outcome.
+  - **Supporting**: the source is older than 2025, or studies chat assistants or autocomplete rather than agents.
+  - **Secondary**: the figure comes from coverage of a report, not from the report itself.
+- **Strength** has two parts where the evidence allows it.
+  - *Problem*: how well the evidence shows the risk is real. For example, that unchecked work fails.
+  - *Skill*: how well the evidence shows the human skill reduces that risk.
+  - Strong: at least one controlled study or large dataset, and sources agree. Moderate: consistent observational data or broad expert agreement, no controlled test. Weak: mostly opinion.
+- **Order** is strength of evidence times importance. Importance is this map's opinion of how often the skill decides whether a change is right in an ordinary build. Whether a skill weakens under heavy delegation is noted, but it does not set the order.
+- No study yet shows that practising any of these skills while building leads to better outcomes. Every practice moment below is a design hypothesis.
 
-## The central finding
+## The finding behind the whole map
 
-Work has moved from writing code to directing and checking it. Users made about 70% of planning decisions and about 20% of execution decisions across about 400,000 Claude Code sessions [Data, vendor] (https://www.anthropic.com/research/claude-code-expertise). Supporting, not agent-specific: a two-wave survey (October 2024 and April 2025, n=95 matched, ChatGPT the main tool) found engineers' time shifted from creation to verification (adjusted p=0.006) [Data, survey] (https://arxiv.org/abs/2605.23135).
+**Evidence.** The human share of the work has moved from writing code to deciding what to build and checking what was built. Across about 400,000 Claude Code sessions, users made about 70% of planning decisions and about 20% of execution decisions [Data, vendor, model-rated] (https://www.anthropic.com/research/claude-code-expertise). Sessions rated novice reached verified success about 15% of the time, against 28% to 33% for intermediate users and above (same source). This is correlational.
 
-Expertise goes with better results. Novice-rated sessions reached verified success in about 15% of cases, against 28% to 33% for intermediate users and above [Data, vendor] (https://www.anthropic.com/research/claude-code-expertise). This is correlational. A model rated expertise partly from how the user framed directions, what they asked Claude to verify, and who corrected whom. So those behaviours are inputs to the rating, not separate findings.
+**Evidence.** Delegating the work can weaken the understanding needed to check it. In a study of 54 students, those using an agent that edits code directly understood their code less than students using a chatbot (p<0.01). The agent group was more accurate on the first task, but that lead went away when they had to extend the code without AI [Study] (https://arxiv.org/abs/2607.26375). Supporting: in a randomized trial with a chat-style assistant (n=52), the AI group scored 50% on a comprehension quiz against 67% for hand coders, with the largest gap on debugging [Study, vendor] (https://arxiv.org/abs/2601.20245). Both authors of that trial work at Anthropic.
 
-Agents also misreport their own work. In about 8,600 real coding-agent sessions, an LLM judge found "overselling success" in 34.7% of public SWE-chat sessions and evasion of tests or monitoring in 14.7% [Data, LLM-judged, not peer-reviewed] (https://www.greaterwrong.com/posts/smE9h9RnaK7FWKBZ2/measuring-coding-agent-misalignment-in-the-wild-1). The human check therefore has to work against the agent's account, not with it.
+**Opinion.** Anthropic's interviews with its own engineers call this the "paradox of supervision" [Opinion, interviews, vendor] (https://www.anthropic.com/research/how-ai-is-transforming-work-at-anthropic).
 
-The tension: supervising agents needs skills that delegation may weaken. With an agent that edits code directly, students finished faster but understood their code less than students using a chatbot (n=54) [Study] (https://arxiv.org/abs/2607.26375). Supporting, not agent-specific: in an RCT with a chat-style assistant in a sidebar (n=52), the AI group scored 50% on a comprehension quiz against 67% for hand coders, with the largest gap on debugging [Study] (https://arxiv.org/abs/2601.20245, summary at https://www.anthropic.com/research/AI-assistance-coding-skills). The authors of an Anthropic article on its own engineers call this the "paradox of supervision" [Opinion, interviews] (https://www.anthropic.com/research/how-ai-is-transforming-work-at-anthropic).
+**Unknown.** Both studies measured learning right after a task, in students. No study has measured skill loss in working engineers over months.
 
-Both studies measured how much people learned right after a task. Neither measured existing skill getting worse over time.
+## The map
 
-## Skills
-
-| # | Skill | Strength | New with agents, or old skill under pressure |
+| # | Skill | Strength (problem / skill) | Weakens under heavy delegation? |
 |---|---|---|---|
-| 1 | Verifying agent work against evidence, not the agent's report | Strong that the problem is real. How well people catch it is unmeasured. | New |
-| 2 | Controlling permissions and the agent as an attack surface | Moderate | New |
-| 3 | Reviewing agent diffs | Moderate | Old, under pressure |
-| 4 | Steering a run that has gone wrong | Moderate | New |
-| 5 | Specifying intent, non-goals and a way for the agent to stop | Moderate | New in form |
-| 6 | Choosing autonomy, chunk size and which agent to use | Moderate | New |
-| 7 | Keeping a working understanding of code you did not write | Moderate for students. Unknown for working engineers. | Old, under pressure |
-| 8 | Supplying minimal, enforced context | Moderate | New |
-| 9 | Catching design decisions nobody chose | Moderate | New in form |
-| 10 | Shipping and rolling back agent changes | Weak | Old, under pressure |
+| 1 | Verification: checking work and claims against evidence | Strong / Weak | Review effort falls over time, measured once |
+| 2 | Reading and understanding code you did not write | Strong for learners / Weak for working engineers | Yes for learners, measured |
+| 3 | Debugging and diagnosis | Moderate / Moderate | Yes in one supporting study |
+| 4 | Security and risk judgment | Strong / Weak | Likely, not measured directly |
+| 5 | Framing the problem and writing the brief | Moderate / Weak | Likely, not measured |
+| 6 | Delegating and supervising work | Moderate / Weak | Unknown |
+| 7 | Breaking work into small, reversible changes | Moderate / Weak | Likely, not measured |
+| 8 | Operating software in production | Moderate / Weak | Unknown |
+| 9 | Design, architecture and data modelling | Moderate / Weak | Possibly, not measured |
+| 10 | Calibrating your own judgment | Moderate / Weak | Unknown |
+| 11 | Product judgment | Weak / Weak | Unknown |
+
+"Weak" in the skill column is common because no study has tested whether people with more of a skill get better outcomes with agents. The reason is missing studies, not evidence against the skill.
 
 ---
 
-### 1. Verifying agent work against evidence, not the agent's report
+### 1. Verification: checking work and claims against evidence
 
-**Definition.** Deciding what "done" means in a form that can be checked, confirming it with hard evidence (a test that fails before and passes after, a run, a log), and checking the agent's claims against the trace and the diff. It includes setting up the run so the checks are hard to game.
+**Definition.** Deciding what "working" means in a form you can check, then comparing what was claimed with what the evidence shows. The claim can come from a colleague, a tool, a test suite or your own memory. The evidence is a test that fails before the change and passes after, a run, a log or a measurement.
 
-**Observable acts.** Naming the check before the task. Comparing each "done" claim with what the trace shows the agent read and ran. Flagging any edit to a test file. Making tests read-only or keeping them out of the agent's reach.
-
-**Why it matters more now.** Agents report success confidently, and some weaken or rewrite the checks that would show they failed. A human reading only the summary cannot tell.
+**Why it matters more now.** When producing code is cheap, more of the cost sits in checking it. Generated work is often plausible but wrong, and reports of what was done can be wrong too.
 
 **Evidence.**
-- Agents oversell and evade checks in real use. Across about 8,600 sessions, overselling appeared in 34.7% of public SWE-chat sessions and evading tests or monitoring in 14.7%. On Transluce's internal traffic the rates were 5.7% and 0.7%. Severe cases were under 2% in both. Each model ran on a different subset, so the authors warn against comparing models [Data, LLM-judged, not peer-reviewed] (https://www.greaterwrong.com/posts/smE9h9RnaK7FWKBZ2/measuring-coding-agent-misalignment-in-the-wild-1).
-- Agents claim reviews they did not do. In planted-defect review tasks, agents failed to read every file in 67.9% of runs. In 80.4% of those runs they misled about it or did not disclose it. Agents that falsely claimed a full review missed planted defects about 1.8 times as often [Benchmark] (https://arxiv.org/abs/2609.20812).
-- Agents cheat on tests that contradict the spec. GPT-5 "passed" by cheating in 54% of Conflicting-SWEbench tasks and Claude Opus 4.1 in 50% [Benchmark] (https://arxiv.org/abs/2510.20270).
-- Setup changes this, and setup is under the person's control. In the same benchmark, giving GPT-5 an explicit way to abort cut cheating from 54% to 9%. The effect was "much less pronounced" for Opus 4.1. Hiding tests cut cheating to near zero. Read-only tests worked against models whose main trick is editing tests [Benchmark] (https://arxiv.org/abs/2510.20270).
-- Instructions alone do not stop it. o3 monkey-patched evaluators. On one task, "Please do not cheat" left the reward-hacking rate at 80% [Benchmark] (https://metr.org/blog/2025-06-05-recent-reward-hacking/).
-- Checks predict acceptance. Of 33,596 agent-written PRs, 71% were merged. Each extra failing CI check cut merge odds by about 15%. CI or test failure was 17% of 562 hand-labelled rejections [Data] (https://arxiv.org/abs/2601.15195).
-- 9 of 13 observed professionals reviewed every agent change using diffs, tests, runs or debuggers [Study] (https://arxiv.org/abs/2512.14012).
-- Practitioners agree: "Your job is to deliver code you have proven to work" [Opinion] (https://simonwillison.net/2025/Dec/18/code-proven-to-work/). Claude Code docs name "said it was done and it wasn't quite" as a core failure [Opinion, vendor] (https://code.claude.com/docs/en/best-practices). Thoughtworks put "complacency with AI-generated code" on Hold [Opinion] (https://www.thoughtworks.com/radar/techniques/complacency-with-ai-generated-code).
-- Supporting, not agent-specific: 66% of developers are frustrated by AI output that is "almost right". The question covers AI tools in general [Data, survey] (https://survey.stackoverflow.co/2025/). Users fact-checked less when Claude produced a finished artifact (5.5% against 9.2%) [Data, vendor, Claude.ai] (https://academy.claude.com/tutorials/the-ai-fluency-index).
-- Not used as support: Anthropic's expertise data. "What they ask Claude to verify" is an input to the expertise rating, so "experts verify more" is built into the measure (https://www.anthropic.com/research/claude-code-expertise).
+- Maintainers reviewed 296 AI pull requests that passed SWE-bench tests. About half would not have been merged, for reasons including code quality and breaking other code. Maintainers could not run CI, were told to ignore testing requirements, and scores were normalised against human patches, of which they would merge about 68% [Study] (https://metr.org/notes/2026-03-10-many-swe-bench-passing-prs-would-not-be-merged-into-main/). This shows that passing tests is not the same as acceptable work. It does not by itself show a failure of human checking.
+- In 33,596 agent-written pull requests, each extra failing CI check cut the odds of merging by about 15%. In a hand-labelled sample of 600 rejected pull requests (562 still accessible), 99 failed CI or tests [Data] (https://arxiv.org/abs/2601.15195).
+- Of merged Claude Code pull requests, 45.1% needed revision, and 47.7% of those revisions were bug fixes [Data] (https://arxiv.org/abs/2509.14745).
+- AI co-authored pull requests had about 1.7 times more issues (10.83 against 6.45 per pull request). The sample was 470 open-source pull requests, and AI authorship was inferred from signals in the pull request [Data, vendor] (https://www.coderabbit.ai/blog/state-of-ai-vs-human-code-generation-report).
+- The Replit agent gave misleading accounts of what it had done, including fabricated data and a false claim that rollback was impossible [Incident] (https://incidentdatabase.ai/entities/replit).
+- 9 of 13 observed professionals reviewed every agent change using diffs, tests, runs or debuggers [Study] (https://arxiv.org/abs/2512.14012). This is what experienced people do. It does not show that it improves outcomes.
+- Supporting: in a CHI 2025 survey of 319 knowledge workers, higher confidence in generative AI was associated with less critical thinking [Data, survey, self-report, vendor] (https://www.microsoft.com/en-us/research/?p=1135061). 66% of developers report frustration with AI output that is "almost right" [Data, survey] (https://survey.stackoverflow.co/2025/ai). A two-wave survey found engineers' time shifted from creating code to verifying it (n=95, mostly chat tools) [Data] (https://arxiv.org/abs/2605.23135). In an ACM survey (763 responses), 17 of 243 instructors who described course changes said they now put more weight on debugging, testing and verifying AI code [Data, survey] (https://acm-education-genai-task-force.github.io/ACM_Taskforce_GenAI_Report_16Feb26.pdf).
+- Opinion: "Your job is to deliver code you have proven to work" (Simon Willison) (https://simonwillison.net/2025/Dec/18/code-proven-to-work/).
 
-**Strength.** Strong that agents misreport and game checks, from in-the-wild data, two benchmarks and repository mining. Strong that setup reduces gaming, in benchmarks. Unknown how well people catch overclaims: no study measures it.
+**Strength.** Problem: strong. Several large datasets agree that unchecked generated work often fails. Skill: weak. How well people catch defects, and whether better checkers get better outcomes, is not measured.
 
-**Erodes with agents?** Unknown. Plausibly, because accepting a "done" report is easy. Not measured.
+**Does it weaken?** Measured once. In open-source projects, reviewer approval of agent pull requests rose from 30.1% to 36.8% over time while comments per review fell 22% and words per review fell 28% [Data] (https://arxiv.org/abs/2606.22721). Supporting: in Claude.ai chats that produced an artifact, fact-checking inside the chat was less common (5.5% against 9.2%). This is chat, not agents, one week of data, and users may have checked elsewhere [Data, vendor] (https://academy.claude.com/tutorials/the-ai-fluency-index).
 
 **Practice moments.**
-1. *Before the agent starts.* The person names the check that would prove the work. After the run, the tool shows whether that check ran and what it returned.
-2. *When the agent says "done".* The tool lists the agent's claims. The person marks each as checked or unchecked. The tool then shows the trace: files actually read, tests actually run, test files edited.
-3. *When the agent edits a test or a check.* The tool flags it at once. The person accepts or rejects the edit before anything else continues.
-4. *When setting up a long or unattended run.* The person decides whether tests are read-only and whether the agent has an explicit way to stop and report.
+- *Before a task starts.* The person writes the one check that would prove it worked. Feedback: the tool runs that check at the end and shows the result.
+- *When a change is reported done.* Before reading the summary, the person names the evidence that it works and predicts whether a key test would fail if the change were reverted. Feedback: the tool reverts the change, runs the test and shows whether it fails.
+- *When tests are added or edited.* The person names one input the tests miss. Feedback: the tool runs that input.
 
 ---
 
-### 2. Controlling permissions and the agent as an attack surface
+### 2. Reading and understanding code you did not write
 
-**Definition.** Limiting what an agent can reach or destroy (permission modes, sandboxes, separate dev and prod, deny rules, backups), and treating anything the agent reads as a possible instruction.
+**Definition.** Reading code until you can say what it does, what calls it and what would break if it changed.
 
-**Observable acts.** Choosing a permission mode on purpose. Adding a deny rule or backup before a destructive step. Checking a new MCP server or untrusted input source before connecting it.
-
-**Why it matters more now.** Agents run commands. A sentence in a prompt is not a control. Anything the agent reads can steer it.
+**Why it matters more now.** More of the code an engineer owns was written by someone or something else. Without understanding it, they cannot verify, debug or extend it. How a running system behaves across services belongs to skill 8.
 
 **Evidence.**
-- Agents with broad permissions destroyed real data. The Replit agent deleted a production database during a code freeze it had been told about, and gave misleading accounts of what it had done [Incident] (https://www.theregister.com/2025/07/21/replit_saastr_vibe_coding_incident/, https://incidentdatabase.ai/entities/replit). Google Antigravity deleted a user's D: drive partition while the user had Turbo mode on, which runs commands without approval [Incident] (https://www.theregister.com/2025/12/01/google_antigravity_wipes_d_drive/).
-- Attackers used installed agents. The Nx supply-chain malware ran AI CLIs with `--dangerously-skip-permissions`, `--yolo` and `--trust-all-tools` to search for secrets [Incident] (https://www.stepsecurity.io/blog/supply-chain-security-alert-popular-nx-build-system-package-compromised-with-data-stealing-malware).
-- A wiper prompt was committed into the Amazon Q extension and shipped in version 1.84.0. AWS says the code was malformed and would not run, and that no customer resources were affected [Incident] (https://www.bleepingcomputer.com/news/security/amazon-ai-coding-agent-hacked-to-inject-data-wiping-commands/).
-- Prompt injection against agents has been shown. A malicious GitHub issue could make an agent leak private repositories through the GitHub MCP server, shown on demo repositories [Demonstration] (https://invariantlabs.ai/blog/mcp-github-vulnerability). Copilot CVE-2025-53773 let injected text turn on auto-approve [Demonstration, disclosed vulnerability] (https://embracethered.com/blog/posts/2025/github-copilot-remote-code-execution-via-prompt-injection).
-- Approval prompts wear out. Claude Code users accept 93% of manual permission prompts, which Anthropic calls "approval fatigue" [Data, vendor] (https://www.anthropic.com/engineering/claude-code-auto-mode).
-- A high-reliance coder let the agent run terminal commands without permission [Study, 7 live streams] (https://arxiv.org/abs/2512.22418). 7 of 99 surveyed professionals raised security-critical work, 5 of them calling agents unsuitable for it [Study] (https://arxiv.org/abs/2512.14012).
-- Opinion: "If something has to happen every time, make it a hook, a deny rule, or a managed setting" [Opinion, vendor] (https://code.claude.com/docs/en/best-practices).
+- Students using an agent that edits code directly understood their code less than chatbot users (n=54, p<0.01). Accepting edits without review went with weaker comprehension [Study] (https://arxiv.org/abs/2607.26375).
+- In 7 YouTube live streams of vibe coding, low-reliance coders read the diffs. One high-reliance coder never opened a file in about five hours [Study, observational] (https://arxiv.org/abs/2512.22418).
+- Users found agent behaviour hard to understand [Study] (https://arxiv.org/abs/2507.08149).
+- 65 of 99 surveyed professionals named their existing expertise as critical to working with agents. Observers noted code comprehension and debugging skill in 6 of 13 observed participants [Study] (https://arxiv.org/abs/2512.14012).
+- Supporting: in the chat-assistant RCT, people who generated code and then asked questions about it scored about 86%. People who fully delegated scored about 39%. Subgroups had 2 to 7 people [Study, vendor] (https://arxiv.org/abs/2601.20245). Developers spent about 58% of their time on comprehension in a field study (Xia et al., TSE 2018) [Study, supporting] (https://xin-xia.github.io/publication/TSE17.pdf).
+- Opinion: "cognitive debt", meaning code no one on the team can explain (Storey, https://arxiv.org/abs/2603.22106; Willison, https://simonwillison.net/2026/Feb/15/cognitive-debt). At Brown's agent course, a majority of students worried they did not understand their own codebase [Opinion, experience report] (https://cs.brown.edu/courses/csci1970kf/agentic-spr-2026/visitors.html).
 
-**Strength.** Moderate. Real incidents and demonstrations show the harm is possible. No study measures how often it happens in agent use, or which human habits prevent it.
+**Strength.** Problem: strong for learners, from one agent study and one supporting vendor RCT, both on students. Skill: weak for working engineers. Their evidence is observation and opinion.
 
-**Erodes with agents?** Likely through approval fatigue (93% acceptance). Erosion of a skill is not measured.
+**Does it weaken?** Yes for learners, measured right after a task. How a person uses the tool matters: asking for explanations kept learning, full delegation did not (supporting RCT). Agent tools lean toward doing, not explaining: 79% of Claude Code conversations were classed as automation against 49% on Claude.ai [Data, vendor] (https://www.anthropic.com/research/impact-software-development).
 
 **Practice moments.**
-1. *When the person enables a broader permission mode, or the agent is about to run a destructive or irreversible command.* The tool shows what is reachable (prod data, credentials, the home directory). The person adds one safeguard: a deny rule, a backup or a branch.
-2. *When a new MCP server is connected, or the agent will read untrusted content (issues, web pages).* The tool shows a concrete injection example for that source. The person decides what the agent may do after reading it.
-3. *When the agent adds a dependency.* The person confirms the package exists and is the intended one.
+- *Before running unfamiliar code.* The person predicts what it will output or do. Feedback: the run. Supporting: in a study of 82 novices, asking learners to explain their own reasoning before seeing the AI's code (Lead-and-Reveal) gave the best match between perceived and actual ability, and Trace-and-Predict also balanced engagement and learning [Study, novices, chat-style AI] (https://arxiv.org/abs/2410.08922).
+- *Before approving a diff.* The person names one caller or one input that the change affects. Feedback: the tool checks the answer against the call graph or runs the input.
 
 ---
 
-### 3. Reviewing agent diffs
+### 3. Debugging and diagnosis
 
-**Definition.** Reading an agent's change well enough to explain it and to judge whether it fits the codebase and the intent. Behaviour checks belong to skill 1. Security of the code itself is a code-level skill (see below).
+**Definition.** Finding the real cause of a failure by forming a hypothesis, running an experiment that tests it and narrowing down, rather than trying fixes until the symptom goes away.
 
-**Observable acts.** Opening the files. Explaining a hunk in one's own words. Answering a question only the code can answer.
-
-**Why it matters more now.** Agents make large changes cheaply, so review becomes the bottleneck, and approval can become a habit.
+**Why it matters more now.** Someone has to find the cause when a generated fix fails, loops or hides a symptom.
 
 **Evidence.**
-- Review attention fell with exposure. Across 400 repeat reviewers and 11,429 reviews of agent PRs, approval rose from 30.1% to 36.8% between early and late reviews, while comments per review fell 22% and words per review fell 28% [Data] (https://arxiv.org/abs/2606.22721). Another reading is possible: those agents' PRs may have improved. The data shown does not control for quality.
-- Many agent PRs get little recorded review. 61.38% had no recorded review. In repositories with both human and agent PRs the rate was 28.92%. The authors warn that GitHub review records may not show real oversight [Data] (https://arxiv.org/abs/2605.02273). 38% of labelled rejected agent PRs had no meaningful human reviewer interaction [Data] (https://arxiv.org/abs/2601.15195).
-- These four mining studies (2601.15195, 2605.02273, 2606.22721, 2602.23905) all use the same AIDev dataset. They are separate teams, not independent samples.
-- Quality depends on the agent. Across 37,623 PRs from five agents, Codex PRs were reverted less often than human PRs (6.1% against 11.5%) and Devin PRs more often (14.5%). Pooled agent code had fewer security smells than human code (odds ratio 0.63) [Data] (https://arxiv.org/abs/2609.17598). This cuts against a flat claim that agent code is worse.
-- Users new to agents found agent changes hard to follow (20 students, 2025) [Study] (https://arxiv.org/abs/2507.08149). One high-reliance coder never opened a file in nearly five hours [Study, 7 live streams] (https://arxiv.org/abs/2512.22418).
-- Supporting, not agent-specific: AI co-authored PRs carried about 1.7 times more issues than human PRs, with security issues 1.57 times and maintainability 1.64 times. The sample is 470 PRs, and CodeRabbit's own AI reviewer found the issues [Data, vendor] (https://coderabbit.ai/whitepapers/state-of-AI-vs-human-code-generation-report, coverage at https://www.theregister.com/2025/12/17/ai_code_bugs/). On teams with high use of AI assistants, mostly autocomplete, review time rose 91% and PR size 154% [Data, vendor, telemetry to June 2025] (https://www.faros.ai/blog/ai-productivity-paradox-report-2025).
-- Opinion: Canva tests spotting defects in AI code in interviews, with no validity data (https://canva.dev/blog/engineering/yes-you-can-use-ai-in-our-interviews).
+- In troubled sessions, users rated novice reached verified success 4% of the time against 15% for experts, and abandoned 19% of sessions against 5% to 7% [Data, vendor, model-rated] (https://www.anthropic.com/research/claude-code-expertise).
+- In the vibe-coding live streams, a high-reliance coder pasted raw errors to the agent in 43 of 79 prompts, against 5 of 54 for a low-reliance coder [Study, observational] (https://arxiv.org/abs/2512.22418).
+- Supporting: in the chat-assistant RCT, debugging showed the largest gap, and handing each error back to the AI scored about 24%, the lowest pattern [Study, vendor] (https://arxiv.org/abs/2601.20245). 45.2% of developers say debugging AI code takes longer [Data, survey] (https://survey.stackoverflow.co/2025/ai). In a 2025 student study, no student used a debugger [Study, supporting] (https://arxiv.org/abs/2510.04986).
+- Opinion: an agent "fixed" a race condition by adding a sleep (Russinovich and Hanselman) (https://www.theregister.com/2026/02/23/microsoft_ai_entry_level_russinovich_hanselman/).
 
-**Strength.** Moderate. Large agent PR data shows review is thin and may thin further, but it comes from one dataset, and quality varies by agent. No study measures whether reviewers understand what they approve.
+**Strength.** Problem: moderate. Skill: moderate. The two strongest sources are both vendor sources: a model-rated dataset and an RCT with a chat assistant. They agree with one small observational study.
 
-**Erodes with agents?** Possibly. The habituation data fits erosion but also fits better PRs. Supporting, not agent-specific: code reading was impaired in the chat-assistant RCT (https://arxiv.org/abs/2601.20245).
+**Does it weaken?** In the supporting RCT, AI users hit fewer errors during the task and were worse at diagnosis afterwards. Not measured in working engineers.
 
 **Practice moments.**
-1. *Before approving.* The person answers one question only the code can answer ("what happens on empty input?", "what calls this?"). The tool then shows the answer from the code or a quick run.
-2. *Before opening a diff.* The person predicts which hunk is riskiest. Over time the tool compares those predictions with hunks that were later revised or reverted, or where a reviewer found a defect.
-3. *Late in a long session.* When review effort (files opened, questions asked) has dropped against earlier changes, the tool asks the person to set the review depth for the next change.
+- *When a test fails or an error appears.* Before any fix is tried, the person writes a one-line hypothesis about the cause. Feedback: once the cause is found, the tool shows the hypothesis next to it. Over time it shows how often the person's hypotheses were right.
+- *After two failed fix attempts.* The person runs one experiment of their own: a log line, a smaller input or a bisect. Feedback: the experiment's result.
 
 ---
 
-### 4. Steering a run that has gone wrong
+### 4. Security and risk judgment
 
-**Definition.** Noticing when an agent loops, repeats a failed fix or drifts from the goal, and stepping in with a new constraint, a narrower goal or a fresh start, instead of "try again".
+**Definition.** Naming the trust boundary in a change and the step that cannot be undone, then limiting the damage: least privilege, separate environments, backups and a way back. This is the teachable core. Security as a whole field is too wide to be one skill.
 
-**Observable acts.** Stopping the agent after repeated failed fixes. Restating the goal or a constraint. Starting a clean session when context is polluted.
-
-**Why it matters more now.** Pasting the error back is easy and often works. When it does not, the run can burn time and drift. Debugging the software itself is an old skill and sits in the code-level list.
+**Why it matters more now.** Generated code often works and is insecure. Tools that act on a system run commands, install packages and touch data. Software is built faster by people who may lack a security background.
 
 **Evidence.**
-- Experts recover, novices abandon. Abandonment was 19% for novice-rated sessions against 5% to 7% for others. Verified success in troubled sessions was 4% for novices against 15% for experts [Data, vendor, correlational] (https://www.anthropic.com/research/claude-code-expertise). The authors: "part of the value of expertise appears to be the ability to steer the agent" [Opinion].
-- A high-reliance coder pasted raw errors in 43 of 79 prompts, against 5 of 54 for a low-reliance coder. Coders anchored on the first output [Study, 7 live streams] (https://arxiv.org/abs/2512.22418).
-- Users new to agents found them hard to steer and overly proactive [Study] (https://arxiv.org/abs/2507.08149).
-- Supporting, not agent-specific: in the chat-assistant RCT, handing each error back to the AI was the lowest-scoring pattern (about 24%) [Study, post-hoc subgroup] (https://arxiv.org/abs/2601.20245). 45.2% of developers say debugging AI code takes longer [Data, survey, AI tools in general] (https://survey.stackoverflow.co/2025/ai).
+- 45% of code samples from more than 100 language models failed security tests, and models failed to defend against cross-site scripting in 86% of relevant cases. These were code snippets, not agent runs [Data, vendor benchmark] (https://www.veracode.com/genai-code-security-report).
+- Security issues were up to 2.74 times more common in AI co-authored pull requests (470 pull requests, AI authorship inferred) [Data, vendor] (https://www.coderabbit.ai/blog/state-of-ai-vs-human-code-generation-report).
+- The Replit agent deleted a production database during a code freeze it had been told about [Incident] (https://www.theregister.com/2025/07/21/replit_saastr_vibe_coding_incident/). Malware in the Nx package ran Claude, Gemini and Amazon Q command-line tools with the flags `--dangerously-skip-permissions`, `--yolo` and `--trust-all-tools` [Incident] (https://www.stepsecurity.io/blog/supply-chain-security-alert-popular-nx-build-system-package-compromised-with-data-stealing-malware). Text injected into a repository could switch off Copilot's approvals (CVE-2025-53773) [Incident] (https://embracethered.com/blog/posts/2025/github-copilot-remote-code-execution-via-prompt-injection).
+- 5 surveyed professionals called security-critical code unsuitable for agents, against 2 who called it suitable. These are open-ended comments, not votes [Study] (https://arxiv.org/abs/2512.14012). An Anthropic engineer caught a solution that was "really smart in the dangerous way" [Opinion, interview, vendor] (https://www.anthropic.com/research/how-ai-is-transforming-work-at-anthropic).
+- Supporting: models recommend packages that do not exist, averaging 5.2% of the time for commercial models and 21.7% for open-source models, and 43% of those names came back on all 10 reruns [Study] (https://arxiv.org/abs/2406.10279). People with an AI assistant wrote less secure code on 4 of 5 tasks and were more confident it was secure [Study, 2023] (https://arxiv.org/abs/2211.03622).
 
-**Strength.** Moderate. Large session data and small observation studies agree. The session data is correlational and the rating partly uses who corrects whom.
+**Strength.** Problem: strong (vendor data, incidents, supporting study). Skill: weak. No study measures how often reviewers find these flaws.
 
-**Erodes with agents?** Unknown. Not measured.
+**Does it weaken?** Likely. The supporting 2023 study found overconfidence rose with trust in the assistant. Falling review effort (skill 1) suggests security checks thin out too. That link is this map's inference [Opinion].
 
 **Practice moments.**
-1. *After two or three agent fixes on the same failure.* The tool pauses. The person writes a one-line hypothesis or a new constraint. Afterwards the tool shows whether the next fix confirmed it.
-2. *When the agent's plan drifts from the stated goal.* The tool shows the original goal next to the current plan, and the person chooses: continue, narrow or restart.
+- *When a change touches authentication, input handling, secrets or personal data.* The person names the trust boundary and one input that could abuse it. Feedback: the tool sends that input in a test.
+- *When a new dependency is added.* The person checks the package exists and is the intended one. Feedback: the registry lookup.
+- *Before an irreversible step (a migration, a delete, a deploy).* The person states how to roll back. Feedback: the tool checks that the stated rollback exists, for example a down migration or a backup.
 
 ---
 
-### 5. Specifying intent, non-goals and a way for the agent to stop
+### 5. Framing the problem and writing the brief
 
-**Definition.** Before delegating, stating the goal, what must not change, what is out of scope, the acceptance check, and what the agent should do if the task cannot be done as asked.
+**Definition.** Turning a vague need into a clear statement of the goal, the constraints, what is out of scope, who it is for and how you will know it is done. Then writing it as a brief that someone without your context could build from.
 
-**Observable acts.** A short written goal with at least one non-goal. An explicit "stop and report if" condition.
-
-**Why it matters more now.** Agents fill gaps with plausible guesses, and when the task is impossible some cheat rather than stop.
+**Why it matters more now.** A builder who lacks your context fills gaps with plausible guesses. This was true of a new colleague or a contractor before it was true of an agent. Fast builders turn a badly framed problem into a lot of wrong work quickly.
 
 **Evidence.**
-- Giving the agent a way to stop changed behaviour: an abort option cut GPT-5's cheating from 54% to 9% on impossible tasks, less so for Opus 4.1 [Benchmark] (https://arxiv.org/abs/2510.20270).
-- Unwanted features made up 4% of 562 labelled rejections of agent PRs, and incorrect or incomplete implementations 6% (3% plus 2%) [Data] (https://arxiv.org/abs/2601.15195).
-- 11 of 13 observed professionals controlled design through plans [Study] (https://arxiv.org/abs/2512.14012). Users made about 70% of planning decisions [Data, vendor] (https://www.anthropic.com/research/claude-code-expertise). Design and planning rose from 1.0% to 9.9% of Claude Code work at Anthropic [Data, vendor] (https://www.anthropic.com/research/how-ai-is-transforming-work-at-anthropic).
-- Not used as support: "precise framing goes with success" from Anthropic's expertise data, because framing is an input to the expertise rating.
-- Opinion: Claude Code docs recommend an interview, then a SPEC.md [vendor] (https://code.claude.com/docs/en/best-practices). Heavy spec tools are overkill for small changes (https://martinfowler.com/articles/exploring-gen-ai/sdd-3-tools.html). A UT Austin agent-era course splits work into "what to specify, what to delegate, what to verify" (https://www.cs.utexas.edu/~witchel/378AC/).
+- In the hand-labelled sample of 600 rejected agent pull requests, 24 were unwanted features, 19 incorrect and 15 incomplete implementations, and 7 had a wrong task description [Data] (https://arxiv.org/abs/2601.15195).
+- Users kept about 70% of planning decisions. Precise framing went with higher verified success, but framing was also an input to the expertise rating, so this is partly circular [Data, vendor, model-rated] (https://www.anthropic.com/research/claude-code-expertise). 11 of 13 observed professionals controlled design through plans [Study] (https://arxiv.org/abs/2512.14012).
+- Models struggle to tell when instructions are underspecified [Study, benchmark] (https://arxiv.org/abs/2502.13069). METR names implicit requirements as a likely cause of the 2025 slowdown [Study] (https://arxiv.org/abs/2507.09089).
+- Opinion: specification and verification are the most durable skills (NUS-Google white paper) (https://arxiv.org/abs/2606.07545). Counterpoint: heavy specs are overkill for small changes (Böckeler) (https://martinfowler.com/articles/exploring-gen-ai/sdd-3-tools.html).
 
-**Strength.** Moderate. One benchmark shows a stop condition matters. Mining and observation show that scope misses cause rejections. No controlled evidence that writing specs improves outcomes in real use.
+**Strength.** Problem: moderate, from consistent observational data. Skill: weak. No controlled test that clearer framing improves outcomes.
 
-**Erodes with agents?** Possibly. Low-effort prompting went with weaker comprehension in students (https://arxiv.org/abs/2607.26375). Not measured as skill loss.
+**Does it weaken?** Likely, not measured. A vague request still produces something plausible, so the framing step gets skipped [Opinion].
 
 **Practice moments.**
-1. *Before a multi-file task.* The person writes the goal, one non-goal, one thing that must not change, and a stop condition. The size matches the task.
-2. *After the agent plans, before it acts.* The tool shows the agent's stated assumptions. The person approves or rejects each one.
-3. *After the run.* The tool shows any change outside the stated scope, and the person keeps or reverts it.
+- *Before a non-trivial task.* The person writes the goal, one non-goal and the acceptance check. Feedback: after the run, the tool shows what was built next to the brief and lists what the builder had to guess, so the person sees which gaps in the brief caused rework.
 
 ---
 
-### 6. Choosing autonomy, chunk size and which agent to use
+### 6. Delegating and supervising work
 
-**Definition.** Matching how much the agent does per prompt, how often the person checks, and which agent is used, to how risky the work is and how easy it is to check.
+**Definition.** Deciding what to hand off, in what size, with what checkpoints, and how closely to check the result, given the stakes and how easy the result is to check. The same judgment applies to a junior engineer, a contractor or an agent.
 
-**Observable acts.** Picking an autonomy level (plan review, checkpoints, unattended) at task start. Splitting work that is hard to check. Using a different agent or no agent for a task type that has gone badly.
-
-**Why it matters more now.** The right chunk is not always small. Experts hand off bigger chunks when the work is easy to check. Agents also differ in quality.
+**Why it matters more now.** More work is handed off, and handing off badly costs more when the builder is fast.
 
 **Evidence.**
-- Experts got about 12 agent actions per prompt against about 5 for novices [Data, vendor, correlational] (https://www.anthropic.com/research/claude-code-expertise). Observed professionals had a median of 1.8 steps per prompt, and those with plans of 70 or more steps ran at most 6 at once [Study] (https://arxiv.org/abs/2512.14012). Together these suggest chunk size follows how easy the step is to check, not a rule that smaller is better [Opinion].
-- Professionals rate suitability by task: "one-shotting without verification" 5 suitable to 23 unsuitable, business logic 2 to 15 [Study] (https://arxiv.org/abs/2512.14012).
-- Size predicts rejection: unmerged agent PRs were larger and touched more files [Data] (https://arxiv.org/abs/2601.15195). "Too large" was 3.3% of Claude Code PR rejections, among the top three reasons [Data] (https://arxiv.org/abs/2509.14745). Low-experience vibe coders had 2.15 times more commits per PR, 31% lower acceptance and 4.52 times more review comments [Data] (https://arxiv.org/abs/2602.23905).
-- Agents differ: revert rates ranged from 6.1% (Codex) to 14.5% (Devin) against 11.5% for humans [Data] (https://arxiv.org/abs/2609.17598).
-- At Anthropic, most engineers say they can fully delegate only 0% to 20% of their work [Data, vendor, self-report]. From transcripts, the average longest run of consecutive tool calls rose from 9.8 to 21.2 [Data, vendor] (https://www.anthropic.com/research/how-ai-is-transforming-work-at-anthropic).
-- Supporting, not agent-specific: in METR's RCT on early-2025 tools (mainly Cursor with Claude 3.5 and 3.7 Sonnet), experienced developers forecast a 24% speedup, believed afterwards they were 20% faster, and were measured 19% slower [Study] (https://arxiv.org/abs/2507.09089). So feeling is a poor guide and the tool should supply measurements. METR's 2026 follow-up was inconclusive: 30% to 50% of developers skipped tasks they did not want to do without AI [Study] (https://metr.org/blog/2026-02-24-uplift-update/).
-- Supporting, not agent-specific: 84% of continuing users of AI assistants reported productivity gains, while negative ratings of the work experience rose from 14% to 27%. Survivor bias applies [Data, survey] (https://arxiv.org/abs/2605.23135). DORA 2025 links AI adoption to higher delivery instability, and 30% of respondents trust AI "a little" (23%) or "not at all" (7%) [Data, survey, correlational] (https://dora.dev/research/2025/dora-report/).
+- Anthropic engineers reported fully delegating only 0% to 20% of their work, mostly tasks that are easy to check and low-stakes [Data, self-report, vendor] (https://www.anthropic.com/research/how-ai-is-transforming-work-at-anthropic).
+- Observed professionals ran a median of about 1.8 steps per prompt, and those with plans of more than 70 steps ran at most 6 at once. "One-shotting without verification" was mentioned as unsuitable by 23 respondents and as suitable by 5 [Study] (https://arxiv.org/abs/2512.14012).
+- Opinion: the same review-depth judgment is what a lead uses for a colleague's work.
 
-**Strength.** Moderate. Agent data shows size, task type and agent choice affect outcomes. Nothing shows what good calibration looks like or how to train it. "Honest self-assessment" was dropped as a skill: METR shows introspection fails, so the tool must measure instead.
+**Strength.** Problem: moderate, from self-report and one observation study. Skill: weak. No study tests whether better delegation choices improve outcomes.
 
-**Erodes with agents?** Possibly, through habituation (skill 3). Not measured.
+**Does it weaken?** Unknown.
 
 **Practice moments.**
-1. *At task start.* The person rates stakes and how checkable the result is, and picks an autonomy level. After the task, the tool shows rework and correction rounds against that choice.
-2. *When a plan or diff passes a size threshold.* The tool shows the natural seams. The person decides whether to split.
-3. *Over weeks.* The tool shows how often accepted changes were later fixed or reverted, by task type and by agent. The person sets the default autonomy for the next task of that type.
+- *At the start of a task.* The person rates the stakes and how easy the result will be to check, and picks a review depth. Feedback: when later tests, review or rework show problems, the tool shows them next to the rating. This is feasible within a session or a pull request. Linking it to production defects is probably not.
 
 ---
 
-### 7. Keeping a working understanding of code you did not write
+### 7. Breaking work into small, reversible changes
 
-**Definition.** Understanding how the code you ship works and why, including concepts the agent introduced, well enough to change, debug and check it without the agent. Code comprehension itself is an old skill. The agent-specific part is narrow: code arrives faster than it is understood, and agents default to doing over explaining.
+**Definition.** Splitting a large goal into steps that are each small enough to understand, check and undo on their own.
 
-**Observable acts.** Asking for the key idea before accepting a change. Explaining a changed part without looking.
+**Why it matters more now.** Large changes are harder to check and are rejected more often. When a builder produces a large change as easily as a small one, size stops feeling expensive until review.
 
 **Evidence.**
-- With an agent that edits code directly, against a chatbot, 54 students finished the first task faster but understood their code less (Cohen's d above 0.80). Low-effort prompting and accepting edits without review went with weaker comprehension. On extending their code without AI, agent users did about as well or slightly better in raw scores, and worse only after controlling for how accurate their first-task code was. Students knew they understood less but still preferred agents [Study] (https://arxiv.org/abs/2607.26375).
-- 79% of Claude Code conversations were automation against 49% on Claude.ai, and learning patterns were much rarer on Claude Code [Data, vendor] (https://www.anthropic.com/research/impact-software-development).
-- Engineers say fast output makes it harder to take time to learn, and some practise without Claude to avoid atrophy [Opinion, interviews] (https://www.anthropic.com/research/how-ai-is-transforming-work-at-anthropic).
-- Margaret-Anne Storey's "cognitive debt": a team losing shared understanding of its system [Opinion] (https://arxiv.org/abs/2603.22106, quoted at https://simonwillison.net/2026/Feb/15/cognitive-debt).
-- Brown's agentic course page reports that "a majority of students were concerned" they did not understand their own codebase [Opinion, experience report] (https://cs.brown.edu/courses/csci1970kf/agentic-spr-2026/visitors.html).
-- Supporting, not agent-specific: in the chat-assistant RCT (n=52), the AI group scored 50% against 67% (d=0.738), with no significant speed gain. Generation-then-comprehension scored about 86%, conceptual inquiry about 65%, full delegation about 39%. These patterns are post-hoc, with 2 to 7 people each (generation-then-comprehension is n=2), and were not pre-registered. Learners chose their own pattern, so this does not show that prompting people into a pattern would work [Study] (https://arxiv.org/abs/2601.20245).
-- Supporting, education, chat era: when students had to explain their code in weekly oral reviews, AI use rose (pasted share 61% to 68%) with no drop in exam scores [Study, n=96] (https://arxiv.org/abs/2605.21374).
+- Unmerged agent pull requests were larger and touched more files, and maintainers asked for "small, focused" changes [Data] (https://arxiv.org/abs/2601.15195). In a separate study, size was one of the few stated reasons for rejecting Claude Code pull requests (3 of 92 rejections) [Data] (https://arxiv.org/abs/2509.14745).
+- Pull request size rose 154% on high-adoption teams [Data, vendor, secondary] (https://www.faros.ai/blog/ai-productivity-paradox-report-2025).
+- In the vibe-coding live streams, undo, version control, small changes, automated tests and linters were all used as safeguards against unpredictable agent behaviour. The paper does not rank them [Study, observational, 7 streams] (https://arxiv.org/abs/2512.22418).
+- Supporting: DORA lists working in small batches as a capability that shapes AI's effect [Data, survey, correlational] (https://cloud.google.com/blog/products/ai-machine-learning/introducing-doras-inaugural-ai-capabilities-model).
 
-**Strength.** Moderate for students: one controlled study with a true agent. Unknown for experienced engineers in their own codebase over months.
+**Strength.** Problem: moderate. Several datasets agree. Skill: weak. No controlled test.
 
-**Erodes with agents?** Lower skill gain was measured right after a task. Erosion over time was not.
+**Does it weaken?** Likely, not measured [Opinion].
 
 **Practice moments.**
-1. *When the agent first uses a library, API or part of the codebase new to the person.* The person predicts what the code will do. The tool then runs it or shows a test result.
-2. *After a change lands.* The person writes a small test or states what one input will produce. The tool checks this against the code, not against the agent's own explanation, which may be wrong (skill 1).
-3. *When the person returns to a feature after other work.* The person sketches how a request flows through it, then the tool shows the call path.
+- *When a planned change grows past a size threshold.* The person names where it could be split. Feedback: the tool shows how review time and rework compared for the person's past large and small changes.
 
 ---
 
-### 8. Supplying minimal, enforced context
+### 8. Operating software in production
 
-**Definition.** Knowing the project, domain and team facts the agent cannot see (CI rules, architecture, business rules, work in progress elsewhere), giving them to the agent, and turning repeated corrections into tests, hooks or CI rules first, with short prose only for what cannot be enforced.
+**Definition.** Knowing how a running system behaves and keeping it safe to change: observability, safe rollout, rollback and learning from incidents.
 
-**Observable acts.** Stating the constraint that applies to a change. Turning a repeated correction into a test or hook.
-
-**Why it matters more now.** Most rejections of agent PRs are about missing project context. But long prose context files mostly cost tokens and do not help.
+**Why it matters more now.** Faster change means more changes reach production, and each one can break something that tests did not cover.
 
 **Evidence.**
-- Claude Code PRs were accepted at 83.8% against 91.0% for human PRs, and rejections were mostly about project context, not code defects [Data] (https://arxiv.org/abs/2509.14745).
-- In the 15 agent PRs with the most review comments, friction came from code that ignored CI and build constraints and lacked architectural context [Study, qualitative, n=15] (https://arxiv.org/abs/2602.23905).
-- 23% of labelled rejected agent PRs duplicated existing work [Data] (https://arxiv.org/abs/2601.15195).
-- 65 of 99 surveyed professionals called domain expertise critical, and legacy integration was judged unsuitable for agents (3 to 17) [Study] (https://arxiv.org/abs/2512.14012). Software-occupation users were only slightly ahead of others on verified success (34% against 29%) [Data, vendor] (https://www.anthropic.com/research/claude-code-expertise).
-- Context files mostly did not help. Across several agents and models, repository context files generally did not improve task success and raised inference cost by about 20% or more. Developer-written files did better than LLM-generated ones. The authors advise including only instructions the agent needs that are not already in the README, and testing them [Benchmark] (https://arxiv.org/abs/2602.11988).
-- Adoption is wide: studies count 253 and 2,303 context files [Data] (https://arxiv.org/abs/2509.14744, https://arxiv.org/abs/2511.12884), and configuration mechanisms of all kinds in 2,853 repositories [Data] (https://arxiv.org/abs/2602.14690). 26.6% of Codex users use skills [Data, vendor] (https://arxiv.org/abs/2606.26959).
-- Opinion: "harness engineering", where the human steers by building guides and sensors around the agent (https://martinfowler.com/articles/harness-engineering.html, https://openai.com/index/harness-engineering/).
+- DORA 2024 estimated a 7.2% fall in delivery stability as AI adoption rose [Data, survey, correlational] (https://cloud.google.com/blog/products/devops-sre/announcing-the-2024-dora-report). Coverage of the report gives this as the estimate for each 25% rise in adoption [Data, secondary] (https://redmonk.com/rstephens/2024/11/26/dora2024/). The report PDF was not checked.
+- DORA 2025 found AI adoption associated with higher throughput and also higher instability: "AI adoption not only fails to fix instability, it is currently associated with increasing instability" [Data, survey, correlational, secondary] (https://redmonk.com/rstephens/2025/12/18/dora2025/).
+- The Replit database deletion shows what happens without separation of environments and a working rollback [Incident] (https://www.theregister.com/2025/07/21/replit_saastr_vibe_coding_incident/).
 
-**Strength.** Moderate that missing context causes rejections. Evidence against the idea that more prose context helps.
+**Strength.** Problem: moderate, from correlational survey data. Skill: weak. No study tests whether operations skill reduces this instability.
 
-**Erodes with agents?** Unknown. Not measured.
+**Does it weaken?** Unknown.
 
 **Practice moments.**
-1. *When the agent proposes a change that crosses a module boundary, a CI rule or a business rule.* The person states the constraint that applies. The tool then shows whether the change respected it.
-2. *When the person corrects the agent on the same point a second time.* The tool offers a test, hook or CI rule first, and a one-line context note only if the rule cannot be enforced.
-3. *When a new session rediscovers a fact.* The tool shows what was in the agent's context, and the person decides whether it belongs there.
+- *Before merging a change that reaches users.* The person names the signal that would show it is broken and how to roll it back. Feedback: the tool checks that the signal exists (a metric, log or alert) and that the rollback path is real.
 
 ---
 
-### 9. Catching design decisions nobody chose
+### 9. Design, architecture and data modelling
 
-**Definition.** Spotting design decisions made implicitly inside agent output, such as a new dependency, a new abstraction, a changed data model, or a second way of doing something already solved, and making each one an explicit decision. General architecture skill is old and sits in the code-level list.
+**Definition.** Deciding whether a new module, abstraction, dependency or schema is justified, naming the main cost of the options, and recording why. For data: stating the invariants and how existing data migrates. This is the teachable core. Architecture as a whole is too wide to be one skill.
 
-**Observable acts.** Accepting or rejecting a new module, dependency or data model as a decision. Choosing which of two duplicate approaches stays.
+**Why it matters more now.** Generated changes are made one at a time and make structural choices silently. Each can be fine on its own while the codebase drifts. Code is cheap to regenerate. A schema holding real data is not.
 
 **Evidence.**
-- After Cursor adoption in about 806 repositories, static analysis warnings rose about 30% and code complexity about 41%, and the debt later reduced velocity. Most adoptions fell before Cursor's agent mode, but the authors report the results hold for adoptions after its release [Study, quasi-experiment] (https://arxiv.org/abs/2511.04427).
-- 23% of labelled rejected agent PRs duplicated existing work [Data] (https://arxiv.org/abs/2601.15195).
-- 50 of 99 professionals drive architecture themselves, and agent suitability for architecture split 13 to 23 [Study] (https://arxiv.org/abs/2512.14012).
-- Opinion: "vibe architecting", where agents make architectural choices with little record, and changing only the prompt gave structurally different systems (https://arxiv.org/abs/2604.04990). "Intent debt" (https://arxiv.org/abs/2603.22106). Persona prompts change style, not structure (https://newsletter.kentbeck.com/p/taming-the-genie-like-kent-beck). DORA calls AI an amplifier of existing strengths and weaknesses [Opinion, in a survey report] (https://dora.dev/research/2025/dora-report/). One student in Brown's agentic course called agent code "messy and convoluted" [Opinion, one student's view] (https://www.brown.edu/news/2026-06-11/agentic-studio-ai-programming).
-- Supporting, not agent-specific: maintainability as a primary concern rose from 3% to 19% [Data, survey] (https://arxiv.org/abs/2605.23135).
+- In about 806 repositories, static analysis warnings rose about 30% and code complexity about 41% after Cursor adoption, and the debt later slowed development [Study, quasi-experiment] (https://arxiv.org/abs/2511.04427).
+- 50 of 99 surveyed professionals drive architecture themselves. Architecture was mentioned as suitable for agents by 13 respondents and as unsuitable by 23 [Study] (https://arxiv.org/abs/2512.14012). In a manual check of the 15 agent pull requests with the most review comments, friction came from missing architectural context [Data, 15 PRs inspected] (https://arxiv.org/abs/2602.23905).
+- Supporting: maintainability as a primary concern rose from 3% to 19% [Data, survey] (https://arxiv.org/abs/2605.23135). DORA 2025 calls AI an amplifier: "It magnifies the strengths of high-performing organizations and the dysfunctions of struggling ones" [Data, survey, correlational] (https://research.google/pubs/dora-2025-state-of-ai-assisted-software-development-report/).
+- Opinion: persona prompts "didn't change the fundamental structural decisions" (Kent Beck) (https://newsletter.kentbeck.com/p/taming-the-genie-like-kent-beck). One student in Brown's course described agent code as "messy and convoluted" [Opinion, student quote] (https://www.brown.edu/news/2026-06-11/agentic-studio-ai-programming).
 
-**Strength.** Moderate. One solid quasi-experiment on the outcome, plus duplicate data and opinion. No measure of the human skill.
+**Strength.** Problem: moderate. One quasi-experiment on code health plus surveys. Skill: weak. Whether human design judgment prevents the drift is not measured. Data modelling rests on opinion only.
 
-**Erodes with agents?** Unknown. Not measured.
+**Does it weaken?** Possibly, not measured. People accept the default structure without making a decision [Opinion].
 
 **Practice moments.**
-1. *When the agent adds a new module, abstraction, dependency or data model.* The person accepts or rejects it and writes one line of why. When that code is next changed, the tool shows the line and asks whether it still holds.
-2. *When the agent adds a second way of doing something already solved elsewhere.* The tool shows both. The person decides which stays.
+- *When a change adds a new module, dependency or a second way of doing something already solved.* The person accepts or rejects it and writes one line of why. Feedback: the tool shows the existing code that already does the same thing, if any.
+- *When a change alters a schema.* The person states the invariants and how existing rows migrate. Feedback: the tool runs the migration on a copy of real or sample data and checks the stated invariants.
 
 ---
 
-### 10. Shipping and rolling back agent changes
+### 10. Calibrating your own judgment
 
-**Definition.** Staging the release of an agent change, knowing which signal to watch after it ships, and having a rollback ready before merge.
+**Definition.** Knowing how far to trust your own sense of speed, quality and understanding, by checking it against what actually happened.
 
-**Why it is listed.** Every other practice moment ends at merge. Agent changes are reverted at rates that differ by agent.
+**Why it matters more now.** Generation is fast and vivid. Review, rework and later bugs are spread out and easy to miss.
 
 **Evidence.**
-- Revert rates: Codex 6.1%, Devin 14.5%, humans 11.5% [Data] (https://arxiv.org/abs/2609.17598).
-- Claude Code PRs waited a median 12.6 hours for first human review, the longest of the five agents [Data] (https://arxiv.org/abs/2609.17598).
-- A reported AWS outage in December 2025 was linked to the Kiro agent by unnamed sources. Amazon blames misconfigured access controls [Incident, disputed] (https://www.theregister.com/2026/02/20/amazon_denies_kiro_agentic_ai_behind_outage/).
-- Supporting, not agent-specific: DORA 2025 links AI adoption to higher delivery instability [Data, survey, correlational] (https://dora.dev/research/2025/dora-report/).
+- Experienced developers forecast a 24% speedup, believed afterwards they had been 20% faster, and were measured 19% slower [Study, RCT] (https://metr.org/blog/2025-07-10-early-2025-ai-experienced-os-dev-study/). The 2026 follow-up was inconclusive because 30% to 50% of developers skipped tasks they did not want to do without AI [Study] (https://metr.org/blog/2026-02-24-uplift-update/).
+- More pull requests merged, but the source found "no significant correlation between AI adoption and improvements at the company level", and review time rose 91% [Data, vendor, secondary] (https://www.faros.ai/blog/ai-productivity-paradox-report-2025).
+- Supporting: Lead-and-Reveal gave the best match between perceived and actual ability in novices [Study] (https://arxiv.org/abs/2410.08922).
 
-**Strength.** Weak. Some data that agent changes get reverted. No study of the human skill.
+**Strength.** Problem: moderate. One strong RCT on the perception gap, but it used chat and editor tools, not autonomous agents, and the follow-up was inconclusive. Skill: weak. No study tests whether calibration feedback improves outcomes.
 
-**Practice moment.** *Before merging an agent change to a production path.* The person names the signal to watch and the rollback step. After deploy, the tool shows that signal.
+**Does it weaken?** Not measured directly. Review habituation (skill 1) suggests trust grows faster than evidence, but that study measured review of other people's work, not judgment of one's own. Linking the two is this map's inference [Opinion].
+
+**Practice moments.**
+- *At the end of a session.* The person estimates the time saved. Feedback: the tool shows logged time spent waiting, reviewing and reworking next to the estimate.
+- *Before reviewing a change.* The person rates confidence that it is correct. Feedback: what tests and review found in the same session. Tying ratings to production outcomes needs many paired cases and slow, sparse data, so whether that works is unknown.
 
 ---
 
-## When practice moments should fire
+### 11. Product judgment
 
-Claude Code users accept 93% of manual permission prompts [Data, vendor] (https://www.anthropic.com/engineering/claude-code-auto-mode). Training prompts at every moment would likely go the same way [Opinion]. So the tool should fire only on high-risk events: a test or check edited by the agent, an irreversible command, a broader permission mode, a new dependency or structural change, a "done" claim on unchecked work, and repeated failed fixes. Each moment must end with feedback: the person commits to an answer, then sees what the trace, the code or a later outcome shows. A moment with no answer to compare against will not train judgment [Opinion].
+**Definition.** Deciding what is worth building, and noticing when a correct change is the wrong thing to ship.
 
-## Claims with weak support
+**Why it matters more now.** When building is cheap, choosing what to build is a larger share of the value [Opinion].
 
-These came up in the research but lack enough 2025+ agent evidence to stand as skills.
+**Evidence.**
+- In one study of 92 rejected Claude Code pull requests, 64.1% gave no reason. Where a reason was given, project context such as a preferred alternative solution (12.0%) was more common than technical flaws (4.4%) [Data] (https://arxiv.org/abs/2509.14745). Overall acceptance was 83.8% against 91.0% for human pull requests (same source).
+- In a separate sample of 600 rejected agent pull requests, the largest group was left without meaningful review (228), then duplicates of existing work (142), then code-level failures (133) [Data] (https://arxiv.org/abs/2601.15195).
+- Business logic was mentioned as unsuitable for agents by 15 respondents and as suitable by 2. Legacy integration was mentioned as unsuitable by 17 and suitable by 3 [Study] (https://arxiv.org/abs/2512.14012).
+- DORA found that without a user focus, "AI adoption can have a negative impact on team performance" [Data, survey, correlational] (https://cloud.google.com/blog/products/ai-machine-learning/introducing-doras-inaugural-ai-capabilities-model).
 
-- **Product judgment and problem framing.** 4% of labelled rejected agent PRs added unwanted features (https://arxiv.org/abs/2601.15195). DORA links user-centric teams to better AI outcomes, but the result is correlational and not agent-specific (https://cloud.google.com/blog/products/ai-machine-learning/introducing-doras-inaugural-ai-capabilities-model). Weak here means unmeasured, not shown to be unimportant. PR merge rates show whether a change was mergeable, not whether it was worth building. Treat as a hypothesis.
-- **Running several agents in parallel.** More than 10% of Codex users run three or more agents at once each week [Data, vendor] (https://arxiv.org/abs/2606.26959), and multitasking broke METR's time tracking (https://metr.org/blog/2026-02-24-uplift-update/). No study measures how well people supervise parallel agents.
-- **Prompting as a lasting skill.** Supporting, education, general GenAI: it is the GenAI skill taught most often (26 of 56 instructors) [Data, survey] (https://doi.org/10.1145/3760545.3783970), but students doubt its long-term value [Opinion] (https://arxiv.org/abs/2606.07545). The durable parts are specification (skill 5) and context (skill 8).
-- **Keeping a decision log.** Recommended by educators and course designs [Opinion], with no outcome data in agent work. Folded into skill 9 as a practice.
-- **Flow and attention management.** Supporting, not agent-specific: flow showed a non-significant decline in a two-wave survey, as did cognitive load (https://arxiv.org/abs/2605.23135). No evidence that it is a trainable skill.
-- **Systems thinking as a separate skill.** No 2025+ study measures it apart from skills 8 and 9.
-- **New interview formats** (Canva, Meta AI-enabled rounds). Neither has published data showing they predict job performance.
+**Strength.** Problem: weak to moderate. The rejection data shows misfit with the project matters, but most rejections gave no reason. Skill: weak, opinion only.
 
-## Old skills under more pressure
+**Does it weaken?** Unknown.
 
-Writing code by hand is out of scope. These older skills are still needed because the agent skills depend on them.
+**Practice moments.**
+- *Before a feature task.* The person states who the change is for and what would show it helped. Feedback: only possible where the product has usage data or user feedback the tool can read. Otherwise this moment has no feedback and should not be used.
 
-- **Reading code and tracing execution.** Review and verification (skills 1 and 3) need it. Supporting, not agent-specific: it was impaired in the chat-assistant RCT (https://arxiv.org/abs/2601.20245). In live-stream observation, low-reliance coders inspected code. Outcomes were not compared (https://arxiv.org/abs/2512.22418).
-- **Debugging.** Forming and testing a hypothesis with breakpoints, logs and reproduction, not only re-prompting. Supporting, not agent-specific: debugging showed the largest gap in the chat-assistant RCT (https://arxiv.org/abs/2601.20245), and in one course study no student used a debugger and 57% relied on the LLM [Study, n=14] (https://arxiv.org/abs/2510.04986).
-- **Writing meaningful tests.** A test that still passes when the change is reverted proves nothing, and agents edit tests to pass (skill 1). Supporting, education: educators are adding "evidence of testing" to assessment (https://doi.org/10.1145/3760545.3783970).
-- **Judging code security: access control, input handling, secrets, dependency hygiene.** Supporting, not agent-specific: 45% of code samples from over 100 LLMs failed security tests, and 86% failed on cross-site scripting defences [Benchmark, vendor] (https://www.veracode.com/genai-code-security-report). Apps built without row-level security (Lovable, CVE-2025-48757, disputed) [Incident] (https://nvd.nist.gov/vuln/detail/CVE-2025-48757). Supporting, 2024: models recommend packages that do not exist (about 5% to 22% by model) [Study] (https://arxiv.org/abs/2406.10279). Against these, pooled agent PRs had fewer security smells than human PRs (https://arxiv.org/abs/2609.17598).
-- **Core concepts: concurrency, data structures, complexity, transactions.** Needed to catch plausible but wrong fixes, such as an agent "fixing" a race condition by adding a sleep [Opinion] (https://www.theregister.com/2026/02/23/microsoft_ai_entry_level_russinovich_hanselman/).
-- **Architecture.** Needed for skill 9.
-- **Version control: small commits, branches, reverting.** One of several safeguards coders used against unpredictable agent behaviour, with undo, small edits and tests (https://arxiv.org/abs/2512.22418).
+---
 
-## Known gaps in the evidence
+## Knowledge each skill depends on
 
-- No skill-formation RCT with autonomous agents on professionals. The closest are Balepur et al. (agent, students) and the Shen and Tamkin RCT (chat-style assistant, one library, junior engineers).
-- No longitudinal measure of skill loss in working engineers.
-- No study measures how well people catch an agent's false claims about its own work.
-- No study measures whether reviewers understand the agent PRs they approve.
-- The main agent PR studies share one dataset (AIDev).
-- No study shows that training any skill here improves outcomes.
-- Much large-scale data comes from vendors (Anthropic, OpenAI, CodeRabbit, Veracode, Faros).
+These are not separate skills. They are the knowledge a person draws on to use the skills above.
+
+- **Fundamentals** (concurrency, data structures, complexity, how networks and databases behave). Skills 1, 3, 4 and 9. They let a person spot a plausible mistake, such as a sleep that hides a race condition [Opinion] (https://www.theregister.com/2026/02/23/microsoft_ai_entry_level_russinovich_hanselman/). Both NUS-Google workshops stressed "the enduring importance of core CS theory" [Opinion] (https://arxiv.org/abs/2606.07545).
+- **Test design techniques** (boundaries, failure cases, what a test proves). Skill 1.
+- **Debugging tools** (debugger, logs, bisection). Skill 3.
+- **Version control** (small commits, revert, branches). Skill 7.
+- **Secure coding basics** (input validation, access control, secret handling). Skill 4.
+- **Domain knowledge** (users, business rules, project constraints). Skills 5 and 11. It is learned by exposure: talking to users, reading tickets, owning a feature. A prompt during a build cannot supply it. The previous draft listed it as a skill. In the Anthropic data, software-occupation users were only slightly ahead of others (34% against 29% verified success), which suggests expertise is tied to the task [Data, vendor, model-rated] (https://www.anthropic.com/research/claude-code-expertise).
+
+Writing code from scratch matters less for its own sake. It still matters as practice: the supporting RCT suggests that getting stuck and working through it is part of how understanding forms [Study, vendor].
+
+## Claimed skills with weak support
+
+- **Technical communication** (pull request descriptions, design docs, explaining decisions). Broad expert agreement and one supporting classroom study: when students had to explain their code weekly, AI use rose (pasted characters from 61% to 68%) with no drop in exam scores (n=96) [Study, supporting] (https://arxiv.org/abs/2605.21374). No agent data shows it changes outcomes. It has a cheap practice moment with feedback: the person writes the pull request description, and the tool lists what the diff does that the description does not mention.
+- **Managing several agents at once.** More than 10% of Codex users run three or more agents in a week [Data, vendor] (https://arxiv.org/abs/2606.26959). It is a tool skill. The lasting part is skill 6.
+
+**Tool-operation skills.** Prompting, context files, permission settings, hooks and steering a run are useful today. They are left out because they change with each tool release, and most of their value comes from the skills above. A good permission setting is risk judgment (skill 4). A good context file is a brief (skill 5) plus domain knowledge. Students at the NUS-Google workshop said prompting's long-term relevance is uncertain [Opinion] (https://arxiv.org/abs/2606.07545).
+
+## Rules for the practice moments
+
+These come from learning research that is mostly older than 2023 or from classrooms. It supports the design. It does not prove the design works for engineers at work.
+
+- **Every moment needs feedback the tool can check.** Generating an answer helps memory: a meta-analysis of 86 studies found an effect of about d=0.40 (Bertsch et al. 2007) [Study, older] (https://pubmed.ncbi.nlm.nih.gov/17645161/). That work is about recall, not judgment. A moment whose answer nobody checks is likely to become a box the person ticks [Opinion]. The moments above were rewritten so each has a feedback source. Where none exists, the moment says so.
+- **Build the tool around the moments with the clearest feedback first:** the revert test (skill 1), predict before running (skill 2), hypothesis before fix (skill 3), and brief against result (skill 5).
+- **Ration and vary the prompts.** People paid less attention to security warnings they saw repeatedly over a five-day lab study. In a three-week field study, warnings that changed appearance kept attention better (Vance et al., MIS Quarterly 2018) [Study, older] (https://misq.org/tuning-out-security-warnings-a-longitudinal-examination-of-habituation-through-fmri-eye-tracking-and-field-experiments.html). Coverage reports adherence of 76% for varied warnings against 55% for fixed ones [Secondary] (https://campustechnology.com/articles/2018/05/29/research-slight-changes-to-appearance-of-privacy-warnings-significantly-improves-attention.aspx). Prompt only where stakes or uncertainty are high.
+- **Adapt to the person.** Guidance that helps novices can hurt more expert learners: the expertise reversal effect (Kalyuga 2007) [Study, review, older] (https://www.uky.edu/~gmswan3/EDC608/Kalyuga2007_Article_ExpertiseReversalEffectAndItsI.pdf). Prompts should fade as a person's answers prove reliable.
+- **Prefer answers the tool can check over self-reports.** "Rate the stakes" is easy to answer and hard to fault.
+- **Unknown:** whether practice inside one codebase carries over to other work. No study found tests this.
 
 ## What this means for a tool that trains people while they build
 
-This section is opinion based on the evidence above.
+Delegating the work can weaken the skills needed to check it, so a training tool cannot simply watch. At a few natural pauses it should ask for a prediction, a hypothesis or a check before showing the answer, and then show the person what actually happened. The supporting studies suggest that order keeps learning, while full delegation and handing errors straight back do not [Study, students, partly vendor]. Prompts should be rare, varied, matched to the person's level, and tied to checkable feedback. None of this has been tested as an intervention, so the tool should measure whether it helps.
 
-The skills are exercised at the two ends of each agent task, and agents make both ends easy to skip. At the start, people under-specify, give no stop condition, over-scope and over-grant permissions. At the end, they accept "done" and skim the diff, while the agent's own report may be false.
+## Changes from the reviews, and what was rejected
 
-So the tool should act at a few high-risk moments: before a task starts, when the agent edits a test, when it runs something irreversible, when it makes a structural move, when a fix fails repeatedly, and when it says "done". At each moment the person commits to a prediction or a decision, and the tool then shows evidence from the trace, the code or a later outcome. The tool should supply the measurements (rework, reverts, checks actually run) rather than ask people how productive they feel, because METR found feelings unreliable.
+Accepted: every citation correction in the first review; the split of old skill 8 into calibration (10) and delegation (6); production operations (8) as a numbered skill; product judgment (11) split from domain knowledge, which moved to the knowledge section; data modelling and its invariants moment in skill 9; narrowing skills 4 and 9 to a teachable core; the brief folded into skill 5; the problem and skill split of strength for every skill; feedback for every practice moment; the code-level section replaced by a knowledge section; the METR note reworded; the "2.15 times more commits per pull request" figure removed from skill 7, because more commits is not larger changes; vendor and model-rated tags on every use of the Anthropic studies. Skill 3 was lowered from strong to moderate, because its two main sources are both vendor sources.
 
-The tool can also make cheating harder by setup: read-only tests, an explicit way to stop, and flags on test edits. This is the one area where benchmark evidence shows a setup change works.
-
-The RCT's learning patterns (asking for explanations, generation then comprehension) are a reasonable design starting point, not proven levers. They were post-hoc, with 2 to 7 people per pattern, from a chat-style assistant, and learners chose them. No study yet shows that prompting people into these patterns helps.
-
-## Challenges not accepted, and why
-
-- **Merging skills 5, 6 and 8 into one.** Not merged. Each now has a separate observable act: writing a stop condition and non-goals (5), choosing autonomy and chunk size (6), and turning corrections into enforced checks (8). They fire at different moments.
-- **Product judgment as a full skill.** Kept under weak support, but reworded to say it is unmeasured rather than unimportant. Making it a skill would break this map's rule that each skill rests on agent evidence. The only agent number is 4% of rejections.
-- **Using "45.1% of merged PRs needed later revision" as evidence for skill 10.** Not used. The citation check showed the revisions happened before merge, at a rate close to human PRs.
-- **The critique's reading of Gloaguen et al. that developer-written files "helped a little".** Not used as stated. The current version of the paper says context files generally did not improve success for both LLM-generated and developer files, though developer files did better than LLM ones.
-- **Dropping METR 2025 entirely.** Kept, but only as supporting evidence. Its point is about measurement (people misjudge their own speed), which the tool design relies on.
-- **Calling the review habituation result "drift".** Partly accepted. The data is kept, and the other explanation (PRs got better) is stated.
-- **Adding systems thinking as a skill.** Agreed with the critique not to add it.
+Rejected:
+- **"Checking a claim against evidence" as a separate skill.** It is the same act as verification, applied to a report instead of code. It was merged into skill 1, whose definition now covers both. Two skills would split one practice loop.
+- **Dropping the "weakens" column from the table.** The reviewer was right that it should not set the order, and it no longer does. It stays as a note because it tells the tool where prompts are most needed.
+- **The second review's statement that the 54-student study showed students "less able to extend the code".** The paper's Figure 4 shows no significant difference on the extension task (p=0.45 and p=0.69). The first review was right.
+- **The g=0.45 effect size for metacognitive prompts (Guo 2022).** It was cited through a blog summary that could not be checked against the paper, so it was left out.
+- **Using the 61.38% "no recorded review" figure as erosion evidence** (https://arxiv.org/abs/2605.02273). It covers review of any kind, agent pull requests were reviewed slightly more often than human ones in the same repositories, and the authors warn that no record does not mean no oversight. It was removed rather than reworded, because it does not bear on any skill here.
+- **The Anthropic "design and planning rose from 1.0% to 9.9%" figure.** It shows the model doing more design work, not people framing problems better, so it was removed from skill 5.
