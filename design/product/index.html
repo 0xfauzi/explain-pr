@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Firsthand product summary</title>
-<meta name="description" content="A visual summary of the Firsthand product specification in PRODUCT.md: what it is, how it plugs into every coding agent, the roadmap and the founder decisions.">
+<meta name="description" content="A visual summary of the Firsthand product specification in PRODUCT.md: the learning design, how it plugs into every coding agent, the build order and the founder decisions.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="anonymous">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wdth,wght@75..100,400..700&amp;family=JetBrains+Mono:wght@400;500&amp;display=swap">
@@ -131,7 +131,6 @@ a:hover{color:var(--acc-ink)}
 .ph .pt{font-size:17px;font-weight:600;margin:0}
 .ph ul{margin:8px 0 0;padding:0 0 0 18px;font-size:15.5px;line-height:1.55;color:var(--ink2)}
 .ph ul li{margin:3px 0}
-.gate{margin-top:10px;display:inline-block;font-size:13.5px;padding:6px 12px;border-radius:999px;border:1.5px solid var(--acc);color:var(--ink)}
 .ph.now .pv{color:var(--acc-ink)}
 
 /* decisions */
@@ -146,17 +145,26 @@ a:hover{color:var(--acc-ink)}
 .open{margin:20px 0 0;padding:0 0 0 18px;font-size:16px;line-height:1.6;color:var(--ink2)}
 .open li{margin:4px 0}
 
-/* risks */
-.risks{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px;margin-top:28px}
-.risks .card p{font-size:15px}
-.risks .rk{font-family:"JetBrains Mono",ui-monospace,monospace;font-size:11px;color:var(--acc-ink)}
+/* why */
+.why{margin-top:28px;border-bottom:1px solid var(--line)}
+.wy{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.25fr);gap:24px;padding:16px 0;border-top:1px solid var(--line);align-items:baseline}
+.wy .a{font-weight:600;font-size:16.5px;line-height:1.45}
+.wy .b{font-size:15px;line-height:1.55;color:var(--ink2)}
+.wy .b a{overflow-wrap:anywhere}
+
+/* open question */
+.oq{margin-top:28px;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}
+.oq .card p{font-size:15px}
+.oq .rk{font-family:"JetBrains Mono",ui-monospace,monospace;font-size:11px;color:var(--acc-ink)}
+.rec{margin-top:6px;font-size:15px;line-height:1.55;color:var(--ink)}
+.rec b{color:var(--acc-ink);font-weight:600}
 
 footer{margin:110px 0 40px;padding-top:22px;border-top:1px solid var(--line);display:flex;flex-wrap:wrap;justify-content:space-between;gap:12px;font-size:14px;color:var(--muted)}
 
 @media (max-width:900px){
   .grid2{grid-template-columns:minmax(0,1fr);gap:32px}
   .strip{grid-template-columns:repeat(2,minmax(0,1fr))}
-  .risks,.grid3{grid-template-columns:minmax(0,1fr)}
+  .oq,.grid3{grid-template-columns:minmax(0,1fr)}
   .ladder{grid-template-columns:repeat(2,minmax(0,1fr))}
 }
 @media (max-width:640px){
@@ -171,6 +179,7 @@ footer{margin:110px 0 40px;padding-top:22px;border-top:1px solid var(--line);dis
   .mv .w{text-align:left}
   .strip{grid-template-columns:minmax(0,1fr)}
   .week li{grid-template-columns:minmax(0,1fr);gap:2px}
+  .wy{grid-template-columns:minmax(0,1fr);gap:4px}
   .ph{grid-template-columns:minmax(0,1fr);gap:8px}
   .dc{grid-template-columns:28px minmax(0,1fr);gap:4px 12px}
   .dc .st{grid-column:2;justify-self:start;margin-top:6px}
@@ -188,12 +197,11 @@ footer{margin:110px 0 40px;padding-top:22px;border-top:1px solid var(--line);dis
 
 <!-- 1. HERO -->
 <section id="top" class="hero">
-<p class="eyebrow mono">Working name, not yet cleared [unverified: trademark, registries]</p>
-<h1 class="h1">Know what you can still do without your agent. Get better at it while you build.</h1>
-<p class="p">Firsthand installs into the coding agent you already use. At a few breaks in the build, it asks you to think first. Days later it asks again, in a new form. A private record on your machine shows what you have shown without the agent, how it was graded, and how long ago.</p>
-<p class="p">Why: in a study of people learning a new library, those who let AI write the code learned less. Those who asked conceptual questions kept their learning (Shen and Tamkin 2026, <a href="https://arxiv.org/html/2601.20245v2">arxiv.org/html/2601.20245v2</a>).</p>
-<div class="promise">The promise you can check in five minutes: <b>install it, answer three questions written by people</b>, in a prompt your agent cannot read. It tells you how you did without your agent, and how it graded you.</div>
-<p class="small" style="margin-top:14px">The launch claim is about honesty, not results: "It tells you when you got worse." No claim that it makes anyone better until a study shows it.</p>
+<p class="eyebrow mono">Open source. Working name [unverified: trademark, registries]</p>
+<h1 class="h1">Build at agent speed. Become a much better engineer while you do it.</h1>
+<p class="p">Firsthand installs into the coding agent you already use. At a few natural breaks, it asks you to do the part of the thinking that builds skill: predict, name a cause, write the key line, explain, or review a pull request first. Days later it brings the idea back in a new form. Drills made from your own history, and tasks in repos you have never opened, give you practice with the agent off.</p>
+<p class="p">Why: in a study of people learning a new library, those who let AI write the code scored 50% on a quiz against 67% for those who did not, with the biggest gap on debugging. The AI users who kept their learning asked conceptual questions or checked their understanding (Shen and Tamkin 2026, <a href="https://arxiv.org/html/2601.20245v2">arxiv.org/html/2601.20245v2</a>). Firsthand builds that habit into the agent.</p>
+<div class="promise">The design follows the research on how people learn: <b>think first, retrieve later, space it out, vary the context, practise what erodes.</b> Each choice below cites the study behind it.</div>
 </section>
 
 <!-- 2. THREE PARTS -->
@@ -201,46 +209,69 @@ footer{margin:110px 0 40px;padding-top:22px;border-top:1px solid var(--line);dis
 <p class="eyebrow mono">The product</p>
 <h2 class="h2">Three parts</h2>
 <div class="grid3">
-<div class="card"><span class="num">1</span><p class="ct">The Checkup</p><p>Once a month, only if you start it. A short task in a real repo you have never opened, agent off, in a sealed container. Tests written by people, run on a server. Over several Checkups it tells you if you got better or worse.</p></div>
-<div class="card"><span class="num">2</span><p class="ct">The loop</p><p>Free and open source. Lives inside your agent. Asks you to predict, name a cause, write one line, or review a pull request first. Brings ideas back days later, at most 3 a day.</p></div>
-<div class="card"><span class="num">3</span><p class="ct">The record</p><p>A private map in a git repo on your machine. No remote unless you add one. A level goes down when you forget, and shows how long since it was checked.</p></div>
+<div class="card"><span class="num">1</span><p class="ct">In the build</p><p>Five moves at natural breaks, inside your agent. Never blocks the next step. One-word skip on every question, and "just tell me" always works.</p></div>
+<div class="card"><span class="num">2</span><p class="ct">Away from the build</p><p>At most 3 reviews a day, in new forms. Drills when you want them: trace your old code, replay a real bug with the agent off, check past diffs, or take a task in a repo you have never opened.</p></div>
+<div class="card"><span class="num">3</span><p class="ct">The map</p><p>A private record in a git repo on your machine, outside any project. Shows what you have done without the agent, how it was graded, and how long ago. A level goes down when you forget.</p></div>
 </div>
-<p class="small" style="margin-top:16px">The loop is easy to copy. The scarce parts are the human-written question bank and the Checkup task set. No public launch until both are live.</p>
 </section>
 
-<!-- 3. MOVES -->
-<section class="sec">
-<p class="eyebrow mono">The loop</p>
-<h2 class="h2">Five moves, at natural breaks</h2>
-<p class="p">The build always wins. No move blocks the agent. Every move has a one-word skip, and "just tell me" always works.</p>
-<div class="moves">
-<div class="mv"><span class="n">Predict</span><span class="d">Before a step runs, on a new idea: one line on what will happen. Compared, never graded.</span><span class="w">in the build</span></div>
-<div class="mv"><span class="n">Call it</span><span class="d">A test fails: name a cause and your first check, before the agent says.</span><span class="w">in the build</span></div>
-<div class="mv"><span class="n">Your line</span><span class="d">The agent leaves one marked line of the real build for you to write. Write first, then read the test. A hidden-test review comes days later.</span><span class="w">founder decision 2</span></div>
-<div class="mv"><span class="n">Explain back</span><span class="d">After a step passes, two or three sentences on what changed and why.</span><span class="w">in the build</span></div>
-<div class="mv"><span class="n">Review first</span><span class="d">You open an agent's pull request. List defects, or say clean, before you see its summary. A defect counts when a test you write proves it.</span><span class="w">at review time</span></div>
+<!-- 3. WHY THIS DESIGN -->
+<section class="sec" id="why">
+<p class="eyebrow mono">Why this design</p>
+<h2 class="h2">Each choice follows a finding</h2>
+<div class="why">
+<div class="wy"><span class="a">Asks you to think first, at a few chosen points</span><span class="b">Generating an answer beats reading one, d = 0.40 (Bertsch 2007). Stating the step before seeing AI code aligned felt and real ability best (Kazemitabaar 2025, <a href="https://arxiv.org/abs/2410.08922">arxiv</a>).</span></div>
+<div class="wy"><span class="a">Brings ideas back days later, as free recall</span><span class="b">Practice testing and spacing are the two highest-utility techniques (Dunlosky 2013). Daily spaced questions at work still showed an effect two years on (Kerfoot 2009, <a href="https://pubmed.ncbi.nlm.nih.gov/19375095/">pubmed</a>).</span></div>
+<div class="wy"><span class="a">Spends practice on debugging and checking agent output</span><span class="b">Debugging had the largest gap in Shen and Tamkin. Watching automation is not practice, and the thinking part decays first (Bainbridge 1983; Casner 2014).</span></div>
+<div class="wy"><span class="a">Asks in new forms, topic name hidden, across projects</span><span class="b">Transfer fails when nothing cues the principle. Comparing two cases nearly tripled its use (Gentner, Loewenstein and Thompson 2003).</span></div>
+<div class="wy"><span class="a">Counts only delayed answers, without help</span><span class="b">Doing well in the moment is not learning (Soderstrom and Bjork 2015, <a href="https://pubmed.ncbi.nlm.nih.gov/25910388/">pubmed</a>). People cannot feel which way taught them more (Deslauriers 2019).</span></div>
+<div class="wy"><span class="a">Silent on what you already know</span><span class="b">Help for a novice can hurt someone who knows the topic (Kalyuga 2007). So it adapts per idea, not per person.</span></div>
+<div class="wy"><span class="a">No streaks, points or badges</span><span class="b">Leaderboards and badges lowered motivation and exam scores over 16 weeks (Hanus and Fox 2015).</span></div>
 </div>
-<p class="small" style="margin-top:14px">Review first exists because coding is moving to background agents with no live user. Copilot cloud agent works this way [verified: <a href="https://docs.github.com/en/copilot/concepts/agents/cloud-agent/about-cloud-agent">docs.github.com</a>]. The human is present at review time.</p>
+</section>
+
+<!-- 4. MOVES -->
+<section class="sec">
+<p class="eyebrow mono">In the build</p>
+<h2 class="h2">Five moves, at natural breaks</h2>
+<p class="p">The build always wins. No move blocks the agent, and none leaves a build or CI red.</p>
+<div class="moves">
+<div class="mv"><span class="n">Predict</span><span class="d">Before a step runs, on a new idea: one line on what will happen. Compared with what happened, never graded.</span><span class="w">code reading</span></div>
+<div class="mv"><span class="n">Call it</span><span class="d">A test fails: name a cause and your first check, before the agent says. The bug is saved to replay later with the agent off.</span><span class="w">debugging</span></div>
+<div class="mv"><span class="n">Your line</span><span class="d">The agent leaves one marked line of the real build for you. Write first, then read the test. A week later you write it again, test hidden.</span><span class="w">founder decision 2</span></div>
+<div class="mv"><span class="n">Explain back</span><span class="d">After a step passes, two or three sentences on what changed and why. Feedback point by point, from the code.</span><span class="w">explaining</span></div>
+<div class="mv"><span class="n">Review first</span><span class="d">You open an agent's pull request. List defects, or say clean, before you see its summary. A defect counts when a test you write proves it.</span><span class="w">checking agents</span></div>
+</div>
+<p class="small" style="margin-top:14px">Review first exists because coding is moving to background agents with no live user, like Copilot cloud agent [verified: <a href="https://docs.github.com/en/copilot/concepts/agents/cloud-agent/about-cloud-agent">docs.github.com</a>]. You are present at review time. At the Deep setting, two more: Plan first, and design calls that come back when the code is next touched.</p>
+
+<h3 class="ct" style="margin-top:48px">Drills, when you want them</h3>
+<div class="moves">
+<div class="mv"><span class="n">Trace</span><span class="d">Predict what a function you shipped weeks ago returns for a real input. Then it runs.</span><span class="w">your code</span></div>
+<div class="mv"><span class="n">Replay</span><span class="d">A real bug from your history, agent off, in a container with no network. Hypothesis, check, fix. Its own test grades it.</span><span class="w">container</span></div>
+<div class="mv"><span class="n">Check</span><span class="d">A past agent diff. Find what was later fixed. Only defects a test confirms count.</span><span class="w">your history</span></div>
+<div class="mv"><span class="n">Compare</span><span class="d">The same idea in two of your projects, name hidden. What is the same?</span><span class="w">transfer</span></div>
+<div class="mv"><span class="n">Fresh repo</span><span class="d">A real change in a public repo you have never opened, agent off. Sealed tests grade it on your machine, then you see the real commit.</span><span class="w">transfer, container</span></div>
+</div>
 
 <h3 class="ct" style="margin-top:48px">What a level means</h3>
-<p class="p" style="margin-top:8px">Only delayed answers, without help, on new questions, count. Right answers in the moment show what you can do now, not what you learned (Soderstrom and Bjork 2015, <a href="https://pubmed.ncbi.nlm.nih.gov/25910388/">pubmed</a>).</p>
+<p class="p" style="margin-top:8px">Only delayed answers, without help, on new questions, count. Two right answers on different items move a level up. One miss moves it down a step.</p>
 <div class="ladder">
 <div class="rung"><div class="bar"></div><div class="ln">Not yet</div><div class="lx">The start, or one step down after a delayed miss or "don't know".</div></div>
 <div class="rung"><div class="bar"></div><div class="ln">Recalled</div><div class="lx">Two right delayed answers, on two items, on different days.</div></div>
 <div class="rung"><div class="bar"></div><div class="ln">Applied</div><div class="lx">Two right on new instances: another file or project, topic name hidden.</div></div>
-<div class="rung"><div class="bar"></div><div class="ln">Held</div><div class="lx">Right at a longer gap on an unseen question, plus one other source.</div></div>
+<div class="rung"><div class="bar"></div><div class="ln">Held</div><div class="lx">Right at a longer gap, plus one other kind: a Fresh repo task, a confirmed finding, or real work.</div></div>
 </div>
 <div class="met"><b>Met</b> is a separate list, not a level: ideas you explained, wrote a line for, or answered with help or in the moment.</div>
 </section>
 
-<!-- 4. ARCHITECTURE -->
+<!-- 5. ARCHITECTURE -->
 <section class="sec" id="arch">
 <p class="eyebrow mono">Architecture</p>
 <h2 class="h2">One engine on your computer. Many ways in.</h2>
 <div class="grid2" style="margin-top:32px">
 <svg class="arch" viewBox="0 0 360 792" role="img" aria-labelledby="archT archD">
 <title id="archT">Architecture tiers</title>
-<desc id="archD">A coding agent connects to the Firsthand engine through one or more tiers, T0 to T5, plus the pad. The engine writes to a local git record. A private remote and the Checkup service are optional.</desc>
+<desc id="archD">A coding agent connects to the Firsthand engine through one or more tiers, T0 to T5, plus the pad. The engine writes to a local git record. A private git remote and a model grader are optional, and only if you turn them on. There is no server run by the product.</desc>
 <defs><marker id="ah" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path class="arh" d="M0,0 L10,5 L0,10 z"/></marker></defs>
 
 <rect class="box" x="1" y="1" width="358" height="58" rx="12"/>
@@ -266,7 +297,7 @@ footer{margin:110px 0 40px;padding-top:22px;border-top:1px solid var(--line);dis
 <rect class="row" x="1" y="0" width="358" height="46" rx="10"/>
 <rect class="tchip" x="10" y="11" width="36" height="24" rx="6"/><text class="tl" x="28" y="27" text-anchor="middle">T2</text>
 <text x="58" y="20" font-size="13.5" font-weight="600">Hooks</text>
-<text class="sub" x="58" y="36">Breakpoints that do not rely on the model</text>
+<text class="sub" x="58" y="36">Breaks that do not rely on the model</text>
 </g>
 <g transform="translate(0,248)">
 <rect class="row" x="1" y="0" width="358" height="46" rx="10"/>
@@ -290,7 +321,7 @@ footer{margin:110px 0 40px;padding-top:22px;border-top:1px solid var(--line);dis
 <rect class="pad" x="1" y="0" width="358" height="50" rx="10"/>
 <rect class="tchip hot" x="10" y="13" width="36" height="24" rx="6"/><text class="tl" x="28" y="29" text-anchor="middle" style="fill:#16161A">Pad</text>
 <text x="58" y="21" font-size="13.5" font-weight="650">The pad: a prompt the engine owns</text>
-<text class="sub acc" x="58" y="38">Typed answers count, in any local terminal</text>
+<text class="sub acc" x="58" y="38">The agent cannot read it. Typed answers count</text>
 </g>
 
 <line class="ar" x1="180" y1="456" x2="180" y2="480" marker-end="url(#ah)"/>
@@ -319,28 +350,28 @@ footer{margin:110px 0 40px;padding-top:22px;border-top:1px solid var(--line);dis
 <text x="12" y="765" font-size="12.5" font-weight="600">Your own git remote</text>
 <text class="sub" x="12" y="781">optional, you add it</text>
 <rect class="dash" x="185" y="746" width="174" height="44" rx="10"/>
-<text x="196" y="765" font-size="12.5" font-weight="600">Checkup service</text>
-<text class="sub" x="196" y="781">only when you start one</text>
+<text x="196" y="765" font-size="12.5" font-weight="600">A model grader</text>
+<text class="sub" x="196" y="781">optional, you name it</text>
 </svg>
 
 <div>
 <ul class="notes">
 <li><b>Tiers stack.</b> Every surface has T0. Each tier above it adds something. The engine detects what is there and always returns complete text.</li>
-<li><b>The pad is how answers count.</b> A chat answer passes through the agent, so it is recorded as relayed and counts as Met. An answer typed in the pad never reaches the agent or its logs.</li>
-<li><b>Hooks never approve anything.</b> They call a pinned absolute path, and never return allow or deny. Claude Code hooks can return allow [verified: <a href="https://code.claude.com/docs/en/hooks">code.claude.com/docs/en/hooks</a>].</li>
-<li><b>Grading by running code first.</b> In v1 only tests and people move a level. A model grader can move one only after its version passes a gate against human grades.</li>
-<li><b>Untrusted code runs in a container with no network,</b> or not at all. Checkup tasks and Replay drills need one.</li>
-<li><b>Nothing is sent by default.</b> Answers typed in the agent's chat are part of that chat, and the agent's company sees them. The install says so.</li>
+<li><b>The pad is how answers count.</b> A chat answer passes through the agent, so it counts as Met. An answer typed in the pad never reaches the agent or its logs.</li>
+<li><b>Sealed keys.</b> The answer key's hash is committed before you see the question, and released only after your answer is locked.</li>
+<li><b>Grading by running code first.</b> Tests decide wherever they can. Open answers get model feedback with a quote for every point.</li>
+<li><b>Code you did not write runs in a container with no network,</b> or not at all. Replay and Fresh repo need one.</li>
+<li><b>No server, no telemetry.</b> Answers typed in the agent's chat are part of that chat, and the agent's company sees them. The install says so. Hooks never approve anything.</li>
 </ul>
 </div>
 </div>
 </section>
 
-<!-- 5. SURFACES STRIP -->
+<!-- 6. SURFACES STRIP -->
 <section class="sec" id="surfaces">
 <p class="eyebrow mono">Every surface</p>
 <h2 class="h2">The same outcome everywhere, with the channel shown</h2>
-<p class="p">Founder decision 6 asks for feature parity on every surface. The mechanisms differ, so the product promises the same learning outcome on each, tests it, and publishes the result per surface.</p>
+<p class="p">Founder decision 6 asks for feature parity on every surface. Some surfaces have no hooks, no MCP or no live user, so the same mechanism is impossible. The product promises the same learning outcome on each, tests it on every release, and shows what each surface can count.</p>
 <div class="strip">
 <div class="sf">
 <div><div class="sh">Terminal agents</div><div class="ex">Claude Code CLI, Codex CLI, Gemini CLI, Copilot CLI, Aider</div></div>
@@ -348,7 +379,7 @@ footer{margin:110px 0 40px;padding-top:22px;border-top:1px solid var(--line);dis
 <div><dt>A question arrives</dt><dd>At a break, as one plain line in the chat</dd></div>
 <div><dt>You answer</dt><dd>In the pad, in a second terminal tab</dd></div>
 <div><dt>Counts</dt><dd><span class="cnt hot">toward a level</span></dd></div>
-<div><dt>v1</dt><dd>Claude Code and Codex tested. Gemini and Copilot CLI in v1.1. Aider has no hooks or MCP, so floor only</dd></div>
+<div><dt>Build order</dt><dd>Claude Code first, then Codex. Gemini and Copilot CLI later. Aider has no hooks or MCP, so the plain-text floor</dd></div>
 </dl>
 <span class="tag">[verified: research/surfaces.md 8.7; <a href="https://aider.chat/docs/config/options.html">aider.chat</a>]</span>
 </div>
@@ -358,7 +389,7 @@ footer{margin:110px 0 40px;padding-top:22px;border-top:1px solid var(--line);dis
 <div><dt>A question arrives</dt><dd>In the agent panel, or as an inline card where the IDE has a UI tier</dd></div>
 <div><dt>You answer</dt><dd>In the pad, in the terminal panel</dd></div>
 <div><dt>Counts</dt><dd><span class="cnt hot">toward a level</span></dd></div>
-<div><dt>v1</dt><dd>Cursor tested. VS Code Copilot in v1.1. Copilot in JetBrains has no hooks: a known gap</dd></div>
+<div><dt>Build order</dt><dd>Cursor early. VS Code Copilot later. Copilot in JetBrains has no hooks: a known gap</dd></div>
 </dl>
 <span class="tag">[verified: <a href="https://docs.github.com/en/copilot/reference/customization-cheat-sheet">docs.github.com</a>]</span>
 </div>
@@ -366,9 +397,9 @@ footer{margin:110px 0 40px;padding-top:22px;border-top:1px solid var(--line);dis
 <div><div class="sh">Desktop apps</div><div class="ex">Claude Code desktop, Codex app</div></div>
 <dl>
 <div><dt>A question arrives</dt><dd>As a native ask in the app, where it has one</dd></div>
-<div><dt>You answer</dt><dd>In the pad, or the native ask once it is shown the model cannot see it</dd></div>
+<div><dt>You answer</dt><dd>In the pad, or the native ask once it is checked that the model cannot see it</dd></div>
 <div><dt>Counts</dt><dd><span class="cnt hot">toward a level</span> in the pad</dd></div>
-<div><dt>v1</dt><dd>Tested adapters</dd></div>
+<div><dt>Build order</dt><dd>With their CLI adapters</dd></div>
 </dl>
 <span class="tag">[unverified per host: whether native ask content reaches the model]</span>
 </div>
@@ -378,7 +409,7 @@ footer{margin:110px 0 40px;padding-top:22px;border-top:1px solid var(--line);dis
 <div><dt>A question arrives</dt><dd>At pull request time: Review first</dd></div>
 <div><dt>You answer</dt><dd>Next time you open a local pad; the session ends with an import line</dd></div>
 <div><dt>Counts</dt><dd><span class="cnt">Met</span> until answered in a pad</dd></div>
-<div><dt>v1</dt><dd>Floor, untested. Cloud disks do not keep the record</dd></div>
+<div><dt>Build order</dt><dd>Import line with the second wave of adapters. Cloud disks do not keep the record</dd></div>
 </dl>
 <span class="tag">[verified: <a href="https://docs.github.com/en/copilot/how-tos/use-copilot-agents/cloud-agent/extend-cloud-agent-with-mcp">docs.github.com</a>]</span>
 </div>
@@ -387,16 +418,16 @@ footer{margin:110px 0 40px;padding-top:22px;border-top:1px solid var(--line);dis
 <dl>
 <div><dt>A question arrives</dt><dd>A daily reminder with no content, at the time you chose, or none</dd></div>
 <div><dt>You answer</dt><dd>In the vendor app; relayed by the agent</dd></div>
-<div><dt>Counts</dt><dd><span class="cnt">Met</span> in v1</dd></div>
-<div><dt>v2</dt><dd>A device link paired with one confirmation tap, so phone answers count. Only if E12 passes</dd></div>
+<div><dt>Counts</dt><dd><span class="cnt">Met</span> at first</dd></div>
+<div><dt>Later</dt><dd>A device link on your network, paired with one confirmation tap, so phone answers count</dd></div>
 </dl>
-<span class="tag">[unverified: one-tap pairing on iOS and Android, E12]</span>
+<span class="tag">founder decision 4</span>
 </div>
 </div>
 <div class="same">The same everywhere: one record, one budget of 3 reviews a day, one reminder at most. Open lines and due reviews follow you between surfaces. Install adds one agent at a time, and shows every file it writes first.</div>
 </section>
 
-<!-- 6. A WEEK -->
+<!-- 7. A WEEK -->
 <section class="sec">
 <p class="eyebrow mono">The experience</p>
 <h2 class="h2">A normal week</h2>
@@ -408,7 +439,7 @@ footer{margin:110px 0 40px;padding-top:22px;border-top:1px solid var(--line);dis
 <li><span>Under pressure</span><span>Silence. "prod is down" or "quiet today" turns it off.</span></li>
 <li><span>Evening</span><span>One reminder with no content, only if you chose a time.</span></li>
 <li><span>Monday</span><span>The weekly line: one fact from your own record. No streaks, no points, no guilt.</span></li>
-<li><span>Once a month</span><span>The Checkup, if you start it.</span></li>
+<li><span>When you want</span><span>A drill, or a Fresh repo task with the agent off.</span></li>
 </ul>
 <div>
 <pre class="term mono"><i>one exchange, in the chat</i>
@@ -422,80 +453,82 @@ Answer, then: sure, think so, guess, or don't know.</pre>
 <pre class="term mono"><i>the weekly line</i>
 Last week you named the cause of 2 of 5 failing
 tests before the agent did. The week before, 0 of 4.</pre>
-<p class="small" style="margin-top:10px">Example copy from the spec. Whether the weekly line brings people back needs to be measured (E13).</p>
+<p class="small" style="margin-top:10px">Example copy from the spec. Facts about your own work and trend, never a comparison with others (Kluger and DeNisi 1996, via research/learning-science.md).</p>
 </div>
 </div>
 </section>
 
-<!-- 7. ROADMAP -->
-<section class="sec" id="roadmap">
-<p class="eyebrow mono">Roadmap</p>
-<h2 class="h2">Prove it first, then build it</h2>
-<p class="p">Sizes are rough planning guesses in engineer-weeks, marked est. They are not measurements.</p>
+<!-- 8. BUILD ORDER -->
+<section class="sec" id="build">
+<p class="eyebrow mono">Build order</p>
+<h2 class="h2">Real value soonest, then widen</h2>
+<p class="p">One agent first, the whole loop, then more drills and more surfaces. No phases to pass. Each step ships when it works.</p>
 <div class="road">
-<div class="ph now"><div><div class="pv">v0</div><div class="pe">est. 6 to 10 wks</div></div>
-<div><p class="pt">Prove there is something worth building</p>
+<div class="ph now"><div><div class="pv">1</div><div class="pe">first</div></div>
+<div><p class="pt">Fix the existing skill</p>
+<ul><li>Stop telling users to commit <span class="mono">.learning/</span> to the project repo, and tell current users how to remove old copies. Reserve package names; check the name's trademark.</li></ul></div></div>
+<div class="ph"><div><div class="pv">2</div><div class="pe">core</div></div>
+<div><p class="pt">The core loop in Claude Code</p>
 <ul>
-<li>Week one: stop the current skill telling users to commit <span class="mono">.learning/</span>. Reserve names. Fix site claims.</li>
-<li>Write a small human question bank and the first Checkup tasks.</li>
-<li>A concierge Checkup, a small lab study of the current skill, and 30-day return of users recruited cold.</li>
-<li>Interviews with managers and instructors.</li>
-</ul>
-<span class="gate">Gate: E13, E14 and E16 pass, and a funding plan is chosen</span></div></div>
-<div class="ph"><div><div class="pv">v1</div><div class="pe">est. 18 to 26 wks</div></div>
-<div><p class="pt">The smallest thing that is still the product</p>
-<ul>
-<li>Engine, CLI, the pad, MCP server, hooks, record with encryption option, sealing, test-based grading, signed releases.</li>
-<li>All five moves, the budget, quiet controls, the weekly line. Trace and Check drills; Replay only in a container.</li>
-<li>Checkup client and service. Tested adapters for Claude Code, Codex and Cursor; the floor for all others.</li>
-<li>Text map with evidence age, and a public conformance table.</li>
+<li>Engine, CLI, the pad, the record with encryption, sealing, test grading, MCP tools and hooks.</li>
+<li>Predict, Call it, Your line, Explain back. Reviews with the cap, the map, the dial, quiet controls, the weekly line.</li>
+<li>Import for current skill users.</li>
 </ul></div></div>
-<div class="ph"><div><div class="pv">v1.1</div><div class="pe">est. 4 to 6 wks</div></div>
-<div><p class="pt">More surfaces, cloud carry</p>
-<ul><li>Tested adapters for VS Code Copilot, Copilot CLI and Gemini CLI. The carry branch for private repos you own, if E10 passes. Gated model graders.</li></ul></div></div>
-<div class="ph"><div><div class="pv">v2</div><div class="pe">est. 20 to 30 wks</div></div>
-<div><p class="pt">Phone, sync, teams start</p>
-<ul><li>More adapters, the codebase guide, a course pilot, the phone device link if E12 passes, paid Sync, compare items across projects.</li></ul></div></div>
-<div class="ph"><div><div class="pv">Later</div><div class="pe">no estimate</div></div>
-<div><p class="pt">Teams and proctoring</p>
-<ul><li>Team report, SSO and SCIM after buyer tests and legal review. Proctored live checks. A static binary.</li></ul></div></div>
+<div class="ph"><div><div class="pv">3</div><div class="pe">no container</div></div>
+<div><p class="pt">Review first and Trace</p>
+<ul><li><span class="mono">firsthand pr</span> and review at PR time. Trace on your own code. Both fit daily work and need no container.</li></ul></div></div>
+<div class="ph"><div><div class="pv">4</div><div class="pe">more agents</div></div>
+<div><p class="pt">Codex and Cursor, and the floor for every agent</p>
+<ul><li>Adapters generated from one manifest. Conformance tests in CI. The import line for cloud sessions.</li></ul></div></div>
+<div class="ph"><div><div class="pv">5</div><div class="pe">agent off</div></div>
+<div><p class="pt">Containers, Replay and Fresh repo</p>
+<ul><li>Debugging and unfamiliar code with the agent off, where practice matters most. The miner and the open task set.</li></ul></div></div>
+<div class="ph"><div><div class="pv">6</div><div class="pe">transfer</div></div>
+<div><p class="pt">Question bank, Check and Compare</p>
+<ul><li>Human-written item families, Check drills on past diffs, Compare across projects. Model feedback on open answers, and the grader check.</li></ul></div></div>
+<div class="ph"><div><div class="pv">7</div><div class="pe">wider</div></div>
+<div><p class="pt">More surfaces and the codebase guide</p>
+<ul><li>VS Code Copilot, Copilot CLI, Gemini CLI, then Devin, Amp, OpenCode, Kiro, Cline. The guide and postmortem rehearsals. Plan first and design calls.</li></ul></div></div>
+<div class="ph"><div><div class="pv">8</div><div class="pe">phone</div></div>
+<div><p class="pt">The phone device link</p>
+<ul><li>Paired with one confirmation tap. Cards the engine renders, so phone answers count.</li></ul></div></div>
 </div>
 </section>
 
-<!-- 8. FOUNDER DECISIONS -->
+<!-- 9. THE ONE OPEN QUESTION -->
+<section class="sec" id="question">
+<p class="eyebrow mono">The one open question</p>
+<h2 class="h2">Does a model grader agree with people?</h2>
+<p class="p">Everything else is decided from research, first principles or a stated assumption. This is the only question worth an experiment.</p>
+<div class="oq">
+<div class="card"><span class="rk">we can get the data</span><p>Contributors write answers of mixed quality. Two people grade each one against the sealed points. The model grades the same answers.</p></div>
+<div class="card"><span class="rk">research cannot answer it</span><p>Reported agreement runs from near the level of two people to a kappa of 0.295, by model, rubric and domain (research/evidence.md A.2).</p></div>
+<div class="card"><span class="rk">it changes the design</span><p>If it agrees as well as two people do, open answers move levels. If not, they stay feedback, and those levels rest on tests and real work.</p></div>
+</div>
+</section>
+
+<!-- 10. FOUNDER DECISIONS -->
 <section class="sec" id="decisions">
 <p class="eyebrow mono">Founder decisions</p>
 <h2 class="h2">Your seven decisions, and where they landed</h2>
 <div class="dec">
-<div class="dc"><span class="dn">1</span><div><div class="dt">The record lives in a local git repo. No remote unless asked.</div><div class="dh">Kept, outside any project tree. One exception is asked of you: a carry branch for cloud sessions, in private repos you own, from v1.1.</div></div><span class="st ex">kept, 1 ask</span></div>
-<div class="dc"><span class="dn">2</span><div><div class="dt">"Your line" is on.</div><div class="dh">Kept. Write first, then read the test. Neutral TODO in shared repos. A delayed hidden-test review is what counts.</div></div><span class="st">accepted</span></div>
+<div class="dc"><span class="dn">1</span><div><div class="dt">The record lives in a local git repo. No remote unless asked.</div><div class="dh">Kept, outside any project tree.</div></div><span class="st">accepted</span></div>
+<div class="dc"><span class="dn">2</span><div><div class="dt">"Your line" is on.</div><div class="dh">Kept. Write first, then read the test. Neutral TODO in shared repos. A delayed hidden-test review carries the learning.</div></div><span class="st">accepted</span></div>
 <div class="dc"><span class="dn">3</span><div><div class="dt">At most 3 due reviews a day by default.</div><div class="dh">Kept. To fit, the product limits how many new ideas enter the queue, not the reviews.</div></div><span class="st">accepted</span></div>
-<div class="dc"><span class="dn">4</span><div><div class="dt">One confirmation tap on the phone, where no-tap is impossible.</div><div class="dh">Kept as the pass rule for the v2 device link (E12).</div></div><span class="st">accepted</span></div>
+<div class="dc"><span class="dn">4</span><div><div class="dt">One confirmation tap on the phone, where no tap is impossible.</div><div class="dh">Kept for the device link.</div></div><span class="st">accepted</span></div>
 <div class="dc"><span class="dn">5</span><div><div class="dt">Keyboard letter shortcuts off by default.</div><div class="dh">Kept. The pad has none.</div></div><span class="st">accepted</span></div>
-<div class="dc"><span class="dn">6</span><div><div class="dt">Feature parity on all coding surfaces.</div><div class="dh">Challenged with evidence. Some surfaces have no hooks, no MCP or no live user, so the same mechanism is impossible. Proposed: parity of outcome, tested and published per surface. Chat-only answers count as Met; the pad makes every terminal surface count.</div></div><span class="st ch">challenged</span></div>
+<div class="dc"><span class="dn">6</span><div><div class="dt">Feature parity on all coding surfaces.</div><div class="dh">Reframed with evidence as parity of outcome, tested and shown per surface. Chat-only answers count as Met; the pad makes every terminal surface count.</div></div><span class="st ch">reframed</span></div>
 <div class="dc"><span class="dn">7</span><div><div class="dt">At most one reminder a day, at a time you choose.</div><div class="dh">Kept. The install question has no answer picked for you. Three ignored in a row: it asks once, then stops.</div></div><span class="st">accepted</span></div>
 </div>
-<h3 class="ct" style="margin-top:44px">Still open for you</h3>
-<ol class="open">
-<li>The name, after the name check (E0).</li>
-<li>Accept parity of outcome as the meaning of decision 6.</li>
-<li>Accept the carry branch, or keep the import line only.</li>
-<li>Fund the question bank and Checkup service in v0, under a separate content licence.</li>
-<li>A funding plan before v1: grant, sponsor, foundation, or vendor with an independence clause.</li>
-<li>Which buyer first, courses or teams.</li>
-<li>Thresholds for every experiment, fixed before each run.</li>
-<li>Who runs the study; engine language; keep or retire the claude.ai Room.</li>
-</ol>
-</section>
 
-<!-- 9. RISKS -->
-<section class="sec">
-<p class="eyebrow mono">Risks</p>
-<h2 class="h2">The three that could end it</h2>
-<div class="risks">
-<div class="card"><span class="rk">efficacy</span><p class="ct" style="margin-top:6px">It does not make people better weeks later</p><p>The founding study measured right away, with 52 people (<a href="https://arxiv.org/html/2601.20245v2">arxiv</a>). A lab check of the current skill comes before the engine.</p></div>
-<div class="card"><span class="rk">retention</span><p class="ct" style="margin-top:6px">Nobody comes back</p><p>The value is long term and the cost is now (Lehmann 2025, <a href="https://arxiv.org/abs/2409.09047">arxiv</a>). 30-day return of cold users gates the build.</p></div>
-<div class="card"><span class="rk">funding</span><p class="ct" style="margin-top:6px">No one funds it</p><p>A large build with no revenue before courses or teams, and a vendor can copy the loop. Lead with the scarce parts; test buyers in v0.</p></div>
+<h3 class="ct" style="margin-top:44px">Still open for you, with a recommendation</h3>
+<div class="dec">
+<div class="dc"><span class="dn">A</span><div><div class="dt">The name: Firsthand or Ownline.</div><div class="rec"><b>Recommend:</b> Firsthand, if the trademark and registry check finds no conflict.</div></div><span class="st ex">name</span></div>
+<div class="dc"><span class="dn">B</span><div><div class="dt">Parity of outcome as the meaning of decision 6.</div><div class="rec"><b>Recommend:</b> accept. Otherwise the agent can see every question, or some surfaces cannot be supported.</div></div><span class="st ex">surfaces</span></div>
+<div class="dc"><span class="dn">C</span><div><div class="dt">A carry branch for cloud sessions, as an exception to decision 1.</div><div class="rec"><b>Recommend:</b> do not build it. The import line and your own private remote cover cloud sessions.</div></div><span class="st ex">record</span></div>
+<div class="dc"><span class="dn">D</span><div><div class="dt">Licences.</div><div class="rec"><b>Recommend:</b> Apache-2.0 for the engine; CC BY 4.0 for the catalog, question bank and task set.</div></div><span class="st ex">licence</span></div>
+<div class="dc"><span class="dn">E</span><div><div class="dt">Engine language.</div><div class="rec"><b>Recommend:</b> Python, reusing the current engine, shipped with uvx, pipx and an npm shim.</div></div><span class="st ex">engine</span></div>
+<div class="dc"><span class="dn">F</span><div><div class="dt">The claude.ai artifact Room from the earlier design.</div><div class="rec"><b>Recommend:</b> retire it. The pad, the text map and the device link do its job everywhere.</div></div><span class="st ex">surfaces</span></div>
 </div>
 </section>
 

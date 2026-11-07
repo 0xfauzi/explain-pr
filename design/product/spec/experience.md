@@ -1,6 +1,6 @@
 # Spec: the experience
 
-Part of `../PRODUCT.md` (section 5). Copy rules come from `../research/experience-design.md`. All copy below is the plain text the engine returns on every surface. Richer tiers render the same words. Red-team items are cited as "RT market n" and so on.
+Part of `../PRODUCT.md` (section 6). Copy rules come from `../research/experience-design.md`. All copy below is the plain text the engine returns on every surface. Richer tiers render the same words.
 
 ---
 
@@ -8,20 +8,20 @@ Part of `../PRODUCT.md` (section 5). Copy rules come from `../research/experienc
 
 - Plain words, short lines, one idea per line.
 - Verdict word first on graded answers: Correct, Partly, Not yet. Never on predictions.
-- Feedback is about the work, never the person. No praise, no mascot, no exclamation marks.
-- Banned: streak counts, points, badges, "great job", loss framing, countdowns, backlog counts.
+- Feedback is about the work, never the person. No praise, no mascot, no exclamation marks (L13).
+- Banned: streak counts, points, badges, "great job", loss framing, countdowns, backlog counts (L14).
 - Code references are `path:line`.
 - Every exchange ends with `Back to: <task>. Next: <step>.`
 - Every question carries a why-now and a one-word skip.
 - Every error ends with the one reply or command that fixes it (https://clig.dev/).
-- **Never claim what is not true about data** (RT privacy 1, 6). No "nothing leaves the machine". Name the receiver.
-- **Repo text is quoted and attributed** (RT privacy 5): `From this repo, written by contributors:` and then the text, with commands and URLs removed.
+- Never claim what is not true about data. No "nothing leaves the machine". Name the receiver.
+- Repo text is quoted and attributed: `From this repo, written by contributors:` and then the text, with commands and URLs removed.
 
 ---
 
 ## 2. First run
 
-`init` runs for the agent it was launched from (RT market 9).
+`init` runs for the agent it was launched from.
 
 ```
 Firsthand will add itself to Claude Code. It will write these files:
@@ -51,26 +51,33 @@ A few questions.
 4. Which repos may I read for drills? Paths, or none.
 ```
 
-Question 1 and 3 have no default; the engine waits for an answer and re-asks once if the user presses enter (RT market 1). If the user still gives none, the reminder stays off and the work question is treated as "yes" for safety, which turns on the work defaults and says so.
+Questions 1 and 3 have no default. The engine waits and re-asks once if the user presses enter. If the user still gives none, the reminder stays off and the work question is treated as "yes" for safety, which turns on the work defaults and says so.
 
-Then the sampler:
+Then the first drill:
 
 ```
-Can you still do this without your agent?
-Three questions written by people. Your agent never saw them. A few minutes, in the pad.
+Want a first question? I picked a function in payments-api from three weeks ago.
+You predict what it returns for one input, then I run it. A minute or two, in the pad.
 Yes, or later.
 ```
 
-After the sampler:
+With no repo added, it offers three questions from the open question bank instead:
 
 ```
-First look, not proctored: 2 of 3 right.
-These count as met, not as levels. Your first Checkup is ready when you want it: firsthand checkup
+Want three first questions? They are written by people, about ideas common in backend code.
+A few minutes, in the pad. Yes, or later.
 ```
 
-### 2.1 Work install
+After:
 
-Replaces the old promise in full (RT privacy 1). Shown before the questions, and again by `firsthand privacy`.
+```
+2 of 3 right. The one you missed, retry jitter, comes back next week in a new form.
+Say "show my map" any time.
+```
+
+### 2.1 Work computer
+
+Shown before the questions, and again by `firsthand privacy`.
 
 ```
 This is a work computer. Here is what your employer can and cannot see.
@@ -106,7 +113,7 @@ If the first two calls time out and the third succeeds, how many charges does th
 Answer, then: sure, think so, guess, or don't know.
 ```
 
-When the pad is open, the chat shows only: `Question in your pad (skip ok).` and the pad shows the full form.
+When the pad is open, the chat shows only `Question in your pad (skip ok).` and the pad shows the full form.
 
 ### 3.2 Faded (after three)
 
@@ -128,7 +135,7 @@ Back to: add retries. Next: add the idempotency key.
 
 ```
 Correct. Your retry code passed the hidden test.
-Graded by running the test. Counts toward your map: this is your second right answer on this idea.
+Graded by running the test. This is your second right answer on this idea: now Recalled.
 Comes back in 3 weeks.
 Back to: add retries. Next: run the tests.
 ```
@@ -158,7 +165,7 @@ After:
 ```
 Your check (log the request id on both calls) tells a duplicate request apart from a double write. Good check.
 Cause: two requests, same charge, no key.
-This is practice. I saved this bug to replay later with the agent off, where it counts.
+I saved this bug to replay later with the agent off.
 Back to: fix refunds. Next: I will run your check first.
 ```
 
@@ -177,13 +184,7 @@ In a repo the user does not own, the comment in the code is a plain `TODO:`, and
 Line done:
 
 ```
-Did you read the test first? yes or no.
-```
-
-Then:
-
-```
-Tests pass. This counts as met. In a week I will ask you to write it again, with the test hidden. That one counts.
+Tests pass. In a week I will ask you to write it again, in a new spot, with the test hidden.
 ```
 
 At commit in a shared repo with the line open:
@@ -192,7 +193,21 @@ At commit in a shared repo with the line open:
 Your line in retry.py:42 was open, so I filled it before the commit. Saved for later as a review.
 ```
 
-### 3.8 Review first
+### 3.8 Explain back
+
+```
+That step passed. In two or three sentences: why does the retry reuse the same key? (skip ok)
+```
+
+After:
+
+```
+Partly. You covered: same key on every retry ("reuses the key from the first call").
+Missing: what the provider does when it sees a key twice. See client.py:40.
+Graded by a model against points written from the code. Mark it yourself: right, partly, or missed.
+```
+
+### 3.9 Review first
 
 ```
 Reviewing PR 482 from the agent. Look first?
@@ -216,7 +231,33 @@ PR 482 settled. Your retry.py:42 finding was confirmed by your test. Counts towa
 client.py:18 is still unconfirmed. Unconfirmed never counts against you.
 ```
 
-### 3.9 Session start offer
+### 3.10 Plan first (Deep)
+
+```
+Before I plan: list the steps you would take, and how we will know it is done. (skip ok)
+```
+
+After:
+
+```
+My plan has 5 steps. Yours has 4. The one you did not list: migrate existing rows before the new column is required.
+Back to: add currency. Next: step 1.
+```
+
+### 3.11 Design call (Deep)
+
+```
+You chose one table per currency. What do you expect this makes harder later? One line. (skip ok)
+```
+
+When the code is next touched:
+
+```
+Three weeks ago you chose one table per currency and said reporting across currencies would be harder.
+Today's change adds a cross-currency report. Was it harder? yes, no, or not sure.
+```
+
+### 3.12 Session start offer
 
 ```
 2 reviews due, about 2 minutes. Say "review" now, or later.
@@ -226,18 +267,18 @@ On a surface where chat answers cannot count, add: `In your pad they count towar
 
 If an open line exists in this repo, it comes first.
 
-### 3.10 The weekly line
+### 3.13 The weekly line
 
-First session of the week, after the first prompt is handled, once (RT market 1):
+First session of the week, after the first prompt is handled, once:
 
 ```
 Last week: you named the cause of 2 of 5 failing tests before the agent did. The week before: 0 of 4.
 Say "weekly off" to stop these.
 ```
 
-The engine picks one fact from a fixed list, all from the user's own record, never compared with other people: causes named before the agent; Review-first findings confirmed; ideas that moved up or down; your lines written without the test. If a month has passed since the last Checkup, it adds: `Your next Checkup is ready when you want it.` If no fact exists, nothing is shown.
+The engine picks one fact from a fixed list, all from the user's own record, never compared with other people: causes named before the agent; Review-first findings confirmed; ideas that moved up or down; your lines written without reading the test; Fresh repo tasks passed. If no fact exists, nothing is shown.
 
-### 3.11 Reminders ignored
+### 3.14 Reminders ignored
 
 After three ignored reminders, next session, once:
 
@@ -247,7 +288,7 @@ You did not open the last 3 reminders. Keep 18:30, change the time, or stop?
 
 No answer stops reminders and says so.
 
-### 3.12 Drills
+### 3.15 Drills
 
 ```
 Drill: a real bug from payments-api, three weeks ago. Agent off for this one. It runs in a container with no network.
@@ -260,38 +301,36 @@ No container runtime:
 Replays need a container so old code cannot reach your files or the network. Install Docker or Podman, then say "drill" again.
 ```
 
-### 3.13 The Checkup
+### 3.16 Fresh repo
 
 ```
-Checkup. About 30 minutes. Agent off. A task in a public repo you have not opened, in a container with no network.
-Firsthand will send: an anonymous token and the task id now, and your patch when you submit. Nothing else.
+Fresh repo: a small change in a public Go project you have not opened. Agent off. It uses an idea you practised in payments-api.
+Size: one function and its caller. No timer.
+I will clone it from github.com and run it in a container with no network.
 Start? Yes, or later.
 ```
 
-Result:
+On submit:
 
 ```
-Checkup, not proctored. Task difficulty: medium, from pilot runs.
-Task: tests passed. Bug: found the right file, not the line. Diffs: found the defect, called the clean one clean.
-Too few Checkups to show a trend yet. Export a signed result: firsthand checkup export
+3 of 4 hidden tests passed. The one that failed: test_retry_after_header.
+Here is the real commit. What did it do that yours did not? One line.
 ```
 
-The difficulty word comes from the task's stored pilot data. "About 30 minutes" in the start copy is a design target per task, set from pilot runs and needs to be measured.
-
-### 3.14 Pressure
+### 3.17 Pressure
 
 ```
 Sounds urgent. No learning questions this session. Say "save it" to keep this for later.
 ```
 
-### 3.15 Quiet controls
+### 3.18 Quiet controls
 
 `quiet for 2h`, `quiet today`, `quiet in this repo`, `quiet on this branch`, `learning off`. Each confirms in one line and says how to undo. These only narrow, so they work from any channel.
 
-### 3.16 Widening needs the pad
+### 3.19 Widening needs the pad
 
 ```
-Raising the grading budget needs your confirmation in the pad. Open it with: firsthand pad
+Turning on model grading needs your confirmation in the pad. Open it with: firsthand pad
 ```
 
 ---
@@ -300,8 +339,7 @@ Raising the grading budget needs your confirmation in the pad. Open it with: fir
 
 | State | Copy |
 | :- | :- |
-| Model grading queued | `Saved. Graded at the end of this session. You will see it at your next review.` |
-| Grader not gated | `Graded by a model that has not passed our check yet, so this counts as met.` |
+| Model feedback queued | `Saved. Feedback at the end of this session. You will see it at your next review.` |
 | Graders disagree | `Two readings disagree. Reading A: ... Reading B: ... Your map does not change on this one.` |
 | Grader unavailable here | `I cannot grade this here. It will be graded at your next local session.` |
 | Cost budget reached | `This week's grading budget is used. Open answers wait until Monday, or raise it in the pad.` |
@@ -311,13 +349,14 @@ Raising the grading budget needs your confirmation in the pad. Open it with: fir
 | Signing unavailable | `Commit signing is not available here, so I keep an unsigned hash chain. Your record still works.` (once) |
 | Secret found in an answer | `Your answer had something that looked like a token. I saved it as [redacted].` |
 | Bad key refunded | `I re-checked that question and the key looks wrong. Your miss is removed.` |
+| Fresh repo setup failed | `This task did not build here. I dropped it and nothing was recorded. Say "fresh" for another.` |
 | Tag unclear | Silence. |
 
 ---
 
 ## 5. The map
 
-Designed for a terminal and a screen reader first. A linear list, no grid, no table, no colour carrying meaning. The headline no longer claims more than the evidence (RT efficacy 2).
+Designed for a terminal and a screen reader first. A linear list, no grid, no table, no colour carrying meaning.
 
 ```
 What you have shown without the agent, and how recently.
@@ -326,51 +365,38 @@ Recalled: exponential backoff, checked 3 days ago. N+1 queries, not checked late
 Slipped: SQL indexes. Was Recalled, missed Tuesday. Back Friday.
 Met, not yet shown later: database migrations, retry jitter.
 Reviews due today: 2.
-Unseen questions: gap not yet calibrated.
-Self-reported practice, not proctored. Say "map all" for more.
+Say "map all" for more.
 ```
 
 Rules:
 
-- Only two numbers on the first view: reviews due today, and the unseen line once it is calibrated.
+- One number on the first view: reviews due today.
 - Evidence age on every level. "Not checked lately" replaces the age past the margin.
-- Met is its own line, never mixed with levels (RT efficacy 16).
+- Met is its own line, never mixed with levels.
 - Best level appears only in `map all`.
-- `map all` adds, linearly: per construct and idea, the grading, seal, provenance and format of each piece of evidence; "based on N of M due items answered"; which ideas are not being reviewed and how to pick growth areas; ideas with unseen coverage; calibration on delayed items; prediction accuracy on its own line; field evidence; Checkups against difficulty; what this surface can count.
-- Codebase guide ideas under their own heading.
+- `map all` adds, linearly: per skill and idea, how each piece of evidence was graded, how it arrived, and its format; "based on N of M due items answered"; which ideas are not being reviewed and how to pick growth areas; calibration on delayed items; prediction accuracy on its own line; field evidence; Fresh repo tasks; what this surface can count.
+- Codebase guide ideas under their own heading, "This codebase".
 
 ---
 
-## 6. Proof pack
+## 6. Accessibility requirements
 
-`firsthand export` writes a proof pack of items the user picks (RT efficacy 18). Its header always says:
-
-```
-Not a performance measure. Self-reported practice, not proctored.
-Ideas included: 4. For each: attempts in the record, attempts included.
-idempotency keys: 9 attempts, 3 included.
-```
-
----
-
-## 7. Accessibility release gate
-
-A release ships only if every item passes on at least one agent per tier, and in the pad.
+A release ships only when every item passes on at least one agent per tier, and in the pad.
 
 1. Full loop with a screen reader (VoiceOver and NVDA) and keyboard only, including the pad.
 2. Every answer can be given by voice dictation.
-3. No timers. The Checkup's "about 30 minutes" is a guide, never a limit.
-4. No single-key actions that write to the record. Letter shortcuts off by default (decision 5).
+3. No timers anywhere. Fresh repo shows a size, never a time.
+4. No single-key actions that write to the record. Letter shortcuts off by default (founder decision 5).
 5. `NO_COLOR` respected.
 6. No tables, box art or ASCII diagrams in learning messages.
 7. Verdict word first; resume cue last.
 8. Every question restates its context in one line (https://www.w3.org/TR/coga-usable/).
-9. Undo for every record change that is not a sealed answer; confirmation before "don't know" locks.
-10. For any page or phone UI (v2): 320px reflow, 200% zoom, reduced motion, 44px targets, one polite live region.
+9. Undo for every record change that is not a locked answer; confirmation before "don't know" locks.
+10. For the phone device link: 320px reflow, 200% zoom, reduced motion, 44px targets, one polite live region.
 
 ---
 
-## 8. Moving between surfaces
+## 7. Moving between surfaces
 
 | From | To | What the user sees |
 | :- | :- | :- |
@@ -382,6 +408,6 @@ A release ships only if every item passes on at least one agent per tier, and in
 
 ---
 
-## 9. Turning it off
+## 8. Turning it off
 
 "learning off" stops all questions, reminders and the weekly line at once, keeps the record, and says how to turn it back on. `firsthand uninstall` restores every file it changed from its backups, shows a diff for any file the user changed since, leaves the record, and prints where it is.
