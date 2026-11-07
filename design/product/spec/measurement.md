@@ -1,54 +1,56 @@
 # Spec: measuring that it works
 
-Part of `../PRODUCT.md` (sections 9 and 11). Built on `../research/evidence.md` Parts G to K.
+Part of `../PRODUCT.md` (sections 9 and 11). Built on `../research/evidence.md` Parts G to K, revised after `../redteam/efficacy.md` and `../redteam/market.md` (cited as "RT efficacy n", "RT market n").
 
 ---
 
 ## 1. Instruments
 
-| Instrument | Written by | Seen by the teaching agent | Used for |
-| :- | :- | :- | :- |
-| Practice items (reviews, drills, moves) | The engine, keys in a separate context | Yes | Teaching and tuning |
-| Unseen questions | Contracted engineers | No | Leading Goodhart alarm; G1 battery in the study |
-| Checkup | Contracted engineers | No | G2, G3, G4 for users; lagging, user-held |
-| Field evidence | The user | No | Within-person real-work signal (G5) |
-| Proctored live check | Fresh unseen items, a person present | No | The only evidence for third parties (later) |
+| Instrument | Written by | Seen by the teaching agent | Ships to users | Used for |
+| :- | :- | :- | :- | :- |
+| Practice items | The engine, keys in a separate context, key-checked | Yes | Yes | Teaching and tuning |
+| In-product unseen families | Contracted engineers | No | Yes (generators) | The user's own Goodhart alarm, labelled not proctored |
+| Checkup tasks | Contracted engineers, piloted | No | Served on request; hidden tests stay on the service | G2 to G4 for users |
+| Study-only pool | Contracted engineers | No | **Never** | G1-S, the primary outcome |
+| Field evidence | The user | No | n/a | Self-reported real-work signal (G5) |
+| Proctored live check | Fresh items, a person present | No | n/a | The only evidence for third parties (later) |
 
-Rule: the teaching instrument and the claim instrument are separate (evidence G, structural rule 1). Every view that shows a practised score shows the unseen score next to it (rule 2).
+Rules: the teaching instrument and the claim instrument are separate. **The claim instrument for public claims never ships** (RT efficacy 1).
 
 ---
 
 ## 2. Metrics
 
-### 2.1 Product metrics (tune the product)
+### 2.1 Product metrics
 
 | Metric | Definition |
 | :- | :- |
-| Activation | First drill or first your-line attempted in the first session |
+| Activation | Sampler or demo drill answered in the first session |
 | Answer rate | Offered moments answered, not skipped or expired |
 | Review completion | Due reviews done the day they are due |
-| Return | Any learning event on day 14 and day 30 after install |
-| Dose | Weekly reps by kind: retrieval, generation, diagnosis, check; share unaided |
+| Return | Any learning event on day 14 and day 30 after install, **reported separately for cold-recruited users** (RT market 1) |
+| Pad use | Share of answers typed in the pad |
+| Dose | Weekly reps by kind; share that counted |
 
-### 2.2 Leading learning indicators (tune, never market as "better engineer")
+### 2.2 Leading learning indicators
 
-From evidence H.1: generation before reveal; delayed unaided recall at first review; retention curve per interval; calibration (Brier score and sure-miss correction rate on delayed items); your-line first-try rate; hint depth; the unseen-question gap.
+Delayed recall at first counting review; retention per interval; calibration (Brier score and sure-miss correction rate) **on delayed items only**; prediction accuracy as its own line (RT efficacy 19); your-line hidden-test review pass rate, split by "read the test first"; the unseen gap, only once calibrated.
 
-### 2.3 Lagging outcomes (claims)
+### 2.3 Lagging outcomes
 
-From evidence H.2. Primary: **G2**, the fresh-codebase task. Also G1 (held-out battery), G3 (seeded-bug localisation in an unfamiliar repo), G4 (defect finding in agent diffs including clean ones). G5 real-work signals are within-person only.
+**Primary: G1-S**, a held-out unaided battery from the study-only pool, made of transfer items (new instances, topic names hidden), at a fixed delay. This is the one primary outcome, named the same way in `../PRODUCT.md` 9.1 and 9.4 and here (RT efficacy 1).
 
-These are preregistered as the study outcomes before any study starts.
+Secondary: G2 (task in an unfamiliar repo), G3 (bug localisation), G4 (defect finding including clean diffs). G5 within-person only.
 
 ### 2.4 Guard metrics
 
-Task time with the product on versus off (non-inferiority margin set in advance); skip and "just build" rate and its trend; reminder dismissals; model cost per user per week; measurement invariance across surfaces (the same item type should score the same for the same person on CLI, IDE and phone).
+Task time on versus off (non-inferiority margin set in advance); skip and "just build" rate; reminder dismissals; model cost per week; measurement invariance across channels; **delayed accuracy near ceiling** (a sign questions are too easy, RT efficacy 4).
 
 ### 2.5 Where metrics come from without a server
 
-- On device: `firsthand stats` computes all of the above for the user.
-- Design-partner cohort: users paste `firsthand stats --share` output, which holds counts and rates only, no answers, no code, no idea names unless they choose.
-- Telemetry stays off by default. No central analytics in v1.
+- On device: `firsthand stats`.
+- Design partners and cold cohorts paste `firsthand stats --share`: counts and rates only.
+- Telemetry stays off by default.
 
 ---
 
@@ -56,38 +58,41 @@ Task time with the product on versus off (non-inferiority margin set in advance)
 
 ### 3.1 Design
 
-- Unit: an idea cluster from the catalog (an idea plus its aliases and listed confusions). Related ideas share an arm, so they do not contaminate each other.
-- Assignment: a seeded coin per new cluster, recorded as a sealed `experiment.assigned` event, never shown on cards.
-- Before assignment, the engine checks that sealed delayed items of equal quality exist for the cluster in both arms (from the unseen bank). Clusters without them are not enrolled.
-- Outcome: unseen questions on that cluster at a fixed delay (21 days to start; design default).
-- Results on the device: per user, per experiment, with counts. Below the minimum: "too few ideas to tell".
+- Unit: an idea cluster. Assignment: a seeded coin, sealed, never on cards.
+- Enrolled only if equal-quality delayed items exist for both arms.
+- Outcome: unseen family items on that cluster at a fixed delay (21 days to start; design default).
 
-### 3.2 First experiments
+### 3.2 What the user sees
+
+**No per-user effect is shown** until the minimum count from E7's power calculation is reached (RT efficacy 13). Below it: "too few ideas to tell". Each user has a handful of binary outcomes per arm, and the "off" arm still gets retrieval practice, so a per-user estimate will mostly be noise.
+
+Results are **pooled across opted-in users first**, through pasted `stats --share` output, before any per-user display is turned on.
+
+### 3.3 First experiments
 
 | Experiment | Arms | Outcome |
 | :- | :- | :- |
-| Explain back after the build | On, off | Unseen-question correct at 21 days |
-| Your line | Offered, not offered | Unseen-question correct; task time guard |
-| Call it | Offered, not offered | Unseen C2 items; Checkup G3 |
+| Explain back after the build | On, off | Unseen items at 21 days |
+| Your line | Offered, not offered | Unseen items; task time guard |
+| Call it | Offered, not offered | Replay and Checkup bug results |
 | Topic name on transfer items | Shown, hidden | Unseen transfer items |
+| The weekly line | Shown, not shown (between-person, cohort) | 30-day return |
 
-Between-person questions (the daily cap, reminder timing, onboarding) need the opt-in cohort, because they cannot be split by idea.
+### 3.4 Power
 
-### 3.3 Power
-
-Effect sizes for this product are unknown, so no sample size is claimed. Lehr's rule gives about 16 divided by the squared standardised effect per arm for a two-arm test at 80% power and two-sided alpha 0.05 (https://www.columbia.edu/~cjd11/charles_dimaggio/DIRE/styled-4/code-12/, via evidence J.3). For illustration only: d = 0.5 gives about 64 per arm. Within-person designs need fewer people, by an amount that depends on the correlation between a person's clusters. E7 estimates that correlation and the delayed-test completion rate. The minimum clusters per person and the cohort size are then computed and written down before any claim. Until then: needs to be measured.
+Effect sizes are unknown, so no sample size is claimed. Lehr's rule gives about 16 divided by the squared standardised effect per arm (https://www.columbia.edu/~cjd11/charles_dimaggio/DIRE/styled-4/code-12/, via evidence J.3). For illustration only: d = 0.5 gives about 64 per arm. E7 estimates within-person correlation and completion. Until then: needs to be measured.
 
 ---
 
 ## 4. The study before any efficacy claim
 
-From evidence K.1:
-
 - Preregistered, randomised, two arms: the agent with Firsthand on at defaults, and the same agent with it off.
-- Participants: working developers and advanced students who already use an agent, across at least two agents and two surfaces. Pretest excludes people who know the target library.
-- Period: several building sessions across weeks in an unfamiliar realistic codebase with a library new to them. Length set from a pilot.
-- Primary: G1 at a fixed delay (two weeks or more after the last session). Secondary: G2, G3, G4, calibration. Guard: build task time, non-inferiority margin set in advance.
-- Grading: executable where possible; open answers by two humans blind to arm, with the model grader run in parallel to measure its agreement on study data.
+- **The control arm gets the item format:** the same number of practice questions in the same format, on unrelated content, so format familiarity is equal across arms (RT efficacy 1).
+- Neither arm has seen G1-S items: they come from the study-only pool.
+- Participants: working developers and advanced students who use an agent, across at least two agents and two surfaces. Pretest excludes people who know the target library.
+- Period: several building sessions across weeks in an unfamiliar codebase with a library new to them. Length set from a pilot.
+- **Primary: G1-S** at a fixed delay (two weeks or more after the last session). Secondary: G2, G3, G4, calibration. Guard: task time.
+- Grading: executable where possible; open answers by two humans blind to arm; the model grader in parallel to measure its agreement on study data.
 - Analysis: intention to treat; effect sizes with intervals; report who missed the delayed test and whether they differ by arm.
 - Independence: ideally run or audited by researchers who do not work on the product.
 
@@ -97,68 +102,95 @@ From evidence K.1:
 
 | Evidence | Allowed claim |
 | :- | :- |
-| Research only | "Designed around research on how people learn with AI." |
-| Leading indicators | "Users recall X at Y days", with definition and the unseen gap shown |
-| On-device experiments | "Shows you which moves help you, measured on you." |
-| Study positive on G1 | The specific result with effect size and link |
-| Independent replication with G2 to G4 | "People who use it become better engineers", with scope |
+| None | What it does, for example "It tells you when you got worse." "Designed around research on how people learn with AI." No efficacy claim |
+| Design-partner or cold-cohort data | The number, its exact definition and its sample size, in the form "30-day return X%, n = N cold installs, recruited from Y" (RT market 11) |
+| Leading indicators | "Users recall X at Y days", with definition, sample size and the unseen gap |
+| The study, positive on G1-S | The specific result, effect size and link |
+| Independent replication with G2 to G4 | "People who use it become better engineers," with scope |
 
-Neither the site nor the map may present delayed review accuracy or the unseen gap as "better engineer". The site is checked against this ladder in v0 and before each release.
+The rung "Shows you which moves help you, measured on you" is removed (RT efficacy 13). The site and the map may not present delayed review accuracy or the unseen gap as "better engineer". The site is checked against this ladder in v0 and before each release.
 
 ---
 
 ## 6. Experiment protocols
 
-Thresholds below are decisions, not findings. The founder fixes them before a run, never after.
+Thresholds are decisions, not findings. The founder fixes them before a run, never after.
 
-### E0. Name
+### E0. Name and findability
 
-Checks: trademark search in software classes for Firsthand and Ownline; npm, PyPI, Homebrew, plugin directories, domains; search for existing products using the name (a careers product named Firsthand may exist [unverified]). Interviews: 8 developers, including at least 2 disabled developers, asked what the name suggests. Pass: no blocking conflict, packages free, at most 1 of 8 reads it negatively.
+Trademark search in software classes for Firsthand and Ownline; npm, PyPI, Homebrew, plugin directories, domains; existing products using the name. **Findability:** search each name in the main plugin directories, npm and a web search, and record whether the product would come up first (RT market 12). Interviews: 8 developers, at least 2 disabled developers. Pass: no blocking conflict, packages free, findable, at most 1 of 8 reads it negatively.
 
 ### E1. Answer rate and dose
 
-20 design partners, 3 weeks, current skill with the v1 budget rules added by script. Weekly pasted stats. Felt-cost question at session end: "How much did the questions slow you today? none, a little, a lot." Pass: at least half of offered moments answered and at least half of due reviews done in week 3. Report dose per rep kind.
+20 design partners, 3 weeks, current skill with the v1 budget rules added by script. Weekly pasted stats. Felt-cost question at session end. Pass: at least half of offered moments answered and half of due reviews done in week 3, **and** delayed accuracy per move is not near ceiling (ceiling level is a threshold, a decision). A rising answer rate with delayed accuracy at ceiling is a warning, not a pass (RT efficacy 4).
 
 ### E2. Replay yield
 
-Run the miner as a script over the founder's repos and 30 public repos in at least 4 languages. Report per language: candidates per 100 commits, reproducible drills per 100 commits, median setup time, share needing services, databases or secrets, share flaky (passes and fails on reruns). Pass per language: at least 2 reproducible per 100 commits, median setup under 2 minutes, under half needing external services. Fallback if no language passes: Trace and Check carry the wedge, Replay waits.
+Run the miner over the founder's repos and 30 public repos in at least 4 languages, **inside containers with no network after install**. Report per language: candidates and reproducible drills per 100 commits, median setup time, share needing services, share flaky, share blocked by an advisory match. Pass per language: at least 2 reproducible per 100 commits, median setup under 2 minutes, under half needing external services.
 
 ### E3. Tag agreement
 
-30 real diffs, three agents (Claude Code, Codex, Cursor), each picks tags from the same `candidates` list. Pass: Fleiss kappa at least 0.6. Fail: silence stays per project, and cross-agent silence uses only probed and cold-start ideas.
+30 real diffs, three agents, tags from the same `candidates` list. Pass: Fleiss kappa at least 0.6.
 
 ### E4. Moment choice
 
-Wizard of Oz with 5 users: a person watching the transcript picks moments; the engine's rules run on the same transcripts; compare. Felt-cost question at session end. Pass: engine and person agree on at least 70% of moments; median felt cost "a little" or less. Output: the default moment cap.
+Wizard of Oz with 5 users. Pass: engine and person agree on at least 70% of moments; median felt cost "a little" or less. Output: the default moment cap.
 
-### E5. Grader agreement
+### E5. Grader agreement, per grader model and version
 
-Per task type (explain back, Call it process point, Compare, Check severity): 200 answers, two trained human graders, the model grader. Pass: model-human Cohen's kappa within 0.1 of human-human kappa, and no leniency bias above a margin set in advance. Fail: that task type cannot move levels. Results published.
+RT efficacy 3. Per task type (explain back, Call it process, Replay process, Compare, Check severity) and per grader model and version: 200 answers, two trained human graders, the grader.
+
+Pass needs all of:
+- Cohen's kappa against human consensus at or above an absolute floor (threshold, a decision; 0.6 proposed);
+- within 0.1 of human-human kappa;
+- mean leniency against humans within a set margin.
+
+The 200 graded answers per task type become the shipped calibration set that each user's grader must pass before it can move levels (`learning.md` section 6). Results published per task type and grader version.
 
 ### E6. Weak-tier conformance
 
-Conformance script on Copilot in JetBrains, Gemini CLI, Aider and Copilot cloud agent, 10 runs each. Fill every "?" in research/surfaces.md 8.7. Pass per outcome: 8 of 10 runs, else listed as a known gap.
+Conformance on Copilot in JetBrains, Gemini CLI, Aider and Copilot cloud agent, 10 runs each, including O10 through the pad. Pass per outcome: 8 of 10.
 
 ### E7. Within-person pilot
 
-10 users, 3 weeks, cluster-level assignment for explain back, unseen questions at day 21. Pass: at least 80% of delayed items taken. Output: within-person correlation and completion rate for the power calculation. No effect claim.
+10 users, 3 weeks, cluster-level assignment for explain back, unseen items at day 21. Pass: at least 80% of delayed items taken. Output: correlation and completion for the power calculation. No effect claim.
 
 ### E8. Grading cost and availability
 
-On each v1 agent: run 50 grading calls through each available provider. Report tokens or quota used, wall time, rate limits hit, and whether terms allow it [unverified until read]. Pass: every provider marked available or not, with a weekly cost estimate shown to users.
+On each v1 agent: 50 grading calls per provider. Report tokens or quota, wall time, rate limits, and whether terms allow it [unverified until read]. Also measure the instruction block's token cost per session per agent (RT market 8).
 
-### E9. Team pay test
+### E9. Buyers
 
-10 manager interviews; a "talk to us" button on the site. Founder sets the click threshold before it runs. No team-plane code before it passes.
+10 manager interviews and 10 instructor interviews (RT market 4 and 7), in v0. Buttons on the site for "teams" and "courses", counting clicks against visits. The founder sets thresholds before it runs. No team or course code before it passes.
 
 ### E10. Cloud carry acceptance
 
-10 users of cloud agents see the carry prompt once. Pass: at least 7 of 10 choose carry or their own remote. Fail: the import line becomes the default.
+10 users of cloud agents see the redesigned carry prompt once, including the line about deletion. Pass: at least 7 of 10 choose carry or their own remote.
 
-### E11. Cold start
+### E11. Cold start, juniors and seniors
 
-10 seniors add repos; for each inferred-known idea, ask one probe. Pass: at least 80% pass the probe. Fail: inference only lowers the moment cap, it does not silence.
+RT efficacy 8. 10 seniors and 10 juniors add repos. For each inferred-known idea, two probes (direct, and a new instance with the topic hidden). Also measure, per tool used by the participants, the share of their agent-written commits that carry an agent trailer, from their own account of which commits were agent-written. Pass: at least 80% of inferred-known ideas pass both probes, in each group separately. Fail: inference stays frequency-only (which is already the default) and its weight is lowered.
 
 ### E12. Phone pairing
 
-Prototype the device link on iOS and Android, including secure context for the web app. Pass: pairing with at most one confirmation tap on both. Device link ships only then.
+Prototype the device link on iOS and Android with authenticated pairing and secure context. Pass: one confirmation tap on both.
+
+### E13. Cold return
+
+RT market 1. Users recruited from a directory listing, not the founder's network, install the current skill with the v1 budget rules, the weekly line and the real reminder question. Measure 30-day return. Pass: above a threshold set by the founder before the run. The v1 build is gated on it.
+
+### E14. A learning check
+
+RT efficacy 4. A small lab study in the Shen and Tamkin setting (https://arxiv.org/html/2601.20245v2): one session building with a library new to the participant, skill on versus off, then a delayed quiz a week later on items neither arm practised. It will be underpowered. Its job is a go or no-go on direction, with the threshold fixed before the run. The v1 build is gated on it.
+
+### E15. Check label audit
+
+RT efficacy 5. Hand-check a sample of diffs labelled "defective" and "clean" by the miner. Report label accuracy for each. Pass: above a threshold. Check ships only then, and only test-confirmed defects move levels regardless.
+
+### E16. Checkup demand
+
+RT market 2. A concierge Checkup, run by a person, for cold-recruited users: a task in an unfamiliar repo, run in a container, graded by hidden tests. Measure who books a second Checkup a month later. Pass: above a threshold. The v1 build is gated on it.
+
+### E17. Framing
+
+RT market 7. A/B test on the site: "Can you still do this without your agent?" versus "Learn while you build". Measure install clicks and sampler completions among visitors who say they are in their first years. The winning framing leads the site.

@@ -1,0 +1,509 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Firsthand product summary</title>
+<meta name="description" content="A visual summary of the Firsthand product specification in PRODUCT.md: what it is, how it plugs into every coding agent, the roadmap and the founder decisions.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="anonymous">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wdth,wght@75..100,400..700&amp;family=JetBrains+Mono:wght@400;500&amp;display=swap">
+<style>
+:root{
+  --bg:#F5F4F0;--ink:#16161A;--ink2:#45454D;--muted:#5F5F68;--faint:#7A7A83;
+  --card:#FFFFFF;--line:#DAD8D0;--line2:#EFEDE6;--chip:#ECE9E1;
+  --acc:#E8541E;--acc-ink:#C2410C;--acc-soft:#F6C9AF;--acc-wash:rgba(232,84,30,.10);
+  --on-ink:#F5F4F0;--grain:.55;--blend:multiply;
+  color-scheme:light;
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --bg:#131315;--ink:#EDEBE6;--ink2:#C4C2BC;--muted:#A3A19B;--faint:#8A8882;
+    --card:#1C1C20;--line:#34343A;--line2:#28282D;--chip:#2A2A30;
+    --acc:#F06A36;--acc-ink:#FF8A5C;--acc-soft:#5A2E1C;--acc-wash:rgba(240,106,54,.14);
+    --on-ink:#131315;--grain:.18;--blend:screen;
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#131315;--ink:#EDEBE6;--ink2:#C4C2BC;--muted:#A3A19B;--faint:#8A8882;
+  --card:#1C1C20;--line:#34343A;--line2:#28282D;--chip:#2A2A30;
+  --acc:#F06A36;--acc-ink:#FF8A5C;--acc-soft:#5A2E1C;--acc-wash:rgba(240,106,54,.14);
+  --on-ink:#131315;--grain:.18;--blend:screen;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:"Instrument Sans",system-ui,sans-serif;-webkit-font-smoothing:antialiased;overflow-x:hidden}
+body::after{content:"";position:fixed;inset:0;pointer-events:none;z-index:40;background-image:url(../../docs/assets/grain.png);background-size:240px 240px;opacity:var(--grain);mix-blend-mode:var(--blend)}
+a{color:var(--ink);text-underline-offset:4px}
+a:hover{color:var(--acc-ink)}
+:focus-visible{outline:2px solid var(--acc);outline-offset:3px}
+.mono{font-family:"JetBrains Mono",ui-monospace,monospace}
+.wrap{max-width:1080px;margin:0 auto;padding:0 32px}
+.top{height:68px;display:flex;align-items:center;justify-content:space-between;gap:16px}
+.brand{font-weight:650;font-size:16px;text-decoration:none}
+.status{font-size:12px;color:var(--muted)}
+.h1{margin:0;font-size:60px;line-height:1.03;letter-spacing:-0.025em;font-weight:650;font-variation-settings:"wdth" 88;text-wrap:balance}
+.h2{margin:0;font-size:38px;line-height:1.08;letter-spacing:-0.02em;font-weight:650;font-variation-settings:"wdth" 88;text-wrap:balance}
+.eyebrow{font-size:12.5px;color:var(--acc-ink);margin:0 0 12px;letter-spacing:.02em}
+.p{margin:18px 0 0;font-size:18px;line-height:1.6;color:var(--ink2);max-width:640px;text-wrap:pretty}
+.small{font-size:14px;line-height:1.6;color:var(--muted)}
+.sec{padding:110px 0 0}
+.hero{padding:56px 0 0}
+.tag{font-family:"JetBrains Mono",ui-monospace,monospace;font-size:11px;color:var(--faint);white-space:normal;overflow-wrap:anywhere}
+.card{background:var(--card);border:1.5px solid var(--line);border-radius:16px;padding:22px 24px}
+.grid3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px;margin-top:32px}
+.grid2{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:56px;align-items:start}
+.ct{font-size:19px;font-weight:650;margin:0}
+.card p{margin:8px 0 0;font-size:16px;line-height:1.55;color:var(--ink2)}
+.card .ct{margin:0;color:var(--ink);font-size:19px}
+.num{width:34px;height:34px;border-radius:50%;background:var(--acc);color:#16161A;display:inline-flex;align-items:center;justify-content:center;font-weight:700;font-size:15px;margin-bottom:14px}
+.promise{margin:28px 0 0;max-width:720px;padding:18px 22px;background:var(--card);border:1.5px solid var(--ink);border-radius:14px;font-size:16px;line-height:1.6}
+.promise b{color:var(--acc-ink);font-weight:600}
+
+/* moves */
+.moves{margin-top:28px;border-bottom:1px solid var(--line)}
+.mv{display:grid;grid-template-columns:150px minmax(0,1fr) 150px;gap:18px;padding:16px 0;border-top:1px solid var(--line);align-items:baseline}
+.mv .n{font-weight:650;font-size:17px}
+.mv .d{font-size:16px;line-height:1.5;color:var(--ink2)}
+.mv .w{font-family:"JetBrains Mono",ui-monospace,monospace;font-size:11.5px;color:var(--muted);text-align:right}
+
+/* ladder */
+.ladder{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin-top:28px}
+.rung{border-radius:12px;padding:14px 14px 16px;background:var(--card);border:1.5px solid var(--line)}
+.rung .bar{height:10px;border-radius:3px;margin-bottom:12px;background:var(--chip)}
+.rung:nth-child(2) .bar{background:var(--acc-soft)}
+.rung:nth-child(3) .bar{background:#EE8B5B}
+.rung:nth-child(4) .bar{background:var(--acc-ink)}
+.rung .ln{font-weight:650;font-size:16px}
+.rung .lx{font-size:13.5px;line-height:1.5;color:var(--muted);margin-top:4px}
+.met{margin-top:12px;padding:12px 14px;border:1.5px dashed var(--line);border-radius:12px;font-size:14px;line-height:1.55;color:var(--muted)}
+.met b{color:var(--ink);font-weight:600}
+
+/* architecture */
+.arch{width:100%;max-width:440px;height:auto;display:block}
+.arch text{font-family:"Instrument Sans",system-ui,sans-serif;fill:var(--ink)}
+.arch .m{font-family:"JetBrains Mono",ui-monospace,monospace}
+.arch .sub{fill:var(--muted);font-size:11.5px}
+.arch .box{fill:var(--card);stroke:var(--ink);stroke-width:1.5}
+.arch .row{fill:var(--card);stroke:var(--line);stroke-width:1.2}
+.arch .pad{fill:var(--acc-wash);stroke:var(--acc);stroke-width:1.5}
+.arch .eng{fill:var(--ink)}
+.arch .eng-t{fill:var(--on-ink)}
+.arch .chipbox{fill:none;stroke:var(--on-ink);stroke-opacity:.35;stroke-width:1}
+.arch .dash{fill:none;stroke:var(--faint);stroke-width:1.3;stroke-dasharray:5 4}
+.arch .ar{stroke:var(--faint);stroke-width:1.5;fill:none}
+.arch .arh{fill:var(--faint)}
+.arch .tchip{fill:var(--chip)}
+.arch .tchip.hot{fill:var(--acc)}
+.arch .tl{font-family:"JetBrains Mono",ui-monospace,monospace;font-size:11.5px;font-weight:500}
+.arch .acc{fill:var(--acc-ink)}
+.notes{margin:0;padding:0;list-style:none}
+.notes li{padding:14px 0;border-top:1px solid var(--line);font-size:16px;line-height:1.55;color:var(--ink2)}
+.notes li b{color:var(--ink);font-weight:600}
+
+/* surfaces strip */
+.strip{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:12px;margin-top:32px}
+.sf{background:var(--card);border:1.5px solid var(--line);border-radius:14px;padding:16px 16px 14px;display:flex;flex-direction:column;gap:12px;min-width:0}
+.sf .sh{font-weight:650;font-size:16px}
+.sf .ex{font-size:12.5px;color:var(--muted);line-height:1.45;margin-top:2px}
+.sf dl{margin:0;display:flex;flex-direction:column;gap:10px}
+.sf dt{font-family:"JetBrains Mono",ui-monospace,monospace;font-size:10.5px;color:var(--faint);text-transform:uppercase;letter-spacing:.04em}
+.sf dd{margin:2px 0 0;font-size:14px;line-height:1.45;color:var(--ink2)}
+.cnt{display:inline-block;font-family:"JetBrains Mono",ui-monospace,monospace;font-size:11px;padding:3px 8px;border-radius:999px;background:var(--chip);color:var(--ink)}
+.cnt.hot{background:var(--acc);color:#16161A}
+.sf .tag{margin-top:auto}
+.same{margin-top:16px;padding:14px 18px;border-radius:12px;background:var(--acc-wash);font-size:15px;line-height:1.55;color:var(--ink)}
+
+/* week */
+.week{margin:28px 0 0;padding:0;list-style:none;position:relative}
+.week li{display:grid;grid-template-columns:150px minmax(0,1fr);gap:18px;padding:12px 0;border-top:1px solid var(--line2);font-size:16px;line-height:1.5;color:var(--ink2)}
+.week li span:first-child{font-family:"JetBrains Mono",ui-monospace,monospace;font-size:12px;color:var(--acc-ink);padding-top:3px}
+.term{margin:20px 0 0;padding:16px 18px;background:var(--card);border:1.5px solid var(--line);border-radius:12px;font-size:12.5px;line-height:1.75;white-space:pre-wrap;overflow-wrap:anywhere;color:var(--ink)}
+.term i{font-style:normal;color:var(--muted)}
+
+/* roadmap */
+.road{margin-top:32px;display:flex;flex-direction:column;gap:0}
+.ph{display:grid;grid-template-columns:120px minmax(0,1fr);gap:20px;padding:20px 0;border-top:1px solid var(--line);position:relative}
+.ph .pv{font-size:28px;font-weight:650;letter-spacing:-0.02em;font-variation-settings:"wdth" 85;line-height:1}
+.ph .pe{font-family:"JetBrains Mono",ui-monospace,monospace;font-size:11.5px;color:var(--muted);margin-top:6px}
+.ph .pt{font-size:17px;font-weight:600;margin:0}
+.ph ul{margin:8px 0 0;padding:0 0 0 18px;font-size:15.5px;line-height:1.55;color:var(--ink2)}
+.ph ul li{margin:3px 0}
+.gate{margin-top:10px;display:inline-block;font-size:13.5px;padding:6px 12px;border-radius:999px;border:1.5px solid var(--acc);color:var(--ink)}
+.ph.now .pv{color:var(--acc-ink)}
+
+/* decisions */
+.dec{margin-top:28px;border-bottom:1px solid var(--line)}
+.dc{display:grid;grid-template-columns:36px minmax(0,1fr) 130px;gap:16px;padding:16px 0;border-top:1px solid var(--line);align-items:start}
+.dc .dn{font-family:"JetBrains Mono",ui-monospace,monospace;font-size:13px;color:var(--muted);padding-top:2px}
+.dc .dt{font-size:16.5px;font-weight:600;line-height:1.4}
+.dc .dh{font-size:15px;line-height:1.55;color:var(--ink2);margin-top:4px}
+.st{justify-self:end;font-family:"JetBrains Mono",ui-monospace,monospace;font-size:11px;padding:4px 10px;border-radius:999px;background:var(--chip);white-space:nowrap}
+.st.ch{background:var(--acc);color:#16161A}
+.st.ex{background:var(--acc-soft);color:var(--ink)}
+.open{margin:20px 0 0;padding:0 0 0 18px;font-size:16px;line-height:1.6;color:var(--ink2)}
+.open li{margin:4px 0}
+
+/* risks */
+.risks{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px;margin-top:28px}
+.risks .card p{font-size:15px}
+.risks .rk{font-family:"JetBrains Mono",ui-monospace,monospace;font-size:11px;color:var(--acc-ink)}
+
+footer{margin:110px 0 40px;padding-top:22px;border-top:1px solid var(--line);display:flex;flex-wrap:wrap;justify-content:space-between;gap:12px;font-size:14px;color:var(--muted)}
+
+@media (max-width:900px){
+  .grid2{grid-template-columns:minmax(0,1fr);gap:32px}
+  .strip{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .risks,.grid3{grid-template-columns:minmax(0,1fr)}
+  .ladder{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+@media (max-width:640px){
+  .wrap{padding:0 16px}
+  .h1{font-size:40px}
+  .h2{font-size:29px}
+  .sec{padding-top:80px}
+  .hero{padding-top:28px}
+  .p{font-size:17px}
+  .card{padding:18px 18px}
+  .mv{grid-template-columns:minmax(0,1fr);gap:4px}
+  .mv .w{text-align:left}
+  .strip{grid-template-columns:minmax(0,1fr)}
+  .week li{grid-template-columns:minmax(0,1fr);gap:2px}
+  .ph{grid-template-columns:minmax(0,1fr);gap:8px}
+  .dc{grid-template-columns:28px minmax(0,1fr);gap:4px 12px}
+  .dc .st{grid-column:2;justify-self:start;margin-top:6px}
+  .status{display:none}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header class="top">
+<a href="#top" class="brand">Firsthand</a>
+<span class="status mono">Product summary. Nothing built yet. 7 Nov 2026.</span>
+</header>
+
+<!-- 1. HERO -->
+<section id="top" class="hero">
+<p class="eyebrow mono">Working name, not yet cleared [unverified: trademark, registries]</p>
+<h1 class="h1">Know what you can still do without your agent. Get better at it while you build.</h1>
+<p class="p">Firsthand installs into the coding agent you already use. At a few breaks in the build, it asks you to think first. Days later it asks again, in a new form. A private record on your machine shows what you have shown without the agent, how it was graded, and how long ago.</p>
+<p class="p">Why: in a study of people learning a new library, those who let AI write the code learned less. Those who asked conceptual questions kept their learning (Shen and Tamkin 2026, <a href="https://arxiv.org/html/2601.20245v2">arxiv.org/html/2601.20245v2</a>).</p>
+<div class="promise">The promise you can check in five minutes: <b>install it, answer three questions written by people</b>, in a prompt your agent cannot read. It tells you how you did without your agent, and how it graded you.</div>
+<p class="small" style="margin-top:14px">The launch claim is about honesty, not results: "It tells you when you got worse." No claim that it makes anyone better until a study shows it.</p>
+</section>
+
+<!-- 2. THREE PARTS -->
+<section class="sec">
+<p class="eyebrow mono">The product</p>
+<h2 class="h2">Three parts</h2>
+<div class="grid3">
+<div class="card"><span class="num">1</span><p class="ct">The Checkup</p><p>Once a month, only if you start it. A short task in a real repo you have never opened, agent off, in a sealed container. Tests written by people, run on a server. Over several Checkups it tells you if you got better or worse.</p></div>
+<div class="card"><span class="num">2</span><p class="ct">The loop</p><p>Free and open source. Lives inside your agent. Asks you to predict, name a cause, write one line, or review a pull request first. Brings ideas back days later, at most 3 a day.</p></div>
+<div class="card"><span class="num">3</span><p class="ct">The record</p><p>A private map in a git repo on your machine. No remote unless you add one. A level goes down when you forget, and shows how long since it was checked.</p></div>
+</div>
+<p class="small" style="margin-top:16px">The loop is easy to copy. The scarce parts are the human-written question bank and the Checkup task set. No public launch until both are live.</p>
+</section>
+
+<!-- 3. MOVES -->
+<section class="sec">
+<p class="eyebrow mono">The loop</p>
+<h2 class="h2">Five moves, at natural breaks</h2>
+<p class="p">The build always wins. No move blocks the agent. Every move has a one-word skip, and "just tell me" always works.</p>
+<div class="moves">
+<div class="mv"><span class="n">Predict</span><span class="d">Before a step runs, on a new idea: one line on what will happen. Compared, never graded.</span><span class="w">in the build</span></div>
+<div class="mv"><span class="n">Call it</span><span class="d">A test fails: name a cause and your first check, before the agent says.</span><span class="w">in the build</span></div>
+<div class="mv"><span class="n">Your line</span><span class="d">The agent leaves one marked line of the real build for you to write. Write first, then read the test. A hidden-test review comes days later.</span><span class="w">founder decision 2</span></div>
+<div class="mv"><span class="n">Explain back</span><span class="d">After a step passes, two or three sentences on what changed and why.</span><span class="w">in the build</span></div>
+<div class="mv"><span class="n">Review first</span><span class="d">You open an agent's pull request. List defects, or say clean, before you see its summary. A defect counts when a test you write proves it.</span><span class="w">at review time</span></div>
+</div>
+<p class="small" style="margin-top:14px">Review first exists because coding is moving to background agents with no live user. Copilot cloud agent works this way [verified: <a href="https://docs.github.com/en/copilot/concepts/agents/cloud-agent/about-cloud-agent">docs.github.com</a>]. The human is present at review time.</p>
+
+<h3 class="ct" style="margin-top:48px">What a level means</h3>
+<p class="p" style="margin-top:8px">Only delayed answers, without help, on new questions, count. Right answers in the moment show what you can do now, not what you learned (Soderstrom and Bjork 2015, <a href="https://pubmed.ncbi.nlm.nih.gov/25910388/">pubmed</a>).</p>
+<div class="ladder">
+<div class="rung"><div class="bar"></div><div class="ln">Not yet</div><div class="lx">The start, or one step down after a delayed miss or "don't know".</div></div>
+<div class="rung"><div class="bar"></div><div class="ln">Recalled</div><div class="lx">Two right delayed answers, on two items, on different days.</div></div>
+<div class="rung"><div class="bar"></div><div class="ln">Applied</div><div class="lx">Two right on new instances: another file or project, topic name hidden.</div></div>
+<div class="rung"><div class="bar"></div><div class="ln">Held</div><div class="lx">Right at a longer gap on an unseen question, plus one other source.</div></div>
+</div>
+<div class="met"><b>Met</b> is a separate list, not a level: ideas you explained, wrote a line for, or answered with help or in the moment.</div>
+</section>
+
+<!-- 4. ARCHITECTURE -->
+<section class="sec" id="arch">
+<p class="eyebrow mono">Architecture</p>
+<h2 class="h2">One engine on your computer. Many ways in.</h2>
+<div class="grid2" style="margin-top:32px">
+<svg class="arch" viewBox="0 0 360 792" role="img" aria-labelledby="archT archD">
+<title id="archT">Architecture tiers</title>
+<desc id="archD">A coding agent connects to the Firsthand engine through one or more tiers, T0 to T5, plus the pad. The engine writes to a local git record. A private remote and the Checkup service are optional.</desc>
+<defs><marker id="ah" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path class="arh" d="M0,0 L10,5 L0,10 z"/></marker></defs>
+
+<rect class="box" x="1" y="1" width="358" height="58" rx="12"/>
+<text x="18" y="26" font-size="15" font-weight="650">Any coding agent</text>
+<text class="sub" x="18" y="45">Claude Code, Codex, Cursor, Copilot, Gemini CLI...</text>
+
+<line class="ar" x1="180" y1="60" x2="180" y2="84" marker-end="url(#ah)"/>
+<text class="m sub" x="192" y="78">plugs in through</text>
+
+<g transform="translate(0,92)">
+<rect class="row" x="1" y="0" width="358" height="46" rx="10"/>
+<rect class="tchip" x="10" y="11" width="36" height="24" rx="6"/><text class="tl" x="28" y="27" text-anchor="middle">T0</text>
+<text x="58" y="20" font-size="13.5" font-weight="600">Instruction file and shell</text>
+<text class="sub" x="58" y="36">The whole loop, in plain text</text>
+</g>
+<g transform="translate(0,144)">
+<rect class="row" x="1" y="0" width="358" height="46" rx="10"/>
+<rect class="tchip" x="10" y="11" width="36" height="24" rx="6"/><text class="tl" x="28" y="27" text-anchor="middle">T1</text>
+<text x="58" y="20" font-size="13.5" font-weight="600">MCP tools</text>
+<text class="sub" x="58" y="36">No shell quoting; reaches cloud agents</text>
+</g>
+<g transform="translate(0,196)">
+<rect class="row" x="1" y="0" width="358" height="46" rx="10"/>
+<rect class="tchip" x="10" y="11" width="36" height="24" rx="6"/><text class="tl" x="28" y="27" text-anchor="middle">T2</text>
+<text x="58" y="20" font-size="13.5" font-weight="600">Hooks</text>
+<text class="sub" x="58" y="36">Breakpoints that do not rely on the model</text>
+</g>
+<g transform="translate(0,248)">
+<rect class="row" x="1" y="0" width="358" height="46" rx="10"/>
+<rect class="tchip" x="10" y="11" width="36" height="24" rx="6"/><text class="tl" x="28" y="27" text-anchor="middle">T3</text>
+<text x="58" y="20" font-size="13.5" font-weight="600">Native ask</text>
+<text class="sub" x="58" y="36">Answer goes straight to the engine</text>
+</g>
+<g transform="translate(0,300)">
+<rect class="row" x="1" y="0" width="358" height="46" rx="10"/>
+<rect class="tchip" x="10" y="11" width="36" height="24" rx="6"/><text class="tl" x="28" y="27" text-anchor="middle">T4</text>
+<text x="58" y="20" font-size="13.5" font-weight="600">Designed UI</text>
+<text class="sub" x="58" y="36">Map and question cards inline</text>
+</g>
+<g transform="translate(0,352)">
+<rect class="row" x="1" y="0" width="358" height="46" rx="10"/>
+<rect class="tchip" x="10" y="11" width="36" height="24" rx="6"/><text class="tl" x="28" y="27" text-anchor="middle">T5</text>
+<text x="58" y="20" font-size="13.5" font-weight="600">Away from the keyboard</text>
+<text class="sub" x="58" y="36">Vendor phone apps; answers relayed</text>
+</g>
+<g transform="translate(0,404)">
+<rect class="pad" x="1" y="0" width="358" height="50" rx="10"/>
+<rect class="tchip hot" x="10" y="13" width="36" height="24" rx="6"/><text class="tl" x="28" y="29" text-anchor="middle" style="fill:#16161A">Pad</text>
+<text x="58" y="21" font-size="13.5" font-weight="650">The pad: a prompt the engine owns</text>
+<text class="sub acc" x="58" y="38">Typed answers count, in any local terminal</text>
+</g>
+
+<line class="ar" x1="180" y1="456" x2="180" y2="480" marker-end="url(#ah)"/>
+
+<rect class="eng" x="1" y="488" width="358" height="150" rx="12"/>
+<text class="eng-t" x="18" y="513" font-size="15" font-weight="650">Firsthand engine</text>
+<text class="eng-t" x="18" y="531" font-size="11.5" opacity=".75">On your computer. Signed release. Decides in code.</text>
+<g font-size="12.5">
+<rect class="chipbox" x="16" y="544" width="160" height="26" rx="6"/><text class="eng-t" x="28" y="561">CLI and pad</text>
+<rect class="chipbox" x="184" y="544" width="160" height="26" rx="6"/><text class="eng-t" x="196" y="561">MCP server, tools only</text>
+<rect class="chipbox" x="16" y="576" width="160" height="26" rx="6"/><text class="eng-t" x="28" y="593">Hook dispatch</text>
+<rect class="chipbox" x="184" y="576" width="160" height="26" rx="6"/><text class="eng-t" x="196" y="593">Grader, tests first</text>
+<rect class="chipbox" x="16" y="608" width="160" height="26" rx="6"/><text class="eng-t" x="28" y="625">Miner, read-only</text>
+<rect class="chipbox" x="184" y="608" width="160" height="26" rx="6"/><text class="eng-t" x="196" y="625">Runner, containers</text>
+</g>
+
+<line class="ar" x1="180" y1="640" x2="180" y2="664" marker-end="url(#ah)"/>
+
+<rect class="box" x="1" y="672" width="358" height="56" rx="12"/>
+<text x="18" y="696" font-size="14.5" font-weight="650">Your record, in local git</text>
+<text class="m sub" x="18" y="715">~/.firsthand/record, no remote</text>
+
+<line class="ar" x1="90" y1="729" x2="90" y2="744" style="stroke-dasharray:3 3"/>
+<line class="ar" x1="270" y1="729" x2="270" y2="744" style="stroke-dasharray:3 3"/>
+<rect class="dash" x="1" y="746" width="174" height="44" rx="10"/>
+<text x="12" y="765" font-size="12.5" font-weight="600">Your own git remote</text>
+<text class="sub" x="12" y="781">optional, you add it</text>
+<rect class="dash" x="185" y="746" width="174" height="44" rx="10"/>
+<text x="196" y="765" font-size="12.5" font-weight="600">Checkup service</text>
+<text class="sub" x="196" y="781">only when you start one</text>
+</svg>
+
+<div>
+<ul class="notes">
+<li><b>Tiers stack.</b> Every surface has T0. Each tier above it adds something. The engine detects what is there and always returns complete text.</li>
+<li><b>The pad is how answers count.</b> A chat answer passes through the agent, so it is recorded as relayed and counts as Met. An answer typed in the pad never reaches the agent or its logs.</li>
+<li><b>Hooks never approve anything.</b> They call a pinned absolute path, and never return allow or deny. Claude Code hooks can return allow [verified: <a href="https://code.claude.com/docs/en/hooks">code.claude.com/docs/en/hooks</a>].</li>
+<li><b>Grading by running code first.</b> In v1 only tests and people move a level. A model grader can move one only after its version passes a gate against human grades.</li>
+<li><b>Untrusted code runs in a container with no network,</b> or not at all. Checkup tasks and Replay drills need one.</li>
+<li><b>Nothing is sent by default.</b> Answers typed in the agent's chat are part of that chat, and the agent's company sees them. The install says so.</li>
+</ul>
+</div>
+</div>
+</section>
+
+<!-- 5. SURFACES STRIP -->
+<section class="sec" id="surfaces">
+<p class="eyebrow mono">Every surface</p>
+<h2 class="h2">The same outcome everywhere, with the channel shown</h2>
+<p class="p">Founder decision 6 asks for feature parity on every surface. The mechanisms differ, so the product promises the same learning outcome on each, tests it, and publishes the result per surface.</p>
+<div class="strip">
+<div class="sf">
+<div><div class="sh">Terminal agents</div><div class="ex">Claude Code CLI, Codex CLI, Gemini CLI, Copilot CLI, Aider</div></div>
+<dl>
+<div><dt>A question arrives</dt><dd>At a break, as one plain line in the chat</dd></div>
+<div><dt>You answer</dt><dd>In the pad, in a second terminal tab</dd></div>
+<div><dt>Counts</dt><dd><span class="cnt hot">toward a level</span></dd></div>
+<div><dt>v1</dt><dd>Claude Code and Codex tested. Gemini and Copilot CLI in v1.1. Aider has no hooks or MCP, so floor only</dd></div>
+</dl>
+<span class="tag">[verified: research/surfaces.md 8.7; <a href="https://aider.chat/docs/config/options.html">aider.chat</a>]</span>
+</div>
+<div class="sf">
+<div><div class="sh">IDEs</div><div class="ex">Cursor, VS Code Copilot, Claude Code in the IDE, JetBrains, Zed</div></div>
+<dl>
+<div><dt>A question arrives</dt><dd>In the agent panel, or as an inline card where the IDE has a UI tier</dd></div>
+<div><dt>You answer</dt><dd>In the pad, in the terminal panel</dd></div>
+<div><dt>Counts</dt><dd><span class="cnt hot">toward a level</span></dd></div>
+<div><dt>v1</dt><dd>Cursor tested. VS Code Copilot in v1.1. Copilot in JetBrains has no hooks: a known gap</dd></div>
+</dl>
+<span class="tag">[verified: <a href="https://docs.github.com/en/copilot/reference/customization-cheat-sheet">docs.github.com</a>]</span>
+</div>
+<div class="sf">
+<div><div class="sh">Desktop apps</div><div class="ex">Claude Code desktop, Codex app</div></div>
+<dl>
+<div><dt>A question arrives</dt><dd>As a native ask in the app, where it has one</dd></div>
+<div><dt>You answer</dt><dd>In the pad, or the native ask once it is shown the model cannot see it</dd></div>
+<div><dt>Counts</dt><dd><span class="cnt hot">toward a level</span> in the pad</dd></div>
+<div><dt>v1</dt><dd>Tested adapters</dd></div>
+</dl>
+<span class="tag">[unverified per host: whether native ask content reaches the model]</span>
+</div>
+<div class="sf">
+<div><div class="sh">Cloud agents</div><div class="ex">Codex cloud, Copilot cloud agent, Cursor cloud, Claude Code web</div></div>
+<dl>
+<div><dt>A question arrives</dt><dd>At pull request time: Review first</dd></div>
+<div><dt>You answer</dt><dd>Next time you open a local pad; the session ends with an import line</dd></div>
+<div><dt>Counts</dt><dd><span class="cnt">Met</span> until answered in a pad</dd></div>
+<div><dt>v1</dt><dd>Floor, untested. Cloud disks do not keep the record</dd></div>
+</dl>
+<span class="tag">[verified: <a href="https://docs.github.com/en/copilot/how-tos/use-copilot-agents/cloud-agent/extend-cloud-agent-with-mcp">docs.github.com</a>]</span>
+</div>
+<div class="sf">
+<div><div class="sh">Phone</div><div class="ex">Vendor phone apps, GitHub Mobile</div></div>
+<dl>
+<div><dt>A question arrives</dt><dd>A daily reminder with no content, at the time you chose, or none</dd></div>
+<div><dt>You answer</dt><dd>In the vendor app; relayed by the agent</dd></div>
+<div><dt>Counts</dt><dd><span class="cnt">Met</span> in v1</dd></div>
+<div><dt>v2</dt><dd>A device link paired with one confirmation tap, so phone answers count. Only if E12 passes</dd></div>
+</dl>
+<span class="tag">[unverified: one-tap pairing on iOS and Android, E12]</span>
+</div>
+</div>
+<div class="same">The same everywhere: one record, one budget of 3 reviews a day, one reminder at most. Open lines and due reviews follow you between surfaces. Install adds one agent at a time, and shows every file it writes first.</div>
+</section>
+
+<!-- 6. A WEEK -->
+<section class="sec">
+<p class="eyebrow mono">The experience</p>
+<h2 class="h2">A normal week</h2>
+<div class="grid2" style="margin-top:8px">
+<ul class="week">
+<li><span>Session start</span><span>One line you can ignore: "2 reviews due, about 2 minutes."</span></li>
+<li><span>In the build</span><span>Maybe one prediction and one explain back, on new ideas only. Nothing on what you know.</span></li>
+<li><span>Reviewing a PR</span><span>"Look first? Note any defects, or say clean, before I show the summary."</span></li>
+<li><span>Under pressure</span><span>Silence. "prod is down" or "quiet today" turns it off.</span></li>
+<li><span>Evening</span><span>One reminder with no content, only if you chose a time.</span></li>
+<li><span>Monday</span><span>The weekly line: one fact from your own record. No streaks, no points, no guilt.</span></li>
+<li><span>Once a month</span><span>The Checkup, if you start it.</span></li>
+</ul>
+<div>
+<pre class="term mono"><i>one exchange, in the chat</i>
+New idea: retries with a payment API.
+Why now: this test runs it. Say "skip" to skip.
+
+If the first two calls time out and the third
+succeeds, how many charges does the provider see?
+
+Answer, then: sure, think so, guess, or don't know.</pre>
+<pre class="term mono"><i>the weekly line</i>
+Last week you named the cause of 2 of 5 failing
+tests before the agent did. The week before, 0 of 4.</pre>
+<p class="small" style="margin-top:10px">Example copy from the spec. Whether the weekly line brings people back needs to be measured (E13).</p>
+</div>
+</div>
+</section>
+
+<!-- 7. ROADMAP -->
+<section class="sec" id="roadmap">
+<p class="eyebrow mono">Roadmap</p>
+<h2 class="h2">Prove it first, then build it</h2>
+<p class="p">Sizes are rough planning guesses in engineer-weeks, marked est. They are not measurements.</p>
+<div class="road">
+<div class="ph now"><div><div class="pv">v0</div><div class="pe">est. 6 to 10 wks</div></div>
+<div><p class="pt">Prove there is something worth building</p>
+<ul>
+<li>Week one: stop the current skill telling users to commit <span class="mono">.learning/</span>. Reserve names. Fix site claims.</li>
+<li>Write a small human question bank and the first Checkup tasks.</li>
+<li>A concierge Checkup, a small lab study of the current skill, and 30-day return of users recruited cold.</li>
+<li>Interviews with managers and instructors.</li>
+</ul>
+<span class="gate">Gate: E13, E14 and E16 pass, and a funding plan is chosen</span></div></div>
+<div class="ph"><div><div class="pv">v1</div><div class="pe">est. 18 to 26 wks</div></div>
+<div><p class="pt">The smallest thing that is still the product</p>
+<ul>
+<li>Engine, CLI, the pad, MCP server, hooks, record with encryption option, sealing, test-based grading, signed releases.</li>
+<li>All five moves, the budget, quiet controls, the weekly line. Trace and Check drills; Replay only in a container.</li>
+<li>Checkup client and service. Tested adapters for Claude Code, Codex and Cursor; the floor for all others.</li>
+<li>Text map with evidence age, and a public conformance table.</li>
+</ul></div></div>
+<div class="ph"><div><div class="pv">v1.1</div><div class="pe">est. 4 to 6 wks</div></div>
+<div><p class="pt">More surfaces, cloud carry</p>
+<ul><li>Tested adapters for VS Code Copilot, Copilot CLI and Gemini CLI. The carry branch for private repos you own, if E10 passes. Gated model graders.</li></ul></div></div>
+<div class="ph"><div><div class="pv">v2</div><div class="pe">est. 20 to 30 wks</div></div>
+<div><p class="pt">Phone, sync, teams start</p>
+<ul><li>More adapters, the codebase guide, a course pilot, the phone device link if E12 passes, paid Sync, compare items across projects.</li></ul></div></div>
+<div class="ph"><div><div class="pv">Later</div><div class="pe">no estimate</div></div>
+<div><p class="pt">Teams and proctoring</p>
+<ul><li>Team report, SSO and SCIM after buyer tests and legal review. Proctored live checks. A static binary.</li></ul></div></div>
+</div>
+</section>
+
+<!-- 8. FOUNDER DECISIONS -->
+<section class="sec" id="decisions">
+<p class="eyebrow mono">Founder decisions</p>
+<h2 class="h2">Your seven decisions, and where they landed</h2>
+<div class="dec">
+<div class="dc"><span class="dn">1</span><div><div class="dt">The record lives in a local git repo. No remote unless asked.</div><div class="dh">Kept, outside any project tree. One exception is asked of you: a carry branch for cloud sessions, in private repos you own, from v1.1.</div></div><span class="st ex">kept, 1 ask</span></div>
+<div class="dc"><span class="dn">2</span><div><div class="dt">"Your line" is on.</div><div class="dh">Kept. Write first, then read the test. Neutral TODO in shared repos. A delayed hidden-test review is what counts.</div></div><span class="st">accepted</span></div>
+<div class="dc"><span class="dn">3</span><div><div class="dt">At most 3 due reviews a day by default.</div><div class="dh">Kept. To fit, the product limits how many new ideas enter the queue, not the reviews.</div></div><span class="st">accepted</span></div>
+<div class="dc"><span class="dn">4</span><div><div class="dt">One confirmation tap on the phone, where no-tap is impossible.</div><div class="dh">Kept as the pass rule for the v2 device link (E12).</div></div><span class="st">accepted</span></div>
+<div class="dc"><span class="dn">5</span><div><div class="dt">Keyboard letter shortcuts off by default.</div><div class="dh">Kept. The pad has none.</div></div><span class="st">accepted</span></div>
+<div class="dc"><span class="dn">6</span><div><div class="dt">Feature parity on all coding surfaces.</div><div class="dh">Challenged with evidence. Some surfaces have no hooks, no MCP or no live user, so the same mechanism is impossible. Proposed: parity of outcome, tested and published per surface. Chat-only answers count as Met; the pad makes every terminal surface count.</div></div><span class="st ch">challenged</span></div>
+<div class="dc"><span class="dn">7</span><div><div class="dt">At most one reminder a day, at a time you choose.</div><div class="dh">Kept. The install question has no answer picked for you. Three ignored in a row: it asks once, then stops.</div></div><span class="st">accepted</span></div>
+</div>
+<h3 class="ct" style="margin-top:44px">Still open for you</h3>
+<ol class="open">
+<li>The name, after the name check (E0).</li>
+<li>Accept parity of outcome as the meaning of decision 6.</li>
+<li>Accept the carry branch, or keep the import line only.</li>
+<li>Fund the question bank and Checkup service in v0, under a separate content licence.</li>
+<li>A funding plan before v1: grant, sponsor, foundation, or vendor with an independence clause.</li>
+<li>Which buyer first, courses or teams.</li>
+<li>Thresholds for every experiment, fixed before each run.</li>
+<li>Who runs the study; engine language; keep or retire the claude.ai Room.</li>
+</ol>
+</section>
+
+<!-- 9. RISKS -->
+<section class="sec">
+<p class="eyebrow mono">Risks</p>
+<h2 class="h2">The three that could end it</h2>
+<div class="risks">
+<div class="card"><span class="rk">efficacy</span><p class="ct" style="margin-top:6px">It does not make people better weeks later</p><p>The founding study measured right away, with 52 people (<a href="https://arxiv.org/html/2601.20245v2">arxiv</a>). A lab check of the current skill comes before the engine.</p></div>
+<div class="card"><span class="rk">retention</span><p class="ct" style="margin-top:6px">Nobody comes back</p><p>The value is long term and the cost is now (Lehmann 2025, <a href="https://arxiv.org/abs/2409.09047">arxiv</a>). 30-day return of cold users gates the build.</p></div>
+<div class="card"><span class="rk">funding</span><p class="ct" style="margin-top:6px">No one funds it</p><p>A large build with no revenue before courses or teams, and a vendor can copy the loop. Lead with the scarce parts; test buyers in v0.</p></div>
+</div>
+</section>
+
+<footer>
+<span>Summary of <a href="PRODUCT.md">PRODUCT.md</a>. Detail in <a href="spec/">spec/</a>.</span>
+<span class="mono">Firsthand, working name</span>
+</footer>
+
+</div>
+</body>
+</html>

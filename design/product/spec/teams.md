@@ -1,19 +1,19 @@
-# Spec: teams, business model and distribution
+# Spec: teams, courses, business model and distribution
 
-Part of `../PRODUCT.md` (sections 7 and 8). Draws on `../concepts/teams.md`. Teams come after the individual loop shows retention (E1, E7). Nothing in this file is v1 except the shared-repo rules in section 3, which protect individuals.
+Part of `../PRODUCT.md` (sections 7 and 8). Draws on `../concepts/teams.md`. Nothing in this file is v1 except the shared-repo rules in section 3, which protect individuals. Buyer tests (E9) run in v0. Red-team items are cited as "RT market n" and so on.
 
 ---
 
 ## 1. Who and why
 
-- Users: engineers on a team who build with agents, and the seniors and area owners who mentor them.
-- Buyer: engineering managers and developer experience leads. 38% of leaders say AI cut the mentoring juniors get (https://leaddev.com/hiring/junior-devs-still-have-path-senior-roles).
-- What the buyer already pays for: onboarding and coverage of areas, not "skill scores".
-- Why vendors are unlikely to build it: it spans rival agents, and it must refuse to show individuals to the buyer.
+- Team users: engineers who build with agents, and the seniors and area owners who mentor them.
+- Team buyer: engineering managers and developer experience leads. 38% of leaders say AI cut the mentoring juniors get (https://leaddev.com/hiring/junior-devs-still-have-path-senior-roles).
+- Course buyer: course leads and instructors who let students use agents and need an assessment that survives them (`../PRODUCT.md` 2.1).
+- What buyers already pay for: onboarding, coverage of areas, assessment. Not "skill scores" of named people.
 
 ---
 
-## 2. The codebase guide (v2, free)
+## 2. The codebase guide (v2)
 
 ### 2.1 Files
 
@@ -25,35 +25,43 @@ Part of `../PRODUCT.md` (sections 7 and 8). Draws on `../concepts/teams.md`. Tea
   drills/<id>.md        rehearsals drafted from postmortems; keys not here
 ```
 
-Each idea file has: the idea in one sentence, where it lives (paths), why it matters here, how it breaks, an optional owner "how I debug this" note, and who is willing to help. No personal data, ever. The guide is committed only if the team chooses; it is reviewed in PRs like code.
+Each idea file: the idea in one sentence, where it lives, why it matters here, how it breaks, an optional owner "how I debug this" note, who is willing to help. No personal data. Committed only if the team chooses, reviewed in PRs like code.
 
-### 2.2 Writing it
+### 2.2 Trust rules (RT privacy 5)
 
-- `firsthand guide draft` reads structure, ADRs, READMEs, most-changed files and any postmortems the team points to, and proposes ideas with paths as a PR. Seniors edit and delete. How long a useful guide takes needs to be measured.
-- `firsthand drill from <postmortem>` drafts a rehearsal: symptoms as first seen, logs, "what would you check first?", and the real resolution sealed as the key.
-- `firsthand handover <area>` drafts guide entries from what the engineer built when rotating off.
-- Guide health: `firsthand guide check` lists ideas whose paths no longer exist. It runs in CI if the team wants. It is not a chore the product pushes.
+- A guide is read only in repos the user marks as theirs or trusted, once per repo, confirmed in the pad.
+- Guide text is shown quoted and attributed: `From this repo, written by contributors:`.
+- Owner notes and drills have commands, URLs and code fences removed before display.
+- Guide content can never change a setting, run a command, or widen anything.
 
-### 2.3 How the guide feeds the loop
+### 2.3 Writing it
 
-- Guide ideas are private catalog entries in the team's namespace. They are shown on the map under their own heading, "This codebase", apart from transferable engineering ideas.
-- After a learner calls the cause on a failing test in a guide area, the reveal can include the owner's "how I debug this" note. Never before the attempt (cognitive apprenticeship, L18).
-- Nominated lines become your-line offers when a learner works in that area and the idea is new to them.
-- Guide items ship without answer keys. The engine writes keys in a separate context, as for personal items. With the paid relay, owners can write sealed rubric points that travel encrypted to each learner's device; the stated limit is that a decrypted key on a learner's machine can be read by an agent with shell access.
+- `firsthand guide draft` proposes ideas with paths as a PR. Seniors edit and delete.
+- `firsthand drill from <postmortem>` drafts a rehearsal with the real resolution sealed. **Logs and text are scanned for secrets and personal data** (tokens, emails, names from the git author list, IP addresses). The author sees each redaction and approves before save (RT privacy 8).
+- `firsthand handover <area>` drafts entries when someone rotates off.
+- `firsthand guide check` lists ideas whose paths no longer exist.
 
-### 2.4 First run in a guided repo
+### 2.4 How the guide feeds the loop
 
-The guide's existence adds at most one line to the session-start offer, inside the bundled setup question for that repo: `This repo has a codebase guide with 12 ideas. Use it? Yes, or no.` At most one bundle per repo and one a day across repos (`../PRODUCT.md` 4.5).
+- Guide ideas are private catalog entries in the team's namespace, shown on the map under "This codebase".
+- Owner notes appear only after the learner's own attempt (L18).
+- Nominated lines become your-line offers in that area when the idea is new to the learner.
+- Guide items ship without keys. The engine writes keys in a separate context.
 
 ---
 
 ## 3. Shared-repo rules (v1)
 
-- No readable learning data in any branch. The carry branch (architecture section 8) is encrypted, side-only, never merged, and not offered in public repos.
-- The optional merge check (`firsthand ci`) fails a PR only when it contains an open your-line marker that nobody chose to resolve. Its message: `Open your-line marker in retry.py:42. Write it, or comment "write it" to hand it back.` A hotfix branch pattern skips the check.
-- The CI check also fails any PR containing a carry file.
+RT privacy 7.
+
+- No readable learning data in any branch.
+- Your-line markers in repos the user does not own are plain `TODO:` comments, handed back at commit by default, so they are not committed.
+- No markers, product name or learning text in PR bodies.
+- The optional merge check (`firsthand ci`) message is neutral: `Open TODO in retry.py:42.` It fails only on a TODO the engine recorded and nobody resolved. A hotfix pattern skips it.
+- No carry branches in repos the user does not own. The CI check also fails any PR containing a carry file.
 - Who wrote a line is never written to commits, trailers or PRs.
-- Optional PR walkthrough: the author writes a short walkthrough for reviewers. The engine grades it privately as an explain-back. Reviewers see the plain text only, never a grade. This is an explain-back to a real audience.
+- Review-first findings are private.
+- Optional PR walkthrough: the author writes a walkthrough for reviewers. The engine grades it privately. Reviewers see the text only.
 
 ---
 
@@ -61,70 +69,111 @@ The guide's existence adds at most one line to the session-start offer, inside t
 
 | Control | Allowed |
 | :- | :- |
-| Deploy engine and adapters (`firsthand team install` in a dev image) | Yes. Turns nothing on. First run still asks the engineer |
-| Set defaults for dial, review cap (up to 3), reminder | Yes, as defaults the engineer can change |
-| Require the team relay or a self-hosted relay | Yes |
-| Pin relay region | Yes |
+| Deploy engine and adapters (`firsthand team install`) | Yes. Turns nothing on. Marks the install as a work install, so work defaults apply |
+| Set defaults for dial (up to Standard) and review cap (up to 3) | Yes, as defaults the engineer can change |
+| Set a reminder default | No (RT privacy 9) |
+| Require a relay, team or self-hosted | No. Removed (RT privacy 1) |
 | Turn excerpt storage off for a project | Yes |
 | Turn telemetry off for everyone | Yes |
 | Turn telemetry, sharing or reports on for anyone | No |
 | Raise the review cap above 3 | No |
-| See who has the tool on, or who uses it | No. Seat counts come from SCIM, not from use |
+| See who has the tool on, who uses it, or how many opted in | No |
+| Define report outcomes | No. Outcomes come from a fixed list (section 5) |
 | Read or export any record | No. No key exists |
-| Lower the group floor | No |
+| Request proof packs through the product | No. Proof packs are stamped "not a performance measure" |
+| Lower the group floor or change group definitions mid-period | No |
 
-The product shows the engineer, in the product, at the moment of a work install, what the employer can and cannot see (`experience.md` section 2).
+The engineer sees, at a work install, the accurate copy in `experience.md` section 2.1.
 
----
-
-## 5. The team report (later, paid)
-
-- Each engineer can opt in to share a few counts their engine computes locally: guide ideas reached Recalled or better, by idea; onboarding milestones they chose to share.
-- Transport: opt-in sharing through the team relay with a group floor. Counts appear only for groups of at least 8 opted-in people (design default; Viva Insights uses a floor that cannot go below five [verified: https://learn.microsoft.com/en-us/viva/insights/advanced/setup-maint/privacy-settings]). No Prio3 or DAP in v1 or v2: it needs two independent, non-colluding aggregator operators [verified: https://datatracker.ietf.org/doc/draft-ietf-ppm-dap/]. Revisit only when paying customers ask for more.
-- What it shows: guide coverage by area (how many guide ideas have any learners at Recalled or better), and onboarding outcomes the team defines.
-- What it never shows: any individual, any skip rate, any level by person, who opted in.
-- Never sold as a skill measure until a power check shows it can detect a change at the group floor. Codebase ideas and transferable ideas are reported apart.
-- Legal review before launch: the EU AI Act may class worker evaluation and learning-outcome grading as high-risk [unverified, secondary: https://casrai.org/news/ai-act-high-risk-classification]. The report avoids individual evaluation by design.
+**Not adopted: an admin active count** (RT market 4, second fix). An aggregate install or active count above the floor would let an admin infer who opted in by comparing with seat counts over time (RT privacy 9), and would contradict the work-install copy. The buyer's renewal signal is the onboarding outcome in section 5.1 instead. `../PRODUCT.md` section 15 records this.
 
 ---
 
-## 6. Business model
+## 5. What a team buyer can see
 
-### 6.1 Offers
+### 5.1 The onboarding outcome (no Firsthand data)
+
+RT market 4, first fix.
+
+- Time from a new hire's start date to their first merged PR in an area, for areas with a guide against areas without one.
+- Computed from the company's own git history and HR start dates the company already holds. It reads no record and no Firsthand event.
+- Reported for cohorts of at least the group floor, by area.
+- Whether a guide moves it needs to be measured. It is never presented as a skill measure.
+
+### 5.2 Guide health
+
+Guide coverage (ideas per area, stale paths), from the guide files only.
+
+### 5.3 The team report (later, paid)
+
+- Each engineer can opt in to share counts their engine computes locally: guide ideas reached Recalled or better, by idea.
+- **Group rules** (RT privacy 9):
+  - Groups are defined once per period from a fixed list (whole team, or areas with at least the floor of engineers), and cannot change mid-period.
+  - Counts appear only for groups of at least 8 opted-in people (design default; Viva Insights' floor cannot go below five [verified: https://learn.microsoft.com/en-us/viva/insights/advanced/setup-maint/privacy-settings]).
+  - A report is suppressed if the opted-in set changed by fewer people than the floor since the last report, so differencing cannot isolate one person.
+  - Overlapping groups are not reported in the same period.
+  - The opted-in count is never shown.
+- Outcomes come from a fixed list. Admins cannot define outcomes that one person can reach.
+- No Prio3 or DAP [verified: https://datatracker.ietf.org/doc/draft-ietf-ppm-dap/].
+- Never sold as a skill measure until a power check shows it can detect a change at the floor.
+- **Legal review of the consent basis before launch.** Employee consent is rarely freely given [verified: https://www.edpb.europa.eu/sites/default/files/files/file1/edpb_guidelines_202005_consent_en.pdf]. The EU AI Act may class worker evaluation as high-risk [unverified, secondary: https://casrai.org/news/ai-act-high-risk-classification].
+
+---
+
+## 6. Courses (v2 pilot)
+
+- Course Checkups: the instructor picks Checkup tasks for a cohort. Students run them as usual. Each student sees their own result. The instructor sees the cohort's results against task difficulty, above a group floor, with no individual results unless the course runs proctored live checks.
+- Proctored live checks: fresh unseen items with a person present. The only results the product labels "proctored".
+- Course catalogs: the course's ideas in its own namespace.
+- Legal review before launch, as for Team.
+- E9 interviews instructors in v0.
+
+---
+
+## 7. Business model
+
+### 7.1 Offers
 
 | Offer | Stage | Price |
 | :- | :- | :- |
-| Firsthand (engine, moves, drills, map, every adapter, the guide) | v1, v2 | Free, open source |
-| Firsthand Sync (relay, phone push, device link without the computer awake, cloud sessions without the carry branch) | v2 | Needs to be measured by a price test |
-| Firsthand Team (sealed guide items through the relay, team report, SSO, SCIM, region-pinned or self-hosted relay) | Later | Needs to be measured |
-| Firsthand Education (course catalogs, opt-in class reports, proctored live checks) | Later | Needs to be measured |
+| Firsthand loop (engine, moves, drills, map, adapters) | v1 | Free, open source |
+| Personal Checkup and in-product unseen families | v1 | Free to individuals; funded per section 7.3 |
+| Courses (cohort Checkups, proctored live checks) | v2 pilot | Needs to be measured |
+| Team (guide tools, onboarding outcome, SSO, report later) | Later | Needs to be measured |
+| Sync (relay, push, device link) | v2 | Needs to be measured |
 
-### 6.2 Why Team is the planned revenue line
+### 7.2 Scarce assets (RT market 5)
 
-- Individual willingness to pay is low for this category: free learning modes set the expectation at zero (research/users-market.md section 3.1).
-- Team budgets exist for developer learning and review tools (Pluralsight and CodeRabbit price ranges, [unverified] in research/users-market.md).
-- The guide spreads inside a company by itself: once committed, every engineer who opens the repo with any agent can use it.
+The bank of parameterised families, the Checkup tasks with pilot data, the Checkup service, the study-only pool, the maintained conformance table, and the brand. The bank and Checkup tasks ship under a separate content licence, not the engine's open-source licence (founder decision). No public launch until the first bank and the Checkup service are live.
 
-### 6.3 Tests before team-plane code
+### 7.3 Funding (RT market 6)
 
-- Ten manager interviews on the onboarding and coverage problem, and on whether an aggregate-only report is worth paying for (the teams concept's own assumption 2).
-- A "talk to us about teams" button on https://0xfauzi.github.io/explain-pr/, counting clicks against visits (E9). The founder sets the pass threshold before it runs.
+- The build is large: by the estimates in `../PRODUCT.md` section 10, v0 to v2 is many engineer-months, with no revenue before courses or Team, plus surface rows that break when vendors change.
+- A funding plan is chosen before v1 (founder decision). Options:
+  - A research grant: the Checkup and the study pool are instruments for studying AI and skill.
+  - A sponsor that is not an agent vendor.
+  - A foundation home for the engine and record format.
+  - A vendor partnership, with a published independence clause covering the Checkup and the study.
+- Cost control: adapters generated from one manifest; conformance in CI through headless modes; v1 tests three agents only.
 
-### 6.4 Ruled out
+### 7.4 Ruled out
 
 Selling records, ads, hiring use, paid streak repair, any paid pressure mechanic.
 
 ---
 
-## 7. Distribution
+## 8. Distribution
 
 | Channel | Role | Status |
 | :- | :- | :- |
 | Claude Code plugin directory | Main door for Claude Code users | Review rules [unverified]; VibeWise is listed there [verified: research/users-market.md] |
-| Codex plugin marketplace, Cursor plugins, Gemini extensions, Kiro, Amp, OpenCode listings | One per adapter | [unverified] per directory |
-| skills.sh, MCP registry | Skill and MCP discovery | [unverified] |
-| npm, PyPI, Homebrew | `npx` / `uvx` / `brew` install | Names [unverified] until E0 |
-| GitHub | README, the conformance table, the spec | VibeWise's growth came through GitHub [verified: star counts in research/users-market.md] |
-| The site | The five-minute promise, the claims ladder, the team button | Existing at https://0xfauzi.github.io/explain-pr/ |
+| Codex, Cursor, Gemini, Kiro, Amp, OpenCode listings | One per adapter | [unverified] per directory |
+| skills.sh, MCP registry | Discovery | [unverified] |
+| npm, PyPI, Homebrew | Install | Names reserved in v0; E0 confirms |
+| GitHub | README, conformance table, spec | |
+| The site | The measurement framing (if E17 favours it), the claims ladder, buyer buttons | https://0xfauzi.github.io/explain-pr/ |
+| Signed Checkup results | Something a user can show (RT market 10) | v1 |
 
-Launch screenshot: the first-session Trace drill in a terminal, with its verdict and the resume cue. It is real, on the user's own code, and checkable.
+Launch screenshot: the sampler result in the pad, with its "not proctored" label, then a Checkup result against difficulty.
+
+Launch claim: "It tells you when you got worse." Plus any cold-cohort numbers with their definition and sample size (RT market 11, `measurement.md` section 5).
