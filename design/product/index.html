@@ -485,7 +485,7 @@ tests before the agent did. The week before, 0 of 4.</pre>
 <ul><li>Debugging and unfamiliar code with the agent off, where practice matters most. The miner and the open task set.</li></ul></div></div>
 <div class="ph"><div><div class="pv">6</div><div class="pe">transfer</div></div>
 <div><p class="pt">Question bank, Check and Compare</p>
-<ul><li>Human-written item families, Check drills on past diffs, Compare across projects. Model feedback on open answers, and the grader check.</li></ul></div></div>
+<ul><li>Human-written item families, Check drills on past diffs, Compare across projects. Model grading of open answers, with its regression suite.</li></ul></div></div>
 <div class="ph"><div><div class="pv">7</div><div class="pe">wider</div></div>
 <div><p class="pt">More surfaces and the codebase guide</p>
 <ul><li>VS Code Copilot, Copilot CLI, Gemini CLI, then Devin, Amp, OpenCode, Kiro, Cline. The guide and postmortem rehearsals. Plan first and design calls.</li></ul></div></div>
@@ -495,16 +495,17 @@ tests before the agent did. The week before, 0 of 4.</pre>
 </div>
 </section>
 
-<!-- 9. THE ONE OPEN QUESTION -->
-<section class="sec" id="question">
-<p class="eyebrow mono">The one open question</p>
-<h2 class="h2">Does a model grader agree with people?</h2>
-<p class="p">Everything else is decided from research, first principles or a stated assumption. This is the only question worth an experiment.</p>
+<!-- 9. ACCURACY -->
+<section class="sec" id="accuracy">
+<p class="eyebrow mono">Keeping the agents accurate</p>
+<h2 class="h2">Wrong grades are rare, visible and cheap</h2>
+<p class="p">No experiment. The design checks the agents at every step instead.</p>
 <div class="oq">
-<div class="card"><span class="rk">we can get the data</span><p>Contributors write answers of mixed quality. Two people grade each one against the sealed points. The model grades the same answers.</p></div>
-<div class="card"><span class="rk">research cannot answer it</span><p>Reported agreement runs from near the level of two people to a kappa of 0.295, by model, rubric and domain (research/evidence.md A.2).</p></div>
-<div class="card"><span class="rk">it changes the design</span><p>If it agrees as well as two people do, open answers move levels. If not, they stay feedback, and those levels rest on tests and real work.</p></div>
+<div class="card"><span class="rk">keys from the code</span><p>A prediction's key is the real output of running the code. Every point in an explain key cites a file and line, and the engine checks that the line says it.</p></div>
+<div class="card"><span class="rk">answered blind first</span><p>Before a question is asked, a second agent answers it from the code alone. If it does not match the key, the question is dropped.</p></div>
+<div class="card"><span class="rk">grades show evidence</span><p>Each point must quote your answer. Two passes must agree, or the level does not move. You see the quotes and the code, and can dispute.</p></div>
 </div>
+<p class="small" style="margin-top:14px">One wrong grade cannot move a level: a level goes up only after two right delayed answers on different days. A set of answers graded by people runs in CI before any grader change ships.</p>
 </section>
 
 <!-- 10. FOUNDER DECISIONS -->

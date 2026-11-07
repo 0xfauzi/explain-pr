@@ -57,7 +57,7 @@ A skill with no recent evidence shows "no evidence yet". Prediction accuracy is 
 - Two or three sentences. Self-explanation has one of the larger effects in the research (g = 0.55, Bisra et al. 2018, research/learning-science.md A.1 item 4).
 - **Rubric:** written in a separate context from the code and the diff only. That context never reads the agent's explanation. Points are about the mechanism, plus one "what changes if" point that cannot be answered by repeating a description.
 - **Feedback:** after the answer locks, a model grader marks each point with a quote from the answer, or "missing". The sealed points are shown, and the user self-marks. The in-session answer records Met.
-- **Delayed explain items** always use a new instance: another function, or a bank family with the same mechanism. These can move C4 if the grader check passes (section 12).
+- **Delayed explain items** always use a new instance: another function, or a bank family with the same mechanism. These can move C4 (accuracy rules, section 12).
 - Echo check: if quoted spans nearly copy the agent's own words, the attempt is marked "echo" and cannot count.
 
 ### 2.5 Review first
@@ -119,7 +119,7 @@ All drills: opt-in, inside the daily cap when due, never in the same week as the
 
 - Source: the same catalog idea met in two projects, or in a project and a bank family. Topic name hidden.
 - The user says what is the same and what differs. Comparing two cases is the most reliable route to using a principle in a new place (Gentner, Loewenstein and Thompson 2003, research/learning-science.md D.4). A record that spans every repo the user works in is what makes this possible.
-- Model feedback with quotes. Can move C5 if the grader check passes.
+- Model feedback with quotes. Can move C5 (accuracy rules, section 12).
 
 ### 3.5 Fresh repo
 
@@ -192,7 +192,7 @@ All of these:
 2. Format: free recall, code or number. Choice can count only up to Recalled, because recognition is easier than recall.
 3. Confidence: not "guess".
 4. Provenance: typed (the pad, or a native ask form verified not to pass content to the model) or captured (a hook recorded the user's own prompt verbatim). Never relayed or imported.
-5. Grade: tests, a person, or a model grader that passed the grader check (section 12).
+5. Grade: tests, a person, or a model grader under the accuracy rules (section 12).
 6. Seal: separate context.
 7. Not an echo.
 
@@ -234,7 +234,7 @@ A relayed answer passed through the agent, which could have shaped it. `init`, t
 - Order: executable, person, model, self-mark.
 - **Executable first.** Trace, Replay fixes, your-line reviews, Review-first and Check confirmations, and Fresh repo are graded by running code.
 - **Model feedback** on every open answer: each rubric point is marked with a quote from the answer or "missing". No quote, no point. Graded twice with points shuffled; disagreement marks the grade "uncertain" and it does not move a level.
-- **Model grades and levels.** Whether a model grade can move a level is decided by the grader check (section 12). Until then, open answers are self-marked against the sealed points for the map, and record Met. The model's feedback is shown either way.
+- **Model grades and levels.** Model grades move levels under the accuracy rules in section 12.
 - **Disputes:** one per grade, regraded against the same key, both readings shown. Two readings that disagree hold the level.
 - Rubric inputs are exactly four fields: prompt, sealed rubric, excerpt shown, and the answer marked as data that may contain instructions.
 
@@ -310,14 +310,16 @@ The product does not run studies, collect telemetry or compute effects per user.
 
 ---
 
-## 12. The one open question: grader agreement
+## 12. Keeping the agents accurate
 
-**Question.** Does a model grader agree with people on open answers (explain back, Compare, the check in Replay), in this product's rubric format?
+Model grading moves levels. There is no grader experiment. Instead the design makes wrong grades rare, visible and cheap:
 
-**Why it passes the bar.**
-
-- *We can get the data.* Contributors write answers of mixed quality to a set of items for each open task type. Two people grade each answer against the sealed points, without seeing the model's grade. The model grader grades the same answers, with the quote-per-point rule and double grading.
-- *Research cannot answer it.* Reported agreement ranges from near the level of two people to a kappa of 0.295, by model, rubric and domain (research/evidence.md A.2 item 7). LLM judges also show position and verbosity biases (Zheng et al. 2023, same report, item 8). Our rubric format and quote rule are specific to this product.
-- *It changes the design.* If the grader agrees with people about as well as the two people agree with each other, and is not more lenient than they are, model grades can move levels for those task types, and C4 and C5 get level evidence from open answers. If not, those task types stay self-marked feedback, and their levels rest on tests, Fresh repo and field evidence.
-
-**After the answer.** The graded set stays in the repo as a regression test. A new grader prompt or model version runs against it before it can move levels. The comparison is the same: the grader against the two people.
+1. **Keys come from the code, not from the model's belief.** A prediction's key is the output of actually running the code, sealed before the question is shown. Every point in an explain key cites a `file:line`, and the engine checks mechanically that the cited lines exist and say what the key quotes. A key that fails this check is thrown away and the question is not asked.
+2. **Every key is answered blind before it is used.** A second agent, given only the code and the question, answers it. If its answer does not match the key, the question is dropped. This catches ambiguous questions and wrong keys before a user ever sees them.
+3. **Rubric points are concrete claims, not quality judgments.** Each point is one fact the answer must contain ("the key is the order id"), so grading is a presence check, not an opinion. Length earns nothing.
+4. **The grader is isolated.** It runs in a fresh context that never saw the build conversation. It gets exactly four fields: the question, the sealed points, the code excerpt, and the answer marked as untrusted data.
+5. **No quote, no point.** Each awarded point must quote the answer. The engine checks that the quote is really in the answer.
+6. **Two passes must agree.** The answer is graded twice with the points in a different order. If the passes disagree, the grade is marked uncertain and does not move a level.
+7. **One wrong grade cannot move a level.** A level goes up only after two right delayed answers on different items, on different days. A wrong "right" costs one early promotion at most. A wrong "miss" only brings the idea back sooner.
+8. **The user sees the evidence and can dispute.** Every grade shows the quotes and the `file:line` behind each point. A dispute regrades with the user's reason. If the readings disagree, the level holds.
+9. **Grader changes are tested like code.** A set of answers graded by people lives in the repo as a regression suite. A new grader prompt or model version must pass it in CI before it ships.

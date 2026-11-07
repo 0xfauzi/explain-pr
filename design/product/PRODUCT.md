@@ -13,7 +13,7 @@ Spec files:
 
 | File | Holds |
 | :- | :- |
-| `spec/learning.md` | The moves, drills, items, levels, reviews, grading, cold start, and the one open question |
+| `spec/learning.md` | The moves, drills, items, levels, reviews, grading, cold start, and keeping the agents accurate |
 | `spec/experience.md` | First run, every exchange, all copy, the pad, the map, waiting and failure states, accessibility |
 | `spec/surfaces.md` | Every coding surface, tiers, parity of outcome, install scope, conformance |
 | `spec/architecture.md` | Engine, record format, sealing, grading interface, cloud sessions, phone |
@@ -73,7 +73,7 @@ Each principle is a rule the product is built and tested against.
 2. **The user thinks first, at a few chosen points.** Predict, diagnose, write the key line, review before reading the summary, explain. L1, L4, L5, L18.
 3. **Spend practice where skill erodes.** Debugging and checking agent output come first. L4, L17.
 4. **Only delayed, unaided, new-instance performance counts.** A level rises on two right delayed answers on different items. L2.
-5. **Grade by running code first.** Tests decide wherever they can. Model grading is for feedback, and moves a level only if the grader check passes (section 12).
+5. **Grade by running code first.** Tests decide wherever they can. Model grades move levels under the accuracy rules in section 12.
 6. **No pressure mechanics.** At most 3 due reviews a day by default, at most one reminder a day at the user's time, no streaks, points, badges or guilt. L14, founder decisions 3 and 7.
 7. **Silent on what you know, and silent when unsure.** L10.
 8. **One record across every agent, owned by the user, in local git, outside any project.** Founder decision 1.
@@ -165,7 +165,7 @@ Opt-in, inside the daily cap when due, never in the same week as the source mate
 | **Trace** | The user's committed code, at least 7 days old | A scratch copy of committed files, agent config stripped | Running the code | Code reading |
 | **Check** | A past agent-written diff with a known later fix, or none | Text only | Test-confirmed defects. A finding no test confirms stays "unconfirmed" and never counts against the user | Checking agent output |
 | **Replay** | A fix commit whose test fails on the parent | A container with no network | The check named before the fix, then the commit's own test | Debugging |
-| **Compare** | The same idea met in two projects, topic name hidden | Text only | Model feedback; self-marked for levels unless the grader check passes | Transfer |
+| **Compare** | The same idea met in two projects, topic name hidden | Text only | Model graded, under the accuracy rules (section 12) | Transfer |
 | **Fresh repo** | A real change in a public repo the user has never opened | A container with no network | The change's own tests, kept sealed until the user submits | Transfer and reading unfamiliar code |
 
 **Fresh repo** is the old Checkup, made local and turned into practice. Transfer is the hard part of learning, and it depends on meeting an idea in a new context (Barnett and Ceci 2002; research/learning-science.md D.4). Developers spend about 58% of their time understanding code (Xia et al. 2018, research/learning-science.md Part G). A task in an unfamiliar repo with the agent off practises both. The user starts it. The engine picks a task that uses an idea the user has practised, sets up the repo at the parent commit in a container, and hides the tests. The user works with any editor, agent off, then submits. The engine applies the sealed tests and shows the result, then the real commit for comparison. Tasks come from two places: an open task set written by contributors, and changes mined from public repos where a new test fails on the parent and passes on the commit (`spec/learning.md` section 3.5).
@@ -378,7 +378,7 @@ The order puts real value in a developer's hands soonest, on one agent first, th
 3. **Review first and Trace.** `firsthand pr` and the `pr_review` break. Trace on the user's own code. Both need no container and use the most common daily work.
 4. **Codex and Cursor adapters, and the floor for every agent.** Adapters generated from one manifest. Conformance tests run in CI through each agent's headless mode. Cloud sessions get the import line.
 5. **The container runner, Replay and Fresh repo.** Debugging with the agent off and work in unfamiliar code, where the research says practice matters most. Build the miner, run it on public repos per language, and seed the open task set.
-6. **The question bank, Check and Compare.** The first families per catalog idea, Check drills on past diffs, Compare across projects. Model feedback on open answers. Run the grader check (section 12).
+6. **The question bank, Check and Compare.** The first families per catalog idea, Check drills on past diffs, Compare across projects. Model feedback on open answers. The grader regression suite (section 12).
 7. **More surfaces and the guide.** Tested adapters for VS Code Copilot, Copilot CLI and Gemini CLI, then Devin, Amp, OpenCode, Kiro and Cline. The codebase guide and postmortem drills. Plan first and design calls at Deep.
 8. **The phone device link.** Pairing with one confirmation tap, cards rendered by the engine.
 
@@ -386,17 +386,19 @@ Steps that check a fact belong inside the step that needs it: whether native ask
 
 ---
 
-## 12. The one open question
+## 12. Keeping the agents accurate
 
-Every other choice in this spec is decided from research, first principles or a stated assumption. One question passes the bar for an experiment: we can get the data, the research cannot answer it, and the answer changes the design.
+Model grading moves levels. There is no grader experiment. Instead the design makes wrong grades rare, visible and cheap:
 
-**Does a model grader agree with people on open answers, in our rubric format?**
-
-- *Why research cannot answer it.* Reported agreement between model graders and people ranges from near the level of two people to a kappa of 0.295, by model, rubric and domain. The evidence report concludes that reliability must be measured for this product's items, not assumed (research/evidence.md A.2 item 7). The answer depends on our rubric format, our quote-per-point rule and the models people actually have.
-- *Why we can get the data.* Contributors write answers of mixed quality to a set of explain-back, Compare and Replay items. Two people grade each answer against the sealed points. The grader grades the same answers.
-- *Why it changes the design.* If the grader agrees with people about as well as two people agree with each other, open answers can move levels, and explaining a change and transfer get real level evidence. If it does not, those skills stay at self-marked feedback, and levels for them rest on tests and field evidence only.
-
-The graded set then stays in the repo as a regression test for the grader prompt and for each new model version.
+1. **Keys come from the code, not from the model's belief.** A prediction's key is the output of actually running the code, sealed before the question is shown. Every point in an explain key cites a `file:line`, and the engine checks mechanically that the cited lines exist and say what the key quotes. A key that fails this check is thrown away and the question is not asked.
+2. **Every key is answered blind before it is used.** A second agent, given only the code and the question, answers it. If its answer does not match the key, the question is dropped. This catches ambiguous questions and wrong keys before a user ever sees them.
+3. **Rubric points are concrete claims, not quality judgments.** Each point is one fact the answer must contain ("the key is the order id"), so grading is a presence check, not an opinion. Length earns nothing.
+4. **The grader is isolated.** It runs in a fresh context that never saw the build conversation. It gets exactly four fields: the question, the sealed points, the code excerpt, and the answer marked as untrusted data.
+5. **No quote, no point.** Each awarded point must quote the answer. The engine checks that the quote is really in the answer.
+6. **Two passes must agree.** The answer is graded twice with the points in a different order. If the passes disagree, the grade is marked uncertain and does not move a level.
+7. **One wrong grade cannot move a level.** A level goes up only after two right delayed answers on different items, on different days. A wrong "right" costs one early promotion at most. A wrong "miss" only brings the idea back sooner.
+8. **The user sees the evidence and can dispute.** Every grade shows the quotes and the `file:line` behind each point. A dispute regrades with the user's reason. If the readings disagree, the level holds.
+9. **Grader changes are tested like code.** A set of answers graded by people lives in the repo as a regression suite. A new grader prompt or model version must pass it in CI before it ships.
 
 ---
 

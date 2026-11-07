@@ -155,9 +155,9 @@ grade(item, rubric_sealed, excerpt_shown, answer) -> GradeResult
 | :- | :- | :- | :- | :- |
 | 1 | Executable | Trace, Replay fix, your-line review, Review-first tests, Check confirmation, Fresh repo | Yes | No one |
 | 2 | Person | A mentor or guide owner the user invites | Yes | That person |
-| 3 | Subagent of the user's agent | Open answers | If the grader check passed | The agent's company, under the agent's account |
-| 4 | Headless agent CLI (Claude Code `-p`, Codex `exec`, Gemini CLI, Copilot CLI [verified: research/surfaces.md 10.6]) | Open answers | If the grader check passed | The agent's company, under the agent's account |
-| 5 | User API key | Open answers | If the grader check passed | The key's company, under that key |
+| 3 | Subagent of the user's agent | Open answers | Yes, under the accuracy rules | The agent's company, under the agent's account |
+| 4 | Headless agent CLI (Claude Code `-p`, Codex `exec`, Gemini CLI, Copilot CLI [verified: research/surfaces.md 10.6]) | Open answers | Yes, under the accuracy rules | The agent's company, under the agent's account |
+| 5 | User API key | Open answers | Yes, under the accuracy rules | The key's company, under that key |
 | 6 | Self-mark | Open answers, and the fallback | No | No one |
 
 Rules:
@@ -166,7 +166,7 @@ Rules:
 - **`grader = local-only`** allows only providers 1, 2 and 6. Default on work computers.
 - Input is exactly four fields: prompt, sealed rubric, excerpt shown, answer marked as data that may contain instructions.
 - No quote, no point. Grade twice with points shuffled; disagreement sets `uncertain`.
-- The grader check (`learning.md` section 12) decides whether providers 3 to 5 move levels. Its graded set ships in the repo and runs as a regression test for each grader prompt and model version.
+- Providers 3 to 5 move levels under the accuracy rules (`learning.md` section 12). The regression set ships in the repo and runs as a regression test for each grader prompt and model version.
 - Off the critical path: model grading is batched at session end or review time.
 - Cloud sandboxes: open answers wait for the next local session.
 
