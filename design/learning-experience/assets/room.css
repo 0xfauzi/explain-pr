@@ -14,3 +14,5 @@
 .mono{font-family:var(--mono)}
 .vh{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
 .lvw{white-space:nowrap}
+/* Walkthrough: tour.html loads each prototype with ?tour=1 and hides the prototype controls. */
+.tour .proto,.tour .rail,.tour .vpwrap,.tour .wrap>.head,.tour .here{display:none !important}

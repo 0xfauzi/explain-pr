@@ -183,6 +183,7 @@ textarea[readonly]{background:var(--paper)}
 </style>
 </head>
 <body>
+<script>if(/[?&]tour=1/.test(location.search))document.documentElement.classList.add("tour")</script>
 <div class="proto" role="region" aria-label="Prototype controls">
 <label for="st">Prototype state</label>
 <button type="button" id="prev" aria-label="Previous state">Prev</button>

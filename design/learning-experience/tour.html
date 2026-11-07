@@ -1,0 +1,125 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Room walkthrough</title>
+<meta name="description" content="A step by step walkthrough of the learning experience: one developer, one project, from the first question to the end of the project.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="anonymous">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wdth,wght@75..100,400..700&amp;family=JetBrains+Mono:wght@400;500&amp;display=swap">
+<link rel="stylesheet" href="assets/room.css">
+<style>
+html,body{height:100%}
+body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--sans);-webkit-font-smoothing:antialiased}
+body::after{content:"";position:fixed;inset:0;pointer-events:none;z-index:60;background-image:url(assets/grain.png);background-size:240px 240px;opacity:var(--grain-op);mix-blend-mode:var(--grain-blend)}
+a{color:var(--ink);text-underline-offset:4px}
+button{font-family:inherit;color:inherit}
+.page{min-height:100%;display:grid;grid-template-rows:auto 1fr auto}
+.top{display:flex;align-items:center;gap:12px;max-width:1120px;width:100%;margin:0 auto;padding:16px 32px}
+.word{font-size:19px;font-weight:650;font-variation-settings:"wdth" 88;letter-spacing:-.01em}
+.top .sub{font:500 13px var(--mono);color:var(--text-3)}
+.top .all{margin-left:auto;font-size:14px;color:var(--text-3)}
+.stage{max-width:1120px;width:100%;margin:0 auto;padding:8px 32px 24px;display:grid;grid-template-columns:minmax(0,1fr) 400px;gap:56px;align-items:center}
+.count{font:500 13px var(--mono);color:var(--accent-text)}
+h1{margin:10px 0 0;font-size:44px;line-height:1.08;letter-spacing:-.02em;font-weight:650;font-variation-settings:"wdth" 88;text-wrap:balance}
+.say{margin:16px 0 0;font-size:19px;line-height:1.55;color:var(--text-2);max-width:500px;text-wrap:pretty}
+.try{margin:18px 0 0;padding-left:14px;border-left:3px solid var(--accent);font-size:15px;line-height:1.5;color:var(--ink);max-width:480px}
+.copy{animation:rise .45s var(--ease-out) both}
+@keyframes rise{from{opacity:0;transform:translateY(8px)}}
+.bars{display:flex;gap:5px;margin:32px 0 0;padding:0;list-style:none;flex-wrap:wrap}
+.bars button{width:30px;height:44px;border:0;background:none;padding:0;cursor:pointer;display:flex;align-items:center}
+.bars button span{display:block;width:100%;height:10px;border-radius:3px;background:var(--lv0);box-shadow:inset 0 0 0 1.5px var(--control-border);transition:background-color .35s var(--ease-out),transform .35s var(--ease-spring)}
+.bars button.done span{background:var(--lv2);box-shadow:inset 0 0 0 1.5px var(--ink)}
+.bars button[aria-current="step"] span{background:var(--accent);box-shadow:inset 0 0 0 1.5px var(--ink);transform:scaleY(1.4)}
+.frame{position:relative;width:400px;height:min(780px,calc(100dvh - 190px));min-height:520px;border:1.5px solid var(--ink);border-radius:30px;overflow:hidden;background:var(--paper);box-shadow:0 24px 60px -30px rgba(22,22,26,.35)}
+.frame iframe{display:block;width:100%;height:100%;border:0;background:var(--paper);transition:opacity .25s}
+.frame.busy iframe{opacity:0}
+.frame .ld{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font:500 13px var(--mono);color:var(--text-3);pointer-events:none;opacity:0;transition:opacity .2s}
+.frame.busy .ld{opacity:1}
+.nav{position:sticky;bottom:0;z-index:20;background:var(--paper);border-top:1px solid var(--border)}
+.nav .in{max-width:1120px;margin:0 auto;padding:12px 32px calc(12px + env(safe-area-inset-bottom));display:flex;align-items:center;gap:12px}
+.btn{font:600 16px/1 var(--sans);min-height:50px;padding:0 28px;border-radius:999px;border:1.5px solid var(--ink);background:var(--ink);color:var(--on-ink);cursor:pointer;transition:background .2s,border-color .2s,color .2s,transform .15s;display:inline-flex;align-items:center;justify-content:center;gap:10px;text-decoration:none}
+@media (hover:hover){.btn:hover{background:var(--accent);border-color:var(--accent);color:#16161A}}
+.btn:active{transform:scale(.97)}
+.btn.ghost{background:transparent;color:var(--ink)}
+@media (hover:hover){.btn.ghost:hover{background:var(--ink);color:var(--on-ink)}}
+.btn[disabled]{opacity:.35;cursor:default;transform:none}
+.btn[disabled]:hover{background:transparent;color:var(--ink);border-color:var(--ink)}
+.nav .next{margin-left:auto}
+.nav .hint{font-size:13px;color:var(--text-3)}
+.end{margin-top:24px;display:flex;flex-wrap:wrap;gap:10px}
+@media (hover:none){.nav .hint{display:none}}
+@media (max-width:900px){
+.top{padding:12px 16px}.top .sub{display:none}
+.stage{grid-template-columns:minmax(0,1fr);gap:16px;padding:4px 16px 16px;align-items:start}
+h1{font-size:26px;margin-top:6px}.say{font-size:16px;margin-top:8px}.try{font-size:14px;margin-top:10px}
+.bars{margin:14px 0 0;gap:4px}.bars button{width:24px;height:32px}
+.frame{width:100%;height:68dvh;min-height:440px;border-radius:20px}
+.nav .in{padding:10px 16px calc(10px + env(safe-area-inset-bottom))}
+.nav .btn{flex:1}
+.nav .hint{display:none}
+}
+@media (prefers-reduced-motion:reduce){.copy{animation:none}.bars button span,.frame iframe,.btn{transition:none}}
+</style>
+</head>
+<body>
+<div class="page">
+<header class="top"><span class="word">Room</span><span class="sub">Walkthrough</span><a class="all" href="index.html" id="all">All screens</a></header>
+<main class="stage">
+<div>
+<div class="copy" id="copy" aria-live="polite"></div>
+<ol class="bars" id="bars" aria-label="Steps"></ol>
+</div>
+<div class="frame busy" id="frame"><iframe id="view" title="The screen for this step"></iframe><span class="ld">Loading</span></div>
+</main>
+<nav class="nav" aria-label="Walkthrough"><div class="in">
+<button type="button" class="btn ghost" id="back">Back</button>
+<span class="hint">Arrow keys also work.</span>
+<button type="button" class="btn next" id="next">Next</button>
+</div></nav>
+</div>
+<script>
+(function(){
+'use strict';
+var STEPS=[
+ {h:'Learn while you build.',s:'Sam builds a payment service with an AI agent. The agent writes most of the code. Sam wants to understand it, not only ship it. This walkthrough follows Sam through one project.',t:'Each step shows a real screen. You can tap inside it.',u:'onboarding.html?state=chat-areas-and-mode'},
+ {h:'You choose what to learn.',s:'At the start, the agent asks which parts of the project Sam wants to learn. Sam picks a few areas. Everything else the agent does as usual.',u:'onboarding.html?state=chat-areas-and-mode'},
+ {h:'The agent asks before it acts.',s:'Sam asks for a change. Before the agent runs the tests, it asks Sam to predict what will happen. The build does not stop.',u:'flow.html?state=waiting'},
+ {h:'You answer, and say how sure you are.',s:'Sam writes an answer and picks Guess, Fairly sure or Sure. The answer locks before Sam sees the result, so Sam cannot change it after.',t:'Try it: pick an answer and a level, then lock.',u:'prototypes/card.html?state=waiting-confidence-chosen'},
+ {h:'You see what you said next to what happened.',s:'The test runs. Sam sees the prediction beside the real output, and the reason for the difference. Then Sam goes back to the build.',u:'prototypes/verdict.html?state=pred'},
+ {h:'Questions come back later.',s:'Days later, a short question about the same idea comes back. Sam answers it on the phone in about a minute. This is what makes it stick.',u:'prototypes/inbox.html?state=waiting-now-plus-2-due'},
+ {h:'A right answer moves your record up.',s:'When Sam gets it right without help, the record goes up one level. A wrong answer brings the question back sooner.',u:'prototypes/verdict.html?state=up'},
+ {h:'Your map shows what you know.',s:'The map shows each area of the project and how well Sam knows it: with help, without help, or in a new situation. The weakest area is at the top.',t:'Try it: tap an area to see its topics.',u:'prototypes/map.html?state=normal-grid'},
+ {h:'Practice on real bugs.',s:'A drill puts a real bug back into a safe copy of the code. Sam finds the cause and says how to prove it. The real code does not change.',u:'prototypes/drill.html?state=waiting-symptom-only-no-code'},
+ {h:'Read a change, then predict.',s:'For a big change, the agent writes a short page that explains it. Each section opens after Sam makes a prediction.',u:'prototypes/explainer.html?state=waiting'},
+ {h:'At the end, see what you learned.',s:'When the project ends, Sam sees the start and the end side by side: what Sam now knows without help, and what faded.',u:'prototypes/map.html?state=growth-start-vs-now-with-timeline',end:true}
+];
+/* fix the paths of steps that point at prototypes without the folder */
+STEPS.forEach(function(x){if(x.u.indexOf('prototypes/')!==0)x.u='prototypes/'+x.u});
+var $=function(s){return document.querySelector(s)};
+var esc=function(s){return String(s).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]})};
+var cur=0,view=$('#view'),frame=$('#frame'),bars=$('#bars');
+bars.innerHTML=STEPS.map(function(x,i){return '<li><button type="button" data-i="'+i+'" aria-label="Step '+(i+1)+': '+esc(x.h)+'"><span></span></button></li>'}).join('');
+function src(x){return x.u+(x.u.indexOf('?')<0?'?':'&')+'tour=1'}
+function go(i,push){
+ cur=Math.max(0,Math.min(STEPS.length-1,i));var x=STEPS[cur];
+ var c=$('#copy');c.classList.remove('copy');void c.offsetWidth;c.classList.add('copy');
+ c.innerHTML='<p class="count">Step '+(cur+1)+' of '+STEPS.length+'</p><h1>'+esc(x.h)+'</h1><p class="say">'+esc(x.s)+'</p>'+(x.t?'<p class="try">'+esc(x.t)+'</p>':'')+
+  (x.end?'<div class="end"><a class="btn ghost" href="'+$('#all').getAttribute('href')+'">See all screens</a><a class="btn ghost" href="https://github.com/0xfauzi/explain-pr/blob/ccr-ae8e0eea-4w6uoc/design/learning-experience/experience.md">Read the full design</a></div>':'');
+ var s=src(x);if(view.getAttribute('src')!==s){frame.classList.add('busy');view.setAttribute('src',s)}
+ Array.prototype.forEach.call(bars.querySelectorAll('button'),function(b,j){b.classList.toggle('done',j<cur);if(j===cur)b.setAttribute('aria-current','step');else b.removeAttribute('aria-current')});
+ $('#back').disabled=cur===0;
+ var n=$('#next');n.textContent=cur===0?'Start':cur===STEPS.length-1?'Start again':'Next';
+ try{history.replaceState(null,'','#'+(cur+1))}catch(e){}
+}
+view.addEventListener('load',function(){frame.classList.remove('busy')});
+$('#back').onclick=function(){go(cur-1)};
+$('#next').onclick=function(){go(cur===STEPS.length-1?0:cur+1);if(matchMedia('(max-width:900px)').matches)window.scrollTo({top:0,behavior:'smooth'})};
+bars.addEventListener('click',function(e){var b=e.target.closest('button');if(b)go(+b.dataset.i)});
+document.addEventListener('keydown',function(e){if(e.key==='ArrowRight')go(cur+1);if(e.key==='ArrowLeft')go(cur-1)});
+var h=parseInt((location.hash||'').slice(1),10);go(h>0?h-1:0);
+})();
+</script>
+</body>
+</html>
