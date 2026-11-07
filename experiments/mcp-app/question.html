@@ -1,0 +1,118 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Learning question</title>
+<style>
+  :root { --ink: #16161A; --muted: #5F5F68; --line: #DAD8D0; --accent: #E8541E; --paper: #FFFFFF; }
+  @media (prefers-color-scheme: dark) { :root { --ink: #F3EFE6; --muted: #A8A39A; --line: #3A3631; --paper: #1C1A17; } }
+  body { margin: 0; font: 16px/1.5 system-ui, -apple-system, "Segoe UI", sans-serif; color: var(--ink); background: var(--paper); }
+  main { padding: 18px 20px 20px; }
+  .ctx { margin: 0; font-size: 13px; color: var(--muted); }
+  h1 { margin: 6px 0 14px; font-size: 18px; line-height: 1.35; font-weight: 650; }
+  .opt { display: flex; gap: 10px; width: 100%; text-align: left; padding: 12px 6px; min-height: 44px; border: 0; border-top: 1px solid var(--line); background: none; color: inherit; font: inherit; cursor: pointer; }
+  .opt:last-of-type { border-bottom: 1px solid var(--line); }
+  .opt b { width: 18px; color: var(--muted); font-weight: 600; }
+  .opt[aria-pressed="true"] { font-weight: 650; }
+  .opt[aria-pressed="true"] b { color: var(--accent); }
+  .row { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 14px; }
+  .sure { min-height: 40px; padding: 0 14px; border-radius: 999px; border: 1.5px solid var(--line); background: none; color: inherit; font: inherit; font-size: 14px; cursor: pointer; }
+  .sure[aria-pressed="true"] { border-color: var(--ink); background: var(--ink); color: var(--paper); }
+  .lock { margin-top: 16px; min-height: 44px; padding: 0 20px; border-radius: 999px; border: 0; background: var(--ink); color: var(--paper); font: inherit; font-weight: 600; cursor: pointer; }
+  .lock[disabled] { opacity: .5; cursor: default; }
+  .status { margin: 10px 0 0; font-size: 14px; color: var(--muted); min-height: 21px; }
+  .host { margin: 14px 0 0; font: 12px/1.4 ui-monospace, Menlo, monospace; color: var(--muted); }
+</style>
+</head>
+<body>
+<main>
+  <p class="ctx" id="ctx">Waiting for the question.</p>
+  <h1 id="q"></h1>
+  <div id="opts" role="group" aria-label="Answers"></div>
+  <div class="row" id="confs" role="group" aria-label="How sure are you"></div>
+  <button class="lock" id="lock" type="button">Lock my answer</button>
+  <p class="status" id="status" aria-live="polite"></p>
+  <p class="host" id="host"></p>
+</main>
+<script>
+(function () {
+  "use strict";
+  var nextId = 1, pending = {}, state = { choice: null, conf: null, locked: false, q: null };
+  var $ = function (id) { return document.getElementById(id); };
+
+  function send(msg) { window.parent.postMessage(msg, "*"); }
+  function request(method, params) {
+    var id = nextId++;
+    send({ jsonrpc: "2.0", id: id, method: method, params: params || {} });
+    return new Promise(function (resolve, reject) { pending[id] = { resolve: resolve, reject: reject }; });
+  }
+  function notify(method, params) { send({ jsonrpc: "2.0", method: method, params: params || {} }); }
+
+  function button(cls, html, pressed, onClick) {
+    var b = document.createElement("button");
+    b.type = "button"; b.className = cls; b.innerHTML = html;
+    b.setAttribute("aria-pressed", pressed ? "true" : "false");
+    b.disabled = state.locked; b.addEventListener("click", onClick);
+    return b;
+  }
+  function esc(s) { return String(s).replace(/[&<>"]/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]; }); }
+
+  function render() {
+    var q = state.q; if (!q) return;
+    $("ctx").textContent = q.context; $("q").textContent = q.question;
+    var opts = $("opts"); opts.innerHTML = "";
+    q.options.forEach(function (text, i) {
+      opts.appendChild(button("opt", "<b>" + "ABC"[i] + "</b><span>" + esc(text) + "</span>", state.choice === i,
+        function () { state.choice = i; render(); }));
+    });
+    var confs = $("confs"); confs.innerHTML = "";
+    ["Not sure", "Almost sure", "Sure", "I do not know"].forEach(function (label) {
+      confs.appendChild(button("sure", esc(label), state.conf === label, function () { state.conf = label; render(); }));
+    });
+    $("lock").disabled = state.locked;
+    reportSize();
+  }
+
+  $("lock").addEventListener("click", function () {
+    if (state.locked) return;
+    if (state.conf !== "I do not know" && (state.choice === null || !state.conf)) {
+      $("status").textContent = "Select an answer and how sure you are."; return;
+    }
+    state.locked = true; render();
+    var answer = state.conf === "I do not know" ? "I do not know." :
+      "ABC"[state.choice] + " (" + state.q.options[state.choice] + "). Confidence: " + state.conf + ".";
+    $("status").textContent = "Sending your answer to the conversation.";
+    request("ui/message", { role: "user", content: { type: "text", text: "My answer to the learning question: " + answer } })
+      .then(function () { $("status").textContent = "Sent. The agent grades it in the chat."; })
+      .catch(function (e) { $("status").textContent = "The host did not accept the message: " + (e && e.message ? e.message : "unknown error") + "."; });
+  });
+
+  window.addEventListener("message", function (ev) {
+    var m = ev.data; if (!m || m.jsonrpc !== "2.0") return;
+    if (m.id && pending[m.id] && (m.result !== undefined || m.error)) {
+      var p = pending[m.id]; delete pending[m.id];
+      if (m.error) p.reject(m.error); else p.resolve(m.result);
+      return;
+    }
+    if (m.method === "ui/notifications/tool-result" && m.params && m.params.structuredContent) {
+      state.q = m.params.structuredContent; render();
+    }
+  });
+
+  function reportSize() {
+    notify("ui/notifications/size-changed", { width: document.documentElement.scrollWidth, height: document.documentElement.scrollHeight });
+  }
+  if (window.ResizeObserver) new ResizeObserver(reportSize).observe(document.body);
+
+  request("ui/initialize", { protocolVersion: "2026-01-26", appInfo: { name: "learning-question", version: "0.1.0" }, appCapabilities: {} })
+    .then(function (r) {
+      var h = (r && r.hostInfo) || {}, c = (r && r.hostContext) || {};
+      $("host").textContent = "Rendered by " + (h.name || "an unnamed host") + (h.version ? " " + h.version : "") + (c.platform ? ", platform " + c.platform : "") + ".";
+      notify("ui/notifications/initialized", {});
+    })
+    .catch(function () { $("host").textContent = "The host did not answer ui/initialize."; });
+})();
+</script>
+</body>
+</html>
