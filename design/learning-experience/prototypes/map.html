@@ -78,7 +78,7 @@ h2.st{margin:0;font-size:24px;line-height:1.3;font-weight:650;font-variation-set
 .phead{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:8px 16px}
 .dims{list-style:none;margin:12px 0 0;padding:0}
 .dims>li{border-top:1px solid var(--rule)}
-.row,.rowbtn{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(0,1.3fr) 120px 28px;gap:14px;align-items:center;width:100%;min-height:48px;padding:6px 0;text-align:left;background:none;border:0;font:inherit;color:var(--ink)}
+.row,.rowbtn{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(0,1.3fr) 150px 28px;gap:14px;align-items:center;width:100%;min-height:48px;padding:6px 0;text-align:left;background:none;border:0;font:inherit;color:var(--ink)}
 .rowbtn{cursor:pointer;border-radius:10px}
 .rowbtn:hover .nm{text-decoration:underline;text-underline-offset:4px}
 .nm{font-size:15px;font-weight:500}
@@ -88,7 +88,7 @@ h2.st{margin:0;font-size:24px;line-height:1.3;font-weight:650;font-variation-set
 .rowbtn[aria-expanded="true"] .chev{transform:rotate(90deg)}
 .segs{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:4px}
 .seg{height:14px;border-radius:3px;background:var(--lv0);transition:background-color .55s ease,transform .55s var(--ease-spring)}
-.seg.f1{background:var(--lv1)}.seg.f2{background:var(--lv2)}.seg.f3{background:var(--lv3)}
+.seg.f1{background:var(--lv1);box-shadow:inset 0 0 0 1.5px var(--ink)}.seg.f2{background:var(--lv2);box-shadow:inset 0 0 0 1.5px var(--ink)}.seg.f3{background:var(--lv3);box-shadow:inset 0 0 0 1.5px var(--ink)}
 .seg[class*=" f"]{box-shadow:inset 0 0 0 1.5px var(--ink)}
 .rise .seg[class*=" f"]{animation:segin .55s var(--ease-spring) both}
 @keyframes segin{from{background:var(--lv0);transform:scaleY(1);box-shadow:none}60%{transform:scaleY(1.15)}}
@@ -118,12 +118,19 @@ h2.st{margin:0;font-size:24px;line-height:1.3;font-weight:650;font-variation-set
 .two{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:24px;margin-top:24px}
 .cal{display:grid;gap:12px;margin:16px 0 0;padding:0;list-style:none}
 .cal li{display:grid;grid-template-columns:96px minmax(0,1fr) 104px;gap:4px 12px;align-items:center;font-size:14px}
-.cal .tr{height:10px;border-radius:5px;background:var(--field);overflow:hidden}
-.cal .tr span{display:block;height:100%;background:var(--ink);border-radius:5px;transform-origin:left;transition:transform .6s var(--ease-out)}
+.cal .tr{position:relative;height:12px;border-radius:5px;background:var(--field)}
+.cal .tr .fill{display:block;height:100%;background:var(--ink);border-radius:5px;transform-origin:left;transition:transform .6s var(--ease-out)}
+.cal .tr .band{position:absolute;top:-4px;bottom:-4px;border:1.5px dashed var(--accent-text);border-radius:5px}
+.misses{margin:12px 0 0;padding:0;list-style:none;font-size:14px;line-height:1.6;color:var(--text-2)}
+.misses li{padding:4px 0;border-top:1px solid var(--rule)}
+.qtxt{font-size:14px;color:var(--text-3)}
+.qtxt button{font:inherit;min-height:44px;padding:0 4px;border:0;background:none;color:var(--text-3);cursor:pointer;text-underline-offset:4px}
+.qtxt button[aria-pressed="true"]{color:var(--ink);text-decoration:underline}
+.sgl{font-weight:600;font-size:15px}
 .cal .fr{font:500 12.5px var(--mono);color:var(--text-2);text-align:right}
 .weeks{display:grid;grid-template-columns:repeat(7,12px);gap:6px;margin-top:16px}
-.wk{width:12px;height:12px;border-radius:3px;background:var(--lv0)}
-.wk.on{background:var(--lv2);box-shadow:inset 0 0 0 1.5px var(--ink)}
+.wk{width:12px;height:12px;border-radius:50%;background:transparent;box-shadow:inset 0 0 0 1.5px var(--text-3)}
+.wk.on{background:var(--ink);box-shadow:none}
 .wk.today{outline:1.5px solid var(--text-dim);outline-offset:2px}
 /* table */
 .tw{margin-top:12px;overflow-x:auto}
@@ -170,6 +177,7 @@ tr.grp td{font-weight:650;color:var(--ink);padding-top:14px}
 .ev li{padding:6px 0;border-top:1px solid var(--rule);overflow-wrap:anywhere}
 .ev b{color:var(--ink);font-weight:500}
 /* topic sheet: a non-modal dialog; focus is never trapped */
+dialog.sheet::backdrop{background:rgba(22,22,26,.18)}
 dialog.sheet{position:fixed;inset:0 0 0 auto;margin:0;width:min(460px,100vw);height:auto;max-height:none;padding:24px 24px 120px;border:0;border-left:1.5px solid var(--border);background:var(--card);color:var(--ink);overflow-y:auto;z-index:45;box-shadow:-12px 0 32px rgba(22,22,26,.08)}
 dialog.sheet[open]{animation:slide .3s var(--ease-out)}
 @keyframes slide{from{transform:translateX(24px);opacity:0}}
@@ -203,9 +211,9 @@ legend{font-size:15px;color:var(--text-3);margin-bottom:10px;padding:0}
 .sure.dk{border-style:dashed}
 .mean{margin:8px 0 0;font-size:14px;color:var(--text-3);min-height:22px}
 .hints{margin-top:14px;padding-top:12px;border-top:1px solid var(--rule);font-size:14px;color:var(--text-3)}
-.ladder{display:inline-grid;grid-template-columns:repeat(3,22px);gap:4px;vertical-align:middle;margin-right:8px}
-.ladder span{height:10px;border-radius:3px;box-shadow:inset 0 0 0 1.5px var(--ink)}
-.ladder span.on{background:var(--ink)}
+.ladder{display:inline-flex;gap:6px;vertical-align:middle;margin-right:8px}
+.ladder span{width:18px;height:18px;border-radius:50%;box-shadow:inset 0 0 0 1.5px var(--ink);font:500 10px/18px var(--mono);text-align:center}
+.ladder span.on{background:var(--ink);color:var(--on-ink)}
 .hints ol{margin:8px 0 0;padding:0;list-style:none;display:grid;gap:6px;font-size:15px;line-height:1.5;color:var(--text-2)}
 .hints ol b{font:500 12.5px var(--mono);color:var(--ink);margin-right:8px}
 .verdict{margin-top:16px}
@@ -257,9 +265,9 @@ dialog.sheet{inset:auto 0 0 0;width:100%;max-height:86vh;border-left:0;border-to
 <body>
 <div class="proto" role="region" aria-label="Prototype controls">
 <label for="st">Prototype state</label>
-<button type="button" id="prev" aria-label="Previous state">[</button>
+<button type="button" id="prev" aria-label="Previous state">Prev</button>
 <select id="st"></select>
-<button type="button" id="next" aria-label="Next state">]</button>
+<button type="button" id="next" aria-label="Next state">Next</button>
 <span class="sp"></span>
 <label>Theme <select id="theme"><option value="">System</option><option value="light">Light</option><option value="dark">Dark</option></select></label>
 </div>
@@ -273,40 +281,40 @@ dialog.sheet{inset:auto 0 0 0;width:100%;max-height:86vh;border-left:0;border-to
 </nav>
 </header>
 <main class="main" id="main" tabindex="-1"></main>
-<dialog class="sheet" id="sheet" aria-labelledby="shh"></dialog>
-<div class="toastwrap"><div id="toastslot" role="status" aria-live="polite"></div></div>
+<dialog class="sheet" id="sheet"></dialog>
+<div class="toastwrap"><div id="toastslot"></div></div>
 <p class="vh" id="live" role="status" aria-live="polite"></p>
 <script>
 (function(){
 'use strict';
 var $=function(s,r){return (r||document).querySelector(s)},$$=function(s,r){return Array.prototype.slice.call((r||document).querySelectorAll(s))};
 /* ---------- fixture: orbit-pay, Sam, 7 Oct (day 0) to 12 Nov (day 36) ---------- */
-var LV=['Not yet','With help','Without help','New situation'],TODAY=36;
+var LV=['Not yet','With help','Without help','New situation'],TODAY=31;
 var CONF={g:'Guess',f:'Fairly sure',s:'Sure'},KIND={P:'Prediction',E:'Explain back',R:'Review',T:'New situation question',D:'Drill'},VERD={c:'Compared',C:'Correct',Q:'Not quite',N:'No',K:'Not known yet'};
 var MEAN={g:'I would not bet on it.',f:'More likely right than wrong.',s:'I would be surprised to be wrong.'};
 var DIMS=[['ds','Distributed systems'],['data','Data and storage'],['dbg','Debugging and diagnosis'],['test','Correctness and testing'],['sec','Security'],['read','Reading code']];
 function fd(d){return d<=24?(7+d)+' Oct':(d-24)+' Nov'}
 var T={
-idem:{n:'idempotency',d:'ds',next:52,q:'The worker crashes after the gateway accepted a charge but before it saved the result. On restart it sends the charge again. Why is the customer billed once?',rx:[/(same|reuse|first).{0,40}key|key.{0,40}(same|reuse|first|seen|stored)/i,/idempoten|key|dedup/i],why:'The retry sends the same idempotency key, and the gateway returns the result it stored for that key instead of charging again.',ev:'billing/charge.py:44',h:[]},
-retry:{n:'retry-budget',d:'ds',next:35,q:'Each attempt times out at 0.8 s. The backoff is 0.5 s, then 1 s, with up to 0.1 s of jitter on each. Against a dead gateway, what is the longest time charge() can take before it gives up?',rx:[/4[.,]1/,/3[.,]9|\b4(\.0)?\s*s|4[.,]2/],why:'Three timeouts and two backoffs: 2.4 + 1.5 = 3.9 s, plus up to 0.1 s of jitter per backoff, so 4.1 s.',ev:'billing/retry.py:22',h:['Add the time spent waiting on each attempt.','There are three attempts and two backoffs between them.','Jitter adds up to 0.1 s to each backoff.']},
+idem:{n:'idempotency',d:'ds',next:34,q:'The worker crashes after the gateway accepted a charge but before it saved the result. On restart it sends the charge again. Why is the customer billed once?',rx:[/(same|reuse|first).{0,40}key|key.{0,40}(same|reuse|first|seen|stored)/i,/idempoten|key|dedup/i],why:'The retry sends the same idempotency key, and the gateway returns the result it stored for that key instead of charging again.',ev:'billing/charge.py:44',h:[]},
+retry:{n:'retry-budget',d:'ds',next:34,q:'Each attempt times out at 0.8 s. The backoff is 0.5 s, then 1 s, with up to 0.1 s of jitter on each. Against a dead gateway, what is the longest time charge() can take before it gives up?',rx:[/4[.,]1/,/3[.,]9|\b4(\.0)?\s*s|4[.,]2/],why:'Three timeouts and two backoffs: 2.4 + 1.5 = 3.9 s, plus up to 0.1 s of jitter per backoff, so 4.1 s.',ev:'billing/retry.py:22',h:['Add the time spent waiting on each attempt.','There are three attempts and two backoffs between them.','Jitter adds up to 0.1 s to each backoff.']},
 outbox:{n:'outbox',d:'ds',next:48,q:'The relay publishes an outbox row, then crashes before it marks the row sent. What happens on restart, and what must consumers do?',rx:[/(again|twice|re-?publish|duplicate|second).{0,80}(idempoten|dedup|ignore|event id|seen)/i,/again|twice|duplicate|dedup|idempoten/i],why:'The relay publishes the row again, so delivery is at least once. Consumers must ignore an event id they have already handled.',ev:'orders/outbox_relay.py:31',h:[]},
-tvf:{n:'timeouts-vs-failures',d:'dbg',next:34,q:'charge() calls the gateway with a 0.8 s timeout and gets ReadTimeout. Did the charge fail? What should the worker do next?',rx:[/(unknown|not know|may|might|could|maybe|unsure).{0,120}(same|idempoten|status|look ?up|query)|(same|idempoten|status|query).{0,120}(unknown|not know|may|might|could)/i,/unknown|not know|may have|might have|could have|same key|idempoten|status/i],why:'A timeout only means the reply did not arrive; the charge may have run. Retry with the same key, so the gateway returns the first result instead of charging twice.',ev:'billing/charge.py:47',h:['What does a timeout tell you about the far side?','Look at what charge() sends as the key on line 44.','The gateway returns the first result for a key it has already seen.']},
+tvf:{n:'timeouts-vs-failures',d:'dbg',next:29,q:'charge() calls the gateway with a 0.8 s timeout and gets ReadTimeout. Did the charge fail? What should the worker do next?',rx:[/(unknown|not know|may|might|could|maybe|unsure).{0,120}(same|idempoten|status|look ?up|query)|(same|idempoten|status|query).{0,120}(unknown|not know|may|might|could)/i,/unknown|not know|may have|might have|could have|same key|idempoten|status/i],why:'A timeout only means the reply did not arrive; the charge may have run. Retry with the same key, so the gateway returns the first result instead of charging twice.',ev:'billing/charge.py:47',h:['What does a timeout tell you about the far side?','Look at what charge() sends as the key on line 44.','The gateway returns the first result for a key it has already seen.']},
 logc:{n:'log-correlation',d:'dbg',next:38,q:'A refund fails in the worker. The API log and the worker log share no field. What do you add so you can follow one request across both?',rx:[/(request|correlation|trace)[ _-]?id/i,/\bid\b|trace|header/i],why:'Pass a request_id from the API into the job and log it on every line in both places.',ev:'worker/logging.py:12',h:[]},
 flaky:{n:'flaky-tests',d:'dbg',next:37,q:'test_settle_batch fails about one run in ten, only in CI. Name one likely cause in this codebase and how you would confirm it.',rx:[/(order|clock|time|sleep|race|shared|parallel).{0,120}(seed|repeat|loop|times|isolat|freeze|random)/i,/order|clock|time|race|shared|parallel/i],why:'The test reads the wall clock near midnight UTC in settle_batch(). Freeze the clock and run it 200 times to confirm.',ev:'tests/test_settle.py:58',h:[]},
 ledger:{n:'ledger-locks',d:'data',next:40,q:'Two transfers debit the same account at once. Without SELECT ... FOR UPDATE, what can go wrong with the balance check?',rx:[/lost update|overdr|negative|both (pass|read|see)|below zero/i,/race|concurren|lock|same time/i],why:'Both transactions read the old balance, both checks pass, and the account goes below zero.',ev:'ledger/transfer.py:66',h:[]},
 cursor:{n:'pagination-cursors',d:'data',next:44,q:'The refunds list pages with OFFSET. New refunds arrive while you page. What do you see, and what does a cursor change?',rx:[/(skip|duplicate|repeat|miss|twice|again).{0,120}(cursor|last id|keyset|stable|after)/i,/skip|duplicate|repeat|miss|twice/i],why:'New rows shift the offset, so you see some refunds twice. A cursor on (created_at, id) starts after the last row you saw.',ev:'api/refunds.py:29',h:[]},
 doubles:{n:'test-doubles',d:'test',next:43,q:'test_charge mocks gateway.charge() to return success. The real client raises CardDeclined on a 402. Which bug can this test never catch?',rx:[/402|declin|raise|exception|error path/i,/error|fail/i],why:'Any bug in the declined path: the mock never raises, so the code that handles CardDeclined never runs.',ev:'tests/test_charge.py:15',h:[]}};
 /* attempts: [day, topic, kind, verdict, confidence, level reached, said] (31) */
-var A=[[0,'idem','P','c','f',0,'Said: the second call returns the stored charge. It did: it returned the stored charge.'],[0,'idem','E','C','f',1,'The key is the order id, so a retry looks the same to the gateway.'],[1,'retry','P','c','g',0,'Said: about 3.9 s. It did: gave up at 4.1 s.'],[1,'retry','E','Q','f',1,'Three tries, so about 2.4 s.'],[2,'ledger','E','C','s',1,'The row lock makes the second transfer wait.'],[3,'idem','R','Q','f',1,'The gateway sees the same request.'],[4,'retry','R','C','s',2,'2.4 + 1.5 plus jitter.'],[5,'ledger','R','C','s',2,'Both read the same balance without the lock.'],[6,'tvf','P','c','s',0,'Said: the worker marks it failed. It did: the charge had gone through.'],[6,'tvf','E','N','s',0,'A timeout means the gateway rejected it.'],[7,'idem','R','C','s',2,'Same key, so the stored result comes back.'],[7,'tvf','R','C','g',2,'We do not know. Retry with the same key.'],[9,'outbox','P','c','f',0,'Said: one event per order. It did: two after the crash.'],[9,'outbox','E','C','f',1,'Write the event in the same transaction as the order.'],[10,'logc','E','Q','g',1,'Log the order id.'],[12,'outbox','R','C','s',2,'The relay can send twice, so consumers dedupe.'],[13,'retry','R','C','s',2,'4.1 s, with the jitter.'],[14,'cursor','P','c','g',0,'Said: no change. It did: one refund showed twice.'],[14,'cursor','E','C','g',1,'Rows shift under OFFSET.'],[15,'doubles','E','Q','g',1,'It cannot catch a slow gateway.'],[17,'logc','R','C','f',2,'A request_id from the API into the job.'],[19,'ledger','T','C','s',3,'Same race in the payout batch: lock the account rows in id order.'],[20,'flaky','P','c','f',0,'Said: ordering between tests. It did: the clock near midnight.'],[20,'flaky','E','Q','g',1,'Something with time.'],[21,'idem','R','N','g',1,'The worker checks the database first.'],[22,'doubles','R','C','f',2,'The declined path never runs.'],[23,'cursor','R','C','s',2,'Keyset on created_at and id.'],[27,'outbox','T','C','s',3,'Webhooks to merchants need the same event id dedupe.'],[32,'idem','R','C','f',2,'The retry reuses the order id key; the gateway returns the first result.'],[33,'tvf','R','N','s',1,'The timeout means it failed, so mark it failed and retry.'],[34,'retry','R','N','f',1,'3.9 s.']];
+var A=[[0,'idem','P','c','f',0,'Said: the second call returns the stored charge. It did: it returned the stored charge.'],[0,'idem','E','C','f',1,'The key is the order id, so a retry looks the same to the gateway.'],[1,'retry','P','c','g',0,'Said: about 3.9 s. It did: gave up at 4.1 s.'],[1,'retry','E','Q','f',1,'Three tries, so about 2.4 s.'],[2,'ledger','E','C','s',1,'The row lock makes the second transfer wait.'],[3,'idem','R','Q','f',1,'The gateway sees the same request.'],[4,'retry','R','C','s',2,'2.4 + 1.5 plus jitter.'],[5,'ledger','R','C','s',2,'Both read the same balance without the lock.'],[6,'tvf','P','c','s',0,'Said: the worker marks it failed. It did: the charge had gone through.'],[6,'tvf','E','N','s',0,'A timeout means the gateway rejected it.'],[7,'idem','R','C','s',2,'Same key, so the stored result comes back.'],[7,'tvf','R','C','g',2,'We do not know. Retry with the same key.'],[9,'outbox','P','c','f',0,'Said: one event per order. It did: two after the crash.'],[9,'outbox','E','C','f',1,'Write the event in the same transaction as the order.'],[10,'logc','E','Q','g',1,'Log the order id.'],[12,'outbox','R','C','s',2,'The relay can send twice, so consumers dedupe.'],[13,'retry','R','C','s',2,'4.1 s, with the jitter.'],[14,'cursor','P','c','g',0,'Said: no change. It did: one refund showed twice.'],[14,'cursor','E','C','g',1,'Rows shift under OFFSET.'],[15,'doubles','E','Q','g',1,'It cannot catch a slow gateway.'],[17,'logc','R','C','f',2,'A request_id from the API into the job.'],[19,'ledger','T','C','s',3,'Same race in the payout batch: lock the account rows in id order.'],[20,'flaky','P','c','f',0,'Said: ordering between tests. It did: the clock near midnight.'],[20,'flaky','E','Q','g',1,'Something with time.'],[21,'idem','R','N','g',1,'The worker checks the database first.'],[22,'doubles','R','C','f',2,'The declined path never runs.'],[23,'cursor','R','C','s',2,'Keyset on created_at and id.'],[26,'retry','R','N','f',1,'3.9 s.'],[27,'outbox','T','C','s',3,'Webhooks to merchants need the same event id dedupe.'],[28,'tvf','R','N','s',1,'The timeout means it failed, so mark it failed and retry.'],[34,'idem','R','C','f',2,'The retry reuses the order id key; the gateway returns the first result.']];
 function tm(i){if(A[i]&&A[i][7])return A[i][7];if(i===28)return['14:15','14:22'];var h=9+(i*5)%9,m=(i*17)%50;return[h+':'+(m<10?'0':'')+m,h+':'+((m+7)<10?'0':'')+(m+7)]}
 /* ---------- derived record ---------- */
 function rec(asOf){var r={};A.forEach(function(a,i){if(a[0]>asOf)return;var t=r[a[1]]||(r[a[1]]={now:0,best:0,att:[],last:-1,miss:false,bestDay:-1,graded:0});t.att.push(i);if(a[2]!=='P'){t.graded++;t.now=a[5];if(a[5]>=t.best){t.best=a[5];t.bestDay=a[0]}t.last=i;t.miss=(a[3]==='N'&&a[4]==='s')}});return r}
 function dimTopics(r,d){return Object.keys(T).filter(function(k){return T[k].d===d&&r[k]})}
-function dimLevel(r,d){var l=dimTopics(r,d).map(function(k){return r[k].now}).sort(function(a,b){return b-a});return l.length?l[Math.ceil(l.length/2)-1]:0}
+function dimLevel(r,d){var l=dimTopics(r,d).map(function(k){return r[k].now});return l.length?Math.min.apply(null,l):0}
 function calib(from,to){var c={g:[0,0],f:[0,0],s:[0,0]},n=0;A.forEach(function(a){if(a[0]<from||a[0]>to||a[2]==='P'||!a[4]||a[3]==='K')return;c[a[4]][1]++;n++;if(a[3]==='C')c[a[4]][0]++});c.n=n;return c}
 /* ---------- view state ---------- */
 var S,lastFocus=null,tt;
-function fresh(){return {asOf:TODAY,since:31,status:'ok',view:'record',mode:'grid',scope:'this',open:{},sheet:null,rv:null,offline:false,hl:null,lit:null,focus:null}}
+function fresh(){return {asOf:TODAY,since:24,status:'ok',view:'record',mode:'grid',scope:'this',open:{},sheet:null,rv:null,offline:false,hl:null,lit:null,focus:null}}
 var esc=function(s){return String(s).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]})};
 var CHEV='<svg class="chev" width="14" height="14" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 2l4 4-4 4"/></svg>';
 function segs(l){var h='';for(var i=1;i<=3;i++)h+='<span class="seg'+(i<=l?' f'+i:'')+'"></span>';return '<span class="segs" aria-hidden="true">'+h+'</span>'}
@@ -314,34 +322,36 @@ function bars(l){var h='';for(var i=0;i<l;i++)h+='<i></i>';return '<span class="
 function sq(t,extra){return '<span class="sq l'+t.now+(t.best>t.now?' ring':'')+(t.miss?' miss':'')+(extra||'')+'" aria-hidden="true">'+bars(t.now)+'</span>'}
 function cellName(k,t){return T[k].n+': now '+LV[t.now]+(t.best>t.now?', best '+LV[t.best]:'')+(t.miss?', sure miss':'')}
 function due(r){return Object.keys(T).filter(function(k){return r[k]&&T[k].next<=S.asOf&&S.asOf===TODAY})}
-function shellTop(){return (S.offline?'<div class="note strong" role="status"><p>Showing your map from 14:20. It updates when you are back online.</p></div>':'')+'<div class="link"><span>Linked to: <b>orbit-pay</b> · cloud session</span><a class="tbtn" href="flow.html">Back to the build</a></div>'}
-function head(){var g=S.view==='growth';return '<div class="head"><div><h1 class="ph">'+(g?'Growth':'Map')+'</h1><p class="lede">'+(g?'What changed in what you can do without the agent, from the start of this project to now.':'What you can do without the agent, by area. It goes down when you forget, so it stays true.')+'</p></div></div>'+
- '<div class="ctrls"><div class="toggle" role="group" aria-label="View"><button type="button" class="tg" data-v="record" aria-pressed="'+!g+'">Record</button><button type="button" class="tg" data-v="growth" aria-pressed="'+g+'">Growth</button></div>'+
- (g?'':'<div class="toggle" role="group" aria-label="Layout"><button type="button" class="tg" data-m="grid" aria-pressed="'+(S.mode==='grid')+'">Grid</button><button type="button" class="tg" data-m="table" aria-pressed="'+(S.mode==='table')+'">Table</button></div>')+
- '<div class="toggle" role="group" aria-label="Projects"><button type="button" class="tg" data-s="this" aria-pressed="'+(S.scope==='this')+'">This project</button><button type="button" class="tg" data-s="all" aria-pressed="'+(S.scope==='all')+'">All projects</button></div></div>'+
+function shellTop(){return (S.offline?'<div class="note strong" role="status"><p>Showing your map from 14:20. It updates when you are back online.</p></div>':'')+'<p class="qtxt" style="margin:0 0 4px">Linked to <b class="mono">orbit-pay · cloud session</b></p>'}
+function head(){var g=S.view==='growth';return '<div class="head"><div>'+(g?'<a class="tbtn" href="#" data-v="record" style="margin-left:-6px">Back to the map</a>':'')+'<h1 class="ph">'+(g?'Growth':'Map')+'</h1><p class="lede">'+(g?'What changed in what you can do without the agent, from the start of this project to now.':'What you can do without the agent, by area. It goes down when you forget, so it stays true.')+'</p></div></div>'+
+ '<p class="qtxt" role="group" aria-label="Projects"><button type="button" data-s="this" aria-pressed="'+(S.scope==='this')+'">This project</button> · <button type="button" data-s="all" aria-pressed="'+(S.scope==='all')+'">All projects</button></p>'+
  (S.scope==='all'?'<div class="note"><p>All projects: orbit-pay is the only project with answers so far.</p></div>':'')}
+function layoutCtl(){return '<div class="toggle" role="group" aria-label="Layout"><button type="button" class="tg" data-m="grid" aria-pressed="'+(S.mode==='grid')+'">Grid</button><button type="button" class="tg" data-m="table" aria-pressed="'+(S.mode==='table')+'">Table</button></div>'}
 function field(){var h='';for(var i=0;i<42;i++){var x=Math.sin((i+3)*12.9898)*43758.5453,r=x-Math.floor(x),y=Math.sin((i+3)*78.233)*12345.678,q=y-Math.floor(y);h+='<i class="fc'+(r<.12?' g1':r<.2?' g2':r<.25?' g3':'')+'" style="--d:'+(8+q*7).toFixed(1)+'s;animation-delay:-'+(q*9).toFixed(1)+'s"></i>'}return '<div class="fieldbg" aria-hidden="true">'+h+'</div>'}
 function legend(){return '<ul class="legend" aria-label="Key"><li><span class="sq l1" aria-hidden="true"></span>With help</li><li><span class="sq l2" aria-hidden="true"></span>Without help</li><li><span class="sq l3" aria-hidden="true"></span>New situation</li><li><span class="sq l1 ring" aria-hidden="true"></span>Ring: your best was higher</li><li><span class="sq l1 miss" aria-hidden="true"></span>Dot: wrong when you chose Sure</li></ul>'}
-function gridPanel(r,opts){opts=opts||{};var h='<section class="panel'+(opts.faint?' faint':'')+(opts.rise?' rise':'')+'" aria-labelledby="rph"'+(opts.busy?' aria-busy="true"':'')+'><div class="phead"><h2 class="st" id="rph">Your record</h2>'+(opts.busy?'<span class="sub">Loading your map.</span>':'<span class="sub">Tap an area to see its topics.</span>')+'</div><ul class="dims">';
+function gridPanel(r,opts){opts=opts||{};var h='<section class="panel'+(opts.faint?' faint':'')+(opts.rise?' rise':'')+'" aria-labelledby="rph"'+(opts.busy?' aria-busy="true"':'')+'><div class="phead"><h2 class="st" id="rph">Your record</h2>'+(opts.busy||opts.empty||opts.faint?'':layoutCtl())+'</div><p class="sub">'+(opts.busy?'Loading your map.':'Select an area to see its topics. An area shows its lowest topic. <a href="#" data-v="growth">See growth</a>')+'</p><ul class="dims">';
  DIMS.forEach(function(d){var ks=opts.empty||opts.busy?[]:dimTopics(r,d[0]),l=ks.length?dimLevel(r,d[0]):0,word=LV[l];
   if(opts.busy){h+='<li class="skel"><div class="row"><span class="nm"></span>'+segs(0)+'<span></span><span></span></div></li>';return}
   if(!ks.length){h+='<li><div class="row"><span class="nm">'+d[1]+'<span class="vh">: Not yet</span></span>'+segs(0)+'<span class="lv l0" aria-hidden="true">Not yet</span><span></span>'+(opts.empty?'':'<p class="nonote">No topics yet. The agent adds one when a change touches this area.</p>')+'</div></li>';return}
   var op=!!S.open[d[0]],nw=ks.filter(function(k){return r[k].now>=2}).length;
-  h+='<li><button type="button" class="rowbtn" aria-expanded="'+op+'" aria-controls="tc-'+d[0]+'" data-dim="'+d[0]+'"><span class="nm">'+d[1]+'<span class="vh">: '+word+'. '+nw+' of '+ks.length+' topics without help.</span></span>'+segs(l)+'<span class="lv l'+l+'" aria-hidden="true">'+word+'</span>'+CHEV+'</button><ul class="tcells" id="tc-'+d[0]+'"'+(op?'':' hidden')+'>'+
+  h+='<li><button type="button" class="rowbtn" aria-expanded="'+op+'" aria-controls="tc-'+d[0]+'" data-dim="'+d[0]+'"><span class="nm">'+d[1]+'<span class="vh">, '+word+', '+nw+' of '+ks.length+' topics without help</span></span>'+segs(l)+'<span class="lv l'+l+' lvw" aria-hidden="true">'+word+' · '+nw+' of '+ks.length+'</span>'+CHEV+'</button><ul class="tcells" id="tc-'+d[0]+'"'+(op?'':' hidden')+'>'+
   ks.map(function(k){var t=r[k];return '<li><button type="button" class="cell" data-t="'+k+'" aria-label="'+esc(cellName(k,t))+'">'+sq(t,S.lit===k?' lit':'')+'<span class="cn">'+T[k].n+'</span><span class="cl">'+LV[t.now]+(t.best>t.now?' · best '+LV[t.best]:'')+(t.miss?' · sure miss':'')+'</span></button></li>'}).join('')+'</ul></li>'});
  var all=Object.keys(r).length,w=Object.keys(r).filter(function(k){return r[k].now>=2}).length;
  return h+'</ul><div class="pfoot">'+(opts.busy||opts.empty?'<span></span>':legend())+'<span class="count">'+(opts.busy||opts.empty?'':w+' of '+all+' topics without help')+'</span></div></section>'}
-function tablePanel(r){var h='<section class="panel" aria-labelledby="rph"><div class="phead"><h2 class="st" id="rph">Your record</h2><span class="sub">The same record as a table.</span></div><div class="tw" role="region" aria-label="Record table" tabindex="0"><table><caption class="vh">Your record by topic</caption><thead><tr><th scope="col">Topic</th><th scope="col">Now</th><th scope="col">Best</th><th scope="col">Last answer</th><th scope="col">Next review</th></tr></thead><tbody>';
+function tablePanel(r){var h='<section class="panel" aria-labelledby="rph"><div class="phead"><h2 class="st" id="rph">Your record</h2>'+layoutCtl()+'</div><p class="sub">The same record as a table. <a href="#" data-v="growth">See growth</a></p><div class="tw" role="region" aria-label="Record table" tabindex="0"><table><caption class="vh">Your record by topic</caption><thead><tr><th scope="col">Topic</th><th scope="col">Now</th><th scope="col">Best</th><th scope="col">Last answer</th><th scope="col">Next review</th></tr></thead><tbody>';
  DIMS.forEach(function(d){var ks=dimTopics(r,d[0]);h+='<tr class="grp"><td colspan="5">'+d[1]+' · '+(ks.length?LV[dimLevel(r,d[0])]:'No topics yet')+'</td></tr>';
   ks.forEach(function(k){var t=r[k],a=A[t.last];h+='<tr><td><button type="button" class="tbtn" data-t="'+k+'">'+T[k].n+'</button></td><td>'+LV[t.now]+'</td><td>'+LV[t.best]+'</td><td>'+fd(a[0])+', '+VERD[a[3]]+(t.miss?', sure miss':'')+'</td><td>'+(T[k].next<=S.asOf?'Due since '+fd(T[k].next):fd(T[k].next))+'</td></tr>'})});
  return h+'</tbody></table></div></section>'}
-function calCard(c,title,hid){var h='<section class="card" aria-labelledby="'+hid+'"><h2 class="st" id="'+hid+'">'+title+'</h2>';
+var BANDS={g:[0,.5],f:[.55,.78],s:[.8,1]},TARGET={g:'under 1 in 2',f:'about 2 in 3',s:'4 in 5 or better'};
+function sureMisses(){var out=[];A.forEach(function(a,i){if(a[0]>S.asOf||a[2]==='P'||a[3]!=='N'||a[4]!=='s')return;var later=A.filter(function(b){return b[1]===a[1]&&b[0]>a[0]&&b[0]<=S.asOf&&b[2]!=='P'&&b[3]==='C'})[0];out.push('<li><span class="mono">'+T[a[1]].n+'</span>, '+fd(a[0])+': '+(later?'right since '+fd(later[0])+'.':'not right since.')+'</li>')});return out}
+function calCard(c,title,hid,withMiss){var h='<section class="card" aria-labelledby="'+hid+'"><h2 class="st" id="'+hid+'">'+title+'</h2>';
  if(c.n<10)return h+'<p class="sub">Shown after 10 answers. You have '+c.n+'.</p></section>';
- h+='<ul class="cal">';['g','f','s'].forEach(function(k){var v=c[k];h+='<li><span>'+CONF[k]+'</span><span class="tr" aria-hidden="true"><span style="transform:scaleX('+(v[1]?v[0]/v[1]:0)+')"></span></span><span class="fr">right '+v[0]+' of '+v[1]+'</span></li>'});
- return h+'</ul><p class="sub">If you are well calibrated, Sure is right almost every time.</p></section>'}
+ if(withMiss){var ms=sureMisses();if(ms.length)h+='<p class="sgl" style="margin:12px 0 0">Sure but wrong: '+ms.length+'</p><ul class="misses">'+ms.join('')+'</ul>'}
+ h+='<ul class="cal">';['g','f','s'].forEach(function(k){var v=c[k],b=BANDS[k];h+='<li><span>'+CONF[k]+'</span><span class="tr" aria-hidden="true"><span class="fill" style="transform:scaleX('+(v[1]?v[0]/v[1]:0)+')"></span><span class="band" style="left:'+(b[0]*100)+'%;width:'+((b[1]-b[0])*100)+'%"></span></span><span class="fr">right '+v[0]+' of '+v[1]+'</span>'+(v[1]<10?'<span class="sub" style="grid-column:2/-1;margin:0">Too few answers to tell. Target: '+TARGET[k]+'.</span>':'<span class="vh">Target: '+TARGET[k]+'.</span>')+'</li>'});
+ return h+'</ul><p class="sub">The dashed band is where a well calibrated answer lands: Guess under 1 in 2, Fairly sure about 2 in 3, Sure 4 in 5 or better.</p></section>'}
 function weeks(none){var days={},h='',n=0;if(!none)A.forEach(function(a){days[a[0]]=1});for(var d=S.asOf-27;d<=S.asOf;d++){var on=!!days[d];if(on)n++;h+='<span class="wk'+(on?' on':'')+(d===S.asOf?' today':'')+'"></span>'}
  return '<section class="card" aria-labelledby="wkh"><h2 class="st" id="wkh">Last 4 weeks</h2><div class="weeks" role="img" aria-label="Practice on '+n+' of the last 28 days.">'+h+'</div><p class="sub">Days with practice, last 4 weeks.</p></section>'}
-function weakest(r){var best=null;DIMS.forEach(function(d){var ks=dimTopics(r,d[0]);if(!ks.length)return;var l=dimLevel(r,d[0]);if(!best||l<best.l)best={d:d,l:l,ks:ks}});if(!best)return null;
+function weakest(r){var best=null;DIMS.forEach(function(d){var ks=dimTopics(r,d[0]);if(!ks.length)return;var l=dimLevel(r,d[0]),mi=ks.some(function(k){return r[k].miss});if(!best||l<best.l||(l===best.l&&mi&&!best.mi))best={d:d,l:l,ks:ks,mi:mi}});if(!best)return null;
  var k=best.ks.slice().sort(function(a,b){return (r[a].now-r[b].now)||((r[b].miss?1:0)-(r[a].miss?1:0))})[0],t=r[k],nw=best.ks.filter(function(x){return r[x].now>=2}).length;
  return {k:k,html:'Weakest now: '+best.d[1]+'. <span class="mono">'+T[k].n+'</span> '+(t.miss?'was a sure miss on '+fd(A[t.last][0])+'.':'is '+LV[t.now]+'.'),sub:nw+' of '+best.ks.length+' topics in this area without help.'}}
 function changed(r){var o=rec(S.since),up=[],dn=[];Object.keys(r).forEach(function(k){var was=o[k]?o[k].now:null,n=r[k].now;if(r[k].graded===0)return;
@@ -352,7 +362,7 @@ function renderRecord(){var r=rec(S.asOf),w=weakest(r),dl=due(r);
  if(w)h+='<section class="card weak rise" aria-labelledby="wkt"><p class="wt" id="wkt">'+w.html+'</p><p class="sub">'+w.sub+'</p><div class="acts"><button type="button" class="btn sm" data-review="'+w.k+'">Review now</button><a class="btn sm ghost" href="drill.html?topic='+T[w.k].n+'">Drill this</a></div></section>';
  h+='<ul class="lines"><li><span>'+changed(r)+'</span></li><li>'+(dl.length?'<span><b>Due: '+dl.length+'.</b> '+dl.map(function(k){return '<span class="tp">'+T[k].n+'</span>'}).join(', ')+'.</span><button type="button" class="tbtn" data-review="'+dl[0]+'">Start review</button>':'<span><b>Nothing is due.</b> The next review is on '+fd(S.asOf+1)+'.</span>')+'</li></ul>';
  h+=S.mode==='table'?tablePanel(r):gridPanel(r,{rise:S.anim});
- h+='<div class="two">'+calCard(calib(0,S.asOf),'How sure vs how right','clh')+weeks()+'</div>';
+ h+='<div class="two">'+calCard(calib(0,S.asOf),'How sure vs how right','clh',true)+weeks()+'</div>';
  return h}
 function renderGrowth(){var h=shellTop()+head();
  if(S.asOf<14)return h+field()+'<div class="card empty" style="margin-top:24px"><p class="gsum" style="margin:0">Growth shows after two weeks of answers on this project.</p><p class="sub">Your first answer was on 7 Oct. Growth opens on 21 Oct.</p></div>';
@@ -393,7 +403,7 @@ function reviewHtml(k,rv){var tp=T[k],lk=rv.locked;
  if(tp.h.length&&!lk)h+='<div class="hints"><span class="ladder" aria-hidden="true">'+[0,1,2].map(function(i){return '<span'+(i<rv.hints?' class="on"':'')+'></span>'}).join('')+'</span>Hints used: '+rv.hints+' of 3'+(rv.hints<3?' <button type="button" class="tbtn" id="hint">Hint</button>':'')+(rv.hints?'<ol>'+tp.h.slice(0,rv.hints).map(function(x,i){return '<li><b>H'+(i+1)+'</b>'+esc(x)+'</li>'}).join('')+'</ol>':'')+'</div>';
  if(!lk)h+='<div class="acts"><button type="submit" class="btn sm" id="lock"'+(rv.conf?'':' disabled')+'>Lock my answer</button><button type="button" class="tbtn" id="rvx">Not now</button></div>';
  h+='<div class="verdict" role="status" aria-live="polite">'+(rv.out||'')+'</div></form>';return h}
-function openSheet(k,review,from){lastFocus=from||document.activeElement;S.sheet=k;S.rv=review?{conf:null,hints:0,text:'',fixed:'09:41'}:null;renderSheet();var d=$('#sheet');if(!d.open)d.show();if(review){var ta=$('#rva');ta&&ta.focus()}else $('#shh').focus()}
+function openSheet(k,review,from){lastFocus=from||document.activeElement;S.sheet=k;S.rv=review?{conf:null,hints:0,text:'',fixed:'09:41'}:null;renderSheet();var d=$('#sheet');d.setAttribute('aria-labelledby','shh');if(!d.open)d.showModal();if(review){var ta=$('#rva');ta&&ta.focus()}else $('#shh').focus()}
 function closeSheet(){var d=$('#sheet');if(d.open)d.close();S.sheet=null;S.rv=null;if(lastFocus&&document.body.contains(lastFocus))lastFocus.focus();else{var c=$('[data-t="'+(lastFocus&&lastFocus.dataset?lastFocus.dataset.t:'')+'"]');if(c)c.focus()}}
 function lock(dk){var k=S.sheet,rv=S.rv,ta=$('#rva');rv.text=ta?ta.value:'';rv.locked=true;rv.dk=!!dk;rv.nudge=true;
  if(S.offline){rv.out='<p><span class="chip saved">Saved here</span> The result is shown when you are back online.</p>';renderSheet();say('Saved here.');return}
@@ -411,7 +421,7 @@ function say(t){var s=$('#live');s.textContent='';setTimeout(function(){s.textCo
 function toast(msg){var s=$('#toastslot');s.innerHTML='<div class="toast"><p>'+msg+'</p><button type="button" class="tbtn" id="tx">Close</button></div>';$('#tx').onclick=function(){s.innerHTML=''}}
 /* ---------- events ---------- */
 document.addEventListener('click',function(e){var b=e.target.closest('button,a');if(!b)return;
- if(b.dataset.v){S.view=b.dataset.v;S.anim=true;closeSheet();render();S.focus=null;$('[data-v="'+S.view+'"]').focus();return}
+ if(b.dataset.v){e.preventDefault();S.view=b.dataset.v;S.anim=true;closeSheet();render();S.focus=null;var fv=$('h1.ph');if(fv){fv.tabIndex=-1;fv.focus()}return}
  if(b.dataset.m){S.mode=b.dataset.m;render();$('[data-m="'+S.mode+'"]').focus();return}
  if(b.dataset.s){S.scope=b.dataset.s;render();$('[data-s="'+S.scope+'"]').focus();return}
  if(b.dataset.dim){var d=b.dataset.dim;S.open[d]=!S.open[d];b.setAttribute('aria-expanded',String(S.open[d]));$('#tc-'+d).hidden=!S.open[d];return}

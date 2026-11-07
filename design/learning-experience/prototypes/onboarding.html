@@ -61,16 +61,15 @@ button,input,select{font-family:inherit;color:inherit}
 .tool{font:500 12.5px/1.6 var(--mono);color:var(--text-3);border-left:2px solid var(--border);padding:2px 0 2px 12px;overflow-wrap:anywhere}
 .tool b{color:var(--ink);font-weight:500}
 .tool .out{display:block;color:var(--text-2);white-space:pre-wrap}
-.qc{border:1.5px solid var(--border);border-left:3px solid var(--accent);border-radius:14px;padding:14px 16px;background:var(--paper)}
-.qc.done{border-left-color:var(--border)}
-.qc .hd{font:500 12.5px var(--mono);color:var(--accent-text)}
+.qc{padding:0}
+.qc .hd{font-weight:700;font-size:15px}
 .qc .pr{margin:6px 0;font-weight:600;font-size:16px;line-height:1.4}
-.qc .path{font:500 12.5px var(--mono);color:var(--text-3)}
+.qc .path{font:500 13px var(--mono);color:var(--ink);background:var(--field);padding:1px 6px;border-radius:5px;display:inline-block}
 .qc .how{margin:8px 0 0;color:var(--text-2);font-size:14px}
 .cmp{display:grid;grid-template-columns:72px minmax(0,1fr);gap:4px 12px;margin:0 0 6px}
 .cmp dt{font:500 12.5px var(--mono);color:var(--text-3);padding-top:2px}
 .cmp dd{margin:0}.cmp dd.obs{font:500 13px var(--mono)}
-.vw{font-weight:700}.vw.no{color:var(--accent-text)}
+.vw{font-weight:700}
 .resume{font:500 13px var(--mono);margin-top:6px !important}
 .once{border:1.5px solid var(--ink);border-radius:14px;padding:12px 16px}
 .once a{font-weight:600;cursor:pointer}
@@ -209,9 +208,9 @@ h2.sh{font-size:20px}
 <body>
 <div class="proto" role="region" aria-label="Prototype controls">
 <label for="st">Prototype state</label>
-<button type="button" id="prev" aria-label="Previous state">[</button>
+<button type="button" id="prev" aria-label="Previous state">Prev</button>
 <select id="st"></select>
-<button type="button" id="next" aria-label="Next state">]</button>
+<button type="button" id="next" aria-label="Next state">Next</button>
 <span class="sp"></span>
 <label>Theme <select id="theme"><option value="">System</option><option value="light">Light</option><option value="dark">Dark</option></select></label>
 </div>
@@ -220,6 +219,7 @@ h2.sh{font-size:20px}
 <div class="chatwrap" id="chatview" hidden>
 <section class="win" aria-label="Agent session">
 <div class="wbar" aria-hidden="true"><i></i><i></i><i></i><span>orbit-pay · agent session</span></div>
+<h1 class="vh">First run: chat and Room</h1>
 <div class="log" id="log" role="log" aria-live="polite" aria-label="Session transcript"></div>
 <form class="composer" id="composer" autocomplete="off"></form>
 </section>
@@ -259,7 +259,7 @@ var RM=window.matchMedia('(prefers-reduced-motion: reduce)');
 var DIMS=[{n:'Distributed systems',from:'worker/lease.py'},{n:'Data and storage',from:'billing/outbox.py'},{n:'Debugging and diagnosis',from:'every project'},{n:'Correctness and testing',from:'tests/'},{n:'Security',from:'auth/session.py'},{n:'Reading code',from:'every project'}];
 var MODES=[['quiet','Quiet','Reviews only. No questions during builds.'],['normal','Normal','One question before a build you choose to learn from, one after.'],['deep','Deep','Normal, plus drills and a question at each build step.']];
 var cfg,areas,chat,step,runs,room,saveFail,offline,saving;
-function fresh(){cfg={mode:'normal',paused:false,reminders:false,time:'19:00',target:'most',record:'repo'};areas=DIMS.map(function(d){return {n:d.n,from:d.from}});saveFail=false;offline=false}
+function fresh(){cfg={mode:'normal',paused:false,reminders:false,time:'19:00',target:'most',record:'repo',keys:true,line:true};areas=DIMS.map(function(d){return {n:d.n,from:d.from}});saveFail=false;offline=false}
 var REC=function(){return cfg.record==='repo'?'0xfauzi/learning-record (private)':'local files only'};
 var CUE='Back to: retries in the payment worker. Next: the cap on total retry time.';
 
@@ -279,23 +279,23 @@ start:function(){push(M.u('use learning while building on this project'));
 yes:function(){push(M.u('yes'));push(M.tool('gh repo create 0xfauzi/learning-record --private','Created 0xfauzi/learning-record'),['Private record repo','Cloud sessions attach it as a second repository.']);
  cfg.record='repo';push(M.a('<p>Your record is in 0xfauzi/learning-record (private). Nothing is committed to orbit-pay.</p>'));STEPS.areas()},
 local:function(){push(M.u('keep it local'));push(M.tool('learning.py init --local','Record in .learning/ (ignored by git)'),['Local record','Local files and the Room db. Never committed to the public repo.']);
- cfg.record='local';push(M.a('<p>Your record stays on this device and in your Room. Nothing is committed to orbit-pay.</p>'));STEPS.areas()},
+ cfg.record='local';push(M.a('<p>Your record stays in your Room. A cloud session forgets local files, so the Room is where your record lives. Nothing is committed to orbit-pay.</p>'));STEPS.areas()},
 areas:function(){runs.push(['Areas detected from code','Queues in worker/, SQL in billing/, auth in auth/.']);
  push(M.a('<p>I\'ll track these areas. Change them now or later: '+esc(areasLine())+'.</p><p>Mode: '+modeLine()+'</p>'),['config.json','mode '+cfg.mode+', areas saved.']);step='areas'},
 task:function(t){push(M.u(t));push(M.a('<p>I\'ll wrap <span class="mono">charge()</span> in a retry with exponential backoff and add <span class="mono">test_retry_budget</span>.</p>'));
- push(M.tool('lwb_seal','Card sealed · sha256 9c1e…'),['lwb_seal','The answer key is fixed before the question. Not in Bash, not in the db.']);
- push(M.a('<div class="qc" id="qc"><div class="hd">Question · retry-budget · before the build</div><p class="pr">Each attempt times out at 0.8 s and the backoff is 0.5 s, then 1 s. When test_retry_budget runs against a dead gateway, how long until charge() gives up?</p><div class="path">billing/charge.py:41-58</div><p class="how">Reply with your answer and how sure you are: guess, fairly sure or sure. Or "don\'t know" or "not now". Or answer in the Room: <a class="tbtn" style="padding:0" data-go="room-first">Open card</a></p></div><p style="margin-top:8px">Starting the build now.</p>'),['lwb_post','moment before, mode wait. The card is in open.json and in the Room as Now.']);step='answer'},
+ push(M.tool('lwb_post','question posted, answer fixed 13:58'),['lwb_post','One row: a subagent fixed the answer key from the code, then the card was sealed and posted. The key is not in Bash and not in the main transcript.']);
+ push(M.a('<div class="qc" id="qc"><div class="hd">Question · retry-budget · before the build</div><p class="pr">With a dead gateway and the test\'s fixed clock, how long does test_retry_budget wait before charge() gives up?</p><div class="path">billing/charge.py:41-52</div><p class="how">Reply with your answer and how sure you are: guess, fairly sure or sure. Or \'not now\'. Or answer in the Room: <a class="tbtn" style="padding:0" data-go="room-first">Open card</a></p></div><p style="margin-top:8px">Starting the build now.</p>'),['lwb_post','moment before, mode wait. The card is in open.json and in the Room as Now.']);step='answer'},
 answer:function(text,conf){var n=parseFloat((text.match(/\d+(?:[.,]\d+)?/)||['NaN'])[0].replace(',','.'));
  push(M.u(text+(conf?' ('+conf+')':'')));push(M.a('<p>Locked. Shown after test_retry_budget runs.</p>'));
  push(M.tool('pytest tests/test_retry_budget.py','test_retry_budget PASSED\ncharge() gave up after 4.1 s (3 attempts)'),['Observable','The test output is the comparison.']);
  var v,why,next;
- if(n>=4&&n<=4.2){v='Correct.';why='Three timeouts and two backoffs is 3.9 s. The test also waits for the jitter, up to 0.1 s per backoff. billing/retry.py:22.';next='Back on 10 Nov.'}
- else if(n>=3.5&&n<=4.6){v='Not quite.';why='You added three timeouts and the two backoffs: 2.4 + 1.5 = 3.9 s. The test also waits for the jitter, up to 0.1 s per backoff. billing/retry.py:22.';next='Back on 10 Nov.'}
- else{v='No.';why='Count both parts: three timeouts of 0.8 s and backoffs of 0.5 s and 1 s, plus up to 0.1 s jitter per backoff. billing/retry.py:22.';next='Back tomorrow.'}
- var belief=(v==='No.'&&conf==='sure')?'<p>You chose Sure. This one returns tomorrow and is marked on your map.</p>':'';
- push(M.a('<dl class="cmp"><dt>You said</dt><dd>'+esc(text)+(conf?' ('+esc(conf)+')':'')+'</dd><dt>It did</dt><dd class="obs">gave up at 4.1 s</dd></dl><p><span class="vw'+(v==='Correct.'?'':' no')+'">'+v+'</span> '+why+'</p><p>'+next+'</p>'+belief+'<p class="resume">'+CUE+'</p>'),['lwb_grade','Prediction attempt. No level change. Review in 3 days.']);
+ var why;
+ if(n>=4.05&&n<=4.15)why='None. Three timeouts, two backoffs and the jitter on line 41: 2.4 + 1.5 + 0.2 = 4.1 s. billing/charge.py:41.';
+ else if(n>=3.5&&n<=4.6)why='You added three timeouts and two backoffs, 3.9 s, and left out the jitter on line 41, 0.1 s per backoff. billing/charge.py:41.';
+ else why='Count both parts: three timeouts of 0.8 s, backoffs of 0.5 s and 1 s, and 0.1 s of jitter after each backoff. billing/charge.py:41.';
+ push(M.a('<dl class="cmp"><dt>You said</dt><dd>'+esc(text)+(conf?' ('+esc(conf)+')':'')+'</dd><dt>It did</dt><dd class="obs">gave up at 4.1 s</dd></dl><p><b>The gap:</b> '+why+'</p><p class="resume">'+CUE+'</p>'),['lwb_grade','Prediction: compared, not graded. No level change.']);
  doneQ();STEPS.once()},
-dk:function(){push(M.u("don't know"));push(M.a('<p>Not known yet. This is the answer: three timeouts of 0.8 s and two backoffs, 3.9 s, plus up to 0.1 s jitter per backoff. billing/retry.py:22. Back tomorrow.</p><p class="resume">'+CUE+'</p>'),['lwb_grade','dont_know recorded. Back tomorrow.']);doneQ();STEPS.once()},
+dk:function(){push(M.u("don't know"));push(M.a('<p>Write your best guess in a few words. It costs nothing. Or say \'show the answer\'.</p>'),['dont_know on a prediction','A best guess first: a wrong guess, then the answer, teaches more than the answer alone.']);step='answer'},
 notnow:function(){push(M.u('not now'));push(M.a('<p>OK. '+esc(CUE)+'</p>'),['not_now','Snooze. Never counts as a miss.']);doneQ();step='done'},
 once:function(){push(M.a('<div class="once"><p>To see waiting questions, say /learn. To stop questions for now, say not now. Your Room: <a class="tbtn" style="padding:0" data-go="room-first">Open Room</a></p><p style="margin-top:6px">Pin the Room to your sidebar? Reply \'pin\'.</p></div>'),['Room published, private','This line shows once and never again.']);step='once'},
 pin:function(){push(M.u('pin'));push(M.a('<p>Pinned. '+esc(CUE)+'</p>'));step='done'}
@@ -312,7 +312,10 @@ function renderComposer(){var c=$('#composer'),h='';
  h+='<div class="cin"><label class="vh" for="cinput">Message</label><input id="cinput" placeholder="'+esc(ph)+'"><button class="btn sm" type="submit">Send</button></div>';
  if(step==='answer')h+='<p class="chint" id="chint" aria-live="polite"></p>';
  c.innerHTML=h}
-function renderChat(animateFrom){var log=$('#log');log.innerHTML=chat.join('');
+function renderChat(animateFrom){var log=$('#log'),n=+(log.dataset.n||0);
+ if(animateFrom!=null&&n===animateFrom&&n>0){log.insertAdjacentHTML('beforeend',chat.slice(n).join(''));var q=log.querySelector('#qc');if(q&&chat.join('').indexOf('id="qc"')<0){q.className='qc done';q.removeAttribute('id')}}
+ else{log.setAttribute('aria-live','off');log.innerHTML=chat.join('');setTimeout(function(){log.setAttribute('aria-live','polite')},60)}
+ log.dataset.n=chat.length;
  if(animateFrom!=null&&!RM.matches)$$('.m',log).slice(animateFrom).forEach(function(el,i){el.classList.add('in');el.style.animationDelay=(i*90)+'ms'});
  $('#runs').innerHTML=runs.map(function(r){return '<li><b>'+esc(r[0])+'</b>'+esc(r[1])+'</li>'}).join('');
  renderComposer();log.scrollTop=log.scrollHeight}
@@ -355,8 +358,10 @@ function settings(){var times=['07:30','08:00','12:30','18:00','19:00','21:00'];
  '<li><div class="srow"><div><h2 id="remh">Phone reminders</h2><p class="d">At most one a day, at a time you choose. Never while you are at your computer.</p></div>'+sw('swRem',cfg.reminders,'Phone reminders')+'</div>'+(cfg.reminders?'<div class="time"><label for="rtime">Time</label><select id="rtime">'+times.map(function(t){return '<option'+(t===cfg.time?' selected':'')+'>'+t+'</option>'}).join('')+'</select></div>':'')+'</li>'+
  '<li><fieldset><legend>How sure do you want to be that you can still do this?</legend>'+[['most','Most of the time'],['almost','Almost always']].map(function(m){return '<label class="radio"><input type="radio" name="target" value="'+m[0]+'"'+(cfg.target===m[0]?' checked':'')+'><b>'+m[1]+'</b></label>'}).join('')+'<p class="d">Almost always means more reviews.</p></fieldset></li>'+
  '<li><h2>Areas</h2><ul class="slist">'+areas.map(function(a,i){return '<li><span>'+esc(a.n)+'</span><button type="button" class="tbtn" data-act="rmset" data-i="'+i+'" aria-label="Remove '+esc(a.n)+'">Remove</button></li>'}).join('')+'</ul><div class="addrow"><label class="vh" for="setarea">New area</label><input id="setarea" placeholder="Add an area"><button type="button" class="btn ghost sm" data-act="addset">Add</button></div></li>'+
+ '<li><div class="srow"><div><h2 id="keyh">Keyboard shortcuts</h2><p class="d">Letter keys never lock an answer. D and H ask first.</p></div>'+sw('swKeys',cfg.keys,'Keyboard shortcuts')+'</div></li>'+
+ '<li><div class="srow"><div><h2 id="lineh">Your line</h2><p class="d">At Not yet and With help, the agent leaves one marked line in the build for you to write. Its test grades it. Say \'write it\' to skip.</p></div>'+sw('swLine',cfg.line,'Your line')+'</div></li>'+
  '<li><h2>Record location</h2><p class="d" style="color:var(--ink)">Your record is in: <span class="where">'+esc(REC())+'</span>.</p></li>'+
- '<li><h2>Privacy</h2><p class="d">Answer keys are sealed before each question. You can read your own Room data, so the Room cannot stop you from looking. The record shows when each key was fixed and when you locked.</p></li>'+
+ '<li><h2>Privacy</h2><p class="d">Answer keys are fixed before each question and kept apart from the questions. You can read your own Room data, so the Room cannot stop you from looking. The record shows when each key was fixed and when you locked.</p></li>'+
  '<li><h2>Export</h2><p class="d">A Markdown and JSON copy of your record for this project.</p><div class="acts" style="margin-top:12px"><button type="button" class="btn sm" data-act="export">Download my record</button></div></li>'+
  '</ul><div class="status" id="status" role="status" aria-live="polite"></div>'}
 function renderRoom(){var mn=$('#main'),h='';mn.removeAttribute('aria-busy');
@@ -379,7 +384,7 @@ function renderRoom(){var mn=$('#main'),h='';mn.removeAttribute('aria-busy');
 function status(html,cls){var s=$('#status');if(!s)return;s.innerHTML='<div class="'+(cls||'plain')+'">'+html+'</div>'}
 function save(){if(saving)clearTimeout(saving);status('Saving…');
  saving=setTimeout(function(){saving=null;
-  if(offline)return status('<span class="chip saved">Saved here</span> Sent when you are back online.');
+  if(offline)return status('<span class="chip saved">Not sent</span> Not saved yet. It is sent when you are back online.');
   if(saveFail)return status('<span>Not saved. Try again.</span><button type="button" class="btn ghost sm" data-act="retry">Try again</button>','err');
   status('Saved.')},RM.matches?50:600)}
 function rerenderSettings(keepFocusSel){renderRoom();var f=keepFocusSel&&$(keepFocusSel);if(f)f.focus()}
@@ -403,7 +408,7 @@ $('#roomview').addEventListener('click',function(e){var t=e.target.closest('[dat
  else if(a==='addset'){var v2=$('#setarea').value.trim();if(!v2)return;areas.push({n:v2,from:'added by you'});rerenderSettings('#setarea');save()}
  else if(a==='export')exportRecord();
  else if(a==='retry'){saveFail=false;save()}});
-$('#roomview').addEventListener('click',function(e){var t=e.target.closest('#swRem');if(t&&!t.hasAttribute('data-act')){cfg.reminders=!cfg.reminders;rerenderSettings('#swRem');save()}});
+$('#roomview').addEventListener('click',function(e){var t=e.target.closest('#swRem,#swKeys,#swLine');if(t&&!t.hasAttribute('data-act')){var k={swRem:'reminders',swKeys:'keys',swLine:'line'}[t.id];cfg[k]=!cfg[k];rerenderSettings('#'+t.id);save()}});
 $('#roomview').addEventListener('change',function(e){var t=e.target;
  if(t.name==='mode'){cfg.mode=t.value;save()}else if(t.name==='target'){cfg.target=t.value;save()}else if(t.id==='rtime'){cfg.time=t.value;save()}});
 $('#roomview').addEventListener('keydown',function(e){if(e.key==='Enter'&&(e.target.id==='newarea'||e.target.id==='setarea')){e.preventDefault();var b=e.target.parentNode.querySelector('button');b.click()}});

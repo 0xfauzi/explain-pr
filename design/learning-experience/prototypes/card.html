@@ -79,6 +79,7 @@ button,input,textarea{font-family:inherit;color:inherit}
 .ex .ln.hl{background:var(--accent-wash)}
 .ex i{display:inline-block;width:2.4em;color:var(--text-3);font-style:normal}
 .ex .ln.hl{white-space:pre-wrap;padding-left:calc(18px + 2.4em);text-indent:-2.4em}
+.ex .ln.hl i{text-indent:0}
 .ex pre{-webkit-mask-image:linear-gradient(90deg,#000 calc(100% - 24px),transparent);mask-image:linear-gradient(90deg,#000 calc(100% - 24px),transparent)}
 details.code{margin-top:14px}
 details.code summary{min-height:44px;display:inline-flex;align-items:center;font-weight:600;cursor:pointer;text-decoration:underline;text-underline-offset:4px}
@@ -250,9 +251,9 @@ details.more summary::-webkit-details-marker{display:none}
 <body>
 <div class="proto" role="region" aria-label="Prototype controls">
 <label for="st" class="lbl">Prototype state</label>
-<button type="button" id="prev" aria-label="Previous state">[</button>
+<button type="button" id="prev" aria-label="Previous state">Prev</button>
 <select id="st"></select>
-<button type="button" id="next" aria-label="Next state">]</button>
+<button type="button" id="next" aria-label="Next state">Next</button>
 <span class="sp"></span>
 <label class="ck"><input type="checkbox" id="net"> Offline</label>
 <label class="ck"><input type="checkbox" id="keys" checked> Shortcuts</label>
