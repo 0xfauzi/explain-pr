@@ -1,7 +1,7 @@
 # Learning while building: the plan
 
-Status: final plan, 7 Nov 2026, after the expert panel review. Nothing here is
-built yet. Open `index.html` for the visual summary. Serve this folder with
+Status: plan, revised 7 Nov 2026 for a product anyone can install. Nothing here
+is built yet. Open `index.html` for the visual summary. Serve this folder with
 `python3 -m http.server` (or open it from the repo root or GitHub Pages) to step
 through the prototypes.
 
@@ -11,9 +11,9 @@ You build with the agent in chat. At two moments in a task you choose to learn
 from, the agent asks one question and keeps working: a prediction before it
 builds, and "explain why it works" after it works. When you are new to an idea,
 it can leave one marked line of the real build for you to write, and the tests
-grade it. You answer in chat with one line, or in the Room: a private claude.ai
-page that opens beside the session on the laptop and in the Claude app on the
-phone. The same card is in both places, in the same state. You say how sure you
+grade it. You answer in chat with one line, or in the Room: a local page beside the
+session, and on the phone if you turn on sync. The same card is in every place,
+in the same state. You say how sure you
 are with every answer, and the agent grades against an answer key it fixed
 before it asked. A prediction is compared ("You said / It did / The gap"), never
 graded. Every exchange ends with one "Back to the build" and the line
@@ -22,86 +22,94 @@ then in a new case. The Map shows what you can do without the agent, and it goes
 down when you forget. A level goes up only at a spaced review, never in the
 session where the agent wrote the code.
 
-## 2. The recommended architecture, in short
+## 2. The product architecture
 
-- **One card, one store, many doors.** Each question is one card with one sealed
-  answer key and one lock. Chat is the build surface. The Room (a claude.ai
-  artifact with `db` and `sample`) is the learning surface on both devices.
-- **A small stdio MCP server, `lwb`,** owns the card: `lwb_post` (seals and
-  posts in one transcript row), `lwb_lock`, `lwb_reveal`, `lwb_grade`,
-  `lwb_hint`, `lwb_sync` (reads the Room, checks hashes and the seal, imports,
-  in one row), `lwb_due`, `lwb_map`.
-- **The key is sealed by a subagent** that writes it from the code, so the main
-  transcript and the main agent see only a hash.
-- **The Room db has one writer per doc:** `cards/` (agent), `keys/` (agent,
-  read once by the page after the answer exists), `answers/` (page, created once,
-  with a sha256), `grades/` (page). The db is last-writer-wins, so this is what
-  keeps answers from being lost.
-- **The record is private and durable:** a private `learning-record` repo,
-  committed and pushed after every grade. If that cannot work, the Room db is
-  the system of record and `learning.py export` rebuilds the files.
-- **Transitions:** skill rules in phase 1, hooks in phase 2. The bell from the
-  phone is a ladder: Claude Code Remote `send_message`, then
-  `sendToClaudeSession` with one confirmation tap, then the pull on the next
-  message, which always works.
-- **One level rule everywhere:** "Levels change only at reviews: right without
-  help at a review a week or more after you first met the idea gives Without
-  help, and right on a case unlike any you have seen gives New situation."
+This is a product that anyone installs into the coding agent they already use.
+It is not built for one person or one harness. Section 5 lists the decisions
+behind it. The claude.ai artifact design in `architecture/recommended.md` is now
+one optional adapter, not the default.
 
-Full detail: `architecture/recommended.md`. Screens and copy: `experience.md`.
-Tokens and components: `design-system.md`.
+**Install.** One command installs the engine and the `lwb` command:
+`uvx lwb` or `pipx install lwb` (Python, because the engine already exists in
+Python). Then `lwb install` finds the coding agents on the machine and writes
+the config each one reads: its MCP server entry, and the skill or rules file.
 
-## 3. What can ship now, and what needs a test first
+**Parts, in order of how much they are shared:**
 
-**Ships on tested parts** (verified in this project):
-
-| Part | Evidence |
-|---|---|
-| Chat text cards in Claude Code in the Claude app, desktop and phone | [T] |
-| A project stdio MCP server from `.mcp.json` loads in these sessions | [T] `learning-question` server |
-| A private artifact with `db` and `sample` publishes from the session and opens on the phone | [T] |
-| The session reads and writes the artifact db with ArtifactData | [T] existing room-push path |
-| Grading on the page with `sample` | [T] |
-| Union-merged JSONL and one file per attempt | [T] |
-| The skill deciding when to ask | [T] |
-
-**Needs a test first** (each about an hour, run on day 0 of phase 1 unless noted):
-
-| Experiment | The test | If it fails |
+| Part | What it is | Where it runs |
 |---|---|---|
-| E-SEAL | Screenshot what the Claude app shows when a subagent writes the key and calls `lwb_post`. | Write the key at grading time; keep the hash for audit. |
-| E-REPO | Attach `learning-record` to a cloud session, clone, commit, push after a grade. | Room db becomes the system of record, plus `export`. |
-| E-OFFLINE | Phone in airplane mode, lock, close the Claude app, reopen, go online, read the db. | Keep the copy "Not sent yet. Keep this page open." |
-| E-PERM | A fresh cloud session in default mode runs journey 2.a; count permission prompts. | Ship `.claude/settings.json` allow list; target 0 after the first. |
-| E-CCR-SEND | The Room declares `mcp` with one tool, Claude Code Remote `send_message`, and sends `{card, event}` from the phone. Does the session wake? | Next rung: `sendToClaudeSession`, then the pull. |
-| E-A11Y | Keyboard only from "Open card" to Lock to "Back to the build" on the desktop app; VoiceOver on an iPhone answering one card. | Chat becomes the accessible default; the Room drops letter keys. |
-| E-SEND (phase 2) | Lock calls `sendToClaudeSession({deliver: "send"})` on desktop and phone; note if the phone leaves the page. | Keep the pull. |
-| E-HOOKS (phase 2) | Commit a hooks file in a cloud session branch that logs every event. | Keep skill rules in cloud; hooks only locally. |
-| E-AUQ, E-ELICIT (phase 2) | AskUserQuestion and an elicitation form in a cloud session, desktop and phone. | Chat text. |
-| E-PUSH, E-SCHED (phase 2) | One push reaches the phone and is skipped while at the machine; a daily cloud task writes due cards. | Due line at session start. |
-| E2, E7 (learning, from phase 1) | Compare shown on half the predictions; drills with hypothesis before code on half. Measure 7 and 21 day results. | Keep Compare for misses; keep line pick as step two. |
-| Phase 3 | The local desktop mod, Codex `request_user_input_async`, MCP Apps in Cursor, a phone page with Web Push and a sealed mailbox for non-Claude harnesses. | Each has a fallback in the dependency register. |
+| Engine | Record, levels, review schedule, sealed answer keys, grading rules. From `record.py` and `learning.py`. | Every surface |
+| `lwb` MCP server | stdio server with `lwb_post`, `lwb_lock`, `lwb_reveal`, `lwb_grade`, `lwb_hint`, `lwb_due`, `lwb_map`, `lwb_sync`. | Every agent that loads stdio MCP servers |
+| Instructions | `SKILL.md` for agents that read Agent Skills. A generated rules file (`AGENTS.md` section, Cursor rule, and so on) for agents that do not. One source, several outputs. | Every agent |
+| Chat text | The question as plain text in chat; the answer as one line. | Every surface. This is the floor. |
+| Local Room | A web page that `lwb room` serves on 127.0.0.1 with a one-time token: Inbox, Card, Compare, Map, Drill, Settings. | Where the agent runs on the user's machine |
+| Record | `~/.lwb/`, a local git repo. One commit per grade. No remote. | The user's machine |
 
-**Learning gates.** Every phase is also judged on the record: unaided success
-at the first spaced review with and without an explain-back, success at 21 days,
-how often Sure is right, and drill success at 7 and 21 days. A phase that makes
-the flow smoother and these numbers worse is rolled back.
+**Opt-in, off by default:**
 
-## 4. Build order and rough size
+| Option | What it adds | Cost |
+|---|---|---|
+| Own git remote | The user adds a remote. The record syncs between machines and into cloud sessions. | None to us |
+| lwb Sync | End-to-end encrypted sync. The service stores data it cannot read. Unlocks the phone app, the phone tap and one daily reminder. | A hosted service to build, run and secure |
+| claude.ai Room | The artifact Room from the earlier design, for Claude app users. Its data is stored on claude.ai. | Already designed |
+
+**Cloud sessions.** Claude Code on the web, Codex cloud and similar delete
+their disk. `lwb init` detects this and says it before the first question:
+"This session's disk is deleted later. Your record will be lost unless you
+connect a remote." It then offers the user's own remote, lwb Sync, or a
+download at the end. It never connects one without the user's answer.
+
+**Feature parity.** Every learning event (prediction, explain-back, your line,
+review, drill, explainer) works in chat text on every surface. The Room, the
+phone and reminders are faster ways to do the same events, not extra events.
+So parity means: the same events, the same record and the same levels
+everywhere. It does not mean the same screens everywhere.
+
+**One level rule everywhere:** "Levels change only at reviews: right without
+help at a review a week or more after you first met the idea gives Without
+help, and right on a case unlike any you have seen gives New situation."
+
+## 3. What is tested, and what needs a test first
+
+**Tested in this project, Claude Code only:** chat text cards in the Claude app
+on desktop and phone; a project stdio MCP server from `.mcp.json`; the skill
+deciding when to ask; union-merged JSONL with one file per attempt; the
+claude.ai artifact Room with `db` and `sample`. Nothing is tested on any other
+agent yet.
+
+**Day-0 tests:**
+
+| Test | The test | If it fails |
+|---|---|---|
+| E-PARITY | In Claude Code (CLI, desktop, IDE), Codex (CLI, app, IDE), Cursor, Gemini CLI and GitHub Copilot in VS Code: does `lwb install` config load, do the tools run, does the agent follow the instructions at the two moments? | That agent gets chat text through instructions only, and a documented gap. |
+| E-LOCALHOST | Can the user open the local Room from each surface, including the desktop apps and remote IDEs? | Chat text there, and a link that prints the Room address. |
+| E-EPHEMERAL | Can `lwb init` tell a disk that is deleted from one that stays, on each cloud surface? | Always ask once at `init`. |
+| E-SEAL | Does the main agent stay blind to the answer key on each agent? | Write the key at grading time and keep only the hash for audit. |
+| E-PERM | How many permission prompts does a fresh install cause on each agent? | `lwb install` writes each agent's allow list. Target: 0 after the first. |
+| E-A11Y | Keyboard only and a screen reader, Room and chat. | Chat becomes the accessible default. |
+
+I can run the Claude Code tests in this session. The other agents need their own
+accounts and keys, so each one needs a key from you, or a machine where they
+are installed.
+
+## 4. Build order
+
+Sizes are rough estimates, not measured.
 
 | Step | What | Size |
 |---|---|---|
-| 0 | The six day-0 experiments above | 1 day |
-| 1 | `record.py` and `learning.py`: events with uuids, reviews log, the level rule (same-session cap, hint and opened-code cap, drill credits its bug's topic), `completion` kind, daily cap 3, hash-checked `import`, `export`, I do not know out of calibration | 2.5 days |
-| 2 | `lwb` server with one row per learning event, allow list, commit and push after each grade | 2 days |
-| 3 | Room v2 from `assets/room.css`: Inbox, focused Card, Compare, Map, Drill, Settings; single-writer docs; one live region; shortcuts setting; short-viewport layout | 3 days |
-| 4 | Skill: moments, the text card, your line, question quality rules, rate rule, pull rule | 1 day |
-| 5 | Privacy: `init` checks the remote and sets up the record repo | 0.5 day |
-| 6 | Phase 2: hooks, the bell ladder, AskUserQuestion and elicitation doors, push and the daily review | about 6 days plus 1 day of tests |
-| 7 | Phase 3, item by item, behind its experiment | open |
+| 0 | Day-0 tests above | 1 to 2 days, depending on account access |
+| 1 | Engine: events with ids, reviews log, the level rule, daily cap 3, `import`, `export`, local git record with a commit per grade | 2.5 days |
+| 2 | `lwb` MCP server and `lwb install` for each agent that passed E-PARITY | 3 days |
+| 3 | Instructions: one source, `SKILL.md` and rules outputs; the moments, your line, question quality rules, rate rule | 1.5 days |
+| 4 | Local Room from `assets/room.css` | 3 days |
+| 5 | `lwb init`: cloud detection, the remote question; packaging and the install page on the site | 1 day |
+| 6 | Opt-in: own git remote | 0.5 day |
+| 7 | Opt-in: lwb Sync, the phone app, the phone tap, one daily reminder | Not sized. Needs its own design: hosting, keys, account recovery, abuse. |
+| 8 | Opt-in: the claude.ai Room adapter | 2 days, design exists |
 
-Phase 1 is about 10 days. If E-CCR-SEND passes on day 0, the phone bell moves
-into step 3.
+Steps 0 to 6 make a product anyone can install that works on every agent that
+passes E-PARITY, with no service to run.
 
 ## 5. Decisions (7 Nov 2026)
 
