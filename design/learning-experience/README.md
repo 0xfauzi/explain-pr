@@ -103,7 +103,36 @@ the flow smoother and these numbers worse is rolled back.
 Phase 1 is about 10 days. If E-CCR-SEND passes on day 0, the phone bell moves
 into step 3.
 
-## 5. Questions only you can answer
+## 5. Decisions (7 Nov 2026)
+
+| # | Decision |
+|---|---|
+| 1 | The record lives in a local git repo. The tool commits to it. It has no remote unless the user asks for one. |
+| 2 | "Your line" is on. |
+| 3 | At most 3 due cards a day. |
+| 4 | One confirmation tap on the phone is acceptable. |
+| 5 | Letter-key shortcuts are off by default. |
+| 6 | Feature parity on every coding surface (Claude Code, Codex, and other agents), for general users, not one person. |
+| 7 | At most one reminder a day, at a time the user chooses. |
+
+**What decisions 1 and 6 change.** Sections 2 to 4 assumed the Room is a
+claude.ai artifact and the record is pushed to a private repo. Both are now
+wrong as defaults:
+
+- A claude.ai artifact works only for Claude users, and its db is a remote. So
+  the default Room becomes a local page that the `lwb` server serves on
+  localhost. Chat text stays the floor that works everywhere. The claude.ai
+  artifact becomes an optional adapter.
+- The parity layer is MCP plus the Agent Skills format. Which harnesses load
+  both, and how, must be tested per harness (E-PARITY).
+- A cloud session deletes its disk. A local-only record there is lost. In a
+  session whose disk does not persist, `init` must say so and ask where to keep
+  the record (E-EPHEMERAL).
+- The phone needs a path to the record. A local-only record has none. Phone
+  review, the phone tap (4) and reminders (7) work only after the user turns on
+  a remote. Without one, due cards show at the start of the next session.
+
+## 6. Questions only you can answer (first round, answered above)
 
 1. **Where should your record live** when a project is public: a private
    `learning-record` repo (needs a second repo attached to cloud sessions), or
@@ -119,7 +148,7 @@ into step 3.
    page with a sealed mailbox (phase 3, item 4) moves ahead of the desktop mod.
 7. **Pushes:** at most one a day, at a time you choose. Yes, or none?
 
-## 6. Where the panel was not followed, and why
+## 7. Where the panel was not followed, and why
 
 - **The bell as the hero of `index.html`** (product design). The hero shows
   phase 1, the pull on the next message, because that is what ships first. The
@@ -148,7 +177,7 @@ Everything else in the four reviews (all blockers and majors) is applied in
 and the eight prototypes. Each page was checked at 1440 and 390 wide: no
 horizontal scroll at 390, no console errors, no em dashes.
 
-## 7. Map of this folder
+## 8. Map of this folder
 
 | Path | What it is |
 |---|---|
