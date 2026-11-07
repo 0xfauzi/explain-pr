@@ -1,0 +1,491 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Explainer</title>
+<meta name="description" content="Prototype of an explainer page: what it explains, reading time, the path of one charge, and sections that open after a prediction. Each prediction enters the review schedule.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="anonymous">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wdth,wght@75..100,400..700&amp;family=JetBrains+Mono:wght@400;500&amp;display=swap">
+<link rel="stylesheet" href="../assets/room.css">
+<style>
+*{box-sizing:border-box}
+html{scroll-padding:80px 0 24px}
+body{position:relative;margin:0;background:var(--paper);color:var(--ink);font-family:var(--sans);-webkit-font-smoothing:antialiased;min-height:100vh}
+body::after{content:"";position:absolute;inset:0;pointer-events:none;z-index:60;background-image:url(../assets/grain.png);background-size:240px 240px;opacity:var(--grain-op);mix-blend-mode:var(--grain-blend)}
+[hidden]{display:none !important}
+:focus-visible{outline:2px solid var(--accent);outline-offset:3px}
+a{color:var(--ink);text-underline-offset:4px}
+button{font-family:inherit;color:inherit}
+.vh{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+/* prototype controls: outside the product, dashed so nobody reads them as product UI */
+.proto{display:flex;flex-wrap:wrap;align-items:center;gap:8px 12px;margin:10px auto;max-width:1180px;padding:8px 12px;border:1.5px dashed var(--control-border);border-radius:12px;font:500 12px/1.3 var(--mono);color:var(--text-3);width:calc(100% - 32px)}
+.proto label{display:flex;align-items:center;gap:8px}
+.proto select,.proto button{font:500 12.5px var(--mono);min-height:44px;padding:0 10px;border:1.5px solid var(--control-border);border-radius:10px;background:var(--card);color:var(--ink);max-width:100%;cursor:pointer}
+.proto select#st{max-width:min(360px,58vw)}
+.proto .sp{flex:1}
+/* buttons */
+.btn{font:600 16px/1 var(--sans);min-height:50px;padding:0 26px;border-radius:999px;border:1.5px solid var(--ink);background:var(--ink);color:var(--on-ink);cursor:pointer;transition:background .2s,border-color .2s,color .2s,transform .15s;display:inline-flex;align-items:center;justify-content:center;gap:8px;text-decoration:none}
+.btn:hover{background:var(--accent);border-color:var(--accent);color:#16161A}
+.btn:active{transform:scale(.97)}
+.btn[disabled]{background:var(--field);border-color:var(--field);color:var(--text-3);cursor:not-allowed;transform:none}
+.btn.ghost{background:transparent;color:var(--ink)}
+.btn.ghost:hover{background:var(--ink);color:var(--on-ink)}
+.btn.sm{min-height:44px;font-size:15px;padding:0 18px}
+.tbtn{min-height:44px;padding:0 6px;border:0;background:none;font:600 15px var(--sans);text-decoration:underline;text-underline-offset:4px;cursor:pointer;color:var(--ink);display:inline-flex;align-items:center;gap:6px}
+.kc{display:inline-flex;align-items:center;height:22px;padding:0 6px;border:1.5px solid currentColor;border-radius:6px;font:500 11.5px var(--mono);opacity:.8}
+@media (hover:none){.kc{display:none}}
+/* shells */
+.top{position:sticky;top:0;z-index:30;background:var(--paper);border-bottom:1px solid var(--border)}
+.bar{max-width:1180px;margin:0 auto;min-height:56px;padding:0 32px;display:flex;align-items:center;gap:14px}
+.word{font-size:19px;font-weight:650;font-variation-settings:"wdth" 88;letter-spacing:-.01em}
+.proj{font:500 13px var(--mono);color:var(--text-3)}
+.bar .end{margin-left:auto;display:flex;align-items:center;gap:12px}
+.gates{display:flex;gap:4px}
+.gates i{width:22px;height:14px;border-radius:3px;background:var(--lv0);transition:background-color .4s var(--ease-out),transform .4s var(--ease-spring)}
+.gates i{box-shadow:inset 0 0 0 1.5px var(--control-border)}
+.gates i.on{background:var(--ink)}
+.gates i.sk{background:transparent;box-shadow:inset 0 0 0 1.5px var(--control-border)}
+.me{width:44px;height:44px;border-radius:50%;border:1.5px solid var(--ink);background:var(--card);font-weight:650;font-size:16px;cursor:pointer}
+.tabs{max-width:1180px;margin:0 auto;padding:0 32px;display:flex;gap:24px}
+.tab{font:600 15px/1 var(--sans);min-height:44px;padding:0 4px;border:0;border-bottom:2px solid transparent;background:transparent;color:var(--text-3);cursor:pointer}
+.tab[aria-current="page"]{color:var(--ink);border-color:var(--accent)}
+.banner{max-width:1180px;margin:0 auto;padding:0 32px 10px}
+.banner p{margin:0;display:flex;flex-wrap:wrap;align-items:center;gap:8px 14px;padding:10px 14px;background:#FFFFFF;color:#16161A;border:1.5px solid #16161A;border-radius:12px;font-size:15px;line-height:1.5}
+.banner p .btn{min-height:44px;font-size:15px;padding:0 18px;background:#16161A;color:#F5F4F0;border-color:#16161A}
+.banner.stale p{border-color:#C2410C;border-width:2px}
+.wrap{max-width:1180px;margin:0 auto;padding:32px 32px 120px}
+.layout{display:grid;grid-template-columns:200px minmax(0,680px);gap:72px;justify-content:center}
+.toc{position:sticky;top:96px;align-self:start;font-size:14px}
+.toc h2{margin:0 0 10px;font-size:13px;font-weight:600;color:var(--text-3)}
+.toc ol{list-style:none;margin:0;padding:0;border-left:1.5px solid var(--border)}
+.toc a{display:flex;align-items:center;gap:10px;min-height:44px;padding:4px 0 4px 14px;margin-left:-1.5px;border-left:1.5px solid transparent;text-decoration:none;color:var(--text-3);line-height:1.35}
+.toc a:hover{color:var(--ink)}
+.toc a.cur{color:var(--ink);border-color:var(--accent)}
+.toc .st{flex:none;font:500 11px var(--mono);color:var(--text-3)}
+/* article */
+.eb{font-size:13px;font-weight:500;color:var(--accent-text)}
+h1.t{margin:10px 0 0;font-size:46px;line-height:1.06;letter-spacing:-.02em;font-weight:650;font-variation-settings:"wdth" 88;text-wrap:balance}
+.what{margin:16px 0 0;font-size:19px;line-height:1.6;color:var(--text-2);text-wrap:pretty}
+.meta{display:flex;flex-wrap:wrap;gap:6px 18px;margin:14px 0 0;font:500 13px var(--mono);color:var(--text-3)}
+.prose{font-size:17px;line-height:1.6;color:var(--text-2)}
+.prose p{margin:14px 0 0;text-wrap:pretty}
+.prose code,.mono{font:500 .86em var(--mono);color:var(--ink)}
+h2.s{margin:0;font-size:24px;line-height:1.3;font-weight:650;font-variation-settings:"wdth" 88}
+.sec{margin-top:56px}
+.panel{margin-top:28px;background:var(--card);border:1.5px solid var(--border);border-radius:18px;padding:22px 24px 18px}
+.phead{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:12px}
+.ptitle{font-size:17px;font-weight:650}
+.toggle{display:inline-flex;border:1.5px solid var(--ink);border-radius:999px;padding:3px;gap:3px}
+.tg{font:600 14px/1 var(--sans);min-height:44px;padding:0 16px;border:0;border-radius:999px;background:transparent;color:var(--ink);cursor:pointer;transition:background .25s,color .25s}
+.tg[aria-pressed="true"]{background:var(--ink);color:var(--on-ink)}
+.flow{position:relative;padding:22px 0 4px}
+.boxes{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
+.box{min-height:56px;border-radius:12px;background:var(--card);border:1.5px solid var(--ink);display:flex;align-items:center;justify-content:center;text-align:center;font-size:14px;font-weight:600;padding:4px 6px;line-height:1.25}
+.box.dk{background:var(--ink);color:var(--on-ink)}
+.box .m{font:500 12px var(--mono)}
+.track{position:relative;height:30px}
+.track .line{position:absolute;left:12.5%;right:12.5%;top:14px;height:2px;background:var(--border)}
+.tick{position:absolute;top:8px;width:2px;height:14px;background:var(--border);margin-left:-1px}
+.dot{position:absolute;top:8px;left:12.5%;width:14px;height:14px;border-radius:50%;background:var(--accent);margin-left:-7px;box-shadow:0 0 0 5px var(--accent-wash)}
+.cut{position:absolute;top:2px;left:50%;transform:translateX(-50%);display:flex;background:var(--card);border-radius:50%}
+.steps{display:grid;grid-template-columns:repeat(8,minmax(0,1fr))}
+.step{text-align:center;font:500 11.5px/1.3 var(--mono);color:var(--text-3)}
+.fnote{margin:12px 0 0;font-size:14px;line-height:1.6;color:var(--text-3)}
+/* embedded card */
+.qc{margin-top:22px;background:var(--card);border:1.5px solid var(--border);border-radius:18px;padding:22px 24px;transition:transform .3s var(--ease-out)}
+.qc.live{box-shadow:inset 3px 0 0 var(--accent)}
+.qc.nudge{transform:translateY(-8px)}
+.qhd{display:flex;flex-wrap:wrap;justify-content:space-between;gap:4px 14px}
+.seal{font:500 12px var(--mono);color:var(--text-3)}
+.qq{margin:8px 0 0;font-size:22px;line-height:1.3;font-weight:600;letter-spacing:-.01em;text-wrap:pretty}
+.opts{margin-top:14px;border-bottom:1px solid var(--border)}
+.opt{display:grid;grid-template-columns:28px minmax(0,1fr);gap:12px;align-items:center;width:100%;text-align:left;min-height:56px;padding:12px 4px;border:0;border-top:1px solid var(--border);background:transparent;color:var(--ink);font:500 17px/1.4 var(--sans);cursor:pointer;transition:padding .2s}
+.opt:hover:not([disabled]){padding-left:12px}
+.opt .k{font:500 13px/1 var(--mono);color:var(--text-3)}
+.opt[aria-checked="true"]{font-weight:650}
+.opt[aria-checked="true"] .k{color:var(--accent-text)}
+.opt[disabled]{cursor:default}
+.opt.dim{color:var(--text-dim)}
+.opt .ak{grid-column:2;font:500 12px var(--mono);color:var(--ink);margin-top:2px}
+.opt.ans{color:var(--ink)}
+label.fl{display:block;margin-top:16px;font-weight:600;font-size:15px}
+textarea{display:block;width:100%;margin-top:8px;padding:12px 14px;font:400 16px/1.5 var(--sans);color:var(--ink);background:var(--card);border:1.5px solid var(--control-border);border-radius:14px;resize:vertical}
+textarea[readonly]{background:var(--paper)}
+fieldset{margin:18px 0 0;padding:0;border:0}
+legend{padding:0;font-size:15px;color:var(--text-3);margin-bottom:10px}
+.confs{display:flex;flex-wrap:wrap;gap:8px}
+.sure{position:relative;display:inline-flex;align-items:center;font:500 15px/1 var(--sans);min-height:44px;padding:0 16px;border-radius:999px;border:1.5px solid var(--control-border);background:transparent;color:var(--text-2);cursor:pointer}
+.sure:hover{border-color:var(--ink)}
+.sure input{position:absolute;opacity:0;inset:0;margin:0;cursor:pointer}
+.sure:has(input:checked){border-color:var(--ink);background:var(--ink);color:var(--on-ink)}
+.sure:has(input:focus-visible){outline:2px solid var(--accent);outline-offset:3px}
+.sure:has(input:disabled){cursor:default}
+.sure.dk{border-style:dashed}
+.mean{margin:8px 0 0;font-size:14px;color:var(--text-3);min-height:22px}
+.hints{margin-top:16px;display:flex;flex-wrap:wrap;align-items:center;gap:6px 12px;font-size:14px;color:var(--text-3)}
+.hl3{display:flex;gap:3px}.hl3 i{width:18px;height:10px;border-radius:3px;box-shadow:inset 0 0 0 1.5px var(--ink)}.hl3 i.u{background:var(--ink)}
+.hlist{margin:8px 0 0;padding:0;list-style:none;display:grid;gap:6px}
+.hlist li{padding:10px 14px;background:var(--paper);border-radius:12px;font-size:15px;line-height:1.5;color:var(--ink)}
+.hlist b{font:500 12px var(--mono);margin-right:8px;color:var(--text-3)}
+.acts{display:flex;flex-wrap:wrap;align-items:center;gap:10px 12px;margin-top:20px}
+.helper{margin:10px 0 0;font-size:14px;color:var(--text-3)}
+.state{margin:14px 0 0;font-size:15px;color:var(--text-2)}
+.chip{display:inline-flex;align-items:center;gap:6px;height:24px;padding:0 10px;border-radius:999px;border:1.5px solid var(--ink);font:500 12px var(--mono);white-space:nowrap;vertical-align:2px}
+.chip.locked{background:var(--ink);color:var(--on-ink)}
+.chip.saved{border-style:dashed}
+/* compare */
+.cmp{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:20px;margin-top:18px}
+figure{margin:0;min-width:0}
+figcaption{font-size:13px;font-weight:600;color:var(--text-3);margin-bottom:8px}
+blockquote{margin:0;padding:10px 14px;border-left:3px solid var(--border);font-size:16px;line-height:1.5}
+blockquote+.chip{margin:8px 0 0 14px}
+.out{margin:0;padding:12px 14px;background:var(--paper);border:1.5px solid var(--border);border-radius:14px;font:500 12.5px/1.8 var(--mono);white-space:pre-wrap;overflow-wrap:anywhere}
+.out .c{color:var(--text-3)}
+.vd{margin-top:16px;padding-top:14px;border-top:1px solid var(--rule)}
+.vw{margin:0;font-size:22px;font-weight:700;color:var(--accent-text)}
+.vw.ok{color:var(--ink)}
+.why{margin:6px 0 0;font-size:16px;line-height:1.6;color:var(--text-2);text-wrap:pretty}
+.belief{margin:10px 0 0;padding:8px 14px;border-left:3px solid var(--accent);font-size:15px;line-height:1.6}
+.note{margin:8px 0 0;font-size:14px;line-height:1.6;color:var(--text-3)}
+.next{margin:8px 0 0;font-size:15px;font-weight:600}
+.in{animation:rise .6s var(--ease-out) both}
+@keyframes rise{from{opacity:0;transform:translateY(10px)}}
+/* gated section */
+.gate{display:grid;grid-template-rows:0fr;transition:grid-template-rows .45s var(--ease-out)}
+.gate>div{min-height:0;overflow:hidden}
+.gate.open{grid-template-rows:1fr}
+.peek{position:relative;margin-top:22px;max-height:84px;overflow:hidden;opacity:.5;-webkit-mask-image:linear-gradient(#000 20%,transparent);mask-image:linear-gradient(#000 20%,transparent)}
+.peek+.lockline{margin:4px 0 0;font-size:14px;color:var(--text-3);display:flex;align-items:center;gap:8px}
+pre.code,.out{font-variant-ligatures:none}
+pre.code{margin:18px 0 0;padding:14px 18px;background:var(--card);border:1.5px solid var(--border);border-radius:14px;font:500 13px/1.8 var(--mono);overflow-x:auto;color:var(--ink)}
+pre.code .hd{display:block;color:var(--text-3)}
+pre.code .ln{display:block;margin:0 -18px;padding:0 18px;white-space:pre}
+pre.code i{display:inline-block;width:2.4em;color:var(--text-dim);font-style:normal}
+pre.code .hl{background:var(--accent-wash);box-shadow:inset 3px 0 0 var(--ink)}
+/* end */
+.endb{margin-top:64px;padding:26px 28px;background:var(--card);border:1.5px solid var(--ink);border-radius:18px}
+.endb h2{margin:0;font-size:24px;line-height:1.3;font-weight:650;font-variation-settings:"wdth" 88}
+.endb ul{list-style:none;margin:16px 0 0;padding:0}
+.endb li{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:4px 14px;padding:10px 0;border-top:1px solid var(--rule);font-size:15px}
+.endb li .d{font:500 13px var(--mono);color:var(--text-3);align-self:center}
+.cue{margin:16px 0 0;padding-top:14px;border-top:1px solid var(--rule);font:500 13px/1.7 var(--mono)}
+.pending{margin-top:64px;font-size:15px;color:var(--text-3);border-top:1px solid var(--border);padding-top:18px}
+/* Room empty and the chat door */
+.solo{max-width:640px;margin:0 auto}
+.empty{margin-top:24px;padding:28px 24px;background:var(--card);border:1.5px solid var(--border);border-radius:18px}
+.empty p{margin:0;font-size:17px;line-height:1.6;color:var(--text-2)}
+.empty .acts{margin-top:18px}
+.frame{border:1.5px solid var(--ink);border-radius:18px;background:var(--card);overflow:hidden}
+.fh{display:flex;align-items:center;gap:8px;padding:0 16px;height:44px;border-bottom:1.5px solid var(--border);font:500 12.5px var(--mono);color:var(--text-3)}
+.fh i{width:10px;height:10px;border-radius:50%;border:1.5px solid var(--control-border)}
+.fh span{margin-left:8px}
+.msgs{padding:16px;display:grid;gap:14px}
+.msg{max-width:92%;font-size:15px;line-height:1.6;overflow-wrap:anywhere}
+.msg.you{justify-self:end;padding:10px 14px;background:var(--field);border-radius:14px}
+.msg .who{display:block;font:500 11.5px var(--mono);color:var(--text-3);margin-bottom:2px}
+.msg .acts{margin-top:10px}
+.skel{margin-top:10px;padding:14px;border:1.5px solid var(--border);border-radius:14px}
+.skel i{display:block;height:10px;border-radius:3px;background:var(--field);margin-top:10px}
+.skel i:first-child{height:18px;width:60%;margin-top:0}
+.skel i:nth-child(3){width:80%}
+.fn{margin:12px 0 0;font-size:14px;color:var(--text-3)}
+@media (max-width:1040px){.layout{grid-template-columns:minmax(0,680px)}.toc{display:none}}
+@media (max-width:640px){
+.bar,.banner,.tabs{padding-left:16px;padding-right:16px}
+.bar .proj{display:none}.bar .end .btn{padding:0 14px}
+.wrap{padding:20px 16px 96px}
+h1.t{font-size:31px}.what{font-size:17px}.prose{font-size:16px}h2.s{font-size:20px}
+.qc,.panel{padding:16px;border-radius:14px}.qq{font-size:20px}
+.cmp{grid-template-columns:minmax(0,1fr);gap:14px}
+.box{font-size:12px;min-height:52px;border-radius:10px}.step{font-size:10px}
+.acts .btn.primary{width:100%}
+.endb{padding:18px 16px}
+.sec{margin-top:44px}
+.proto{gap:6px 8px}.proto .sp{display:none}.proto label[for=st]{flex-basis:100%}.proto select#st{flex:1 1 200px;max-width:none;min-width:0}
+}
+@media (prefers-reduced-motion:reduce){
+.in{animation:none}
+.gate,.qc,.gates i,.btn,.opt,.tg{transition:none}
+.qc.nudge{transform:none}
+}
+</style>
+</head>
+<body>
+<div class="proto" role="region" aria-label="Prototype controls">
+<label for="st">Prototype state</label>
+<button type="button" id="prev" aria-label="Previous state">[</button>
+<select id="st"></select>
+<button type="button" id="next" aria-label="Next state">]</button>
+<span class="sp"></span>
+<label>Theme <select id="theme"><option value="">System</option><option value="light">Light</option><option value="dark">Dark</option></select></label>
+</div>
+<div id="app"></div>
+<div class="vh" id="live" role="status" aria-live="polite"></div>
+<script>
+(function(){
+'use strict';
+var $=function(s,r){return (r||document).querySelector(s)};
+var $$=function(s,r){return Array.prototype.slice.call((r||document).querySelectorAll(s))};
+var esc=function(s){return String(s).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]})};
+var RM=window.matchMedia('(prefers-reduced-motion: reduce)');
+var CHEV='<svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 2L4 6l4 4"/></svg>';
+var LOCK='<svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><rect x="3" y="7" width="10" height="7" rx="1.5"/><path d="M5.5 7V5a2.5 2.5 0 0 1 5 0v2"/></svg>';
+var CUE='Back to: retries in the payment worker. Next: the cap on total retry time.';
+var CONF=[['guess','Guess','I would not bet on it'],['fair','Fairly sure','More likely right than wrong'],['sure','Sure','I would be surprised to be wrong']];
+var CONFN={guess:'Guess',fair:'Fairly sure',sure:'Sure'};
+
+/* fixture: the orbit-pay explainer "How the retry path works" (PR 128), from the shared fixture, inlined so the page stands alone */
+var CODE={
+ charge:{path:'billing/charge.py',from:41,hl:[51,52,53],lines:['def charge(order, gateway, budget=None):','    """Charge an order once, even when the call is retried."""','    budget = budget or RetryBudget(attempts=3)','    last_error = None','    for attempt in budget:','        # one key for every attempt of this order','        key = f"charge:{order.id}"','        try:','            return gateway.charge(order.amount,','                                  idempotency_key=key, timeout=0.8)','        except GatewayTimeout as e:','            last_error = e   # unknown: the charge may have run','            budget.backoff()','        except GatewayDeclined:','            raise            # a real failure: do not retry','    raise RetryBudgetSpent(order.id) from last_error']},
+ key:{path:'billing/charge.py',from:45,hl:[47],lines:['    for attempt in budget:','        # one key for every attempt of this order','        key = f"charge:{order.id}"','        try:','            return gateway.charge(order.amount,','                                  idempotency_key=key, timeout=0.8)']},
+ retry:{path:'billing/retry.py',from:14,hl:[22],lines:['class RetryBudget:','    def __init__(self, attempts=3, base=0.5, jitter=0.1):','        self.attempts, self.base, self.jitter = attempts, base, jitter','        self.n = 0','','    def backoff(self):','        if self.n + 1 >= self.attempts:','            return   # no attempt left: do not sleep','        delay = self.base * 2 ** self.n + random.uniform(0, self.jitter)','        self.n += 1','        time.sleep(delay)']}
+};
+var CARDS=[
+ {id:'c_e1a1',shape:'choice',sec:'s1',title:'A timeout is not a failure',
+  q:'Before you read on: the gateway times out after the charge ran. What does the worker do next?',
+  opts:['It raises the error and marks the order failed.','It waits for the backoff, then calls the gateway again with the same key.','It calls the gateway again with a new key, so the gateway sees a new request.','It marks the order paid, because the charge ran.'],ans:1,
+  hints:['Look at which exceptions are caught and which are raised.','The worker cannot know whether the charge ran. Which choice is safe for both cases?','The key is built once from the order id, before the try.'],
+  did:{cmd:'pytest -k test_timeout_then_retry -s',out:'attempt 1: GatewayTimeout after 0.80 s\nbackoff 0.53 s\nattempt 2: key charge:ord_8812  <c># same key</c>\n1 passed in 1.41s'},
+  why:[
+   'No. Only GatewayDeclined is raised at once. A timeout is unknown, not failed, so the worker retries. billing/charge.py:51.',
+   'Correct. A timeout means the result is unknown, so the worker waits and tries again. The key stays the same. billing/charge.py:51.',
+   'No. The key comes from the order id, so every attempt sends the same key. A new key would let the gateway charge twice. billing/charge.py:47.',
+   'No. The worker cannot see that the charge ran. It only sees the timeout, so it retries. billing/charge.py:51.']},
+ {id:'c_e1a2',shape:'text',sec:'s2',title:'The key makes the retry safe',
+  q:'Before you read on: the first charge ran, but its reply was lost. Attempt 2 sends the same key. What does the gateway send back, and how many charges does the customer see?',
+  hints:['The gateway keeps something for every key it has seen.','A repeated key does not start a new charge.','Count the charges on the card statement, not the calls.'],
+  did:{cmd:'pytest -k test_idempotent_retry',out:'gateway.calls == 2\ncustomer.charges == 1\nsecond reply == first reply  <c># same charge id ch_31f</c>\n1 passed in 0.42s'},
+  right:'Correct. The gateway stores the reply under the key and sends the same reply for a repeat. The customer sees one charge. billing/charge.py:47.',
+  part:'Not quite. One charge is right. The gateway also sends back the stored reply of the first charge, so the worker gets a normal result, not an error. billing/charge.py:49.',
+  wrong:'No. A repeated key does not charge again. The gateway sends the stored reply of the first charge, and the customer sees one charge. billing/charge.py:47.'},
+ {id:'c_e1a3',shape:'choice',sec:'s3',title:'The budget stops the loop',
+  q:'Before you read on: each attempt times out at 0.8 s. The backoff is 0.5 s, then 1 s, plus up to 0.1 s of jitter each. Against a dead gateway, how long until charge() gives up?',
+  opts:['2.4 s: three timeouts.','3.9 s: three timeouts and two backoffs.','Between 3.9 s and 4.1 s: the jitter adds up to 0.2 s.','It never gives up while the gateway is down.'],ans:2,
+  hints:['Count the attempts, then count the sleeps between them.','There is no sleep after the last attempt. billing/retry.py:20.','Each sleep adds a random part of up to 0.1 s.'],
+  did:{cmd:'pytest -k test_retry_budget',out:'attempts: 3, sleeps: 0.53 s, 1.07 s\ngave up after 4.00 s\nraised RetryBudgetSpent(ord_8812)\n1 passed in 4.11s'},
+  why:['No. The two backoffs also take time: 0.5 s and 1 s. billing/retry.py:22.',
+   'Not quite. You added three timeouts and two backoffs: 2.4 + 1.5 = 3.9 s. The jitter adds up to 0.1 s per backoff. billing/retry.py:22.',
+   'Correct. 2.4 s of timeouts, 1.5 s of backoff, and up to 0.2 s of jitter. There is no sleep after the last attempt. billing/retry.py:20.',
+   'No. The budget allows three attempts, then charge() raises RetryBudgetSpent. billing/charge.py:56.']}
+];
+var SECTIONS={
+ s1:'<p>The payment worker calls <code>charge()</code> once per order. Inside, the call to the gateway can end in three ways: a reply, a decline, or a timeout. A decline is a real answer: the card was refused, so the worker raises it and stops.</p><p>A timeout is different. The worker does not know if the charge ran. The gateway may have charged the card and then lost the reply. So the worker treats a timeout as unknown: it keeps the error, waits, and tries again.</p>',
+ s2:'<p>A retry is only safe if the gateway can tell it is a repeat. The worker builds one key from the order id, before the first attempt, and sends it with every attempt.</p><p>The gateway stores the reply under that key. When the same key comes again, it does not charge. It sends back the stored reply. Two calls, one charge.</p>',
+ s3:'<p><code>RetryBudget</code> limits the loop to three attempts. Between attempts it sleeps: 0.5 s, then 1 s, plus a small random jitter so that many workers do not retry at the same moment.</p><p>After the last attempt there is no sleep. <code>charge()</code> raises <code>RetryBudgetSpent</code> with the last timeout attached, and the job fails for this run.</p>'
+};
+var SECCODE={s1:'charge',s2:'key',s3:'retry'};
+
+var STATES=[
+ {key:'empty',label:'empty explainers tab'},
+ {key:'loading',label:'loading: building the explainer'},
+ {key:'waiting',label:'waiting: embedded card, section collapsed'},
+ {key:'answered',label:'answered: locked, section open with compare'},
+ {key:'right',label:'graded right inline'},
+ {key:'wrong',label:'graded wrong inline'},
+ {key:'surewrong',label:'confident and wrong inline'},
+ {key:'shown',label:'show without answering'},
+ {key:'end',label:'end summary: 3 questions in your reviews'},
+ {key:'offline',label:'offline: saved here'},
+ {key:'stale',label:'error: out of date, rebuild'}
+];
+var M; /* model */
+function fresh(){return {view:'page',offline:false,stale:false,ready:false,copied:false,flow:'first',cards:CARDS.map(function(){return {st:'wait',pick:null,conf:null,text:'',hints:0,grade:null,codeOpen:false}})}}
+function graded(c,i,pick,conf){var k=CARDS[i];c.st='graded';c.pick=pick;c.conf=conf;c.grade=pick===k.ans?'right':(i===2&&pick===1?'part':'wrong')}
+function preset(key){
+ M=fresh();var c=M.cards;
+ if(key==='empty')M.view='room';
+ else if(key==='loading')M.view='chat';
+ else if(key==='answered'){graded(c[0],0,1,'fair');c[1].st='locked';c[1].conf='fair';c[1].text='It sees the same key and sends back the first reply, so only one charge.'}
+ else if(key==='right')graded(c[0],0,1,'fair');
+ else if(key==='wrong')graded(c[0],0,2,'fair');
+ else if(key==='surewrong')graded(c[0],0,0,'sure');
+ else if(key==='shown')c[0].st='shown';
+ else if(key==='end'){graded(c[0],0,1,'fair');c[1].st='graded';c[1].conf='sure';c[1].text='The stored reply of the first charge, under that key. One charge.';c[1].grade='right';graded(c[2],2,2,'guess')}
+ else if(key==='offline'){M.offline=true;c[0].st='saved';c[0].pick=1;c[0].conf='fair'}
+ else if(key==='stale')M.stale=true;
+}
+/* dates: today is 7 Nov; a right answer returns in 3 days, anything else tomorrow */
+function back(c){return c.grade==='right'?'10 Nov':'8 Nov'}
+function backLine(c){return c.grade==='right'?'Back on 10 Nov.':'Back tomorrow.'}
+
+function codeHTML(k){var c=CODE[k];return '<pre class="code" tabindex="0" aria-label="'+c.path+' from line '+c.from+'"><span class="hd">'+c.path+':'+c.from+'-'+(c.from+c.lines.length-1)+'</span>'+c.lines.map(function(l,i){var n=c.from+i;return '<span class="ln'+(c.hl.indexOf(n)>-1?' hl':'')+'"><i>'+n+'</i>'+esc(l)+'</span>'}).join('')+'</pre>'}
+function outHTML(s){return esc(s).replace(/&lt;c&gt;(.*?)&lt;\/c&gt;/g,'<span class="c">$1</span>')}
+
+function cardHTML(i){
+ var k=CARDS[i],c=M.cards[i],done=c.st!=='wait',ro=done||M.stale,h='';
+ h+='<form class="qc'+(c.st==='wait'&&firstOpen()===i?' live':'')+'" id="q'+i+'" data-i="'+i+'" aria-labelledby="qq'+i+'" novalidate>';
+ h+='<div class="qhd"><span class="eb">Question '+(i+1)+' of 3 · predict</span><span class="seal">'+k.id+' · answer fixed 14:10</span></div>';
+ h+='<p class="qq" id="qq'+i+'">'+esc(k.q)+'</p>';
+ var compact=c.st==='wait'&&!M.stale&&firstOpen()!==i&&!c.expanded;
+ if(compact){}else if(k.shape==='choice'){
+  h+='<div class="opts" role="radiogroup" aria-labelledby="qq'+i+'">';
+  k.opts.forEach(function(o,j){var on=c.pick===j;var isA=c.st==='graded'&&j===k.ans&&c.pick!==k.ans;h+='<button type="button" class="opt'+(done&&!on&&!isA?' dim':'')+(isA?' ans':'')+'" role="radio" aria-checked="'+on+'" data-opt="'+j+'"'+(ro?' disabled':'')+' tabindex="'+((c.pick===null?j===0:on)?0:-1)+'"><span class="k">'+'ABCD'[j]+'</span><span>'+esc(o)+'</span>'+(isA?'<span class="ak">The answer</span>':'')+'</button>'});
+  h+='</div>';
+ }else{
+  h+='<label class="fl" for="ta'+i+'">Your answer</label><textarea id="ta'+i+'" rows="4"'+(ro?' readonly':'')+'>'+esc(c.text)+'</textarea>';
+ }
+ if(c.st==='wait'&&!M.stale&&firstOpen()!==i&&!c.expanded){
+  h+='<div class="acts"><button type="button" class="btn ghost sm" data-act="expand">Answer this one</button><button type="button" class="tbtn" data-act="show">Show without answering</button></div><p class="helper">Question '+(firstOpen()+1)+' is open above. You can answer in any order.</p>';
+ }else if(c.st==='wait'){
+  h+='<fieldset'+(M.stale?' disabled':'')+'><legend>How sure are you?</legend><div class="confs">';
+  CONF.forEach(function(f,j){h+='<label class="sure"><input type="radio" name="cf'+i+'" value="'+f[0]+'"'+(c.conf===f[0]?' checked':'')+' aria-describedby="mn'+i+'"> '+f[1]+' <span class="kc" aria-hidden="true" style="margin-left:8px">'+(j+1)+'</span></label>'});
+  h+='<button type="button" class="sure dk" data-act="dk">I do not know <span class="kc" aria-hidden="true" style="margin-left:8px">D</span></button></div>';
+  var m=CONF.filter(function(f){return f[0]===c.conf})[0];
+  h+='<p class="mean" id="mn'+i+'">'+(m?esc(m[2])+'.':'')+'</p></fieldset>';
+  h+='<div class="hints"><span class="hl3" aria-hidden="true">'+[0,1,2].map(function(n){return '<i'+(n<c.hints?' class="u"':'')+'></i>'}).join('')+'</span><span>Hints used: '+c.hints+' of 3</span>'+(c.hints<3&&!M.stale?'<button type="button" class="tbtn" data-act="hint">Hint</button>':'')+'</div>';
+  if(c.hints)h+='<ol class="hlist">'+k.hints.slice(0,c.hints).map(function(t,n){return '<li><b>H'+(n+1)+'</b>'+esc(t)+'</li>'}).join('')+'</ol><p class="helper">This attempt now counts as With help.</p>';
+  var ok=c.conf&&(k.shape==='choice'?c.pick!==null:c.text.trim().length>2)&&!M.stale;
+  h+='<div class="acts"><button type="submit" class="btn primary" data-act="lock"'+(ok?'':' disabled aria-describedby="lh'+i+'"')+'>Lock my answer <span class="kc" aria-hidden="true">Ctrl Enter</span></button><button type="button" class="btn ghost sm" data-act="show"'+(M.stale?' disabled':'')+'>Show without answering</button></div>';
+  if(!ok)h+='<p class="helper" id="lh'+i+'">'+(M.stale?'Questions wait for the rebuild, so the answer matches the code.':(!c.conf&&(k.shape==='text'?c.text.trim():c.pick!==null)?'Choose how sure you are first.':(k.shape==='text'?'Write your answer, then choose how sure you are.':'Choose an answer and how sure you are.')))+'</p>';
+  else h+='<p class="helper">A wrong guess here costs nothing.</p>';
+ }else if(c.st==='shown'){
+  h+='<p class="state in" tabindex="-1" id="vf'+i+'">Not answered. This question is not added to your reviews.</p>';
+ }else h+=compareHTML(i);
+ return h+'</form>';
+}
+function saidHTML(i){var k=CARDS[i],c=M.cards[i];return c.dk?'I do not know.':(k.shape==='choice'?'ABCD'[c.pick]+'. '+k.opts[c.pick]:c.text)}
+function compareHTML(i){
+ var k=CARDS[i],c=M.cards[i],h='<div class="cmp in"><figure><figcaption>You said</figcaption><blockquote>'+esc(saidHTML(i))+'</blockquote>';
+ h+=c.st==='saved'?'<span class="chip saved">Saved here</span>':(c.dk?'':'<span class="chip">'+CONFN[c.conf]+'</span>');
+ h+='</figure><figure><figcaption>It did</figcaption>'+(c.st==='saved'?'<p class="out" style="font-family:var(--sans);font-size:15px;white-space:normal">Shown when you are back online.</p>':'<pre class="out"><span class="c">$ '+esc(k.did.cmd)+'</span>\n'+outHTML(k.did.out)+'</pre>')+'</figure></div>';
+ h+='<div class="vd" role="status" aria-live="polite">';
+ if(c.st==='saved')h+='<p class="state" id="vf'+i+'" tabindex="-1"><b>Saved here.</b> The result is shown when you are back online.</p>';
+ else if(c.st==='locked')h+='<p class="state" id="vf'+i+'" tabindex="-1"><b>Locked.</b> Grading…</p>';
+ else{
+  var w=c.dk?'Not known yet.':{right:'Correct.',part:'Not quite.',wrong:'No.'}[c.grade];
+  var txt=c.dk?'This is the answer: '+(k.shape==='choice'?k.opts[k.ans]:k.right.replace(/^Correct\. /,'')):(k.shape==='choice'?k.why[c.pick]:k[c.grade]).replace(/^(Correct|Not quite|No)\. /,'');
+  h+='<h3 class="vw'+(c.grade==='right'||c.dk?' ok':'')+'" id="vf'+i+'" tabindex="-1">'+w+'</h3><p class="why">'+esc(txt)+'</p>';
+  if(c.conf==='sure'&&c.grade!=='right')h+='<p class="belief">You chose Sure. This is the kind of error that is easiest to fix when you see the reason. It returns tomorrow.</p>';
+  h+='<p class="next">'+backLine(c)+'</p><p class="note">Predictions do not change your record. The gap is what you learn from.</p>';
+ }
+ return h+'</div>';
+}
+function firstOpen(){for(var i=0;i<3;i++)if(M.cards[i].st==='wait')return i;return -1}
+function secHTML(n,i){
+ var k=CARDS[i],c=M.cards[i],open=c.st!=='wait',id=k.sec;
+ var body='<div class="prose">'+SECTIONS[id]+'</div>'+codeHTML(SECCODE[id]);
+ var h='<section class="sec" id="'+id+'" aria-labelledby="h'+id+'"><h2 class="s" id="h'+id+'">'+n+'. '+esc(k.title)+'</h2>'+cardHTML(i);
+ if(open)h+='<div class="gate'+(c.justOpened?'':' open')+'" data-gate="'+i+'"><div>'+body+'</div></div>';
+ else h+='<div class="peek" aria-hidden="true" inert>'+'<div class="prose">'+SECTIONS[id].split('</p>')[0]+'</p></div></div><p class="lockline">'+LOCK+'This section opens when you lock an answer or choose Show without answering.</p>';
+ return h+'</section>';
+}
+function flowHTML(){
+ var r=M.flow==='retry';
+ return '<div class="panel"><div class="phead"><span class="ptitle">The path of one charge</span><div class="toggle" role="group" aria-label="Which attempt to show"><button type="button" class="tg" data-flow="first" aria-pressed="'+!r+'">Attempt 1</button><button type="button" class="tg" data-flow="retry" aria-pressed="'+r+'">Attempt 2</button></div></div>'+
+ '<div class="flow" role="img" aria-label="'+(r?'Attempt 2: the worker calls charge again with the same key. The gateway finds the key and sends back the stored reply. No new charge.':'Attempt 1: the payment worker calls charge with the key. The gateway charges the card and saves the reply under the key. The reply is lost on the way back, so the worker sees a timeout.')+'">'+
+ '<div class="boxes"><div class="box dk">Payment worker</div><div class="box"><span class="m">charge()</span></div><div class="box">Gateway</div><div class="box">Key store</div></div>'+
+ '<div class="track" aria-hidden="true"><div class="line"></div><span class="tick" style="left:12.5%"></span><span class="tick" style="left:37.5%"></span><span class="tick" style="left:62.5%"></span><span class="tick" style="left:87.5%"></span><div class="dot" id="dot"></div><div class="cut" id="cut" hidden><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="var(--accent-text)" stroke-width="2.6" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></div></div>'+
+ '<div class="steps" aria-hidden="true">'+(r?'<span class="step" style="grid-column:2/span 2">1 same key</span><span class="step" style="grid-column:4/span 2">2 key found</span><span class="step" style="grid-column:6/span 2">3 stored reply</span>':'<span class="step" style="grid-column:2/span 2">1 call, key</span><span class="step" style="grid-column:4/span 2">2 charge, save</span><span class="step" style="grid-column:6/span 2">3 reply lost</span>')+'</div></div>'+
+ '<p class="fnote">'+(r?'Attempt 2 travels the same path. The key store already has the reply, so the dot comes back with no new charge.':'The dot is one call. The cross is where the reply is lost: the charge ran, but the worker only sees a timeout.')+' <button type="button" class="tbtn" data-act="play">Play again</button></p></div>';
+}
+function endHTML(){
+ var c=M.cards,ans=[],skip=0;c.forEach(function(x,i){if(x.st==='graded'||x.st==='saved')ans.push(i);else if(x.st==='shown')skip++});
+ if(ans.length+skip<3){var left=3-ans.length-skip;return '<p class="pending">'+left+' question'+(left>1?'s':'')+' left on this page. Each one you answer goes into your reviews.</p>'}
+ var first=ans.some(function(i){return c[i].grade!=='right'})?'8 Nov':'10 Nov';
+ var h='<section class="endb in" aria-labelledby="endh"><h2 id="endh" tabindex="-1">'+(ans.length?ans.length+' question'+(ans.length>1?'s':'')+' from this page '+(ans.length>1?'are':'is')+' in your reviews. First one on '+first+'.':'No questions from this page are in your reviews.')+'</h2><ul>';
+ c.forEach(function(x,i){h+='<li><span>'+esc(CARDS[i].title)+'</span><span class="d">'+(x.st==='shown'?'not added':x.st==='saved'?'saved here':'back on '+back(x))+'</span></li>'});
+ h+='</ul><p class="note">Reviews ask a new question on the same idea, so the page is not the answer key.</p><p class="cue">'+CUE+'</p><div class="acts"><button type="button" class="btn primary" data-act="build">Back to the build</button><button type="button" class="btn ghost sm" data-act="room">Open my reviews</button></div></section>';
+ return h;
+}
+function render(focus){
+ var a=$('#app'),h='';
+ if(M.view==='room'){
+  h='<header class="top"><div class="bar"><span class="word">Room</span><span class="proj">orbit-pay</span><span class="end"><button type="button" class="me" aria-label="Sam. Open settings">S</button></span></div><nav class="tabs" aria-label="Room">'+['Inbox','Map','Drills','Explainers'].map(function(t){return '<button type="button" class="tab"'+(t==='Explainers'?' aria-current="page"':'')+'>'+t+'</button>'}).join('')+'</nav></header>';
+  h+='<main class="wrap"><div class="solo"><h1 class="t" style="font-size:31px">Explainers</h1><div class="empty"><p>No explainers yet. Ask in chat: \'explain PR 128\'.</p><div class="acts"><button type="button" class="btn sm" data-act="copy">Copy the prompt</button><span role="status" class="helper" style="margin:0">'+(M.copied?'Copied.':'')+'</span></div></div><p class="fn">An explainer is a page about one change in your code. Questions inside it open each section and go into your reviews.</p></div></main>';
+ }else if(M.view==='chat'){
+  h='<main class="wrap"><div class="solo"><div class="frame" aria-label="Chat session (generic frame)"><div class="fh"><i></i><i></i><i></i><span>session · orbit-pay</span></div><div class="msgs">';
+  if(M.backFrom){h+='<div class="msg"><span class="who">Agent · first line of the next reply</span>'+esc(M.backFrom)+'<br><span class="mono">'+CUE+'</span></div>'}
+  else{h+='<div class="msg you"><span class="who">Sam</span>explain PR 128</div>';
+  h+=M.ready?'<div class="msg in"><span class="who">Agent</span>Explainer ready: How the retry path works. 6 minutes, 3 questions inside.<div class="acts"><button type="button" class="btn sm" data-act="openx">Open explainer</button></div></div>':'<div class="msg" aria-busy="true"><span class="who">Agent</span>Building the explainer. About a minute.<div class="skel" aria-hidden="true"><i></i><i></i><i></i><i></i></div></div>';}
+  h+='</div></div><p class="fn">'+(M.ready||M.backFrom?'The same explainer is listed in Room, Explainers.':'The page is built from the PR diff and the files it touches. The answers are fixed before the page is published.')+'</p>'+(!M.ready&&!M.backFrom?'<div class="acts"><button type="button" class="btn ghost sm" data-act="finish" style="border-style:dashed">Prototype: finish the build</button></div>':'')+'</div></main>';
+ }else{
+  var c=M.cards;
+  h='<header class="top"><div class="bar"><span class="word">Explainer</span><span class="proj">orbit-pay</span><span class="end"><span class="gates" role="img" aria-label="'+c.filter(function(x){return x.st!=='wait'}).length+' of 3 questions done">'+c.map(function(x){return '<i class="'+(x.st==='shown'?'sk':x.st!=='wait'?'on':'')+'"></i>'}).join('')+'</span><button type="button" class="btn ghost sm" data-act="build">'+CHEV+'Back to the build</button></span></div>';
+  if(M.offline)h+='<div class="banner"><p>You are offline. The page still works. Answers are saved on this device and sent when you are back online.</p></div>';
+  if(M.stale)h+='<div class="banner stale" role="alert"><p><span>This explainer is out of date: the code changed after it was built. <span class="mono">billing/retry.py</span> changed at 16:02.</span><button type="button" class="btn" data-act="rebuild">Rebuild</button></p></div>';
+  h+='</header><div class="wrap"><div class="layout"><nav class="toc" aria-label="On this page"><h2>On this page</h2><ol>'+CARDS.map(function(k,i){var s=c[i].st;return '<li><a href="#'+k.sec+'"'+(firstOpen()===i?' class="cur"':'')+'><span class="st">'+(s==='wait'?'open':s==='shown'?'shown':s==='saved'?'saved':'done')+'</span>'+esc(k.title)+'</a></li>'}).join('')+'</ol></nav>';
+  h+='<main><span class="eb">Explainer · PR 128 · retry-budget, idempotency</span><h1 class="t" tabindex="-1">How the retry path works</h1><p class="what">What this explains: how <span class="mono">charge()</span> retries a gateway timeout without charging the customer twice, and when it stops.</p><p class="meta"><span>6 min read</span><span>3 questions inside</span><span>built 7 Nov, 14:10</span></p>';
+  h+=flowHTML()+secHTML(1,0)+secHTML(2,1)+secHTML(3,2)+endHTML()+'</main></div></div>';
+ }
+ a.innerHTML=h;
+ $$('.gate:not(.open)').forEach(function(g){requestAnimationFrame(function(){requestAnimationFrame(function(){g.classList.add('open')})});M.cards[+g.dataset.gate].justOpened=false});
+ if(M.view==='page')settle();
+ if(focus){var f=$(focus);if(f)f.focus({preventScroll:false})}
+}
+function settle(){var d=$('#dot'),x=$('#cut'),r=M.flow==='retry';if(!d)return;d.style.left=r?'12.5%':'62.5%';x.hidden=r}
+
+/* the diagram: one run of the dot per press, never a loop near a question */
+var anim;
+function play(){
+ var d=$('#dot'),x=$('#cut');if(!d)return;var r=M.flow==='retry';if(anim)anim.cancel();x.hidden=true;
+ if(RM.matches){d.style.left=r?'12.5%':'62.5%';x.hidden=r;return}
+ var k=r?[{left:'12.5%'},{left:'37.5%',offset:.2},{left:'87.5%',offset:.55},{left:'37.5%',offset:.85},{left:'12.5%'}]:[{left:'12.5%'},{left:'37.5%',offset:.18},{left:'87.5%',offset:.55},{left:'62.5%'}];
+ anim=d.animate(k,{duration:3000,easing:'cubic-bezier(.6,0,.3,1)',fill:'forwards'});
+ anim.onfinish=function(){if(!r)x.hidden=false};
+}
+
+function say(t){var l=$('#live');l.textContent='';setTimeout(function(){l.textContent=t},30)}
+function lock(i){
+ var c=M.cards[i],k=CARDS[i];
+ if(k.shape==='text'){var ta=$('#ta'+i);if(ta)c.text=ta.value}
+ c.justOpened=true;
+ if(M.offline){c.st='saved';render('#vf'+i);say('Saved here.');return}
+ if(k.shape==='choice'){graded(c,i,c.pick,c.conf);c.justOpened=true;render('#vf'+i);nudge(i);return}
+ c.st='locked';render('#vf'+i);nudge(i);say('Locked. Grading.');
+ setTimeout(function(){var t=c.text.toLowerCase();var same=/same|stor|first|earlier|original|cached|previous/.test(t),one=/\bone\b|\bonce\b|\b1\b|single|no (new|second|double)|not (again|twice)/.test(t);c.grade=same&&one?'right':(same||one?'part':'wrong');c.st='graded';render('#vf'+i);say(({right:'Correct.',part:'Not quite.',wrong:'No.'})[c.grade])},1400);
+}
+function nudge(i){var q=$('#q'+i);if(!q||RM.matches)return;q.classList.add('nudge');setTimeout(function(){q.classList.remove('nudge')},300)}
+
+document.addEventListener('click',function(e){
+ var b=e.target.closest('button');if(!b||b.closest('.proto'))return;
+ var f=b.closest('form'),i=f?+f.dataset.i:-1,c=i>-1?M.cards[i]:null,a=b.dataset.act;
+ if(b.dataset.opt!==undefined&&c){c.pick=+b.dataset.opt;render('#q'+i+' [data-opt="'+c.pick+'"]');return}
+ if(b.dataset.flow){M.flow=b.dataset.flow;render('[data-flow="'+M.flow+'"]');play();return}
+ if(a==='play')return play();
+ if(a==='expand'){c.expanded=true;render('#q'+i+' .opt, #ta'+i);return}
+ if(a==='hint'){c.hints++;render(c.hints<3?'#q'+i+' [data-act="hint"]':'#q'+i+' [data-act="show"]');say('Hint '+c.hints+' of 3 shown.');return}
+ if(a==='dk'){c.dk=true;c.conf=null;c.grade='dk';c.st='graded';c.justOpened=true;if(CARDS[i].shape==='text')c.text='';render('#vf'+i);return}
+ if(a==='show'){c.st='shown';c.justOpened=true;render('#vf'+i);say('Section open. Not answered.');return}
+ if(a==='copy'){try{navigator.clipboard&&navigator.clipboard.writeText('explain PR 128')}catch(x){}M.copied=true;render('[data-act="copy"]');return}
+ if(a==='finish'){M.ready=true;render('[data-act="openx"]');return}
+ if(a==='openx'){M=fresh();render('h1.t');window.scrollTo(0,0);play();return}
+ if(a==='rebuild'){M=fresh();M.view='chat';render('[data-act="finish"]');return}
+ if(a==='build'){var n=M.cards.filter(function(x){return x.st==='graded'||x.st==='saved'}).length;M.view='chat';M.backFrom=n?n+' question'+(n>1?'s':'')+' from the explainer '+(n>1?'are':'is')+' in your reviews.':'Nothing from the explainer was added to your reviews.';render();window.scrollTo(0,0);return}
+ if(a==='room'){M=fresh();M.view='room';render();return}
+});
+document.addEventListener('change',function(e){var t=e.target;if(t.name&&/^cf/.test(t.name)){var i=+t.name.slice(2);M.cards[i].conf=t.value;render('#q'+i+' input[value="'+t.value+'"]')}});
+document.addEventListener('input',function(e){var t=e.target;if(t.id&&/^ta/.test(t.id)){var i=+t.id.slice(2);M.cards[i].text=t.value;var k2=!!M.cards[i].conf+'|'+(t.value.trim().length>2);if(M.cards[i]._k!==k2){M.cards[i]._k=k2;render('#ta'+i);var n=$('#ta'+i);n.setSelectionRange(n.value.length,n.value.length)}}});
+document.addEventListener('submit',function(e){e.preventDefault();var i=+e.target.dataset.i;var b=$('#q'+i+' [data-act="lock"]');if(b&&!b.disabled)lock(i)});
+document.addEventListener('keydown',function(e){
+ var t=e.target,inField=/INPUT|TEXTAREA|SELECT/.test(t.tagName)&&t.type!=='radio';
+ var i=firstOpen(),f=t.closest&&t.closest('form.qc');if(f)i=+f.dataset.i;
+ if((e.metaKey||e.ctrlKey)&&e.key==='Enter'&&i>-1){e.preventDefault();var b=$('#q'+i+' [data-act="lock"]');if(b&&!b.disabled)lock(i);return}
+ if(inField||e.metaKey||e.ctrlKey||e.altKey)return;
+ if(e.key==='['){go(cur-1);return}if(e.key===']'){go(cur+1);return}
+ if(M.view!=='page'||i<0||M.cards[i].st!=='wait'||M.stale)return;
+ var c=M.cards[i];
+ if(/^[123]$/.test(e.key)){c.conf=CONF[+e.key-1][0];render('#q'+i+' input[value="'+c.conf+'"]')}
+ else if(/^[dD]$/.test(e.key)){$('#q'+i+' [data-act="dk"]').click()}
+ else if(t.getAttribute&&t.getAttribute('role')==='radio'&&/Arrow(Down|Up|Left|Right)/.test(e.key)){e.preventDefault();var n=CARDS[i].opts.length,j=(+t.dataset.opt+(/Down|Right/.test(e.key)?1:n-1))%n;c.pick=j;render('#q'+i+' [data-opt="'+j+'"]')}
+});
+
+/* state switcher */
+var cur=0,sel=$('#st');
+STATES.forEach(function(s,i){var o=document.createElement('option');o.value=i;o.textContent=(i+1)+'. '+s.label;sel.appendChild(o)});
+function go(n){cur=(n+STATES.length)%STATES.length;sel.value=cur;preset(STATES[cur].key);render();setTimeout(play,250);
+ var target={answered:'#s2',right:'#s1',wrong:'#s1',surewrong:'#s1',shown:'#s1',end:'#endh',offline:'#s1'}[STATES[cur].key];
+ if(target&&location.search.indexOf('noscroll')<0){var el=$(target);if(el)el.scrollIntoView({block:'start'})}else window.scrollTo(0,0);
+ try{history.replaceState(null,'','?state='+STATES[cur].key+(location.search.indexOf('noscroll')>-1?'&noscroll':''))}catch(x){}}
+sel.addEventListener('change',function(){go(+sel.value)});
+$('#prev').addEventListener('click',function(){go(cur-1)});
+$('#next').addEventListener('click',function(){go(cur+1)});
+$('#theme').addEventListener('change',function(e){var v=e.target.value;if(v)document.documentElement.setAttribute('data-theme',v);else document.documentElement.removeAttribute('data-theme')});
+var q=/state=([a-z]+)/.exec(location.search),start=2;
+if(q)STATES.forEach(function(s,i){if(s.key===q[1])start=i});
+go(start);
+})();
+</script>
+</body>
+</html>

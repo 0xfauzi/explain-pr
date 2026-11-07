@@ -1,0 +1,16 @@
+/* Shared tokens for the Room, the explainer template and every prototype.
+   Source of truth: experience.md section 4.1. Values follow docs/assets/site.css.
+   At build time this file is inlined into skills/learning-while-building/assets/room.html
+   and assets/explainer-template.html, so the shipped pages and the prototypes cannot drift. */
+:root{--paper:#F5F4F0;--card:#FFFFFF;--field:#ECE9E1;--rule:#EFEDE6;--border:#DAD8D0;--ink:#16161A;--on-ink:#F5F4F0;--text-2:#45454D;--text-3:#5F5F68;--text-4:#6E6E77;--text-dim:#7A7A83;
+--accent:#E8541E;--accent-text:#C2410C;--accent-wash:rgba(232,84,30,.16);--lv0:#EFEDE6;--lv1:#F6C9AF;--lv2:#EE8B5B;--lv3:#C2410C;--control-border:#7A7A83;
+--sans:"Instrument Sans",system-ui,sans-serif;--mono:"JetBrains Mono",ui-monospace,monospace;--ease-out:cubic-bezier(.2,.7,.2,1);--ease-spring:cubic-bezier(.3,1.6,.5,1);
+--grain-blend:multiply;--grain-op:.55;color-scheme:light}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--paper:#141417;--card:#1D1D21;--field:#26262B;--rule:#2A2A30;--border:#3A3A40;--ink:#F2F1EC;--on-ink:#141417;--text-2:#B4B3AE;--text-3:#9A9AA2;--text-4:#9A9AA2;--text-dim:#8A8A92;--accent-text:#F07A4A;--control-border:#8A8A92;--lv0:#2A2A30;--grain-blend:screen;--grain-op:.08;color-scheme:dark}}
+:root[data-theme="dark"]{--paper:#141417;--card:#1D1D21;--field:#26262B;--rule:#2A2A30;--border:#3A3A40;--ink:#F2F1EC;--on-ink:#141417;--text-2:#B4B3AE;--text-3:#9A9AA2;--text-4:#9A9AA2;--text-dim:#8A8A92;--accent-text:#F07A4A;--control-border:#8A8A92;--lv0:#2A2A30;--grain-blend:screen;--grain-op:.08;color-scheme:dark}
+*{box-sizing:border-box}
+[hidden]{display:none !important}
+:focus-visible{outline:2px solid var(--accent);outline-offset:3px}
+.mono{font-family:var(--mono)}
+.vh{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+.lvw{white-space:nowrap}

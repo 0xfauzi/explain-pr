@@ -1,0 +1,449 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>First run and settings</title>
+<meta name="description" content="Prototype of the first run without a tour: the init messages in chat, the public repo privacy choice, prefilled areas and mode, the one-time commands line, the Room first open, and the Settings page.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="anonymous">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wdth,wght@75..100,400..700&amp;family=JetBrains+Mono:wght@400;500&amp;display=swap">
+<link rel="stylesheet" href="../assets/room.css">
+<style>
+:root{--tabbar:0px}
+*{box-sizing:border-box}
+html{scroll-padding:120px 0 calc(var(--tabbar) + 24px)}
+body{position:relative;margin:0;background:var(--paper);color:var(--ink);font-family:var(--sans);-webkit-font-smoothing:antialiased;min-height:100vh;overflow-x:hidden}
+body::after{content:"";position:absolute;inset:0;pointer-events:none;z-index:60;background-image:url(../assets/grain.png);background-size:240px 240px;opacity:var(--grain-op);mix-blend-mode:var(--grain-blend)}
+[hidden]{display:none !important}
+:focus-visible{outline:2px solid var(--accent);outline-offset:3px}
+a{color:var(--ink);text-underline-offset:4px}
+button,input,select{font-family:inherit;color:inherit}
+.mono{font-family:var(--mono)}
+.vh{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+/* prototype switcher: outside the product, dashed so nobody reads it as product UI */
+.proto{display:flex;flex-wrap:wrap;align-items:center;gap:8px 12px;margin:10px auto;max-width:1180px;padding:8px 12px;border:1.5px dashed var(--control-border);border-radius:12px;font:500 12px/1.3 var(--mono);color:var(--text-3);width:calc(100% - 32px)}
+.proto label{display:flex;align-items:center;gap:8px}
+.proto select,.proto button{font:500 12.5px var(--mono);min-height:44px;padding:0 10px;border:1.5px solid var(--control-border);border-radius:10px;background:var(--card);color:var(--ink);max-width:100%;cursor:pointer}
+.proto select#st{max-width:min(340px,58vw)}
+.proto .sp{flex:1}
+/* buttons and shared bits */
+.btn{font:600 16px/1 var(--sans);min-height:50px;padding:0 26px;border-radius:999px;border:1.5px solid var(--ink);background:var(--ink);color:var(--on-ink);cursor:pointer;transition:background .2s,border-color .2s,color .2s,transform .15s;display:inline-flex;align-items:center;justify-content:center;gap:8px;text-decoration:none}
+.btn:hover{background:var(--accent);border-color:var(--accent);color:#16161A}
+.btn:active{transform:scale(.97)}
+.btn.ghost{background:transparent;color:var(--ink)}
+.btn.ghost:hover{background:var(--ink);color:var(--on-ink)}
+.btn.sm{min-height:44px;font-size:15px;padding:0 18px}
+.btn[disabled]{opacity:.45;cursor:not-allowed;transform:none}
+.tbtn{min-height:44px;padding:0 6px;border:0;background:none;font:600 15px var(--sans);text-decoration:underline;text-underline-offset:4px;cursor:pointer;color:var(--ink)}
+.chip{display:inline-flex;align-items:center;gap:6px;height:24px;padding:0 10px;border-radius:999px;border:1.5px solid var(--ink);font:500 12px var(--mono);white-space:nowrap}
+.chip.saved{border-style:dashed}
+.sure{position:relative;display:inline-flex;align-items:center;min-height:44px;padding:0 16px;border-radius:999px;border:1.5px solid var(--control-border);color:var(--text-2);font:500 15px var(--sans);cursor:pointer;background:transparent;transition:border-color .2s,background .2s,color .2s}
+.sure:hover{border-color:var(--ink)}
+.sure input{position:absolute;opacity:0;inset:0;margin:0;cursor:pointer}
+.sure:has(input:checked){background:var(--ink);border-color:var(--ink);color:var(--on-ink)}
+.sure:has(input:focus-visible){outline:2px solid var(--accent);outline-offset:3px}
+.sure.dk{border-style:dashed}
+.in{animation:rise .6s var(--ease-out) both}
+@keyframes rise{from{opacity:0;transform:translateY(10px)}}
+.segs{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:4px}
+.seg{height:14px;border-radius:3px;background:var(--lv0)}
+/* chat: a neutral session frame, no product branding */
+.chatwrap{max-width:1180px;margin:8px auto 0;padding:0 32px 64px;display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:40px;align-items:start}
+.win{border:1.5px solid var(--ink);border-radius:18px;background:var(--card);overflow:hidden;display:flex;flex-direction:column;height:min(760px,calc(100vh - 110px));min-height:520px}
+.wbar{display:flex;align-items:center;gap:8px;height:44px;padding:0 16px;border-bottom:1.5px solid var(--border);font:500 12px var(--mono);color:var(--text-3)}
+.wbar i{width:10px;height:10px;border-radius:50%;border:1.5px solid var(--control-border)}
+.wbar span{margin-left:8px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.log{flex:1;overflow:auto;padding:20px 22px 12px;display:flex;flex-direction:column;gap:12px;font-size:15.5px;line-height:1.55}
+.m{max-width:640px}
+.m p{margin:0}.m p+p{margin-top:6px}
+.m.u{align-self:flex-end;background:var(--field);border-radius:14px 14px 4px 14px;padding:10px 14px;max-width:82%}
+.tool{font:500 12.5px/1.6 var(--mono);color:var(--text-3);border-left:2px solid var(--border);padding:2px 0 2px 12px;overflow-wrap:anywhere}
+.tool b{color:var(--ink);font-weight:500}
+.tool .out{display:block;color:var(--text-2);white-space:pre-wrap}
+.qc{border:1.5px solid var(--border);border-left:3px solid var(--accent);border-radius:14px;padding:14px 16px;background:var(--paper)}
+.qc.done{border-left-color:var(--border)}
+.qc .hd{font:500 12.5px var(--mono);color:var(--accent-text)}
+.qc .pr{margin:6px 0;font-weight:600;font-size:16px;line-height:1.4}
+.qc .path{font:500 12.5px var(--mono);color:var(--text-3)}
+.qc .how{margin:8px 0 0;color:var(--text-2);font-size:14px}
+.cmp{display:grid;grid-template-columns:72px minmax(0,1fr);gap:4px 12px;margin:0 0 6px}
+.cmp dt{font:500 12.5px var(--mono);color:var(--text-3);padding-top:2px}
+.cmp dd{margin:0}.cmp dd.obs{font:500 13px var(--mono)}
+.vw{font-weight:700}.vw.no{color:var(--accent-text)}
+.resume{font:500 13px var(--mono);margin-top:6px !important}
+.once{border:1.5px solid var(--ink);border-radius:14px;padding:12px 16px}
+.once a{font-weight:600;cursor:pointer}
+.composer{border-top:1.5px solid var(--border);padding:12px 16px;display:flex;flex-direction:column;gap:10px}
+.quick{display:flex;flex-wrap:wrap;gap:8px}
+.quick .sure{font-size:14px}
+.cin{display:flex;gap:8px}
+.cin input{flex:1;min-width:0;font:400 16px var(--sans);min-height:48px;padding:0 18px;border:1.5px solid var(--control-border);border-radius:999px;background:var(--card)}
+.ccf{border:0;margin:0;padding:0;display:flex;flex-wrap:wrap;gap:6px;align-items:center;min-width:0}
+.ccf legend{float:left;font-size:13px;color:var(--text-3);margin-right:6px}
+.chint{font-size:13px;color:var(--text-3);margin:0}
+aside.runs h2{margin:0 0 4px;font-size:20px;font-weight:650;font-variation-settings:"wdth" 88}
+aside.runs p{margin:0 0 14px;font-size:14px;line-height:1.6;color:var(--text-3)}
+aside.runs ol{list-style:none;margin:0;padding:0;border-top:1px solid var(--border)}
+aside.runs li{padding:10px 0;border-bottom:1px solid var(--rule);font:500 12.5px/1.6 var(--mono);color:var(--text-2);overflow-wrap:anywhere}
+aside.runs li b{display:block;font:600 13px var(--sans);color:var(--ink)}
+/* Room shell */
+.top{position:sticky;top:0;z-index:30;background:var(--paper);border-bottom:1px solid var(--border)}
+.bar{max-width:1180px;margin:0 auto;height:56px;padding:0 32px;display:flex;align-items:center;gap:14px}
+.word{font-size:19px;font-weight:650;font-variation-settings:"wdth" 88;letter-spacing:-.01em}
+.proj{font:500 13px var(--mono);color:var(--text-3)}
+.me{margin-left:auto;width:44px;height:44px;border-radius:50%;border:1.5px solid var(--ink);background:var(--card);font-weight:650;font-size:16px;cursor:pointer}
+.me[aria-current="page"]{background:var(--ink);color:var(--on-ink)}
+.tabs{max-width:1180px;margin:0 auto;padding:0 32px;display:flex;gap:24px}
+.tab{font:600 15px/1 var(--sans);min-height:44px;padding:0 4px;border:0;border-bottom:2px solid transparent;background:transparent;color:var(--text-3);cursor:pointer;display:flex;align-items:center;gap:8px;transition:color .2s,border-color .2s}
+.tab:hover{color:var(--ink)}
+.tab[aria-current="page"]{color:var(--ink);border-color:var(--accent)}
+.tab svg{display:none}
+.pline{max-width:1180px;margin:0 auto;padding:10px 32px;font-size:15px;color:var(--ink);display:flex;flex-wrap:wrap;align-items:center;gap:0 8px}
+.main{max-width:640px;margin:0 auto;padding:24px 32px 140px;position:relative}
+.banner{margin:0 0 16px;padding:12px 16px;background:#FFFFFF;color:#16161A;border:1.5px solid var(--border);border-radius:14px;font-size:15px;line-height:1.5}
+.note{position:relative;z-index:1;margin:0 0 8px;padding:18px 20px;background:var(--card);border:1.5px solid var(--ink);border-radius:18px;font-size:17px;line-height:1.55}
+.note p{margin:0}
+h1.ph{margin:24px 0 0;font-size:46px;line-height:1.06;letter-spacing:-.02em;font-weight:650;font-variation-settings:"wdth" 88}
+h2.sh{margin:36px 0 10px;font-size:24px;line-height:1.3;font-weight:650;font-variation-settings:"wdth" 88}
+.lede{margin:10px 0 0;font-size:17px;line-height:1.6;color:var(--text-2)}
+.small{font-size:14px;line-height:1.6;color:var(--text-3)}
+.empty{position:relative;z-index:1;padding:24px;background:var(--card);border:1.5px solid var(--border);border-radius:18px}
+.empty p{margin:0 0 18px;font-size:17px;line-height:1.6;color:var(--text-2)}
+.fieldbg{position:absolute;inset:40px -40px auto 34%;display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:24px 12px;pointer-events:none;z-index:0;-webkit-mask-image:linear-gradient(to bottom,transparent,#000 30%,#000 60%,transparent);mask-image:linear-gradient(to bottom,transparent,#000 30%,#000 60%,transparent)}
+.fc{height:14px;border-radius:3px;background:var(--field)}
+.fc.g1{animation:g1 var(--d,9s) ease-in-out infinite}.fc.g2{animation:g2 var(--d,11s) ease-in-out infinite}.fc.g3{animation:g3 var(--d,13s) ease-in-out infinite}
+@keyframes g1{0%,70%,100%{background:var(--field)}80%,88%{background:var(--lv1)}}
+@keyframes g2{0%,62%,100%{background:var(--field)}74%,86%{background:var(--lv2)}}
+@keyframes g3{0%,55%,100%{background:var(--field)}68%,84%{background:var(--accent)}}
+.panel{position:relative;z-index:1;background:var(--card);border:1.5px solid var(--border);border-radius:18px;padding:20px 24px}
+.dims{list-style:none;margin:0;padding:0}
+.dims li{display:grid;grid-template-columns:minmax(0,1.6fr) minmax(0,1.2fr) 80px;gap:14px;align-items:center;padding:10px 0;border-top:1px solid var(--rule);font-size:15px}
+.dims li:first-child{border-top:0}
+.dims .lv{font:500 12px var(--mono);color:var(--text-4);text-align:right}
+.legend{display:flex;flex-wrap:wrap;gap:8px 16px;margin-top:12px;font-size:12.5px;color:var(--text-3)}
+.legend span{display:inline-flex;align-items:center;gap:6px}
+.legend i{width:12px;height:12px;border-radius:3px;box-shadow:inset 0 0 0 1.5px var(--ink)}
+.ask{margin:12px 0 0;font-size:15px;color:var(--text-2)}
+/* choices and areas */
+.choices{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin-top:16px}
+.choice{display:flex;flex-direction:column;align-items:flex-start;gap:6px;min-height:44px;padding:16px 18px;text-align:left;background:var(--card);border:1.5px solid var(--control-border);border-radius:14px;cursor:pointer;transition:border-color .2s}
+.choice:hover{border-color:var(--ink)}
+.choice b{font-size:16px}
+.choice span{font-size:14px;line-height:1.5;color:var(--text-3)}
+.choice .mono{font-size:12.5px}
+.areas{list-style:none;margin:16px 0 0;padding:0;display:flex;flex-wrap:wrap;gap:8px}
+.area{display:inline-flex;align-items:center;gap:2px;padding:0 0 0 14px;min-height:44px;border:1.5px solid var(--ink);border-radius:999px;background:var(--card);font-size:15px;max-height:60px;transition:opacity .25s,transform .25s}
+.area small{font:500 11.5px var(--mono);color:var(--text-3);margin-left:8px}
+.area button{width:44px;height:44px;border:0;background:none;border-radius:50%;cursor:pointer;font-size:18px;line-height:1;color:var(--text-2)}
+.area button:hover{color:var(--accent-text)}
+.area.out{opacity:0;transform:scale(.9)}
+.addrow{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
+.addrow input{flex:1 1 220px;min-width:0;font:400 16px var(--sans);min-height:44px;padding:0 16px;border:1.5px solid var(--control-border);border-radius:999px;background:var(--card)}
+.acts{display:flex;flex-wrap:wrap;align-items:center;gap:10px;margin-top:20px}
+/* settings */
+.sets{list-style:none;margin:20px 0 0;padding:0;background:var(--card);border:1.5px solid var(--border);border-radius:18px}
+.sets>li{padding:20px 24px;border-top:1px solid var(--rule)}
+.sets>li:first-child{border-top:0}
+.sets h2{margin:0;font-size:17px;font-weight:650}
+.sets .d{margin:4px 0 0;font-size:14px;line-height:1.6;color:var(--text-3)}
+.sets fieldset{border:0;margin:0;padding:0;min-width:0}
+.sets legend{padding:0;font-size:17px;font-weight:650;margin-bottom:8px}
+.radio{display:grid;grid-template-columns:28px minmax(0,1fr);gap:2px 10px;align-items:start;padding:10px 0;min-height:44px;cursor:pointer}
+.radio input{width:20px;height:20px;margin:2px 0 0;accent-color:var(--ink)}
+.radio b{font-size:16px;font-weight:600}
+.radio span{grid-column:2;font-size:14px;line-height:1.5;color:var(--text-3)}
+.srow{display:flex;justify-content:space-between;align-items:center;gap:16px}
+.sw{flex:none;position:relative;width:52px;height:44px;border:0;background:none;cursor:pointer}
+.sw::before{content:"";position:absolute;left:0;top:10px;width:52px;height:24px;border-radius:999px;border:1.5px solid var(--control-border);background:var(--card);box-sizing:border-box}
+.sw::after{content:"";position:absolute;left:5px;top:15px;width:14px;height:14px;border-radius:50%;background:var(--control-border);transition:transform .2s var(--ease-out)}
+.sw[aria-checked="true"]::before{background:var(--ink);border-color:var(--ink)}
+.sw[aria-checked="true"]::after{transform:translateX(24px);background:var(--on-ink)}
+.time{display:flex;align-items:center;gap:10px;margin-top:12px;font-size:15px}
+.time select{min-height:44px;padding:0 12px;border:1.5px solid var(--control-border);border-radius:10px;background:var(--card);font:500 14px var(--mono)}
+.slist{list-style:none;margin:10px 0 0;padding:0}
+.slist li{display:flex;align-items:center;justify-content:space-between;gap:12px;border-top:1px solid var(--rule);min-height:48px;font-size:15px}
+.slist li:first-child{border-top:0}
+.where{font:500 13.5px var(--mono);overflow-wrap:anywhere}
+.status{position:sticky;bottom:calc(var(--tabbar) + 16px);z-index:20;display:flex;justify-content:center;margin-top:20px;min-height:0}
+.status>div{display:flex;align-items:center;gap:6px 12px;padding:6px 6px 6px 18px;min-height:44px;background:var(--card);border:1.5px solid var(--ink);border-radius:14px;font-size:15px;box-shadow:0 8px 24px rgba(22,22,26,.08)}
+.status>div.err{border-color:var(--accent-text)}
+.status>div.plain{padding-right:18px}
+.skel{list-style:none;margin:28px 0 0;padding:0;display:grid;gap:12px}
+.skel li{height:64px;border-radius:14px;background:var(--field)}
+.skel li:nth-child(2){width:86%}
+.ph-empty{font-size:17px;line-height:1.6;color:var(--text-2)}
+@media (max-width:960px){.chatwrap{grid-template-columns:minmax(0,1fr);gap:28px}}
+@media (max-width:640px){
+:root{--tabbar:calc(64px + env(safe-area-inset-bottom))}
+.proto{gap:6px 8px}.proto .sp{display:none}.proto label[for=st]{flex-basis:100%}.proto select#st{flex:1 1 200px;max-width:none;min-width:0}
+.chatwrap{padding:0 16px 40px}
+.win{height:auto;min-height:0;border-radius:14px}
+.log{padding:16px 14px 10px;overflow:visible}
+.m.u{max-width:90%}
+.bar{padding:0 16px}
+.pline{padding:10px 16px}
+.main{padding:16px 16px calc(var(--tabbar) + 90px)}
+.tabs{position:fixed;left:0;right:0;bottom:0;z-index:30;padding:0 0 env(safe-area-inset-bottom);gap:0;background:var(--paper);border-top:1px solid var(--border);display:grid;grid-template-columns:repeat(4,1fr)}
+.tab{flex-direction:column;justify-content:center;gap:4px;height:64px;font-size:12px;border-bottom:0;border-top:2px solid transparent}
+.tab[aria-current="page"]{border-top-color:var(--accent)}
+.tab svg{display:block}
+h1.ph{font-size:31px}
+h2.sh{font-size:20px}
+.panel,.empty{padding:16px;border-radius:14px}
+.note{padding:16px;border-radius:14px;font-size:16px}
+.dims li{grid-template-columns:minmax(0,1fr) 72px;gap:6px 12px}
+.dims li .segs{grid-column:1 / -1;grid-row:2}
+.choices{grid-template-columns:minmax(0,1fr)}
+.sets>li{padding:16px}
+.empty .btn,.acts .btn{flex:1 1 100%}
+.area small{display:none}
+.fieldbg{display:none}
+}
+@media (prefers-reduced-motion:reduce){
+.fc,.in{animation:none !important}
+.sw::after,.btn,.tab,.sure,.area{transition:none}
+}
+</style>
+</head>
+<body>
+<div class="proto" role="region" aria-label="Prototype controls">
+<label for="st">Prototype state</label>
+<button type="button" id="prev" aria-label="Previous state">[</button>
+<select id="st"></select>
+<button type="button" id="next" aria-label="Next state">]</button>
+<span class="sp"></span>
+<label>Theme <select id="theme"><option value="">System</option><option value="light">Light</option><option value="dark">Dark</option></select></label>
+</div>
+
+<!-- Chat: the build surface, in a neutral frame -->
+<div class="chatwrap" id="chatview" hidden>
+<section class="win" aria-label="Agent session">
+<div class="wbar" aria-hidden="true"><i></i><i></i><i></i><span>orbit-pay · agent session</span></div>
+<div class="log" id="log" role="log" aria-live="polite" aria-label="Session transcript"></div>
+<form class="composer" id="composer" autocomplete="off"></form>
+</section>
+<aside class="runs" aria-labelledby="runsh">
+<h2 id="runsh">What runs</h2>
+<p>The learner sees only the chat. These are the steps behind each message.</p>
+<ol id="runs"></ol>
+</aside>
+</div>
+
+<!-- Room: the learning surface -->
+<div id="roomview" hidden>
+<header class="top">
+<div class="bar">
+<span class="word">Room</span><span class="proj">orbit-pay</span>
+<button type="button" class="me" id="me" aria-label="Sam. Open settings">S</button>
+</div>
+<nav class="tabs" aria-label="Room">
+<button type="button" class="tab" data-tab="inbox"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" aria-hidden="true"><path d="M3 13l3-8h12l3 8v6H3z"/><path d="M3 13h5l1 2h6l1-2h5"/></svg>Inbox</button>
+<button type="button" class="tab" data-tab="map"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><rect x="4" y="4" width="6" height="6" rx="1.5"/><rect x="14" y="4" width="6" height="6" rx="1.5"/><rect x="4" y="14" width="6" height="6" rx="1.5"/><rect x="14" y="14" width="6" height="6" rx="1.5"/></svg>Map</button>
+<button type="button" class="tab" data-tab="drills"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M9 9h6v7a3 3 0 0 1-6 0z"/><path d="M12 9V6M5 12h4M15 12h4"/></svg>Drills</button>
+<button type="button" class="tab" data-tab="explainers"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" aria-hidden="true"><path d="M6 3h9l3 3v15H6z"/><path d="M9 10h6M9 14h6M9 18h4"/></svg>Explainers</button>
+</nav>
+<div class="pline" id="pline" hidden><span>Reviews paused until 14 Nov.</span><button type="button" class="tbtn" data-act="resume">Resume</button></div>
+</header>
+<main class="main" id="main" tabindex="-1"></main>
+</div>
+
+<script>
+(function(){
+'use strict';
+var $=function(s,r){return (r||document).querySelector(s)},$$=function(s,r){return Array.prototype.slice.call((r||document).querySelectorAll(s))};
+var esc=function(s){return String(s).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]})};
+var RM=window.matchMedia('(prefers-reduced-motion: reduce)');
+
+/* fixture: orbit-pay dimensions and config */
+var DIMS=[{n:'Distributed systems',from:'worker/lease.py'},{n:'Data and storage',from:'billing/outbox.py'},{n:'Debugging and diagnosis',from:'every project'},{n:'Correctness and testing',from:'tests/'},{n:'Security',from:'auth/session.py'},{n:'Reading code',from:'every project'}];
+var MODES=[['quiet','Quiet','Reviews only. No questions during builds.'],['normal','Normal','One question before a build you choose to learn from, one after.'],['deep','Deep','Normal, plus drills and a question at each build step.']];
+var cfg,areas,chat,step,runs,room,saveFail,offline,saving;
+function fresh(){cfg={mode:'normal',paused:false,reminders:false,time:'19:00',target:'most',record:'repo'};areas=DIMS.map(function(d){return {n:d.n,from:d.from}});saveFail=false;offline=false}
+var REC=function(){return cfg.record==='repo'?'0xfauzi/learning-record (private)':'local files only'};
+var CUE='Back to: retries in the payment worker. Next: the cap on total retry time.';
+
+/* ---------- chat ---------- */
+var M={
+u:function(t){return '<div class="m u"><p>'+esc(t)+'</p></div>'},
+a:function(t){return '<div class="m a">'+t+'</div>'},
+tool:function(cmd,out){return '<div class="m tool"><b>'+esc(cmd)+'</b>'+(out?'<span class="out">'+esc(out)+'</span>':'')+'</div>'}
+};
+function push(html,run){chat.push(html);if(run)runs.push(run)}
+function areasLine(){return areas.map(function(a){return a.n}).join(', ')}
+var STEPS={
+start:function(){push(M.u('use learning while building on this project'));
+ push(M.tool('learning.py init','Checking where the record can live.'),['learning.py init','Creates the record files and config.json.']);
+ push(M.tool('gh repo view --json visibility','{"visibility":"PUBLIC"}'),['Privacy check','gh repo view --json visibility returns PUBLIC.']);
+ push(M.a('<p>This repo is public. A record in it would be public too. I can keep your record in a private repo, learning-record. Create it? Reply \'yes\' or \'keep it local\'.</p>'));step='privacy'},
+yes:function(){push(M.u('yes'));push(M.tool('gh repo create 0xfauzi/learning-record --private','Created 0xfauzi/learning-record'),['Private record repo','Cloud sessions attach it as a second repository.']);
+ cfg.record='repo';push(M.a('<p>Your record is in 0xfauzi/learning-record (private). Nothing is committed to orbit-pay.</p>'));STEPS.areas()},
+local:function(){push(M.u('keep it local'));push(M.tool('learning.py init --local','Record in .learning/ (ignored by git)'),['Local record','Local files and the Room db. Never committed to the public repo.']);
+ cfg.record='local';push(M.a('<p>Your record stays on this device and in your Room. Nothing is committed to orbit-pay.</p>'));STEPS.areas()},
+areas:function(){runs.push(['Areas detected from code','Queues in worker/, SQL in billing/, auth in auth/.']);
+ push(M.a('<p>I\'ll track these areas. Change them now or later: '+esc(areasLine())+'.</p><p>Mode: '+modeLine()+'</p>'),['config.json','mode '+cfg.mode+', areas saved.']);step='areas'},
+task:function(t){push(M.u(t));push(M.a('<p>I\'ll wrap <span class="mono">charge()</span> in a retry with exponential backoff and add <span class="mono">test_retry_budget</span>.</p>'));
+ push(M.tool('lwb_seal','Card sealed · sha256 9c1e…'),['lwb_seal','The answer key is fixed before the question. Not in Bash, not in the db.']);
+ push(M.a('<div class="qc" id="qc"><div class="hd">Question · retry-budget · before the build</div><p class="pr">Each attempt times out at 0.8 s and the backoff is 0.5 s, then 1 s. When test_retry_budget runs against a dead gateway, how long until charge() gives up?</p><div class="path">billing/charge.py:41-58</div><p class="how">Reply with your answer and how sure you are: guess, fairly sure or sure. Or "don\'t know" or "not now". Or answer in the Room: <a class="tbtn" style="padding:0" data-go="room-first">Open card</a></p></div><p style="margin-top:8px">Starting the build now.</p>'),['lwb_post','moment before, mode wait. The card is in open.json and in the Room as Now.']);step='answer'},
+answer:function(text,conf){var n=parseFloat((text.match(/\d+(?:[.,]\d+)?/)||['NaN'])[0].replace(',','.'));
+ push(M.u(text+(conf?' ('+conf+')':'')));push(M.a('<p>Locked. Shown after test_retry_budget runs.</p>'));
+ push(M.tool('pytest tests/test_retry_budget.py','test_retry_budget PASSED\ncharge() gave up after 4.1 s (3 attempts)'),['Observable','The test output is the comparison.']);
+ var v,why,next;
+ if(n>=4&&n<=4.2){v='Correct.';why='Three timeouts and two backoffs is 3.9 s. The test also waits for the jitter, up to 0.1 s per backoff. billing/retry.py:22.';next='Back on 10 Nov.'}
+ else if(n>=3.5&&n<=4.6){v='Not quite.';why='You added three timeouts and the two backoffs: 2.4 + 1.5 = 3.9 s. The test also waits for the jitter, up to 0.1 s per backoff. billing/retry.py:22.';next='Back on 10 Nov.'}
+ else{v='No.';why='Count both parts: three timeouts of 0.8 s and backoffs of 0.5 s and 1 s, plus up to 0.1 s jitter per backoff. billing/retry.py:22.';next='Back tomorrow.'}
+ var belief=(v==='No.'&&conf==='sure')?'<p>You chose Sure. This one returns tomorrow and is marked on your map.</p>':'';
+ push(M.a('<dl class="cmp"><dt>You said</dt><dd>'+esc(text)+(conf?' ('+esc(conf)+')':'')+'</dd><dt>It did</dt><dd class="obs">gave up at 4.1 s</dd></dl><p><span class="vw'+(v==='Correct.'?'':' no')+'">'+v+'</span> '+why+'</p><p>'+next+'</p>'+belief+'<p class="resume">'+CUE+'</p>'),['lwb_grade','Prediction attempt. No level change. Review in 3 days.']);
+ doneQ();STEPS.once()},
+dk:function(){push(M.u("don't know"));push(M.a('<p>Not known yet. This is the answer: three timeouts of 0.8 s and two backoffs, 3.9 s, plus up to 0.1 s jitter per backoff. billing/retry.py:22. Back tomorrow.</p><p class="resume">'+CUE+'</p>'),['lwb_grade','dont_know recorded. Back tomorrow.']);doneQ();STEPS.once()},
+notnow:function(){push(M.u('not now'));push(M.a('<p>OK. '+esc(CUE)+'</p>'),['not_now','Snooze. Never counts as a miss.']);doneQ();step='done'},
+once:function(){push(M.a('<div class="once"><p>To see waiting questions, say /learn. To stop questions for now, say not now. Your Room: <a class="tbtn" style="padding:0" data-go="room-first">Open Room</a></p><p style="margin-top:6px">Pin the Room to your sidebar? Reply \'pin\'.</p></div>'),['Room published, private','This line shows once and never again.']);step='once'},
+pin:function(){push(M.u('pin'));push(M.a('<p>Pinned. '+esc(CUE)+'</p>'));step='done'}
+};
+function doneQ(){chat=chat.map(function(h){return h.replace('class="qc" id="qc"','class="qc done"')})}
+function modeLine(){var m={quiet:'Quiet (reviews only). Also: Normal (one question before a build you choose to learn from, one after), Deep (adds drills).',normal:'Normal (one question before a build you choose to learn from, one after). Also: Quiet (reviews only), Deep (adds drills).',deep:'Deep (adds drills and a question at each build step). Also: Normal, Quiet (reviews only).'};return m[cfg.mode]}
+function quick(label,act){return '<button type="button" class="sure" data-q="'+act+'">'+esc(label)+'</button>'}
+function renderComposer(){var c=$('#composer'),h='';
+ if(step==='privacy')h='<div class="quick" role="group" aria-label="Suggested replies">'+quick('yes','yes')+quick('keep it local','local')+'</div>';
+ else if(step==='areas')h='<div class="quick" role="group" aria-label="Suggested replies">'+quick('Add a retry with backoff to charge()','task')+quick('drop Security','drop')+quick('use Deep','deep')+'</div>';
+ else if(step==='answer')h='<fieldset class="ccf"><legend>How sure?</legend>'+['guess','fairly sure','sure'].map(function(x){return '<label class="sure"><input type="radio" name="cc" value="'+x+'">'+x+'</label>'}).join('')+'<button type="button" class="sure dk" data-q="dk">don\'t know</button><button type="button" class="sure dk" data-q="notnow">not now</button></fieldset>';
+ else if(step==='once')h='<div class="quick" role="group" aria-label="Suggested replies">'+quick('pin','pin')+'</div>';
+ var ph={privacy:"Reply 'yes' or 'keep it local'",areas:'Your next task, or a change to the areas',answer:'Your answer, for example: about 3.9 s',once:'Reply, or keep building',done:'Keep building'}[step]||'';
+ h+='<div class="cin"><label class="vh" for="cinput">Message</label><input id="cinput" placeholder="'+esc(ph)+'"><button class="btn sm" type="submit">Send</button></div>';
+ if(step==='answer')h+='<p class="chint" id="chint" aria-live="polite"></p>';
+ c.innerHTML=h}
+function renderChat(animateFrom){var log=$('#log');log.innerHTML=chat.join('');
+ if(animateFrom!=null&&!RM.matches)$$('.m',log).slice(animateFrom).forEach(function(el,i){el.classList.add('in');el.style.animationDelay=(i*90)+'ms'});
+ $('#runs').innerHTML=runs.map(function(r){return '<li><b>'+esc(r[0])+'</b>'+esc(r[1])+'</li>'}).join('');
+ renderComposer();log.scrollTop=log.scrollHeight}
+function act(a,text){var n=chat.length;
+ if(a==='yes'||a==='local')STEPS[a]();
+ else if(a==='drop'){push(M.u('drop Security'));areas=areas.filter(function(x){return x.n!=='Security'});push(M.a('<p>Removed Security. Tracking: '+esc(areasLine())+'.</p>'),['config.json','areas updated.'])}
+ else if(a==='deep'){push(M.u('use Deep'));cfg.mode='deep';push(M.a('<p>Mode: '+modeLine()+'</p>'),['config.json','mode deep.'])}
+ else if(a==='task')STEPS.task(text||'Add a retry with backoff to charge()');
+ else if(a==='dk'||a==='notnow'||a==='pin')STEPS[a]();
+ renderChat(n);
+ var i=$('#cinput');if(i&&a!=='task')i.focus();else if(i)i.focus()}
+function free(text){var t=text.trim();if(!t)return;var l=t.toLowerCase();
+ if(step==='privacy'){if(/^y|private/.test(l))return act('yes');if(/local|^no/.test(l))return act('local');var n=chat.length;push(M.u(t));push(M.a("<p>Reply 'yes' or 'keep it local'.</p>"));return renderChat(n)}
+ if(step==='areas'){var m=l.match(/^(?:drop|remove)\s+(.+)$/);if(m){var n2=chat.length;push(M.u(t));var before=areas.length;areas=areas.filter(function(x){return x.n.toLowerCase().indexOf(m[1].trim())!==0});push(M.a(before===areas.length?'<p>I do not track an area with that name. Tracking: '+esc(areasLine())+'.</p>':'<p>Removed. Tracking: '+esc(areasLine())+'.</p>'));return renderChat(n2)}
+  var md=l.match(/\b(quiet|normal|deep)\b/);if(md&&l.length<20){var n3=chat.length;push(M.u(t));cfg.mode=md[1];push(M.a('<p>Mode: '+modeLine()+'</p>'));return renderChat(n3)}
+  return act('task',t)}
+ if(step==='answer'){if(/don.?t know/.test(l))return act('dk');if(/not now/.test(l))return act('notnow');
+  var c=$('input[name=cc]:checked');var cm=l.match(/\b(guess|fairly sure|sure)\b/);var conf=c?c.value:(cm?cm[1]:null);
+  if(!conf){$('#cinput').value=t;$('#chint').textContent='Add how sure you are: guess, fairly sure or sure.';return}
+  var n4=chat.length;STEPS.answer(t.replace(/[,.]?\s*\(?(guess|fairly sure|sure)\)?\s*$/i,''),conf);return renderChat(n4)}
+ if(step==='once'&&/^pin/.test(l))return act('pin');
+ var n5=chat.length;push(M.u(t));push(M.a('<p>'+esc(CUE)+'</p>'));renderChat(n5)}
+$('#composer').addEventListener('submit',function(e){e.preventDefault();var i=$('#cinput');var v=i.value;i.value='';free(v)});
+$('#composer').addEventListener('click',function(e){var b=e.target.closest('[data-q]');if(b)act(b.getAttribute('data-q'))});
+$('#log').addEventListener('click',function(e){var a=e.target.closest('[data-go]');if(a){e.preventDefault();go(a.getAttribute('data-go'))}});
+
+/* ---------- Room ---------- */
+function field(){var h='';for(var i=0;i<42;i++){var r=(i*37)%11;h+='<div class="fc'+(r===2?' g1':r===5?' g2':r===8?' g3':'')+'" style="--d:'+(9+(i%5)*2)+'s;animation-delay:'+(-(i%7)*1.3)+'s"></div>'}return '<div class="fieldbg" aria-hidden="true">'+h+'</div>'}
+function mapPanel(){return '<section class="panel" aria-labelledby="maph"><h2 id="maph" class="vh">Map</h2><ul class="dims">'+areas.map(function(a){return '<li><span>'+esc(a.n)+'<span class="vh">: Not yet</span></span><div class="segs" aria-hidden="true"><i class="seg"></i><i class="seg"></i><i class="seg"></i></div><span class="lv" aria-hidden="true">Not yet</span></li>'}).join('')+'</ul><div class="legend" aria-hidden="true"><span><i style="background:var(--lv1)"></i>With help</span><span><i style="background:var(--lv2)"></i>Without help</span><span><i style="background:var(--lv3)"></i>New situation</span></div><p class="ask">Your record is empty. It fills when you answer questions about this project.</p></section>'}
+function inboxEmpty(){return '<h2 class="sh">Inbox</h2><div class="empty" id="emptybox"><p>Questions appear here before and after a build. Start a task you want to learn from, and the agent asks one.</p><button type="button" class="btn" data-act="askone">Ask me one now</button><p class="small" id="askst" role="status" aria-live="polite" style="margin:12px 0 0"></p></div>'}
+function areasCard(){return '<section class="panel" aria-labelledby="arh"><h2 id="arh" style="margin:0;font-size:20px;font-weight:650;font-variation-settings:\'wdth\' 88">Areas to track. Detected from your code.</h2><ul class="areas" id="arealist">'+areaChips()+'</ul><div class="addrow" id="addrow" hidden><label class="vh" for="newarea">New area</label><input id="newarea" placeholder="For example: Performance"><button type="button" class="btn sm" data-act="addarea">Add</button></div><div class="acts"><button type="button" class="btn ghost sm" data-act="showadd" id="showadd">Add an area</button><button type="button" class="btn sm" data-act="areasdone">Keep these areas</button></div><p class="small" id="arst" role="status" aria-live="polite" style="margin:10px 0 0"></p></section>'}
+function areaChips(){return areas.map(function(a,i){return '<li class="area" data-i="'+i+'">'+esc(a.n)+'<small>'+esc(a.from)+'</small><button type="button" data-act="rmarea" data-i="'+i+'" aria-label="Remove '+esc(a.n)+'">×</button></li>'}).join('')}
+function privacyCard(){return '<section class="panel" aria-labelledby="pvh" style="border-color:var(--ink)"><h2 id="pvh" style="margin:0;font-size:20px;font-weight:650;font-variation-settings:\'wdth\' 88">Where should your record live? This project is public.</h2><div class="choices"><button type="button" class="choice" data-act="rec-repo"><b>Private repo (learning-record)</b><span>A new private repo on your GitHub account. Cloud sessions can attach it.</span><span class="mono">0xfauzi/learning-record</span></button><button type="button" class="choice" data-act="rec-local"><b>This device only</b><span>Local files and this Room. Nothing is committed to orbit-pay.</span><span class="mono">.learning/ (ignored by git)</span></button></div><p class="small" style="margin:12px 0 0">Until you choose, nothing is committed. You can change this later in Settings.</p></section>'}
+function sw(id,on,label){return '<button type="button" class="sw" role="switch" id="'+id+'" aria-checked="'+on+'" aria-label="'+label+'"></button>'}
+function settings(){var times=['07:30','08:00','12:30','18:00','19:00','21:00'];
+ return '<button type="button" class="tbtn" data-tab="inbox" style="margin-left:-6px">Back to Inbox</button><h1 class="ph" id="seth" tabindex="-1">Settings</h1>'+
+ '<ul class="sets">'+
+ '<li><fieldset><legend>Mode</legend>'+MODES.map(function(m){return '<label class="radio"><input type="radio" name="mode" value="'+m[0]+'"'+(cfg.mode===m[0]?' checked':'')+'><b>'+m[1]+'</b><span>'+m[2]+'</span></label>'}).join('')+'</fieldset></li>'+
+ '<li><h2>Pause</h2>'+(cfg.paused?'<div class="srow"><p class="d" style="margin:0;color:var(--ink);font-size:15px">Paused until 14 Nov.</p><button type="button" class="btn ghost sm" data-act="resume">Resume</button></div><p class="d">Due dates move by the pause. Nothing is lost.</p>':'<p class="d">Due dates move by the pause. Nothing is lost.</p><div class="acts" style="margin-top:12px"><button type="button" class="btn ghost sm" data-act="pause">Pause reviews for a week</button></div>')+'</li>'+
+ '<li><div class="srow"><div><h2 id="remh">Phone reminders</h2><p class="d">At most one a day, at a time you choose. Never while you are at your computer.</p></div>'+sw('swRem',cfg.reminders,'Phone reminders')+'</div>'+(cfg.reminders?'<div class="time"><label for="rtime">Time</label><select id="rtime">'+times.map(function(t){return '<option'+(t===cfg.time?' selected':'')+'>'+t+'</option>'}).join('')+'</select></div>':'')+'</li>'+
+ '<li><fieldset><legend>How sure do you want to be that you can still do this?</legend>'+[['most','Most of the time'],['almost','Almost always']].map(function(m){return '<label class="radio"><input type="radio" name="target" value="'+m[0]+'"'+(cfg.target===m[0]?' checked':'')+'><b>'+m[1]+'</b></label>'}).join('')+'<p class="d">Almost always means more reviews.</p></fieldset></li>'+
+ '<li><h2>Areas</h2><ul class="slist">'+areas.map(function(a,i){return '<li><span>'+esc(a.n)+'</span><button type="button" class="tbtn" data-act="rmset" data-i="'+i+'" aria-label="Remove '+esc(a.n)+'">Remove</button></li>'}).join('')+'</ul><div class="addrow"><label class="vh" for="setarea">New area</label><input id="setarea" placeholder="Add an area"><button type="button" class="btn ghost sm" data-act="addset">Add</button></div></li>'+
+ '<li><h2>Record location</h2><p class="d" style="color:var(--ink)">Your record is in: <span class="where">'+esc(REC())+'</span>.</p></li>'+
+ '<li><h2>Privacy</h2><p class="d">Answer keys are sealed before each question. You can read your own Room data, so the Room cannot stop you from looking. The record shows when each key was fixed and when you locked.</p></li>'+
+ '<li><h2>Export</h2><p class="d">A Markdown and JSON copy of your record for this project.</p><div class="acts" style="margin-top:12px"><button type="button" class="btn sm" data-act="export">Download my record</button></div></li>'+
+ '</ul><div class="status" id="status" role="status" aria-live="polite"></div>'}
+function renderRoom(){var mn=$('#main'),h='';mn.removeAttribute('aria-busy');
+ $$('.tab').forEach(function(t){if(t.getAttribute('data-tab')===room.tab&&room.view!=='settings')t.setAttribute('aria-current','page');else t.removeAttribute('aria-current')});
+ if(room.view==='settings')$('#me').setAttribute('aria-current','page');else $('#me').removeAttribute('aria-current');
+ $('#pline').hidden=!cfg.paused;
+ if(offline)h+='<div class="banner" role="status">You are offline. Answers are saved on this device and sent when you are back online.</div>';
+ if(room.view==='loading'){mn.setAttribute('aria-busy','true');mn.innerHTML='<span class="vh">Loading your Room.</span><ul class="skel" aria-hidden="true"><li></li><li></li><li></li></ul>';return}
+ if(room.view==='settings')h+=settings();
+ else if(room.tab==='inbox'){
+  if(room.pending==='privacy')h+=privacyCard();
+  else if(room.pending==='areas')h+=areasCard();
+  else if(room.first)h+='<div class="note in"><p>This is your Room. Questions wait here, and your map shows what you can do without the agent.</p></div>';
+  if(room.recLine)h+='<p class="small" role="status" style="margin:12px 2px 0">Your record is in: <span class="where">'+esc(REC())+'</span>.</p>';
+  h+=field()+inboxEmpty()+'<h2 class="sh">Map</h2>'+mapPanel()}
+ else if(room.tab==='map')h+='<h1 class="ph">Map</h1><p class="lede">What you can do without the agent, by area.</p><div style="margin-top:24px">'+mapPanel()+'</div>';
+ else if(room.tab==='drills')h+='<h1 class="ph">Drills</h1><p class="ph-empty">No drills yet. In Deep mode they come after a build, or say "drill me" in a session.</p>';
+ else h+='<h1 class="ph">Explainers</h1><p class="ph-empty">No explainers yet. Ask the agent to explain a change, and it appears here.</p>';
+ mn.innerHTML=h}
+function status(html,cls){var s=$('#status');if(!s)return;s.innerHTML='<div class="'+(cls||'plain')+'">'+html+'</div>'}
+function save(){if(saving)clearTimeout(saving);status('Saving…');
+ saving=setTimeout(function(){saving=null;
+  if(offline)return status('<span class="chip saved">Saved here</span> Sent when you are back online.');
+  if(saveFail)return status('<span>Not saved. Try again.</span><button type="button" class="btn ghost sm" data-act="retry">Try again</button>','err');
+  status('Saved.')},RM.matches?50:600)}
+function rerenderSettings(keepFocusSel){renderRoom();var f=keepFocusSel&&$(keepFocusSel);if(f)f.focus()}
+function exportRecord(){var data={project:'orbit-pay',learner:'Sam',exported:'2026-11-07',config:{mode:cfg.mode,paused:cfg.paused,reminders:cfg.reminders?cfg.time:null,record:REC()},dimensions:areas.map(function(a){return {name:a.n,level:'not yet',topics:[]}}),attempts:[]};
+ var md='# Learning record: orbit-pay\n\nLearner: Sam. Exported 7 Nov 2026.\n\n| Area | Level |\n|---|---|\n'+areas.map(function(a){return '| '+a.n+' | Not yet |'}).join('\n')+'\n\n```json\n'+JSON.stringify(data,null,2)+'\n```\n';
+ var a=document.createElement('a');a.href=URL.createObjectURL(new Blob([md],{type:'text/markdown'}));a.download='learning-record-orbit-pay.md';document.body.appendChild(a);a.click();a.remove();
+ status('Downloaded learning-record-orbit-pay.md.')}
+function removeChip(i,after){var li=$('.area[data-i="'+i+'"]');var name=areas[i].n;var done=function(){areas.splice(i,1);after(name)};if(li&&!RM.matches){li.classList.add('out');setTimeout(done,250)}else done()}
+$('#roomview').addEventListener('click',function(e){var t=e.target.closest('[data-act],[data-tab]');if(!t)return;
+ var tab=t.getAttribute('data-tab');if(tab){room.view='room';room.tab=tab;renderRoom();$('#main').focus();return}
+ var a=t.getAttribute('data-act'),i=+t.getAttribute('data-i');
+ if(a==='askone'){t.disabled=true;$('#askst').textContent='Asked. The agent writes it on your next message in the session, and it waits here as Now.'}
+ else if(a==='rec-repo'||a==='rec-local'){cfg.record=a==='rec-repo'?'repo':'local';room.pending=null;room.recLine=true;renderRoom();$('#main').focus()}
+ else if(a==='rmarea'){removeChip(i,function(n){$('#arealist').innerHTML=areaChips();$('#arst').textContent='Removed '+n+'.';var b=$('#arealist button')||$('#showadd');b.focus()})}
+ else if(a==='showadd'){$('#addrow').hidden=false;t.hidden=true;$('#newarea').focus()}
+ else if(a==='addarea'){var v=$('#newarea').value.trim();if(!v){$('#arst').textContent='Type an area name first.';return}areas.push({n:v,from:'added by you'});$('#arealist').innerHTML=areaChips();$('#newarea').value='';$('#arst').textContent='Added '+v+'.'}
+ else if(a==='areasdone'){room.pending=null;room.first=true;renderRoom();$('#main').focus()}
+ else if(a==='pause'){cfg.paused=true;rerenderSettings('[data-act="resume"]');save()}
+ else if(a==='resume'){cfg.paused=false;if(room.view==='settings'){rerenderSettings('[data-act="pause"]');save()}else renderRoom()}
+ else if(a==='rmset'){var n=areas[i].n;areas.splice(i,1);rerenderSettings('#setarea');save()}
+ else if(a==='addset'){var v2=$('#setarea').value.trim();if(!v2)return;areas.push({n:v2,from:'added by you'});rerenderSettings('#setarea');save()}
+ else if(a==='export')exportRecord();
+ else if(a==='retry'){saveFail=false;save()}});
+$('#roomview').addEventListener('click',function(e){var t=e.target.closest('#swRem');if(t&&!t.hasAttribute('data-act')){cfg.reminders=!cfg.reminders;rerenderSettings('#swRem');save()}});
+$('#roomview').addEventListener('change',function(e){var t=e.target;
+ if(t.name==='mode'){cfg.mode=t.value;save()}else if(t.name==='target'){cfg.target=t.value;save()}else if(t.id==='rtime'){cfg.time=t.value;save()}});
+$('#roomview').addEventListener('keydown',function(e){if(e.key==='Enter'&&(e.target.id==='newarea'||e.target.id==='setarea')){e.preventDefault();var b=e.target.parentNode.querySelector('button');b.click()}});
+$('#me').addEventListener('click',function(){room.view='settings';renderRoom();$('#seth').focus()});
+
+/* ---------- states ---------- */
+function chatTo(n){chat=[];runs=[];STEPS.start();if(n>0)STEPS.yes();if(n>1){STEPS.task('Add a retry with backoff to charge()');STEPS.answer('about 3.9 s','fairly sure')}}
+function roomAs(o){room={view:'room',tab:'inbox',first:false,pending:null,recLine:false};for(var k in o)room[k]=o[k]}
+var STATES=[
+['chat: public repo privacy question',function(){chatTo(0)}],
+['chat: areas and mode',function(){chatTo(1)}],
+['chat: first-run commands line',function(){chatTo(2)}],
+['Room first open',function(){roomAs({first:true})}],
+['privacy choice pending',function(){roomAs({pending:'privacy'})}],
+['areas editing',function(){roomAs({pending:'areas'})}],
+['settings normal',function(){roomAs({view:'settings'})}],
+['settings paused',function(){cfg.paused=true;roomAs({view:'settings'})}],
+['settings reminders on',function(){cfg.reminders=true;roomAs({view:'settings'})}],
+['settings saved',function(){cfg.mode='deep';roomAs({view:'settings'});room.after=function(){status('Saved.')}}],
+['settings error: not saved',function(){saveFail=true;cfg.reminders=true;roomAs({view:'settings'});room.after=function(){status('<span>Not saved. Try again.</span><button type="button" class="btn ghost sm" data-act="retry">Try again</button>','err')}}],
+['loading',function(){roomAs({view:'loading'})}],
+['offline',function(){offline=true;roomAs({view:'settings'})}]
+];
+var slug=function(s){return s.toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'')};
+var sel=$('#st'),cur=0;
+sel.innerHTML=STATES.map(function(s,i){return '<option value="'+i+'">'+(i+1)+'. '+esc(s[0])+'</option>'}).join('');
+function setState(i,keep){cur=(i+STATES.length)%STATES.length;sel.value=cur;if(!keep)fresh();room=null;STATES[cur][1]();
+ var isChat=cur<3;$('#chatview').hidden=!isChat;$('#roomview').hidden=isChat;
+ if(isChat)renderChat(null);else{renderRoom();if(room.after)room.after()}
+ try{history.replaceState(null,'','?state='+slug(STATES[cur][0]))}catch(err){}}
+function go(name){if(name==='room-first'){setState(3,true);if(cfg.record==='local'){room.recLine=true;renderRoom()}window.scrollTo(0,0);$('#main').focus()}}
+sel.addEventListener('change',function(){setState(+sel.value)});
+$('#prev').addEventListener('click',function(){setState(cur-1)});
+$('#next').addEventListener('click',function(){setState(cur+1)});
+$('#theme').addEventListener('change',function(e){var v=e.target.value;if(v)document.documentElement.setAttribute('data-theme',v);else document.documentElement.removeAttribute('data-theme')});
+document.addEventListener('keydown',function(e){var tg=e.target.tagName;if(tg==='INPUT'||tg==='TEXTAREA'||tg==='SELECT'||e.metaKey||e.ctrlKey||e.altKey)return;if(e.key==='[')setState(cur-1);else if(e.key===']')setState(cur+1)});
+var q=new URLSearchParams(location.search).get('state'),start=0;
+STATES.forEach(function(s,i){if(slug(s[0])===q)start=i});
+setState(start);
+})();
+</script>
+</body>
+</html>

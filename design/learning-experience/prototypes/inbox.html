@@ -1,0 +1,502 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Room inbox</title>
+<meta name="description" content="Prototype of the Room shell and Inbox: Now, Due and Later, the due cap, toasts after grading, pause, away, offline and error states.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="anonymous">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wdth,wght@75..100,400..700&amp;family=JetBrains+Mono:wght@400;500&amp;display=swap">
+<link rel="stylesheet" href="../assets/room.css">
+<style>
+:root{--tabbar:0px}
+*{box-sizing:border-box}
+html{scroll-padding:72px 0 calc(var(--tabbar) + 24px)}
+body{position:relative;margin:0;background:var(--paper);color:var(--ink);font-family:var(--sans);-webkit-font-smoothing:antialiased;min-height:100vh}
+body::after{content:"";position:absolute;inset:0;pointer-events:none;z-index:60;background-image:url(../assets/grain.png);background-size:240px 240px;opacity:var(--grain-op);mix-blend-mode:var(--grain-blend)}
+[hidden]{display:none !important}
+:focus-visible{outline:2px solid var(--accent);outline-offset:3px}
+a{color:var(--ink);text-underline-offset:4px}
+button{font-family:inherit;color:inherit}
+.mono{font-family:var(--mono)}
+.vh{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+/* prototype switcher: outside the product, dashed so nobody reads it as product UI */
+.proto{display:flex;flex-wrap:wrap;align-items:center;gap:8px 12px;margin:10px auto 0;max-width:1180px;padding:8px 12px;border:1.5px dashed var(--control-border);border-radius:12px;font:500 12px/1.3 var(--mono);color:var(--text-3);width:calc(100% - 32px)}
+.proto label{display:flex;align-items:center;gap:8px}
+.proto select,.proto button{font:500 12.5px var(--mono);min-height:44px;padding:0 10px;border:1.5px solid var(--control-border);border-radius:10px;background:var(--card);color:var(--ink);max-width:100%}
+.proto select#st{max-width:min(320px,58vw)}
+.proto .sp{flex:1}
+/* shell */
+.top{position:sticky;top:0;z-index:30;background:var(--paper);border-bottom:1px solid var(--border)}
+.bar{max-width:1180px;margin:0 auto;height:56px;padding:0 32px;display:flex;align-items:center;gap:14px}
+.word{font-size:19px;font-weight:650;font-variation-settings:"wdth" 88;letter-spacing:-.01em}
+.proj{font:500 13px var(--mono);color:var(--text-3)}
+.me{margin-left:auto;width:44px;height:44px;border-radius:50%;border:1.5px solid var(--ink);background:var(--card);font-weight:650;font-size:16px;cursor:pointer}
+.tabs{max-width:1180px;margin:0 auto;padding:0 32px;display:flex;gap:24px}
+.tab{font:600 15px/1 var(--sans);min-height:44px;padding:0 4px;border:0;border-bottom:2px solid transparent;background:transparent;color:var(--text-3);cursor:pointer;display:flex;align-items:center;gap:8px;transition:color .2s,border-color .2s}
+.tab:hover{color:var(--ink)}
+.tab[aria-current="page"]{color:var(--ink);border-color:var(--accent)}
+.tab svg{display:none}
+.main{max-width:640px;margin:0 auto;padding:24px 32px 140px;position:relative}
+.link{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:8px 16px;font-size:14px;color:var(--text-3);padding:4px 0 18px;border-bottom:1px solid var(--rule)}
+.link b{font-weight:500;color:var(--ink)}
+.btn{font:600 16px/1 var(--sans);min-height:50px;padding:0 26px;border-radius:999px;border:1.5px solid var(--ink);background:var(--ink);color:var(--on-ink);cursor:pointer;transition:background .2s,border-color .2s,color .2s,transform .15s;display:inline-flex;align-items:center;justify-content:center;gap:8px;text-decoration:none}
+.btn:hover{background:var(--accent);border-color:var(--accent);color:#16161A}
+.btn:active{transform:scale(.97)}
+.btn.ghost{background:transparent;color:var(--ink)}
+.btn.ghost:hover{background:var(--ink);color:var(--on-ink)}
+.btn.sm{min-height:44px;font-size:15px;padding:0 18px}
+.btn[disabled]{opacity:.45;cursor:not-allowed;background:var(--ink);border-color:var(--ink);color:var(--on-ink);transform:none}
+.tbtn{min-height:44px;padding:0 6px;border:0;background:none;font:600 15px var(--sans);text-decoration:underline;text-underline-offset:4px;cursor:pointer;color:var(--ink)}
+.note{display:flex;flex-wrap:wrap;align-items:center;gap:4px 12px;margin-top:16px;padding:12px 16px;background:var(--card);border:1.5px solid var(--border);border-radius:14px;font-size:15px;line-height:1.5;color:var(--ink)}
+.note.strong{border-color:var(--ink)}
+.note p{margin:0;flex:1 1 260px}
+h1.ph{margin:28px 0 0;font-size:46px;line-height:1.06;letter-spacing:-.02em;font-weight:650;font-variation-settings:"wdth" 88}
+.lede{margin:12px 0 0;font-size:17px;line-height:1.6;color:var(--text-2);max-width:560px}
+.grp{margin-top:32px}
+.gh{display:flex;align-items:baseline;justify-content:space-between;gap:12px;margin:0 0 10px}
+.gh h2{margin:0;font-size:20px;font-weight:650;font-variation-settings:"wdth" 88}
+.gh .small{font-size:14px;color:var(--text-3)}
+.list{list-style:none;margin:0;padding:0;background:var(--card);border:1.5px solid var(--border);border-radius:18px;overflow:hidden}
+.list li{border-top:1px solid var(--rule);overflow:hidden;max-height:240px}
+.list li:first-child{border-top:0}
+.list.now{border-left:3px solid var(--accent)}
+.ra{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:4px 16px;align-items:center;min-height:64px;padding:12px 20px;text-decoration:none;color:var(--ink);transition:background .2s}
+.ra:hover{background:color-mix(in srgb,var(--field) 45%,transparent)}
+.ra:focus-visible{outline-offset:-4px;border-radius:14px}
+.eb{font-size:13px;font-weight:500;color:var(--accent-text)}
+.tp{font:500 15px/1.4 var(--mono);overflow-wrap:anywhere}
+.sub{font-size:14px;color:var(--text-3);line-height:1.5}
+.sub .late{color:var(--ink);font-weight:500}
+.rt{display:flex;align-items:center;gap:12px;grid-row:1 / span 3;grid-column:2}
+.cost{font:500 12.5px var(--mono);color:var(--text-3);white-space:nowrap}
+.chip{display:inline-flex;align-items:center;gap:6px;height:24px;padding:0 10px;border-radius:999px;border:1.5px solid var(--ink);font:500 12px var(--mono);white-space:nowrap}
+.chip.locked{background:var(--ink);color:var(--on-ink)}
+.chip.miss{border-color:var(--accent-text);color:var(--accent-text)}
+.chip.saved{border-style:dashed}
+.leave{animation:leave .25s ease-in forwards}
+@keyframes leave{to{opacity:0;max-height:0;min-height:0;padding-top:0;padding-bottom:0}}
+.over{margin:12px 2px 0;font-size:14px;color:var(--text-3)}
+.cta{margin-top:16px}
+.errrow{display:flex;flex-wrap:wrap;align-items:center;gap:4px 12px;min-height:64px;padding:10px 20px;font-size:15px;color:var(--text-2)}
+.errrow p{margin:0;flex:1 1 240px}
+.skel{list-style:none;margin:32px 0 0;padding:0;display:grid;gap:12px}
+.skel li{height:64px;border-radius:14px;background:var(--field)}
+.skel li:nth-child(2){width:86%}
+.keys{margin-top:40px;font-size:13px;color:var(--text-3);display:flex;flex-wrap:wrap;gap:8px 16px}
+.kc{display:inline-flex;align-items:center;justify-content:center;min-width:22px;height:22px;padding:0 6px;border:1.5px solid var(--control-border);border-radius:6px;font:500 12px var(--mono);color:var(--ink);margin-right:4px}
+@media (hover:none){.keys,.kc{display:none !important}}
+/* empty states: the faint record field behind them, the only place it moves */
+.empty{position:relative;margin-top:28px;padding:28px 24px;background:var(--card);border:1.5px solid var(--border);border-radius:18px;z-index:1}
+.empty p{margin:0 0 20px;font-size:17px;line-height:1.6;color:var(--text-2)}
+.fieldbg{position:absolute;inset:150px 0 auto 30%;display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:24px 12px;pointer-events:none;z-index:0;-webkit-mask-image:linear-gradient(to bottom,transparent,#000 30%,#000 60%,transparent);mask-image:linear-gradient(to bottom,transparent,#000 30%,#000 60%,transparent)}
+.fc{height:14px;border-radius:3px;background:var(--field)}
+.fc.g1{animation:g1 var(--d,9s) ease-in-out infinite}.fc.g2{animation:g2 var(--d,11s) ease-in-out infinite}.fc.g3{animation:g3 var(--d,13s) ease-in-out infinite}
+@keyframes g1{0%,70%,100%{background:var(--field)}80%,88%{background:var(--lv1)}}
+@keyframes g2{0%,62%,100%{background:var(--field)}74%,86%{background:var(--lv2)}}
+@keyframes g3{0%,55%,100%{background:var(--field)}68%,84%{background:var(--accent)}}
+/* card view */
+.back{margin:8px 0 0 -6px}
+.qcard{margin-top:12px;background:var(--card);border:1.5px solid var(--border);border-radius:18px;padding:24px}
+.qcard.isnow{border-left:3px solid var(--accent)}
+.qcard.nudge{animation:nudge .3s var(--ease-out)}
+@keyframes nudge{50%{transform:translateY(-8px)}}
+.qq{margin:6px 0 0;font-size:24px;line-height:1.3;font-weight:600;letter-spacing:-.01em}
+.lvl{font:500 13px var(--mono);color:var(--text-3);margin-top:4px}
+details.code{margin-top:16px}
+details.code summary{min-height:44px;display:inline-flex;align-items:center;font-weight:600;cursor:pointer;text-decoration:underline;text-underline-offset:4px}
+pre.ex{margin:8px 0 0;padding:14px 18px;background:var(--paper);border:1.5px solid var(--border);border-radius:14px;font:500 13px/1.8 var(--mono);overflow-x:auto}
+pre.ex .hd{display:block;color:var(--text-3)}
+pre.ex i{display:inline-block;width:2.4em;color:var(--text-dim);font-style:normal}
+pre.ex .hl{background:var(--accent-wash)}
+label.fl{display:block;margin-top:20px;font-weight:600;font-size:15px}
+textarea{display:block;width:100%;margin-top:8px;padding:12px 14px;font:400 16px/1.5 var(--sans);color:var(--ink);background:var(--card);border:1.5px solid var(--control-border);border-radius:14px;resize:vertical}
+textarea[readonly]{background:var(--paper)}
+fieldset{border:0;margin:20px 0 0;padding:0;min-width:0}
+legend{font-size:15px;color:var(--text-3);margin-bottom:10px;padding:0}
+.confs{display:flex;flex-wrap:wrap;gap:8px}
+.sure{position:relative;display:inline-flex;align-items:center;min-height:44px;padding:0 16px;border-radius:999px;border:1.5px solid var(--control-border);color:var(--text-2);font:500 15px var(--sans);cursor:pointer;transition:border-color .2s,background .2s,color .2s}
+.sure:hover{border-color:var(--ink)}
+.sure input{position:absolute;opacity:0;inset:0;margin:0;cursor:pointer}
+.sure:has(input:checked){background:var(--ink);border-color:var(--ink);color:var(--on-ink)}
+.sure:has(input:focus-visible){outline:2px solid var(--accent);outline-offset:3px}
+.sure.dk{border-style:dashed;background:transparent}
+.sure[aria-disabled="true"],.sure:has(input:disabled){cursor:default}
+.mean{margin:8px 0 0;font-size:14px;color:var(--text-3);min-height:22px}
+.hints{margin-top:18px;padding-top:14px;border-top:1px solid var(--rule)}
+.ladder{display:inline-grid;grid-template-columns:repeat(3,28px);gap:4px;vertical-align:middle;margin-right:10px}
+.ladder span{height:10px;border-radius:3px;box-shadow:inset 0 0 0 1.5px var(--ink)}
+.ladder span.on{background:var(--ink)}
+.hints ol{margin:8px 0 0;padding:0;list-style:none;display:grid;gap:6px;font-size:15px;line-height:1.5;color:var(--text-2)}
+.hints ol b{font:500 12.5px var(--mono);color:var(--ink);margin-right:8px}
+.acts{display:flex;flex-wrap:wrap;align-items:center;gap:10px;margin-top:22px}
+.acts .grow{flex:1}
+.helper{font-size:14px;color:var(--text-3);margin:10px 0 0}
+.quiet{font-size:14px;color:var(--text-3);margin:14px 0 0}
+.snooze{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
+.state{margin-top:18px;font-size:16px;line-height:1.6;color:var(--ink)}
+.said{margin:16px 0 0;padding:12px 16px;border-left:3px solid var(--border);color:var(--text-2);font-size:16px;line-height:1.5}
+.said .chip{margin-left:6px}
+.verdict{margin-top:20px;padding:20px 22px;border-radius:14px;background:var(--card);border:1.5px solid var(--border)}
+.verdict.in{animation:rise .6s var(--ease-out) both}
+@keyframes rise{from{opacity:0;transform:translateY(10px)}}
+.vw{margin:0;font-size:26px;font-weight:700;color:var(--accent-text)}
+.vw.ok{color:var(--ink)}
+.why{margin:8px 0 0;font-size:16px;line-height:1.6;color:var(--text-2)}
+.belief{margin:10px 0 0;font-size:15px;line-height:1.6;color:var(--text-3)}
+.delta{margin-top:16px;padding-top:14px;border-top:1px solid var(--rule);display:grid;grid-template-columns:minmax(0,1fr) 150px;gap:6px 14px;align-items:center;font-size:14px}
+.delta .dl{color:var(--text-3)}
+.delta .dl b{font:500 13px var(--mono);color:var(--ink);margin-right:6px}
+.delta .dl svg{vertical-align:-2px;margin:0 4px}
+.segs{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:4px}
+.seg{height:14px;border-radius:3px;background:var(--lv0);transition:background-color .4s var(--ease-out),transform .4s var(--ease-spring)}
+.seg.f1{background:var(--lv1);box-shadow:inset 0 0 0 1.5px var(--ink)}.seg.f2{background:var(--lv2);box-shadow:inset 0 0 0 1.5px var(--ink)}.seg.f3{background:var(--lv3);box-shadow:inset 0 0 0 1.5px var(--ink)}
+.seg.lit{transform:scaleY(1.15)}
+.cue{margin:14px 0 0;font:500 13px/1.7 var(--mono);color:var(--text-2)}
+.placeholder{margin-top:28px;font-size:17px;color:var(--text-2)}
+/* toast and settings */
+.toastwrap{position:fixed;left:0;right:0;bottom:calc(var(--tabbar) + 20px);z-index:40;display:flex;justify-content:center;padding:0 16px;pointer-events:none}
+.toast{pointer-events:auto;display:flex;align-items:center;gap:6px 14px;width:100%;max-width:576px;padding:8px 8px 8px 18px;background:var(--card);border:1.5px solid var(--ink);border-radius:14px;font-size:16px;box-shadow:0 8px 24px rgba(22,22,26,.08);animation:rise .3s var(--ease-out) both}
+.toast p{margin:0;flex:1}
+.toast .x{width:44px;height:44px;border:0;background:none;cursor:pointer;border-radius:10px;font-size:20px;line-height:1}
+.sheet{position:absolute;right:32px;top:62px;z-index:35;width:min(360px,calc(100vw - 32px));padding:20px;background:var(--card);border:1.5px solid var(--border);border-radius:18px;box-shadow:0 12px 32px rgba(22,22,26,.1)}
+.sheet h2{margin:0 0 4px;font-size:20px;font-weight:650;font-variation-settings:"wdth" 88}
+.setrow{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:12px 0;border-top:1px solid var(--rule);font-size:15px}
+.setrow:first-of-type{border-top:0}
+.setrow small{display:block;color:var(--text-3);font-size:13px;line-height:1.5;margin-top:2px}
+.sw{flex:none;position:relative;width:52px;height:44px;border:0;background:none;cursor:pointer}
+.sw::before{content:"";position:absolute;left:0;top:10px;width:52px;height:24px;border-radius:999px;border:1.5px solid var(--control-border);background:var(--card);box-sizing:border-box}
+.sw::after{content:"";position:absolute;left:5px;top:15px;width:14px;height:14px;border-radius:50%;background:var(--control-border);transition:transform .2s var(--ease-out)}
+.sw[aria-checked="true"]::before{background:var(--ink);border-color:var(--ink)}
+.sw[aria-checked="true"]::after{transform:translateX(24px);background:var(--on-ink)}
+@media (max-width:640px){
+:root{--tabbar:calc(64px + env(safe-area-inset-bottom))}
+.bar{padding:0 16px}
+.main{padding:16px 16px calc(var(--tabbar) + 110px)}
+.tabs{position:fixed;left:0;right:0;bottom:0;z-index:30;padding:0 0 env(safe-area-inset-bottom);gap:0;background:var(--paper);border-top:1px solid var(--border);display:grid;grid-template-columns:repeat(4,1fr)}
+.tab{flex-direction:column;justify-content:center;gap:4px;height:64px;font-size:12px;border-bottom:0;border-top:2px solid transparent}
+.tab[aria-current="page"]{border-top-color:var(--accent)}
+.tab svg{display:block}
+h1.ph{font-size:31px}
+.qq{font-size:20px}
+.qcard{padding:16px;border-radius:14px}
+.ra{padding:12px 16px;gap:4px 10px}
+.cost{display:none}
+.cta .btn,.acts .btn.lock{width:100%}
+.acts .grow{display:none}
+.sheet{right:16px}
+.proto{gap:6px 8px}.proto .sp{display:none}.proto label[for=st]{flex-basis:100%}.proto select#st{flex:1 1 220px;max-width:none;min-width:0}
+.qcard .acts{position:sticky;bottom:calc(var(--tabbar) + 8px);z-index:5;background:var(--card);margin:16px -8px 0;padding:8px;border-radius:14px}
+.acts .btn.ghost{flex:1}
+.delta{grid-template-columns:minmax(0,1fr)}
+}
+@media (prefers-reduced-motion:reduce){
+.fc,.leave,.qcard.nudge,.verdict.in,.toast{animation:none !important}
+.seg,.sw::after,.btn,.tab,.sure{transition:none}
+}
+</style>
+</head>
+<body>
+<div class="proto" role="region" aria-label="Prototype controls">
+<label for="st">Prototype state</label>
+<button type="button" id="prev" aria-label="Previous state">[</button>
+<select id="st"></select>
+<button type="button" id="next" aria-label="Next state">]</button>
+<span class="sp"></span>
+<label>Theme <select id="theme"><option value="">System</option><option value="light">Light</option><option value="dark">Dark</option></select></label>
+</div>
+
+<header class="top">
+<div class="bar">
+<span class="word">Room</span><span class="proj">orbit-pay</span>
+<button type="button" class="me" id="me" aria-haspopup="true" aria-expanded="false" aria-controls="sheet" aria-label="Sam. Open settings">S</button>
+</div>
+<nav class="tabs" aria-label="Room">
+<button type="button" class="tab" data-tab="inbox" aria-current="page"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" aria-hidden="true"><path d="M3 13l3-8h12l3 8v6H3z"/><path d="M3 13h5l1 2h6l1-2h5"/></svg>Inbox</button>
+<button type="button" class="tab" data-tab="map"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><rect x="4" y="4" width="6" height="6" rx="1.5"/><rect x="14" y="4" width="6" height="6" rx="1.5"/><rect x="4" y="14" width="6" height="6" rx="1.5"/><rect x="14" y="14" width="6" height="6" rx="1.5"/></svg>Map</button>
+<button type="button" class="tab" data-tab="drills"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M9 9h6v7a3 3 0 0 1-6 0z"/><path d="M12 9V6M5 12h4M15 12h4M6 7l3 2M18 7l-3 2M6 19l3-2M18 19l-3-2"/></svg>Drills</button>
+<button type="button" class="tab" data-tab="explainers"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" aria-hidden="true"><path d="M6 3h9l3 3v15H6z"/><path d="M9 10h6M9 14h6M9 18h4"/></svg>Explainers</button>
+</nav>
+<div class="sheet" id="sheet" role="dialog" aria-label="Settings" hidden>
+<h2>Settings</h2>
+<div class="setrow"><span>Pause reviews for a week<small>Due dates move by the pause. Nothing is lost.</small></span><button type="button" class="sw" role="switch" id="swPause" aria-checked="false" aria-label="Pause reviews for a week"></button></div>
+<div class="setrow"><span>Phone reminders<small>At most one a day, at a time you choose. Never while you are at your computer.</small></span><button type="button" class="sw" role="switch" id="swRem" aria-checked="true" aria-label="Phone reminders"></button></div>
+<p class="sub" id="saved" role="status" aria-live="polite"></p>
+</div>
+</header>
+
+<main class="main" id="main" tabindex="-1"></main>
+<div class="toastwrap"><div id="toastslot" role="status" aria-live="polite"></div></div>
+
+<script>
+(function(){
+'use strict';
+var $=function(s,r){return (r||document).querySelector(s)}, $$=function(s,r){return Array.prototype.slice.call((r||document).querySelectorAll(s))};
+var esc=function(s){return String(s).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]})};
+var RM=window.matchMedia('(prefers-reduced-motion: reduce)');
+var LV=['Not yet','With help','Without help','New situation'];
+var CUE='Back to: retries in the payment worker. Next: the dead letter queue.';
+var CHEV='<svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 2l4 4-4 4"/></svg>';
+var TICK='<svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 6.5l2.5 2.5L10 3"/></svg>';
+var CODE=['def charge(order):','    for attempt in range(3):','        try:','            return gateway.charge(','                order.card,','                order.amount,','                idempotency_key=order.id,','                timeout=0.8,','            )','        except gateway.Timeout:','            sleep(backoff(attempt))','    raise ChargeFailed(order.id)'];
+var MEAN={Guess:'I would not bet on it.','Fairly sure':'More likely right than wrong.',Sure:'I would be surprised to be wrong.'};
+
+/* fixture: orbit-pay cards (the shared fixture.js, inlined so this page stands alone) */
+var CARDS={
+c_7a21:{kind:'explain',topic:'idempotency',lv:1,reason:'After it works',q:'Why can the worker retry charge() without charging the customer twice?',code:true,
+ hints:['Look at what the worker sends with every charge call.','billing/charge.py:47 passes a key. Where does its value come from?','The gateway keeps the result for each key it has seen.'],
+ rx:[/order.?id/i,/key|idempot/i],next:['10 Nov','8 Nov'],
+ why:['The key is the order id (billing/charge.py:47), and the gateway returns the stored result for a repeated key.','The key is what makes it safe, yes. But the key must be the order id, not a new UUID per attempt; a new UUID per attempt charges twice. billing/charge.py:47.','The timeout does not make it safe. A timeout only means the reply did not arrive; the charge may have run. The key at billing/charge.py:47 is what stops a second charge.'],
+ ans:'The key is the order id (billing/charge.py:47). The gateway returns the stored result for a repeated key, so a retry does not charge again.'},
+c_9b04:{kind:'review',topic:'retry-budget',lv:1,reason:'Review',q:'A refund call uses the same retry: 0.8 s timeout per attempt, a backoff of 0.5 s that doubles, 4 attempts and no wait after the last. How long until refund() gives up on a dead gateway?',
+ rx:[/6[.,]7/,/3[.,]2|3[.,]5/],next:['28 Nov','10 Nov'],
+ why:['Four timeouts of 0.8 s and three backoffs: 3.2 + 0.5 + 1 + 2 = 6.7 s. billing/retry.py:22.','You have one part of it. Add the four timeouts (3.2 s) and the three backoffs (3.5 s): 6.7 s. billing/retry.py:22.','Count both parts: four timeouts of 0.8 s, then backoffs of 0.5, 1 and 2 s. The total is 6.7 s. billing/retry.py:22.'],
+ ans:'Four timeouts of 0.8 s (3.2 s) plus backoffs of 0.5, 1 and 2 s (3.5 s): 6.7 s. billing/retry.py:22.'},
+c_9b05:{kind:'review',topic:'timeouts-vs-failures',lv:1,reason:'Review',q:'charge() raised gateway.Timeout after 0.8 s. The worker logs "charge failed" and marks the order unpaid. What is wrong with that?',
+ rx:[/may|might|not know|unknown|did not arrive|no reply|could have|maybe|unsure/i,/timeout|log/i],next:['10 Nov','8 Nov'],
+ why:['A timeout means the reply did not arrive. The charge may have run at the gateway, so "unpaid" can be false. worker/charge_job.py:31.','The log line is the problem, yes. Say why: the charge may have run, because a timeout only means no reply. worker/charge_job.py:31.','A timeout is not a failure. The reply did not arrive, and the charge may have run. worker/charge_job.py:31 marks it unpaid anyway.'],
+ ans:'A timeout only means no reply. The charge may have run, so the order is not known to be unpaid. worker/charge_job.py:31.'},
+c_3f9c:{kind:'predict',topic:'retry-budget',lv:1,reason:'Before the build',q:'Each attempt times out at 0.8 s and the backoff is 0.5 s, then 1 s. When test_retry_budget runs against a dead gateway, how long until charge() gives up?',code:true},
+c_9b07:{kind:'review',topic:'idempotency',lv:2,reason:'Review',q:'A refund call now retries too. It uses a new UUID as its key on every attempt. What happens when the first attempt times out but the refund ran?',
+ rx:[/twice|two|double|second refund|again/i,/key|uuid/i],next:['28 Nov','10 Nov'],
+ why:['Each attempt has a new key, so the gateway sees a new refund and pays it again. billing/refund.py:19.','The key is the cause, yes. Say the result: a new key per attempt means a second refund. billing/refund.py:19.','The gateway cannot match a new UUID to the first attempt, so it refunds twice. billing/refund.py:19.'],
+ ans:'The second attempt has a new key, so the gateway refunds twice. billing/refund.py:19.'},
+c_9b08:{kind:'review',topic:'outbox',lv:3,reason:'Review',q:'The payment worker saves the order, then publishes order.paid. The process stops between the two. What does the customer get, and what change prevents it?',
+ rx:[/transaction|outbox/i,/email|no message|not sent|never sent/i],next:['6 May','10 Nov'],
+ why:['An order but no confirmation. Write the order and the message in one transaction, and a separate sender publishes it. billing/outbox.py:12.','That is what the customer gets. Add the fix: save the message in the same transaction as the order. billing/outbox.py:12.','The save completes, so the order exists, but the message is never sent. billing/outbox.py:12.'],
+ ans:'An order with no confirmation. Save the message with the order in one transaction; a sender publishes it. billing/outbox.py:12.'},
+c_9b09:{kind:'review',topic:'lease-expiry',lv:2,reason:'Review',q:'A job lease lasts 30 s. A charge job takes 45 s on a slow gateway. What happens next?',
+ rx:[/another|second|other worker|again|twice|both/i,/lease/i],next:['28 Nov','10 Nov'],
+ why:['The lease ends at 30 s, so another worker takes the job and runs it again. The key stops a second charge. worker/lease.py:40.','The lease ends, yes. Then a second worker runs the same job. worker/lease.py:40.','The job does not stop at 30 s. A second worker takes it while the first still runs. worker/lease.py:40.'],
+ ans:'At 30 s another worker takes the job and runs it too. worker/lease.py:40.'},
+c_9b10:{kind:'review',topic:'outbox-ordering',lv:1,reason:'Review',q:'Two senders read the outbox at the same time. Can order.refunded reach the consumer before order.paid? What in the code decides it?',
+ rx:[/lock|skip locked|one sender|single sender|sequence|order by/i,/yes|can/i],next:['10 Nov','8 Nov'],
+ why:['Yes, unless one sender owns a row at a time. FOR UPDATE SKIP LOCKED with ORDER BY id decides it. billing/outbox.py:30.','Yes, it can. Name what decides it: the row lock and ORDER BY id at billing/outbox.py:30.','Two senders can publish out of order. The row lock and ORDER BY id at billing/outbox.py:30 decide it.'],
+ ans:'Yes. FOR UPDATE SKIP LOCKED with ORDER BY id at billing/outbox.py:30 decides it.'}
+};
+var row=function(id,card,group,sub,extra){var r={id:id,card:card,group:group,sub:sub||'',chip:'Open'};for(var k in extra||{})r[k]=extra[k];return r};
+var NOW=function(){return row('r1','c_7a21','now','',{cost:'About 1 min'})};
+var D_RB=function(){return row('r2','c_9b04','due','After 3 days',{cost:'About 2 min'})};
+var D_TF=function(){return row('r3','c_9b05','due','After 1 day',{late:'2 days late',cost:'About 1 min'})};
+var LATER=function(){return [row('l1','c_9b10','later','Not now on 6 Nov',{cost:'About 2 min'}),row('l2','c_3f9c','later','After this build',{cost:'About 1 min'})]};
+var GRADED={right:['The key is the order id, so the gateway sees the same key and returns the first charge.','Sure'],partial:['Each charge sends an idempotency key, so the gateway ignores the repeat.','Fairly sure'],wrong:['The timeout stops the first call before it reaches the gateway.','Fairly sure'],cw:['The timeout stops the first call before it reaches the gateway.','Sure']};
+
+var STATES=[
+['empty first run',function(){S.first=true}],
+['empty nothing due with next date',function(){S.nothing=true}],
+['loading skeleton',function(){S.loading=true}],
+['waiting: Now plus 2 due',function(){S.now=[NOW()];S.due=[D_RB(),D_TF()]}],
+['answered: row locked, grading',function(){var r=NOW();r.chip='Locked';r.line='Grading…';r.hold=true;S.now=[r];S.due=[D_RB(),D_TF()];S.res.c_7a21={a:GRADED.right[0],c:'Sure'}}],
+['graded right toast',function(){gradedDemo('right')}],
+['graded partial toast',function(){gradedDemo('partial')}],
+['graded wrong toast',function(){gradedDemo('wrong')}],
+['confident and wrong toast',function(){gradedDemo('cw')}],
+['overflow: 5 due, 9 more over 4 days',function(){S.due=[row('o1','c_9b07','due','After 3 days',{late:'18 days late',cost:'About 1 min'}),row('o2','c_9b04','due','After 3 days',{late:'16 days late',cost:'About 2 min'}),row('o3','c_9b05','due','After 1 day',{late:'20 days late',cost:'About 1 min'}),row('o4','c_9b08','due','After 21 days',{late:'4 days late',cost:'About 2 min'}),row('o5','c_9b09','due','After 7 days',{late:'9 days late',cost:'About 1 min'})];S.over='9 more over the next 4 days.'}],
+['later items',function(){S.now=[NOW()];S.due=[D_RB()];S.later=LATER().concat([row('l3','c_9b05','later','Tomorrow',{cost:'About 1 min'})])}],
+['paused until date',function(){S.paused=true;S.later=LATER().slice(0,1)}],
+['reminders off after 3 ignored',function(){S.remOff=true;S.due=[D_RB(),D_TF()]}],
+['offline: saved here rows',function(){S.offline=true;var r=NOW();r.chip='Saved here';r.line='Sent when you are back online.';S.now=[r];S.res.c_7a21={a:GRADED.right[0],c:'Sure',saved:true};S.due=[D_RB(),D_TF()]}],
+['error: card did not load',function(){S.now=[NOW()];var r=D_TF();r.err=true;S.due=[D_RB(),r]}],
+['error: db unreachable',function(){S.db=true}]
+];
+var S, timers=[], tabNow='inbox', queue=[], reviewed=0;
+function fresh(){return {now:[],due:[],later:[],res:{},over:'',view:'inbox',card:null}}
+function clearTimers(){timers.forEach(clearTimeout);timers=[]}
+function later(fn,ms){timers.push(setTimeout(fn,ms))}
+function gradedDemo(v){var r=NOW();r.chip='Locked';r.line='Grading…';S.now=[r];S.due=[D_RB(),D_TF()];var g=GRADED[v];S.res.c_7a21={a:g[0],c:g[1]};S.demo=v}
+function find(id){var all=S.now.concat(S.due,S.later);for(var i=0;i<all.length;i++)if(all[i].id===id)return all[i]}
+function drop(id){['now','due','later'].forEach(function(k){S[k]=S[k].filter(function(r){return r.id!==id})})}
+
+/* ---------- inbox ---------- */
+function chip(r){
+ var c=r.chip,cls={Locked:'locked','Saved here':'saved','Not quite':'miss',No:'miss','No · sure':'miss'}[c]||'';
+ return '<span class="chip '+cls+'">'+(c==='Correct'?TICK:'')+esc(c)+'</span>';
+}
+function rowHtml(r){
+ var c=CARDS[r.card], eb=c.reason;
+ if(r.err)return '<li><div class="errrow"><p>This question did not load. It is still in your record.</p><button type="button" class="btn ghost sm" data-retry="'+r.id+'">Try again</button></div></li>';
+ var sub=r.line?'<span class="sub" aria-live="polite">'+esc(r.line)+'</span>':(r.sub||r.late?'<span class="sub">'+esc(r.sub)+(r.late?', <span class="late">'+esc(r.late)+'</span>':'')+'</span>':'');
+ return '<li data-row="'+r.id+'"><a class="ra" href="#card-'+r.card+'" data-open="'+r.id+'"><span class="eb">'+esc(eb)+'</span><span class="tp">'+esc(c.topic)+'</span>'+sub+
+  '<span class="rt"><span class="cost">'+esc(r.cost||'')+'</span>'+chip(r)+'</span></a></li>';
+}
+function field(){var h='';for(var i=0;i<42;i++){var x=Math.sin((i+3)*12.9898)*43758.5453,r=x-Math.floor(x),y=Math.sin((i+3)*78.233)*12345.678,q=y-Math.floor(y);
+ h+=r<=.2?'<span class="fc '+(r<.07?'g3':r<.13?'g2':'g1')+'" style="--d:'+(8+q*7).toFixed(1)+'s;animation-delay:-'+(q*14).toFixed(1)+'s"></span>':'<span class="fc"></span>'}
+ return '<div class="fieldbg" aria-hidden="true">'+h+'</div>'}
+function shellTop(){
+ var h='';
+ if(S.offline)h+='<div class="note strong" role="status"><p>You are offline. Answers are saved on this device and sent when you are back online.</p></div>';
+ if(S.paused)h+='<div class="note" role="status"><p>Reviews paused until 14 Nov.</p><button type="button" class="tbtn" data-act="resume">Resume</button></div>';
+ if(!S.first&&!S.db)h+='<div class="link"><span>Linked to: <b class="mono">orbit-pay · cloud session</b></span><button type="button" class="btn ghost sm" data-act="build">Back to the build</button></div>';
+ return h;
+}
+function renderInbox(){
+ var m=$('#main'),h=shellTop();
+ m.removeAttribute('aria-busy');
+ if(S.db){m.innerHTML=h+'<h1 class="ph">Inbox</h1><div class="note strong" role="alert"><p>The Room cannot reach its data. Your answers in chat still work.</p><button type="button" class="btn sm" data-act="retrydb">Try again</button></div>';return}
+ if(S.loading){m.setAttribute('aria-busy','true');m.innerHTML=h+'<h1 class="ph">Inbox</h1><p class="vh" role="status">Loading your Room.</p><ul class="skel" aria-hidden="true"><li></li><li></li><li></li></ul>';return}
+ h+='<h1 class="ph">Inbox</h1>';
+ if(S.first){m.innerHTML=h+'<p class="lede">This is your Room. Questions wait here, and your map shows what you can do without the agent.</p>'+field()+'<div class="empty"><p>Questions appear here before and after a build. Start a task you want to learn from, and the agent asks one.</p><button type="button" class="btn" data-act="askone">Ask me one now</button></div>';return}
+ if(S.remOff)h+='<div class="note"><p>Reminders are off. They come back when you turn them on in Settings or say <span class="mono">/learn</span>.</p><button type="button" class="tbtn" data-act="settings">Settings</button></div>';
+ var any=S.now.length||S.due.length||S.later.length;
+ if(S.nothing&&!any){m.innerHTML=h+field()+'<div class="empty"><p>Nothing is due. The next review is on 14 Nov.</p><button type="button" class="btn ghost" data-act="early">Review something now</button></div>';return}
+ if(S.now.length)h+='<section class="grp" aria-labelledby="gN"><div class="gh"><h2 id="gN">Now</h2></div><ul class="list now">'+S.now.map(rowHtml).join('')+'</ul></section>';
+ if(S.paused)h+='<section class="grp" aria-labelledby="gD"><div class="gh"><h2 id="gD">Due</h2></div><p class="sub">Reviews wait until 14 Nov. Their dates move with the pause, so nothing is lost.</p></section>';
+ else if(S.due.length){var n=S.due.filter(function(r){return !r.err}).length;
+  h+='<section class="grp" aria-labelledby="gD"><div class="gh"><h2 id="gD">Due · '+S.due.length+'</h2></div><ul class="list">'+S.due.map(rowHtml).join('')+'</ul>'+(S.over?'<p class="over">'+esc(S.over)+'</p>':'')+
+  (n?'<div class="cta"><button type="button" class="btn" data-act="review">Start review · '+n+'</button></div>':'')+'</section>'}
+ if(S.later.length)h+='<section class="grp" aria-labelledby="gL"><div class="gh"><h2 id="gL">Later</h2><span class="small">Gone after 7 days, with no penalty.</span></div><ul class="list">'+S.later.map(rowHtml).join('')+'</ul></section>';
+ if(!any&&!S.paused)h+=field()+'<div class="empty"><p>Nothing is due. The next review is on 14 Nov.</p><button type="button" class="btn ghost" data-act="early">Review something now</button></div>';
+ h+='<p class="keys"><span><span class="kc">J</span><span class="kc">K</span>move</span><span><span class="kc">Enter</span>open</span><span><span class="kc">H</span>not now</span><span><span class="kc">?</span>keys</span></p>';
+ m.innerHTML=h;
+}
+
+/* ---------- card ---------- */
+function codeBlock(open){return '<details class="code"'+(open?' open':'')+'><summary>Show the code</summary><pre class="ex" tabindex="0" aria-label="billing/charge.py lines 41 to 52"><span class="hd">billing/charge.py:41-52</span>'+
+ CODE.map(function(l,i){return '<span'+(i===6?' class="hl"':'')+'><i>'+(41+i)+'</i>'+esc(l)+'</span>'}).join('\n')+'</pre></details>'}
+function renderCard(){
+ var r=find(S.card)||S.cardRow, c=CARDS[r.card], res=S.res[r.card]||{}, m=$('#main'), locked=!!res.c, pre=c.kind==='predict';
+ var h=shellTop()+'<button type="button" class="tbtn back" data-act="inbox">Back to Inbox</button>';
+ h+='<form class="qcard'+(r.group==='now'?' isnow':'')+'" id="qf" aria-labelledby="qq" novalidate><div class="eb">'+esc(c.reason)+'</div><div class="lvl">'+esc(c.topic)+' · '+LV[c.lv]+'</div><h1 class="qq" id="qq" tabindex="-1">'+esc(c.q)+'</h1>';
+ if(c.code)h+=codeBlock(pre);
+ if(locked){
+  h+='<blockquote class="said"><span class="sub" style="display:block">You said</span>'+esc(res.a||'I do not know.')+' <span class="chip">'+esc(res.dk?'I do not know':res.c)+'</span></blockquote>';
+  if(res.saved)h+='<p class="state"><span class="chip saved">Saved here</span> You are offline. Your answer is saved on this phone and sent when you are back online.</p>';
+  else if(pre)h+='<p class="state">Locked. Shown after the test runs.</p>';
+  else if(!res.v)h+='<p class="state">Locked. <span id="grading" aria-live="polite">Grading…</span></p>';
+  h+='<div id="vslot"></div>';
+ }else{
+  h+='<label class="fl" for="ans">Your answer</label><textarea id="ans" rows="4">'+esc(S.draft||'')+'</textarea>';
+  h+='<fieldset><legend>How sure are you?</legend><div class="confs">'+['Guess','Fairly sure','Sure'].map(function(k,i){return '<label class="sure"><input type="radio" name="conf" value="'+k+'" aria-describedby="mean"'+(S.conf===k?' checked':'')+'>'+k+'</label>'}).join('')+
+   '<button type="button" class="sure dk" data-act="dk">I do not know</button></div><p class="mean" id="mean">'+(S.conf?esc(MEAN[S.conf]):'')+'</p></fieldset>';
+  if(c.hints&&c.lv<2){var u=S.hints||0;h+='<div class="hints"><span class="ladder" aria-hidden="true">'+[0,1,2].map(function(i){return '<span'+(i<u?' class="on"':'')+'></span>'}).join('')+'</span><span class="sub">Hints used: '+u+' of 3</span> '+(u<3?'<button type="button" class="tbtn" data-act="hint">Hint</button>':'')+
+   (u?'<ol>'+c.hints.slice(0,u).map(function(t,i){return '<li><b>H'+(i+1)+'</b>'+esc(t)+'</li>'}).join('')+'</ol><p class="sub">This attempt now counts as With help.</p>':'')+'</div>'}
+  h+='<div class="acts"><button type="button" class="btn ghost sm" data-act="notnow" aria-expanded="'+(S.snz?'true':'false')+'">Not now</button><span class="grow"></span><button type="submit" class="btn lock"'+(S.conf?'':' disabled aria-describedby="help"')+'>Lock my answer</button></div>';
+  if(S.snz)h+='<div class="snooze" role="group" aria-label="Move to Later"><button type="button" class="btn ghost sm" data-snz="After this build">After this build</button><button type="button" class="btn ghost sm" data-snz="Tomorrow">Tomorrow</button><button type="button" class="btn ghost sm" data-snz="Next week">Next week</button></div>';
+  if(!S.conf)h+='<p class="helper" id="help">Choose how sure you are first.</p>';
+  if(pre)h+='<p class="quiet">A wrong guess here costs nothing.</p>';
+  h+='<p class="keys"><span><span class="kc">1</span><span class="kc">2</span><span class="kc">3</span>how sure</span><span><span class="kc">D</span>I do not know</span><span><span class="kc">Ctrl</span><span class="kc">Enter</span>lock</span><span><span class="kc">Esc</span>back</span></p>';
+ }
+ m.innerHTML=h+'</form>';
+ if(res.v)showVerdict(r,res,false);
+}
+function verdictHtml(r,res){
+ var c=CARDS[r.card], v=res.v, i={right:0,partial:1,wrong:2,cw:2,dk:2}[v];
+ var word={right:'Correct.',partial:'Not quite.',wrong:'No.',cw:'No.',dk:'Not known yet.'}[v];
+ var next=v==='right'?c.next[0]:v==='partial'?c.next[1]:'tomorrow';
+ var h='<section class="verdict'+(RM.matches?'':' in')+'" role="status" aria-live="polite"><h2 class="vw'+(v==='right'||v==='dk'?' ok':'')+'" id="vw" tabindex="-1">'+word+'</h2>';
+ h+='<p class="why">'+esc(v==='dk'?'This is the answer: '+c.ans:c.why[i])+' Back '+(next==='tomorrow'?'tomorrow':'on '+next)+'.</p>';
+ if(v==='cw')h+='<p class="belief">You chose Sure. This is the kind of error that is easiest to fix when you see the reason. It returns tomorrow.</p>';
+ var to=v==='right'?Math.min(3,c.lv+1):(v==='wrong'||v==='cw')&&c.kind==='review'?Math.max(0,c.lv-1):c.lv;
+ if(to!==c.lv)h+='<div class="delta"><span class="dl"><span class="vh">Your record: </span><b>'+esc(c.topic)+'</b>'+LV[c.lv]+CHEV+LV[to]+'</span><span class="segs" aria-hidden="true" data-to="'+to+'">'+[1,2,3].map(function(k){return '<span class="seg'+(k<=c.lv?' f'+k:'')+'"></span>'}).join('')+'</span></div>';
+ h+='<p class="cue">'+CUE+'</p><div class="acts"><button type="button" class="btn sm" data-act="build">Back to the build</button>'+(queue.length?'<button type="button" class="btn ghost sm" data-act="nextq">Next review</button>':'<button type="button" class="btn ghost sm" data-act="inbox">Back to Inbox</button>')+'</div>';
+ if(!queue.length&&reviewed>1)h+='<p class="sub" style="margin-top:12px">Done. '+reviewed+' reviewed. Next review on 14 Nov.</p>';
+ return h+'</section>';
+}
+function showVerdict(r,res,anim){
+ var slot=$('#vslot');if(!slot)return;var g=$('#grading');if(g)g.parentNode.textContent='Locked.';
+ slot.innerHTML=verdictHtml(r,res);var vw=$('#vw');if(anim&&vw)vw.focus({preventScroll:false});
+ var sg=$('.delta .segs');if(sg){var to=+sg.dataset.to;later(function(){$$('.seg',sg).forEach(function(s,k){s.className='seg'+(k<to?' f'+(k+1)+(anim&&!RM.matches&&k===to-1?' lit':''):'')});later(function(){var l=$('.seg.lit');if(l)l.classList.remove('lit')},420)},anim?300:0)}
+}
+function grade(c,a,conf){if(c.rx[0].test(a))return 'right';if(c.rx[1].test(a))return 'partial';return conf==='Sure'?'cw':'wrong'}
+function lock(dk){
+ var r=find(S.card), c=CARDS[r.card], a=dk?'':($('#ans').value||'').trim(), conf=dk?'Guess':S.conf;
+ S.res[r.card]={a:a||(dk?'I do not know.':''),c:conf,dk:!!dk,saved:!!S.offline};S.draft='';S.conf=null;S.hints=0;
+ r.chip=S.offline?'Saved here':'Locked';r.line=S.offline?'Sent when you are back online.':c.kind==='predict'?'Shown after the test runs.':'Grading…';
+ renderCard();var f=$('#qf');if(!RM.matches)f.classList.add('nudge');var st=$('.state');if(st){st.tabIndex=-1;st.focus()}
+ if(S.offline||c.kind==='predict')return;
+ later(function(){var res=S.res[r.card];res.v=dk?'dk':grade(c,a,conf);r.chip=chipFor(res.v);r.line='';
+  if(S.view==='card'&&S.card===r.id){reviewed+=c.kind==='review'?1:0;showVerdict(r,res,true);drop(r.id);S.cardRow=r}
+  else leaveRow(r,res.v)},1600);
+}
+function chipFor(v){return {right:'Correct',partial:'Not quite',wrong:'No',cw:'No · sure',dk:'No'}[v]}
+function toastFor(r,v){var c=CARDS[r.card];return {right:'Correct. Back on '+c.next[0]+'.',partial:'Not quite. Back on '+c.next[1]+'.',wrong:'No. Back tomorrow.',cw:'No. You chose Sure. Back tomorrow.',dk:'Not known yet. Back tomorrow.'}[v]}
+function leaveRow(r,v,sticky){
+ if(S.view!=='inbox'||tabNow!=='inbox'){drop(r.id);toast(toastFor(r,v),'Open',function(){openRow(r,true)},sticky);return}
+ renderInbox();later(function(){var li=$('[data-row="'+r.id+'"]');var done=function(){drop(r.id);S.cardRow=r;renderInbox();toast(toastFor(r,v),'Open',function(){openRow(r,true)},sticky)};
+  if(li&&!RM.matches){li.classList.add('leave');li.addEventListener('animationend',done,{once:true})}else done()},2000);
+}
+function openRow(r,fromToast){S.view='card';S.card=r.id;S.cardRow=r;S.snz=false;S.conf=null;S.hints=0;S.draft='';renderCard();var q=$('#qq');if(q)q.focus()}
+
+/* ---------- toast: 8 s, pauses on hover and focus ---------- */
+var tt=null,tLeft=0,tStart=0;
+function toast(msg,label,fn,sticky){
+ var slot=$('#toastslot');clearTimeout(tt);
+ slot.innerHTML='<div class="toast"><p>'+esc(msg)+'</p>'+(label?'<button type="button" class="btn ghost sm" id="tact">'+esc(label)+'</button>':'')+'<button type="button" class="x" id="tx" aria-label="Dismiss">&times;</button></div>';
+ var t=slot.firstChild, close=function(){clearTimeout(tt);slot.innerHTML=''};
+ if(label)$('#tact').onclick=function(){close();fn()};$('#tx').onclick=close;
+ if(sticky)return;tLeft=8000;var run=function(){tStart=Date.now();tt=setTimeout(close,tLeft)},hold=function(){clearTimeout(tt);tLeft-=Date.now()-tStart};
+ t.addEventListener('mouseenter',hold);t.addEventListener('focusin',hold);t.addEventListener('mouseleave',run);t.addEventListener('focusout',function(e){if(!t.contains(e.relatedTarget))run()});run();
+}
+
+/* ---------- events ---------- */
+document.addEventListener('click',function(e){
+ var o=e.target.closest('[data-open]');if(o){e.preventDefault();openRow(find(o.dataset.open));return}
+ var rt=e.target.closest('[data-retry]');if(rt){var r=find(rt.dataset.retry);var li=rt.closest('li');li.innerHTML='<div class="errrow" aria-busy="true"><p>Loading the question.</p></div>';later(function(){r.err=false;renderInbox()},900);return}
+ var sz=e.target.closest('[data-snz]');if(sz){notNow(find(S.card),sz.dataset.snz);return}
+ var a=e.target.closest('[data-act]');if(!a)return;var k=a.dataset.act;
+ if(k==='inbox'){S.view='inbox';S.snz=false;renderInbox();$('#main').focus()}
+ else if(k==='hint'){S.draft=$('#ans').value;S.hints=(S.hints||0)+1;renderCard();announce('Hint '+S.hints+' of 3 shown.');var hb=$('[data-act="hint"]')||$('#ans');hb.focus()}
+ else if(k==='dk')lock(true);
+ else if(k==='notnow'){S.draft=$('#ans').value;S.snz=!S.snz;renderCard();var f=$('[data-snz]')||$('[data-act="notnow"]');f.focus()}
+ else if(k==='review'){queue=S.due.filter(function(r){return !r.err}).map(function(r){return r.id});reviewed=0;openRow(find(queue.shift()))}
+ else if(k==='nextq'){var nx=queue.shift();if(nx&&find(nx))openRow(find(nx));else{S.view='inbox';renderInbox()}}
+ else if(k==='resume'){S.paused=false;$('#swPause').setAttribute('aria-checked','false');S.due=S.due.length?S.due:[D_RB(),D_TF()];renderInbox();announce('Reviews resumed.')}
+ else if(k==='retrydb'){S.db=false;S.loading=true;renderInbox();later(function(){S.loading=false;S.now=[NOW()];S.due=[D_RB(),D_TF()];renderInbox()},1100)}
+ else if(k==='askone'){a.disabled=true;a.textContent='Asking…';later(function(){S.first=false;S.now=[row('r9','c_3f9c','now','',{cost:'About 1 min'})];renderInbox();var x=$('[data-open]');if(x)x.focus()},900)}
+ else if(k==='early'){S.nothing=false;S.due=[row('e1','c_9b08','due','Early',{cost:'About 2 min'})];renderInbox();var y=$('[data-open]');if(y)y.focus()}
+ else if(k==='settings')openSheet(true);
+ else if(k==='build')toast('This opens the orbit-pay session.');
+});
+$('#main').addEventListener('change',function(e){if(e.target.name==='conf'){S.conf=e.target.value;S.draft=$('#ans').value;renderCard();var i=$('input[value="'+S.conf+'"]');i.focus()}});
+$('#main').addEventListener('submit',function(e){e.preventDefault();if(S.conf)lock(false)});
+function notNow(r,when){var prev={group:r.group,sub:r.sub,late:r.late};var r2=r;r2.group='later';r2.sub=when==='After this build'?'After this build':when==='Tomorrow'?'Tomorrow':'Next week';r2.late='';
+ drop(r.id);S.later.unshift(r2);S.view='inbox';S.snz=false;renderInbox();$('#main').focus();
+ toast('Moved to Later.','Undo',function(){drop(r2.id);r2.group=prev.group;r2.sub=prev.sub;r2.late=prev.late;S[prev.group].unshift(r2);renderInbox();var l=$('[data-open="'+r2.id+'"]');if(l)l.focus()})}
+function announce(t){var s=$('#saved');s.textContent='';setTimeout(function(){s.textContent=t},30)}
+function openSheet(on){var sh=$('#sheet'),me=$('#me');sh.hidden=!on;me.setAttribute('aria-expanded',String(on));if(on)$('#swPause').focus();else me.focus()}
+$('#me').onclick=function(){openSheet($('#sheet').hidden)};
+$('#swPause').onclick=function(){var on=this.getAttribute('aria-checked')!=='true';this.setAttribute('aria-checked',String(on));S.paused=on;$('#saved').textContent='Saved.';if(S.view==='inbox')renderInbox()};
+$('#swRem').onclick=function(){var on=this.getAttribute('aria-checked')!=='true';this.setAttribute('aria-checked',String(on));S.remOff=!on;$('#saved').textContent='Saved.';if(S.view==='inbox')renderInbox()};
+document.addEventListener('click',function(e){var sh=$('#sheet');if(!sh.hidden&&!sh.contains(e.target)&&e.target!==$('#me')&&!e.target.closest('[data-act="settings"]'))openSheet(false)},true);
+$$('.tab').forEach(function(t){t.onclick=function(){$$('.tab').forEach(function(x){x.removeAttribute('aria-current')});t.setAttribute('aria-current','page');tabNow=t.dataset.tab;
+ if(tabNow==='inbox'){S.view='inbox';renderInbox()}else{var n=t.textContent.trim();$('#main').innerHTML=shellTop()+'<h1 class="ph">'+n+'</h1><p class="placeholder">This prototype shows the Inbox. '+n+' has its own prototype: <a href="'+{map:'map.html',drills:'drill.html',explainers:'explainer.html'}[tabNow]+'">'+n+' prototype</a>.</p>'}}});
+var gPending=false;
+document.addEventListener('keydown',function(e){
+ var tag=(e.target.tagName||'').toLowerCase(),typing=tag==='textarea'||tag==='input'&&e.target.type==='text'||tag==='select';
+ if(e.key==='Escape'){if(!$('#sheet').hidden){openSheet(false);return}if(S.view==='card'){S.view='inbox';renderInbox();$('#main').focus()}return}
+ if(S.view==='card'&&(e.metaKey||e.ctrlKey)&&e.key==='Enter'){e.preventDefault();if(S.conf&&$('#ans'))lock(false);return}
+ if(typing||e.metaKey||e.ctrlKey||e.altKey)return;
+ if(e.key==='['||e.key===']'){step(e.key===']'?1:-1);return}
+ if(S.view==='card'&&$('#ans')){var m={'1':'Guess','2':'Fairly sure','3':'Sure'}[e.key];if(m){S.conf=m;S.draft=$('#ans').value;renderCard();$('input[value="'+m+'"]').focus();return}
+  if(e.key==='d'||e.key==='D'){lock(true);return}if(e.key==='h'||e.key==='H'){$('[data-act="notnow"]').click();return}}
+ if(S.view==='inbox'){var rows=$$('[data-open]'),i=rows.indexOf(document.activeElement);
+  if(e.key==='j'||e.key==='k'){e.preventDefault();if(!rows.length)return;i=e.key==='j'?Math.min(rows.length-1,i+1):Math.max(0,i<0?0:i-1);rows[i].focus()}
+  else if((e.key==='h'||e.key==='H')&&i>=0){var r=find(rows[i].dataset.open);if(r.group!=='later')notNow(r,'After this build')}
+  else if(e.key==='g')gPending=true,setTimeout(function(){gPending=false},800);
+  else if(e.key==='m'&&gPending)$('[data-tab="map"]').click();
+  else if(e.key==='?')toast('J and K move. Enter opens. H moves a row to Later. G then M opens the Map.')}
+});
+
+/* ---------- prototype switcher ---------- */
+var sel=$('#st');STATES.forEach(function(s,i){var o=document.createElement('option');o.value=i;o.textContent=(i+1)+'. '+s[0];sel.appendChild(o)});
+function slug(s){return s.toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'')}
+function apply(i){clearTimeout(tt);clearTimers();$('#toastslot').innerHTML='';queue=[];reviewed=0;S=fresh();STATES[i][1]();sel.value=i;tabNow='inbox';
+ $$('.tab').forEach(function(x){x.removeAttribute('aria-current');if(x.dataset.tab==='inbox')x.setAttribute('aria-current','page')});
+ $('#swPause').setAttribute('aria-checked',String(!!S.paused));$('#swRem').setAttribute('aria-checked',String(!S.remOff));$('#saved').textContent='';
+ try{history.replaceState(null,'','?state='+slug(STATES[i][0]))}catch(err){}
+ renderInbox();
+ if(S.demo){var r=S.now[0],res=S.res[r.card];res.v=S.demo;later(function(){r.chip=chipFor(S.demo);r.line='';leaveRow(r,S.demo,true)},700)}
+}
+function step(d){apply((+sel.value+d+STATES.length)%STATES.length)}
+sel.onchange=function(){apply(+sel.value)};$('#prev').onclick=function(){step(-1)};$('#next').onclick=function(){step(1)};
+var th=$('#theme');try{th.value=localStorage.getItem('room-theme')||''}catch(err){}
+function setTheme(){if(th.value)document.documentElement.setAttribute('data-theme',th.value);else document.documentElement.removeAttribute('data-theme');try{localStorage.setItem('room-theme',th.value)}catch(err){}}
+th.onchange=setTheme;setTheme();
+var q=new URLSearchParams(location.search).get('state'),start=3;
+STATES.forEach(function(s,i){if(q&&(slug(s[0])===q||String(i+1)===q))start=i});
+apply(start);
+})();
+</script>
+</body>
+</html>

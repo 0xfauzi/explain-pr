@@ -1,0 +1,576 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Debugging drill</title>
+<meta name="description" content="Prototype of the Room debugging drill: a planted bug from the project, symptom, cause and check, an optional line picker, the hint ladder, a two-part verdict and Run my check, with setup, offline, error and in-build states.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="anonymous">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wdth,wght@75..100,400..700&amp;family=JetBrains+Mono:wght@400;500&amp;display=swap">
+<link rel="stylesheet" href="../assets/room.css">
+<style>
+:root{--tabbar:0px;--abar:0px}
+*{box-sizing:border-box}
+html{scroll-padding:72px 0 calc(var(--tabbar) + var(--abar) + 24px)}
+body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--sans);-webkit-font-smoothing:antialiased;min-height:100vh}
+body::after{content:"";position:fixed;inset:0;pointer-events:none;z-index:60;background-image:url(../assets/grain.png);background-size:240px 240px;opacity:var(--grain-op);mix-blend-mode:var(--grain-blend)}
+[hidden]{display:none !important}
+:focus-visible{outline:2px solid var(--accent);outline-offset:3px}
+a{color:var(--ink);text-underline-offset:4px}
+button,input,textarea{font-family:inherit;color:inherit}
+.vh{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+/* prototype controls: outside the product, dashed so nobody reads them as product UI */
+.proto{display:flex;flex-wrap:wrap;align-items:center;gap:8px 12px;margin:10px auto 0;max-width:1180px;padding:8px 12px;border:1.5px dashed var(--control-border);border-radius:12px;font:500 12px/1.3 var(--mono);color:var(--text-3);width:calc(100% - 32px)}
+.proto label{display:flex;align-items:center;gap:8px}
+.proto select,.proto button{font:500 12.5px var(--mono);min-height:44px;padding:0 10px;border:1.5px solid var(--control-border);border-radius:10px;background:var(--card);color:var(--ink);max-width:100%;cursor:pointer}
+.proto select#st{max-width:min(360px,58vw)}
+.proto input[type=checkbox]{width:20px;height:20px;accent-color:var(--ink)}
+.proto .ck{min-height:44px}
+.proto .sp{flex:1}
+.embed .proto,.embed .rail{display:none}
+.vpwrap{display:flex;justify-content:center;padding:24px 16px 48px}
+.vpwrap iframe{border:1.5px solid var(--control-border);border-radius:28px;background:var(--paper);height:820px;max-width:100%}
+/* shell */
+.top{position:sticky;top:0;z-index:30;background:var(--paper);border-bottom:1px solid var(--border)}
+.bar{max-width:1180px;margin:0 auto;height:56px;padding:0 32px;display:flex;align-items:center;gap:14px}
+.word{font-size:19px;font-weight:650;font-variation-settings:"wdth" 88;letter-spacing:-.01em}
+.proj{font:500 13px var(--mono);color:var(--text-3)}
+.me{margin-left:auto;width:44px;height:44px;border-radius:50%;border:1.5px solid var(--ink);background:var(--card);font-weight:650;font-size:16px;cursor:pointer}
+.tabs{max-width:1180px;margin:0 auto;padding:0 32px;display:flex;gap:24px}
+.tab{font:600 15px/1 var(--sans);min-height:44px;padding:0 4px;border-bottom:2px solid transparent;color:var(--text-3);display:flex;align-items:center;gap:8px;text-decoration:none}
+.tab:hover{color:var(--ink)}
+.tab[aria-current="page"]{color:var(--ink);border-color:var(--accent)}
+.tab svg{display:none}
+.layout{max-width:1180px;margin:0 auto;padding:16px 32px 140px;display:grid;grid-template-columns:minmax(0,640px);justify-content:center;gap:32px}
+@media (min-width:1100px){.layout{grid-template-columns:minmax(0,640px) 300px;gap:56px}.rail{position:sticky;top:120px;align-self:start}}
+.link{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:0 16px;font-size:14px;color:var(--text-3);border-bottom:1px solid var(--rule)}
+.link b{font-weight:500;color:var(--ink)}
+.btn{font:600 16px/1 var(--sans);min-height:50px;padding:0 26px;border-radius:999px;border:1.5px solid var(--ink);background:var(--ink);color:var(--on-ink);cursor:pointer;transition:background .2s,border-color .2s,color .2s,transform .15s;display:inline-flex;align-items:center;justify-content:center;gap:10px;text-decoration:none}
+.btn:hover{background:var(--accent);border-color:var(--accent);color:#16161A}
+.btn:active{transform:scale(.97)}
+.btn.ghost{background:transparent;color:var(--ink)}
+.btn.ghost:hover{background:var(--ink);color:var(--on-ink)}
+.btn.sm{min-height:44px;font-size:15px;padding:0 18px}
+.btn[aria-disabled="true"],.btn[aria-disabled="true"]:hover{background:var(--field);border-color:var(--field);color:var(--text-3);cursor:not-allowed}
+.tbtn{min-height:44px;padding:0 6px;border:0;background:none;font:600 15px var(--sans);text-decoration:underline;text-underline-offset:4px;cursor:pointer;color:var(--ink);display:inline-flex;align-items:center;gap:6px}
+.kc{display:inline-flex;align-items:center;justify-content:center;min-width:22px;height:22px;padding:0 6px;border:1.5px solid currentColor;border-radius:6px;font:500 12px var(--mono);opacity:.8}
+@media (hover:none){.kc{display:none !important}}
+.note{display:flex;flex-wrap:wrap;align-items:center;gap:4px 12px;margin-top:16px;padding:12px 16px;background:var(--card);border:1.5px solid var(--ink);border-radius:14px;font-size:15px;line-height:1.5}
+.note p{margin:0;flex:1 1 260px}
+.chip{display:inline-flex;align-items:center;gap:6px;height:24px;padding:0 10px;border-radius:999px;border:1.5px solid var(--ink);font:500 12px var(--mono);white-space:nowrap}
+.chip.locked{background:var(--ink);color:var(--on-ink)}
+.chip.miss{border-color:var(--accent-text);color:var(--accent-text)}
+.chip.saved{border-style:dashed}
+/* drill card */
+.qcard{margin-top:16px;background:var(--card);border:1.5px solid var(--border);border-left:3px solid var(--accent);border-radius:18px;padding:24px 24px 0}
+.qcard.nudge{animation:nudge .3s var(--ease-out)}
+@keyframes nudge{50%{transform:translateY(-8px)}}
+.qhead{display:flex;justify-content:space-between;align-items:flex-start;gap:12px}
+.eb{font-size:13px;font-weight:500;color:var(--accent-text)}
+.lvl{font:500 13px var(--mono);color:var(--text-3);margin-top:4px}
+.qq{margin:12px 0 0;font-size:24px;line-height:1.3;font-weight:600;letter-spacing:-.01em;text-wrap:pretty}
+.steps{list-style:none;margin:16px 0 0;padding:0;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:4px;font:500 12px var(--mono);color:var(--text-3)}
+.steps li{padding-top:8px;border-top:3px solid var(--lv0);transition:border-color .4s var(--ease-out)}
+.steps li.ok{border-top-color:var(--ink);color:var(--ink)}
+.steps li[aria-current="step"]{border-top-color:var(--accent);color:var(--ink)}
+.sym{margin:18px 0 0}
+.sym h2,.fl{display:block;margin:20px 0 0;font-size:15px;font-weight:600}
+.sym p{margin:6px 0 0;font-size:16px;line-height:1.55;color:var(--text-2)}
+.term{margin:10px 0 0;padding:12px 16px;background:var(--paper);border:1.5px solid var(--border);border-radius:14px;font:500 12.5px/1.75 var(--mono);overflow-x:auto;white-space:pre;color:var(--text-2)}
+.term b{font-weight:500;color:var(--accent-text)}
+.term .cm{color:var(--ink)}
+.files{margin-top:10px;font-size:14px;color:var(--text-3)}
+.files summary{min-height:44px;display:inline-flex;align-items:center;cursor:pointer;font-weight:600;color:var(--ink);text-decoration:underline;text-underline-offset:4px}
+.files ul{margin:0 0 4px;padding:0 0 0 18px;font:500 12.5px/1.9 var(--mono)}
+.sub2{display:block;margin-top:4px;font-size:14px;font-weight:400;color:var(--text-3)}
+textarea{display:block;width:100%;margin-top:8px;padding:12px 14px;font:400 16px/1.5 var(--sans);color:var(--ink);background:var(--card);border:1.5px solid var(--control-border);border-radius:14px;resize:vertical;min-height:96px}
+textarea[readonly]{background:var(--paper)}
+fieldset{border:0;margin:20px 0 0;padding:0;min-width:0}
+legend{font-size:15px;font-weight:600;margin-bottom:8px;padding:0}
+.pick{margin-top:8px;background:var(--paper);border:1.5px solid var(--border);border-radius:14px;overflow-x:auto;padding:6px 0}
+.pick .hd{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:0 8px 0 16px;font:500 12.5px var(--mono);color:var(--text-3)}
+.pl{position:relative;display:flex;align-items:center;min-height:44px;padding:0 16px 0 13px;border-left:3px solid transparent;font:500 13px var(--mono);white-space:pre;cursor:pointer;min-width:max-content}
+.pl:hover{background:color-mix(in srgb,var(--field) 60%,transparent)}
+.pl input{position:absolute;opacity:0;inset:0;margin:0;cursor:pointer}
+.pl i{display:inline-block;width:2.4em;color:var(--text-dim);font-style:normal}
+.pl:has(input:checked){background:var(--accent-wash);border-left-color:var(--ink)}
+.pl:has(input:focus-visible){outline:2px solid var(--accent);outline-offset:-2px}
+.pl.cause{box-shadow:inset 0 0 0 1.5px var(--ink)}
+.pl.ro{cursor:default}
+@media (pointer:fine){.pl{min-height:32px}}
+.confs{display:flex;flex-wrap:wrap;gap:8px}
+.sure{position:relative;display:inline-flex;align-items:center;min-height:44px;padding:0 18px;border-radius:999px;border:1.5px solid var(--control-border);color:var(--text-2);font:500 15px var(--sans);cursor:pointer;transition:border-color .2s,background .2s,color .2s}
+.sure:hover{border-color:var(--ink)}
+.sure input{position:absolute;opacity:0;inset:0;margin:0;cursor:pointer}
+.sure:has(input:checked){background:var(--ink);border-color:var(--ink);color:var(--on-ink)}
+.sure:has(input:focus-visible){outline:2px solid var(--accent);outline-offset:3px}
+.sure .kc{margin-left:8px;min-width:18px;height:18px;font-size:11px}
+.mean{margin:8px 0 0;font-size:14px;color:var(--text-3);min-height:22px}
+.mean b{font-weight:600;color:var(--ink)}
+.hints{margin-top:20px;padding-top:12px;border-top:1px solid var(--rule);display:flex;flex-wrap:wrap;align-items:center;gap:4px 14px;font-size:14px;color:var(--text-3)}
+.ladder{display:inline-grid;grid-template-columns:repeat(3,28px);gap:4px;vertical-align:middle;margin-right:10px}
+.ladder span{height:10px;border-radius:3px;box-shadow:inset 0 0 0 1.5px var(--ink);transition:background .4s var(--ease-out)}
+.ladder span.on{background:var(--ink)}
+.hints ol{flex:1 1 100%;margin:4px 0 0;padding:0;list-style:none;display:grid;gap:6px;font-size:15px;line-height:1.5;color:var(--text-2)}
+.hints ol li{padding:10px 14px;background:var(--paper);border-radius:10px}
+.hints ol li.in{animation:rise .5s var(--ease-out) both}
+.hints ol b{font:500 12.5px var(--mono);color:var(--ink);margin-right:8px}
+.hints .cap{flex:1 1 100%;margin:0;color:var(--ink)}
+.abar{display:grid;grid-template-columns:minmax(0,1fr) auto;grid-template-areas:"why acts" "help lock";align-items:center;gap:10px 16px;margin:20px -24px 0;padding:14px 24px;border-top:1px solid var(--rule);background:var(--card);border-radius:0 0 18px 18px}
+.abar .why2{grid-area:why;font-size:13px;color:var(--text-3);min-width:0}
+.abar .row2{grid-area:acts;display:flex;gap:10px;justify-content:flex-end}.abar .lock{grid-area:lock;justify-self:end}.abar .helper{grid-area:help}
+.abar .pill{min-height:44px;padding:0 16px;border-radius:999px;border:1.5px solid var(--control-border);background:transparent;font:500 15px var(--sans);cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:8px;color:var(--ink)}
+.abar .pill:hover{border-color:var(--ink)}
+.abar .pill.dk{border-style:dashed}
+.helper{margin:0;font-size:14px;color:var(--text-3)}
+.helper.warn{color:var(--ink);font-weight:500}
+.state{margin:20px 0 0;font-size:16px;line-height:1.6}
+.state b{font-weight:650}
+.said{margin:16px 0 0;padding:12px 16px;border-left:3px solid var(--border);color:var(--text-2);font-size:16px;line-height:1.5}
+.said .cap{display:block;font-size:13px;color:var(--text-3);margin:8px 0 2px}
+.said .cap:first-child{margin-top:0}
+.dots::after{content:"";display:inline-block;width:1.2em;text-align:left;animation:dots 1.2s steps(4) infinite}
+@keyframes dots{0%{content:""}25%{content:"."}50%{content:".."}75%{content:"..."}}
+.verdict{margin:20px 0 0;padding:20px 22px;border-radius:14px;background:var(--paper);border:1.5px solid var(--border)}
+.verdict.in{animation:rise .6s var(--ease-out) both}
+@keyframes rise{from{opacity:0;transform:translateY(10px)}}
+.vt{margin:0;font:500 12.5px var(--mono);color:var(--text-3);outline-offset:6px}
+.part{display:grid;grid-template-columns:64px minmax(0,1fr);gap:4px 12px;padding:14px 0;border-bottom:1px solid var(--border)}
+.part:last-of-type{border-bottom:0;padding-bottom:4px}
+.pk{font:500 13px/2.1 var(--mono);color:var(--text-3)}
+.vw{margin:0;font-size:26px;line-height:1.2;font-weight:700;color:var(--accent-text)}
+.vw.ok{color:var(--ink)}
+.part .why{grid-column:2}
+.why{margin:6px 0 0;font-size:16px;line-height:1.6;color:var(--text-2)}
+.belief{margin:10px 0 0;font-size:15px;line-height:1.6;color:var(--text-3)}
+.delta{margin-top:16px;padding-top:14px;border-top:1px solid var(--border);display:grid;grid-template-columns:minmax(0,1fr) 150px;gap:6px 14px;align-items:center;font-size:14px;color:var(--text-3)}
+.delta b{font:500 13px var(--mono);color:var(--ink);margin-right:6px}
+.delta svg{vertical-align:-2px;margin:0 4px}
+.segs{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:4px}
+.seg{height:14px;border-radius:3px;background:var(--lv0);transition:background-color .4s var(--ease-out),transform .4s var(--ease-spring)}
+.seg.f1{background:var(--lv1);box-shadow:inset 0 0 0 1.5px var(--ink)}.seg.f2{background:var(--lv2);box-shadow:inset 0 0 0 1.5px var(--ink)}.seg.f3{background:var(--lv3);box-shadow:inset 0 0 0 1.5px var(--ink)}
+.seg.lit{transform:scaleY(1.15)}
+details.fix{margin-top:14px}
+details.fix summary{min-height:44px;display:inline-flex;align-items:center;font-weight:600;cursor:pointer;text-decoration:underline;text-underline-offset:4px}
+.diff .rm{color:var(--accent-text)}.diff .ad{color:var(--ink);font-weight:500}
+.run{margin-top:16px;padding-top:14px;border-top:1px solid var(--border)}
+.run p{margin:0;font-size:15px;line-height:1.6;color:var(--text-2)}
+.run .term{animation:rise .5s var(--ease-out) both}
+.cue{margin:14px 0 0;font:500 13px/1.7 var(--mono);color:var(--text-2)}
+.done{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin:20px -24px 0;padding:14px 24px;border-top:1px solid var(--rule)}
+.tail{height:24px}
+/* setup progress */
+.setup{list-style:none;margin:18px 0 0;padding:0;display:grid;gap:10px;font-size:15px;color:var(--text-3)}
+.setup li{display:grid;grid-template-columns:28px minmax(0,1fr);gap:10px;align-items:center}
+.setup i{width:28px;height:10px;border-radius:3px;box-shadow:inset 0 0 0 1.5px var(--ink);background:transparent;transition:background .5s var(--ease-out)}
+.setup li.ok{color:var(--ink)}.setup li.ok i{background:var(--ink)}
+.setup li.now{color:var(--ink);font-weight:500}.setup li.now i{background:var(--accent-wash)}
+.errd{margin-top:8px;font-size:14px;color:var(--text-3)}
+.errd summary{min-height:44px;display:inline-flex;align-items:center;cursor:pointer;font-weight:600;color:var(--ink);text-decoration:underline;text-underline-offset:4px}
+/* drills tab */
+.ph{margin:28px 0 0;font-size:46px;line-height:1.06;letter-spacing:-.02em;font-weight:650;font-variation-settings:"wdth" 88}
+.lead{margin:12px 0 0;font-size:17px;line-height:1.6;color:var(--text-2);max-width:520px}
+.gh{margin:32px 0 10px;font-size:20px;font-weight:650;font-variation-settings:"wdth" 88}
+.list{list-style:none;margin:0;padding:0;background:var(--card);border:1.5px solid var(--border);border-radius:18px;overflow:hidden}
+.list li+li{border-top:1px solid var(--rule)}
+.ra{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:2px 16px;align-items:center;min-height:64px;padding:12px 20px;text-decoration:none;color:var(--ink)}
+.ra:hover{background:color-mix(in srgb,var(--field) 45%,transparent)}
+.ra .rt{grid-row:1 / span 3;grid-column:2}
+.tp{font:500 15px/1.4 var(--mono)}
+.sub{font-size:14px;color:var(--text-3)}
+.emptyst{position:relative;margin-top:16px;padding:40px 28px 32px;background:var(--card);border:1.5px solid var(--border);border-radius:18px;overflow:hidden}
+.emptyst>*{position:relative}
+.ctas{display:flex;flex-wrap:wrap;gap:10px;margin-top:24px}
+.say{display:inline-block;margin-top:16px;font:500 13px var(--mono);color:var(--text-2)}
+.field{display:grid;grid-template-columns:repeat(12,minmax(0,1fr));gap:12px 8px;margin:0 0 28px;pointer-events:none;-webkit-mask-image:linear-gradient(to right,transparent,#000 60%);mask-image:linear-gradient(to right,#000 30%,transparent)}
+.fc{height:12px;border-radius:3px;background:var(--field)}
+.fc.g1{animation:glow1 9s ease-in-out infinite}.fc.g2{animation:glow2 11s ease-in-out infinite}.fc.g3{animation:glow3 13s ease-in-out infinite}
+@keyframes glow1{0%,70%,100%{background:var(--field)}80%,88%{background:var(--lv1)}}
+@keyframes glow2{0%,62%,100%{background:var(--field)}74%,86%{background:var(--lv2)}}
+@keyframes glow3{0%,55%,100%{background:var(--field)}68%,84%{background:var(--accent)}}
+/* neutral session frame (not any product's chrome) */
+.sess{margin-top:16px;background:var(--card);border:1.5px solid var(--border);border-radius:18px;overflow:hidden}
+.sess .sh{display:flex;align-items:center;gap:10px;padding:12px 18px;border-bottom:1px solid var(--rule);font:500 12.5px var(--mono);color:var(--text-3)}
+.sess .sh span{width:8px;height:8px;border-radius:50%;background:var(--border)}
+.msgs{padding:8px 18px 4px;display:flex;flex-direction:column;gap:12px}
+.msg{min-width:0;margin:0}
+.msg{font-size:15.5px;line-height:1.6;color:var(--text-2)}
+.msg.you{align-self:flex-end;max-width:85%;padding:10px 14px;background:var(--paper);border-radius:14px;color:var(--ink)}
+.msg .term{margin-top:6px}
+.msg.offer{color:var(--ink);font-weight:500;padding-left:12px;border-left:3px solid var(--accent)}
+.msg.in{animation:rise .4s var(--ease-out) both}
+.reply{display:flex;flex-wrap:wrap;gap:8px;padding:12px 18px 16px;border-top:1px solid var(--rule)}
+.reply .lbl{flex:1 1 100%;font-size:13px;color:var(--text-3)}
+/* rail and toast */
+.rail{padding:16px 18px;border:1.5px dashed var(--control-border);border-radius:14px;font-size:14px;line-height:1.6;color:var(--text-2)}
+.rail h2{margin:0 0 6px;font:500 12px var(--mono);color:var(--text-3)}
+.rail p{margin:0 0 10px}
+.rail pre{margin:0;font:500 12px/1.7 var(--mono);white-space:pre-wrap;overflow-wrap:anywhere;color:var(--text-3)}
+.toastwrap{position:fixed;left:0;right:0;bottom:calc(var(--tabbar) + 20px);z-index:40;display:flex;justify-content:center;padding:0 16px;pointer-events:none}
+.toast{pointer-events:auto;display:flex;align-items:center;gap:6px 14px;width:100%;max-width:576px;padding:8px 8px 8px 18px;background:var(--card);border:1.5px solid var(--ink);border-radius:14px;font-size:16px;box-shadow:0 8px 24px rgba(22,22,26,.08);animation:rise .3s var(--ease-out) both}
+.toast p{margin:0;flex:1}
+.toast .x{width:44px;height:44px;border:0;background:none;cursor:pointer;border-radius:10px;font-size:20px;line-height:1}
+@media (max-width:640px){
+:root{--tabbar:calc(64px + env(safe-area-inset-bottom));--abar:120px}
+.bar{padding:0 16px}
+.layout{padding:12px 16px calc(var(--tabbar) + 32px)}
+.tabs{position:fixed;left:0;right:0;bottom:0;z-index:30;padding:0 0 env(safe-area-inset-bottom);gap:0;background:var(--paper);border-top:1px solid var(--border);display:grid;grid-template-columns:repeat(4,1fr)}
+.tab{flex-direction:column;justify-content:center;gap:4px;height:64px;font-size:12px;border-bottom:0;border-top:2px solid transparent}
+.tab[aria-current="page"]{border-top-color:var(--accent)}
+.tab svg{display:block}
+.qcard{padding:16px 16px 0;border-radius:14px}
+.qq{font-size:20px}.vw{font-size:22px}.ph{font-size:31px}
+.part{grid-template-columns:minmax(0,1fr);gap:2px}.part .why{grid-column:1}.pk{line-height:1.6}
+.abar{position:sticky;bottom:var(--tabbar);z-index:20;margin:20px -16px 0;padding:12px 16px;border-radius:0 0 14px 14px;box-shadow:0 -10px 20px -14px rgba(22,22,26,.25);grid-template-columns:minmax(0,1fr);grid-template-areas:"acts" "lock" "help";gap:8px}
+.abar .lock{justify-self:stretch}.abar .why2,.abar .kc{display:none}
+.abar .pill{white-space:nowrap;padding:0 12px}
+.abar .row2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.abar .btn{width:100%}
+.proto{gap:4px 8px}.proto .lbl{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+.done{margin:20px -16px 0;padding:14px 16px}.done .btn{width:100%}
+.delta{grid-template-columns:minmax(0,1fr)}
+.ra{padding:12px 16px}.emptyst{padding:28px 16px 20px}.field{grid-template-columns:repeat(8,minmax(0,1fr))}
+.ctas .btn{width:100%}
+.msgs{padding:8px 14px 4px}.reply{padding:12px 14px 14px}.reply .btn{flex:1 1 auto}
+}
+@media (prefers-reduced-motion:reduce){
+.qcard.nudge,.verdict.in,.toast,.hints ol li.in,.dots::after,.run .term,.msg.in,.fc{animation:none !important}
+.seg,.ladder span,.btn,.sure,.steps li,.setup i{transition:none}
+.dots::after{content:"..."}
+}
+</style>
+</head>
+<body>
+<div class="proto" role="region" aria-label="Prototype controls">
+<label for="st" class="lbl">Prototype state</label>
+<button type="button" id="prev" aria-label="Previous state">[</button>
+<select id="st"></select>
+<button type="button" id="next" aria-label="Next state">]</button>
+<span class="sp"></span>
+<label class="ck"><input type="checkbox" id="net"> Offline</label>
+<label class="ck"><input type="checkbox" id="lnk" checked> Session linked</label>
+<label>Width <select id="vw"><option value="">Fit</option><option value="390">390</option><option value="768">768</option></select></label>
+<label>Theme <select id="theme"><option value="">System</option><option value="light">Light</option><option value="dark">Dark</option></select></label>
+</div>
+<div class="vpwrap" id="vpwrap" hidden><iframe id="vpf" title="The drill at the chosen width"></iframe></div>
+
+<div id="app">
+<header class="top">
+<div class="bar">
+<span class="word">Room</span><span class="proj">orbit-pay</span>
+<button type="button" class="me" aria-label="Sam. Open settings">S</button>
+</div>
+<nav class="tabs" aria-label="Room">
+<a class="tab" href="inbox.html"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" aria-hidden="true"><path d="M3 13l3-8h12l3 8v6H3z"/><path d="M3 13h5l1 2h6l1-2h5"/></svg>Inbox</a>
+<a class="tab" href="map.html"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><rect x="4" y="4" width="6" height="6" rx="1.5"/><rect x="14" y="4" width="6" height="6" rx="1.5"/><rect x="4" y="14" width="6" height="6" rx="1.5"/><rect x="14" y="14" width="6" height="6" rx="1.5"/></svg>Map</a>
+<a class="tab" href="drill.html" aria-current="page"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M9 9h6v7a3 3 0 0 1-6 0z"/><path d="M12 9V6M5 12h4M15 12h4M6 7l3 2M18 7l-3 2M6 19l3-2M18 19l-3-2"/></svg>Drills</a>
+<a class="tab" href="explainer.html"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" aria-hidden="true"><path d="M6 3h9l3 3v15H6z"/><path d="M9 10h6M9 14h6M9 18h4"/></svg>Explainers</a>
+</nav>
+</header>
+<div class="layout">
+<main id="main" tabindex="-1"></main>
+<aside class="rail" aria-label="About this prototype state"><h2>About this state</h2><p id="rnote"></p><pre id="rsys"></pre></aside>
+</div>
+<div class="toastwrap"><div id="toastslot" role="status" aria-live="polite"></div></div>
+<p class="vh" id="live" aria-live="polite"></p>
+</div>
+
+<script>
+(function(){
+'use strict';
+var $=function(s,r){return (r||document).querySelector(s)}, $$=function(s,r){return Array.prototype.slice.call((r||document).querySelectorAll(s))};
+var esc=function(s){return String(s).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]})};
+var Q=new URLSearchParams(location.search), EMBED=Q.get('embed')==='1';
+if(EMBED)document.documentElement.classList.add('embed');
+var RM=matchMedia('(prefers-reduced-motion: reduce)');
+var MEAN={Guess:'I would not bet on it.','Fairly sure':'More likely right than wrong.',Sure:'I would be surprised to be wrong.'};
+var MOD=/Mac|iPhone|iPad/.test(navigator.platform||navigator.userAgent)?'Cmd':'Ctrl';
+var CUE='Back to: retries in the payment worker. Next: the dead letter queue.';
+var CHEV='<svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 2l4 4-4 4"/></svg>';
+var BACK='<svg width="14" height="14" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 2L4 6l4 4"/></svg>';
+var TICK='<svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 6.5l2.5 2.5L10 3"/></svg>';
+
+/* fixture: card c_d311 from fixture.js, inlined so this page stands alone */
+var CODE=['def charge(order):','    for attempt in range(3):','        try:','            return gateway.charge(','                order.card,','                order.amount,','                idempotency_key=f"{order.id}:{attempt}",','                timeout=0.8,','            )','        except gateway.Timeout:','            if attempt < 2:','                sleep(backoff(attempt))','    raise ChargeFailed(order.id)'];
+var D={id:'c_d311',kind:'repair',topic:'timeouts-vs-failures',dim:'Debugging and diagnosis',lv:1,path:'billing/charge.py:41-53',line:47,
+ ctx:'A customer was charged twice after a gateway timeout. test_no_double_charge fails.',
+ out:'<span class="cm">$ pytest tests/test_charge.py -k test_no_double_charge</span>\nFAILED tests/test_charge.py::test_no_double_charge\n    gateway.fail_reply_once("ord_1042")   # reply lost, charge ran\n    charge(order)\n&gt;   assert gateway.charges_for("ord_1042") == 1\n<b>E   AssertionError: assert 2 == 1</b>\n1 failed, 41 passed in 2.31s',
+ files:['billing/charge.py','billing/retry.py','tests/test_charge.py','tests/fakes/gateway.py'],
+ hints:['Look at what the key is made from.','Compare the key the first call sends with the key the retry sends.','billing/charge.py:47 builds the key. Does it change between attempts?'],
+ why:{cause:['The key is built from the attempt number (billing/charge.py:47), so the gateway sees the retry as a new charge.','The key is the cause, yes. Say what makes it change: the attempt number at billing/charge.py:47 gives each retry a new key.','A timeout only means the reply did not arrive. The gateway ran the first charge. The retry charged again because its key is new (billing/charge.py:47).'],
+  check:['A test that makes the first reply time out and asserts both attempts send one key fails on this code and passes on the fix. That proves the cause.','Printing the key shows it changes, but the test that proves it is two calls with one order id.','A longer timeout hides the symptom. It does not show the cause. A test that sends two calls with one order id would.']},
+ run:{right:'<span class="cm">$ pytest tests/test_charge.py -k test_retry_sends_same_key</span>\n&gt;   assert keys[1] == keys[0]\n<b>E   AssertionError: assert \'ord_1042:1\' == \'ord_1042:0\'</b>\n1 failed in 0.42s',
+  partial:'<span class="cm">$ pytest tests/test_charge.py -k test_no_double_charge -s</span>\ncharge attempt=0 key=ord_1042:0\ncharge attempt=1 key=ord_1042:1\n1 failed, 41 passed in 2.29s',
+  wrong:'<span class="cm">$ CHARGE_TIMEOUT=5 pytest tests/test_charge.py -k test_no_double_charge</span>\n<b>E   AssertionError: assert 2 == 1</b>\n1 failed, 41 passed in 11.80s'},
+ runSays:{right:'It fails on the planted bug, so it shows the cause. On the fix it passes.',partial:'It shows the key changes between attempts. It does not yet prove that the change causes the second charge.',wrong:'The test still fails with a longer timeout, so the timeout is not the cause.'}};
+var A={right:['The idempotency key includes the attempt number, so the retry sends a new key and the gateway charges again.','A test that makes the first reply time out, then asserts both attempts send the same key.'],
+ partial:['The idempotency key includes the attempt number, so the retry sends a new key and the gateway charges again.','Print the key in charge() on each attempt.'],
+ wrong:['The 0.8 s timeout is too short, so the gateway fails and the retry charges again.','Raise the timeout to 5 s and run the test again.']};
+
+var ST=[
+['empty drills tab',function(){reset();S.view='empty'},'The Drills tab before any drill. One sentence on where drills come from and two ways to start. The faint record field is the one place motion is allowed when nothing is waiting, and it stops under reduced motion.','drills: none\nmap.json read, no cards'],
+['loading: setting up a safe copy',function(){reset();S.phase='loading'},'After Drill this on the map. The agent copies the code, puts back a bug from this project, and fixes the answer key before Sam sees anything. Each step fills when it is done; the third is still running.','git worktree add .lwb/drill-c_d311\nrevert the fix (billing/charge.py)\nlwb_seal c_d311 parts=cause,check'],
+['waiting: symptom shown',function(){reset()},'The symptom is the real failing test from the safe copy. Two fields, an optional line picker, confidence. Lock stays aria-disabled with a reason until confidence is chosen. Type to see the step bar move. Keys: 1 2 3, D, H, '+MOD+' Enter.','lwb_post c_d311 kind=repair\nrubric sealed 14:15 (2 parts)'],
+['hint 1 of 3 used',function(){reset();S.hints=1},'One hint used. The ladder fills one cell and the card says once, plainly, that the attempt now counts as With help. The tone does not change.','lwb_hint c_d311 level=1\nattempt cap: with help'],
+['hint 3 of 3 used',function(){reset();S.hints=3;S.pick=47},'All three hints. The Hint button is gone; the cap line stays. H3 points at the line, so Sam has picked it.','lwb_hint c_d311 level=3\nattempt cap: with help'],
+['answered: locked, grading',function(){fill('partial','Fairly sure');S.phase='grading';S.hold=true},'Locked, then Grading, announced once. Held here so you can see it. Lock the waiting state to see a grade arrive.','lwb_lock c_d311 door=room 14:22\nsample: grading two parts'],
+['graded right on both parts',function(){fill('right','Fairly sure');graded()},'Both parts right and no hints, so the record moves. The new segment lights once; that motion is the only one on this view.','cause: correct  check: correct\nrecord: with help -> recalls'],
+['graded partial: check not quite',function(){fill('partial','Fairly sure');graded()},'Cause right, check not quite. Each part has its own word, so a right guess with a weak check is not a full pass (R16).','cause: correct  check: partial\nreview in 3 days'],
+['graded wrong: cause',function(){fill('wrong','Fairly sure');graded()},'Cause wrong. "No." and the evidence, then the fix behind Show the fix. No red, no warmth. It returns tomorrow.','cause: wrong  check: wrong\nreview tomorrow'],
+['confident and wrong',function(){fill('wrong','Sure');graded()},'The same answer at Sure. One belief line is added, and the topic gets the sure-miss mark on the map.','cause: wrong at sure\nmap: sure miss on timeouts-vs-failures'],
+['run my check output',function(){fill('partial','Fairly sure');graded();S.ran='partial'},'The agent runs Sam\'s check in the safe copy, not its own (R14), and shows the output as it printed. Clear Session linked in the bar to see the fallback.','lwb run-check c_d311 (in .lwb/drill-c_d311)\nexit 1, output posted to chat too'],
+['done: back on date, copy deleted',function(){reset();S.view='closed'},'After Close drill. The safe copy is gone and the real code was never touched. The drill sits under Done with its return date.','git worktree remove .lwb/drill-c_d311\nreview c_d311 due 10 Nov'],
+['offline: grading waits',function(){reset();S.cause=A.partial[0];S.net=false},'No network. Sam can write and lock. Grading waits. Clear Offline in the prototype bar after locking to see it send and grade.','page storage queue, retry on "online"'],
+['error: safe copy failed',function(){reset();S.phase='error'},'Setup failed. The message says what did not happen and that the code is safe. The technical reason is one tap away, not in the way.','git worktree add: failed\nno card posted, nothing sealed'],
+['in-build offer: call the cause first',function(){reset();S.view='chat'},'During a real build, when a test fails in a learning task. One line, once per failing test. Call the cause opens the same drill on the real failure; Not now lets the agent fix it and say nothing more.','pytest exit 1 in a learning task\noffer once: test_no_double_charge']
+];
+
+var S, timers=[], tt;
+function reset(){S={view:'drill',phase:'edit',cause:'',check:'',pick:null,conf:null,hints:0,dk:false,live:false,ran:null,hold:false,net:!$('#net').checked,chat:'offer'}}
+function fill(k,c){reset();S.cause=A[k][0];S.check=A[k][1];S.conf=c;if(k!=='wrong')S.pick=47;else S.pick=48}
+function graded(){S.phase='graded';S.v=grade()}
+function later(fn,ms){timers.push(setTimeout(fn,ms))}
+function announce(t){var l=$('#live');l.textContent='';setTimeout(function(){l.textContent=t},40)}
+function linked(){return $('#lnk').checked}
+
+/* grading: patterns stand in for the sealed two-part rubric */
+function grade(){
+ if(S.dk)return {dk:true};
+ var c=S.cause,k=S.check,cause=/attempt/i.test(c)&&/key|idempot/i.test(c)?0:/key|idempot/i.test(c)?1:2;
+ var check=/assert|test|compare|same/i.test(k)&&/key|charge/i.test(k)?0:/print|log/i.test(k)&&/key/i.test(k)?1:2;
+ return {cause:cause,check:check};
+}
+function outcome(){var v=S.v;if(v.dk)return 'dk';if(v.cause===2)return S.conf==='Sure'?'cw':'wrong';return v.cause+v.check===0?'right':'partial'}
+function canLock(){return !!S.conf&&!!S.cause.trim()&&!!S.check.trim()}
+function lock(dk){
+ saveDraft();
+ if(dk){S.dk=true;S.conf='Guess'}
+ else if(!canLock()){var h=$('#helper');if(h){h.classList.add('warn');h.textContent=!S.cause.trim()?'Write what you think causes it first.':!S.check.trim()?'Write a check that would show it.':'Choose how sure you are first.'}
+  var f=!S.cause.trim()?$('#cause'):!S.check.trim()?$('#check'):$('input[name="conf"]');if(f)f.focus();return}
+ if(!S.net){S.phase='offline';render('#st1');nudge();announce('Locked. Grading waits until you are back online.');return}
+ S.phase='grading';S.hold=false;render('#st1');nudge();announce('Locked. Grading.');later(finish,1600);
+}
+function finish(){graded();render('#vt')}
+function nudge(){var q=$('.qcard');if(q&&!RM.matches){q.classList.remove('nudge');void q.offsetWidth;q.classList.add('nudge')}}
+function saveDraft(){var a=$('#cause'),b=$('#check');if(a)S.cause=a.value;if(b)S.check=b.value}
+
+/* render */
+function chip(t){var cls={Locked:'locked','Saved here':'saved','Not quite':'miss',No:'miss','No · sure':'miss'}[t]||'';return '<span class="chip '+cls+'">'+(t==='Correct'?TICK:'')+esc(t)+'</span>'}
+function chipNow(){var p=S.phase;if(p==='edit')return 'Open';if(p==='offline')return 'Saved here';if(p==='graded')return {right:'Correct',partial:'Not quite',wrong:'No',cw:'No · sure',dk:'Locked'}[outcome()];return 'Locked'}
+function stepsBar(){
+ var cur=S.phase==='graded'?3:!S.cause.trim()?1:!S.check.trim()?2:3,done=S.phase==='graded'?4:cur;
+ if(S.phase!=='edit'&&S.phase!=='graded')cur=3,done=3;
+ return '<ol class="steps" aria-label="Drill steps">'+['Symptom','Cause','Check','Reveal'].map(function(n,i){return '<li'+(i===cur&&S.phase!=='graded'?' aria-current="step"':i<done||(S.phase==='graded'&&i===3)?' class="ok"':'')+'>'+n+'</li>'}).join('')+'</ol>';
+}
+function head(){
+ var eb=S.live?'A test fails · in the build':'Drill · '+D.dim+' · About 10 min';
+ return '<div class="qhead"><div><div class="eb">'+esc(eb)+'</div><div class="lvl">'+D.topic+' · With help</div></div>'+chip(chipNow())+'</div>'+
+  '<h1 class="qq" id="qp">'+(S.live?'Call the cause before I fix it.':'Find the cause of the double charge.')+'</h1>'+stepsBar();
+}
+function symptom(){
+ return '<section class="sym" aria-labelledby="sy"><h2 id="sy">Symptom</h2><p>'+esc(D.ctx)+'</p><pre class="term" tabindex="0" aria-label="Failing test output">'+D.out+'</pre>'+
+  (S.live?'<p class="files" style="margin-top:8px">This is your real code. Nothing is planted.</p>':'<details class="files"><summary>Safe copy · '+D.files.length+' files changed in this drill</summary><ul>'+D.files.map(function(f){return '<li>'+f+'</li>'}).join('')+'</ul></details>')+'</section>';
+}
+function picker(ro){
+ var d=ro?' disabled':'';
+ return '<fieldset><legend>Optional: tap the line you suspect</legend><div class="pick"><div class="hd"><span>'+D.path+'</span>'+(S.pick&&!ro?'<button type="button" class="tbtn" data-act="clear" style="font-size:13px">Clear</button>':'<span style="min-height:44px"></span>')+'</div>'+
+  CODE.map(function(l,i){var n=41+i,show=ro&&S.phase==='graded'&&n===D.line;return '<label class="pl'+(ro?' ro':'')+(show?' cause':'')+'"><input type="radio" name="line" value="'+n+'"'+(S.pick===n?' checked':'')+d+' aria-label="Line '+n+': '+esc(l.trim())+(show?'. The cause.':'')+'"><i aria-hidden="true">'+n+'</i><span aria-hidden="true">'+esc(l)+'</span></label>'}).join('')+'</div></fieldset>';
+}
+function fields(){
+ return '<label class="fl" for="cause">What do you think causes it?</label><textarea id="cause" rows="3">'+esc(S.cause)+'</textarea>'+
+  '<label class="fl" for="check">What check would show it?<span class="sub2" id="checkh">A log line, a test or a value to print.</span></label><textarea id="check" rows="3" aria-describedby="checkh">'+esc(S.check)+'</textarea>';
+}
+function confs(){
+ return '<fieldset><legend>How sure are you?</legend><div class="confs">'+['Guess','Fairly sure','Sure'].map(function(n,i){return '<label class="sure"><input type="radio" name="conf" value="'+n+'"'+(S.conf===n?' checked':'')+' aria-describedby="mean">'+n+'<span class="kc" aria-hidden="true">'+(i+1)+'</span></label>'}).join('')+'</div>'+
+  '<p class="mean" id="mean">'+(S.conf?'<b>'+S.conf+':</b> '+MEAN[S.conf]:'Guess, Fairly sure or Sure. Each one has a meaning.')+'</p></fieldset>';
+}
+function ladder(n){return '<span class="ladder" aria-hidden="true">'+[0,1,2].map(function(i){return '<span'+(i<n?' class="on"':'')+'></span>'}).join('')+'</span>'}
+function hints(){
+ var n=S.hints;
+ return '<div class="hints"><span>'+ladder(n)+'Hints used: '+n+' of 3</span>'+(n<3?'<button type="button" class="tbtn" data-act="hint">Hint</button>':'')+
+  (n?'<ol>'+D.hints.slice(0,n).map(function(t,i){return '<li'+(i===n-1&&S.newHint?' class="in" tabindex="-1"':'')+'><b>H'+(i+1)+'</b>'+esc(t)+'</li>'}).join('')+'</ol><p class="cap">Using a hint is fine. This attempt now counts as With help.</p>':'')+'</div>';
+}
+function abar(){
+ return '<div class="abar"><span class="why2">'+(S.live?'A test fails':'Drill')+' · '+D.topic+'</span>'+
+  '<div class="row2"><button type="button" class="pill" data-act="notnow">Not now<span class="kc" aria-hidden="true">H</span></button>'+
+  '<button type="button" class="pill dk" data-act="dk">I do not know<span class="kc" aria-hidden="true">D</span></button></div>'+
+  '<button type="submit" class="btn lock" aria-disabled="'+!canLock()+'" aria-describedby="helper">Lock my answer<span class="kc" aria-hidden="true">'+MOD+' Enter</span></button>'+
+  '<p class="helper" id="helper">'+(S.conf?'':'Choose how sure you are first.')+'</p></div>';
+}
+function said(){
+ if(S.dk)return '<blockquote class="said"><span class="cap">You said</span>I do not know. '+chip('Guess')+'</blockquote>';
+ return '<blockquote class="said"><span class="cap">Cause</span>'+esc(S.cause)+'<span class="cap">Check</span>'+esc(S.check)+(S.pick?'<span class="cap">Line</span><span style="font-family:var(--mono);font-size:14px">'+S.pick+'</span>':'')+' '+chip(S.conf)+'</blockquote>';
+}
+function part(name,s,text){var w=['Correct.','Not quite.','No.'][s];return '<div class="part"><span class="pk">'+name+'</span><p class="vw'+(s===0?' ok':'')+'">'+w+'</p><p class="why">'+esc(text)+'</p></div>'}
+function nextText(){var o=outcome();return o==='right'?(S.hints?'Back on 10 Nov.':'Back on 14 Nov.'):o==='partial'?'Back on 10 Nov.':'Back tomorrow.'}
+function verdict(){
+ var o=outcome(),v=S.v,h,nx;
+ if(o==='dk'){nx='Back tomorrow.';h='<p class="vw ok" style="margin-top:8px">Not known yet.</p><p class="why">Cause: '+esc(D.why.cause[0])+'</p><p class="why">Check: '+esc(D.why.check[0])+'</p>'}
+ else{
+  h=part('Cause',v.cause,D.why.cause[v.cause])+part('Check',v.check,D.why.check[v.check]);
+  if(S.pick)h+='<p class="belief">'+(S.pick===D.line?'You picked line 47. The cause is on line 47.':'You picked line '+S.pick+'. The cause is on line 47.')+'</p>';
+  nx=nextText();
+  if(o==='cw')h+='<p class="belief">You chose Sure. It returns tomorrow and is marked on your map.</p>';
+  if(o==='right'&&S.hints)h+='<p class="belief">You used '+(S.hints===1?'a hint':S.hints+' hints')+', so this attempt counts as With help.</p>';
+  if(o==='right'&&!S.hints)h+='<div class="delta"><span>Your record: <b>'+D.topic+'</b>With help'+CHEV+'Without help</span><span class="segs" aria-hidden="true"><span class="seg f1"></span><span class="seg" data-to="f2"></span><span class="seg"></span></span></div>';
+ }
+ h+='<p class="why" style="margin-top:12px">'+nx+(S.live?'':' The safe copy is deleted when you close this drill.')+'</p>';
+ h+='<details class="fix"><summary>Show the fix</summary><pre class="term diff" tabindex="0" aria-label="The fix">billing/charge.py:47\n<span class="rm">-                idempotency_key=f"{order.id}:{attempt}",</span>\n<span class="ad">+                idempotency_key=order.id,</span></pre></details>';
+ h+=runBlock()+'<p class="cue">'+CUE+'</p>';
+ return '<section class="verdict in" role="status" aria-labelledby="vt"><h2 class="vt" id="vt" tabindex="-1">Result · two parts</h2>'+h+'</section>'+
+  '<div class="done">'+(S.live?'<button type="button" class="btn" data-act="build">Back to the build</button>':'<button type="button" class="btn" data-act="close">Close drill</button><button type="button" class="btn ghost sm" data-act="build">Back to the build</button>')+'</div>';
+}
+function runBlock(){
+ if(S.dk)return '';
+ var o=outcome(),k=o==='right'?'right':o==='partial'?'partial':'wrong';
+ if(!linked())return '<div class="run"><p>Run my check works when this Room is linked to your session. Say "run my check" in chat.</p></div>';
+ if(!S.ran)return '<div class="run"><p>The agent runs your check, not its own.</p><button type="button" class="btn ghost sm" data-act="run" style="margin-top:10px">Run my check</button></div>';
+ if(S.ran==='busy')return '<div class="run" id="runb" tabindex="-1"><p><span class="dots">Running your check</span></p></div>';
+ return '<div class="run" id="runb" tabindex="-1"><p>Your check printed:</p><pre class="term" tabindex="0" aria-label="Output of your check">'+D.run[k]+'</pre><p style="margin-top:8px">'+esc(D.runSays[k])+'</p></div>';
+}
+function linkLine(back){return '<div class="link"><a class="tbtn" href="'+(back||'map.html')+'" style="margin-left:-6px">'+BACK+(back?'Inbox':'Map')+'</a><span>Linked to: <b>orbit-pay</b> · cloud session</span></div>'}
+function drillsTab(m){
+ var h='<h1 class="ph">Drills</h1>';
+ if(S.view==='empty'){
+  var cells='';for(var i=0;i<24;i++){var g=[2,9,14,20].indexOf(i)>=0?' g'+(1+i%3):'';cells+='<span class="fc'+g+'" style="animation-delay:'+(i%5)*1.7+'s"></span>'}
+  h+='<div class="emptyst"><div class="field" aria-hidden="true">'+cells+'</div><p class="lead" style="margin-top:0">No drills yet. Drills use bugs from this project. Ask for one from a topic on your map, or say \'drill me\' in chat.</p>'+
+   '<div class="ctas"><a class="btn" href="map.html">Open the map</a><button type="button" class="btn ghost" data-act="start">Drill my weakest topic</button></div><span class="say">In chat: drill me on timeouts</span></div>';
+ }else{
+  h+='<div class="note" role="status" id="closed" tabindex="-1"><p>Drill closed. The safe copy is deleted. Your code is unchanged.</p></div>'+
+   '<h2 class="gh">Suggested</h2><ul class="list"><li><a class="ra" href="#" data-act="start"><span class="eb">Weakest now</span><span class="tp">retry-budget</span><span class="sub">About 10 min</span><span class="rt">'+chip('Open')+'</span></a></li></ul>'+
+   '<h2 class="gh">Done</h2><ul class="list"><li><a class="ra" href="#" data-act="reopen"><span class="eb">'+D.dim+'</span><span class="tp">'+D.topic+'</span><span class="sub">Back on 10 Nov.</span><span class="rt">'+chip('Not quite')+'</span></a></li></ul>'+
+   '<p class="cue">'+CUE+'</p><div class="ctas"><button type="button" class="btn" data-act="build">Back to the build</button></div>';
+ }
+ m.innerHTML=h;
+}
+function chatView(m){
+ var h=linkLine('inbox.html')+'<div class="sess" role="region" aria-label="Session transcript, orbit-pay"><div class="sh"><span></span><span></span><span></span>Session · orbit-pay · cloud</div><div class="msgs" id="msgs">'+
+  '<p class="msg you">Make charge() retry on gateway timeouts, then run the tests.</p>'+
+  '<div class="msg">Starting the build now. I changed billing/charge.py and ran the tests.<pre class="term">'+D.out+'</pre></div>';
+ if(S.chat==='offer')h+='<p class="msg offer" id="offer">test_no_double_charge fails. Call the cause first? Pick the line, or say \'not now\'.</p>';
+ if(S.chat==='notnow')h+='<p class="msg offer">test_no_double_charge fails. Call the cause first? Pick the line, or say \'not now\'.</p><p class="msg you">not now</p><div class="msg in" id="ag" tabindex="-1">Fixing it. The key at billing/charge.py:47 now uses the order id only.<pre class="term">$ pytest tests/test_charge.py\n42 passed in 2.27s</pre>Next: the dead letter queue.</div>';
+ if(S.chat==='back')h+='<p class="msg you">From the Room: c_d311 locked at '+esc(S.conf||'Guess')+'.</p><div class="msg in" id="ag" tabindex="-1">Cause: '+(['Correct.','Not quite.','No.'][S.v.cause]||'Not known yet.')+' Check: '+(['Correct.','Not quite.','No.'][S.v.check]||'Not known yet.')+' '+nextText()+' I ran your check first, then fixed line 47.<pre class="term">$ pytest tests/test_charge.py\n42 passed in 2.27s</pre>'+esc(CUE)+'</div>';
+ h+='</div>';
+ if(S.chat==='offer')h+='<div class="reply" role="group" aria-label="Reply"><span class="lbl">Reply in chat, or open it in the Room.</span><button type="button" class="btn sm" data-act="callcause">Call the cause</button><button type="button" class="btn ghost sm" data-act="chatnot">Not now</button></div>';
+ m.innerHTML=h+'</div>';
+}
+function render(focusSel){
+ clearTimeout(tt);var m=$('#main');m.removeAttribute('aria-busy');
+ if(S.view==='empty'||S.view==='closed'){drillsTab(m);return focus(focusSel)}
+ if(S.view==='chat'){chatView(m);return focus(focusSel)}
+ var h=linkLine(S.live?'inbox.html':'');
+ if(S.phase==='loading'){m.setAttribute('aria-busy','true');
+  h+='<div class="qcard"><div class="eb">Drill · '+D.dim+'</div><div class="lvl">'+D.topic+' · With help</div><h1 class="qq">Setting up a safe copy of the code. About 20 seconds.</h1><ol class="setup" id="setup">'+
+   ['Copy the code to a safe place','Put back a bug from this project','Fix the answer before you see the question'].map(function(t,i){return '<li><i></i>'+t+'</li>'}).join('')+'</ol><p class="files" style="margin:16px 0 0">Your code is not changed. <span class="vh">Setting up the drill.</span></p><div class="tail"></div></div>';
+  m.innerHTML=h;var li=$$('#setup li');li[0].className='now';
+  later(function(){li[0].className='ok';li[1].className='now'},RM.matches?0:900);later(function(){li[1].className='ok';li[2].className='now'},RM.matches?0:2000);return}
+ if(S.phase==='error'){
+  h+='<div class="qcard"><div class="eb">Drill · '+D.dim+'</div><div class="lvl">'+D.topic+'</div><h1 class="qq" id="qp" tabindex="-1">I could not make a safe copy of the code, so this drill did not start. Your code is unchanged.</h1>'+
+   '<details class="errd"><summary>Details</summary><pre class="term">$ git worktree add .lwb/drill-c_d311\nfatal: \'.lwb/drill-c_d311\' already exists</pre></details>'+
+   '<div class="done"><button type="button" class="btn sm" data-act="start">Try again</button><a class="btn ghost sm" href="map.html">Back to the map</a></div></div>';
+  m.innerHTML=h;return focus(focusSel)}
+ var ro=S.phase!=='edit';
+ if(!S.net)h+='<div class="note" role="status"><p>You are offline. You can write your answer. Grading waits until you are back online.</p></div>';
+ h+='<form class="qcard" id="card" aria-labelledby="qp" novalidate>'+head()+symptom();
+ if(!ro)h+=picker(false)+fields()+confs()+hints()+abar();
+ else{
+  if(!S.dk)h+=picker(true);
+  h+=said();
+  var p=S.phase,st='';
+  if(p==='grading')st='<b>Locked.</b> <span class="dots">Grading</span>';
+  else if(p==='offline')st='<b>Locked.</b> Grading waits until you are back online. Your answer is saved on this device.';
+  if(st)h+='<p class="state" id="st1" tabindex="-1">'+st+'</p><div class="tail"></div>';
+  if(p==='graded')h+=verdict();
+ }
+ m.innerHTML=h+'</form>';S.newHint=false;
+ var segs=$$('.seg[data-to]');
+ if(segs.length)setTimeout(function(){segs.forEach(function(s){s.classList.add(s.dataset.to,'lit');setTimeout(function(){s.classList.remove('lit')},450)})},RM.matches?0:500);
+ focus(focusSel);
+}
+function focus(sel){if(sel){var f=$(sel);if(f)f.focus()}}
+
+/* events */
+var main=$('#main');
+main.addEventListener('submit',function(e){e.preventDefault();lock(false)});
+main.addEventListener('input',function(e){
+ if(e.target.id!=='cause'&&e.target.id!=='check')return;saveDraft();
+ var b=$('.lock');if(b)b.setAttribute('aria-disabled',!canLock());
+ var s=$('.steps');if(s)s.outerHTML=stepsBar();
+ var h=$('#helper');if(h&&h.classList.contains('warn')&&canLock()){h.classList.remove('warn');h.textContent=''}
+});
+main.addEventListener('change',function(e){
+ var t=e.target;saveDraft();
+ if(t.name==='conf'){S.conf=t.value;render('input[name="conf"][value="'+t.value+'"]')}
+ else if(t.name==='line'){S.pick=+t.value;render('input[name="line"][value="'+t.value+'"]');announce('Line '+t.value+' picked.')}
+});
+main.addEventListener('click',function(e){
+ var a=e.target.closest('[data-act]');if(!a)return;var k=a.dataset.act;
+ if(a.tagName==='A')e.preventDefault();
+ if(k==='hint'){saveDraft();S.hints++;S.newHint=true;render(S.hints<3?'[data-act="hint"]':'.hints ol li.in');announce('Hint '+S.hints+' of 3 shown. This attempt now counts as With help.')}
+ else if(k==='clear'){saveDraft();S.pick=null;render('input[name="line"]')}
+ else if(k==='dk')lock(true);
+ else if(k==='notnow'){saveDraft();var keep={c:S.cause,k:S.check};S.view='closed';render('#closed');toast('Moved to Later. The safe copy stays until you come back.','Undo',function(){S.view='drill';S.cause=keep.c;S.check=keep.k;render('#cause')})}
+ else if(k==='run'){S.ran='busy';render('#runb');announce('Running your check.');later(function(){var o=outcome();S.ran=o;render('#runb');announce('Your check printed its output.')},RM.matches?300:1400)}
+ else if(k==='close'){S.view='closed';render('#closed');announce('Drill closed. The safe copy is deleted.')}
+ else if(k==='start'||k==='reopen'){reset();S.phase='loading';render();later(function(){S.phase='edit';render('#qp')},3200)}
+ else if(k==='callcause'){reset();S.live=true;render('#cause');announce('The failing test is open as a drill.')}
+ else if(k==='chatnot'){S.chat='notnow';render('#ag')}
+ else if(k==='build'){if(S.live&&S.v){S.view='chat';S.chat='back';render('#ag')}else toast('In the product this opens the orbit-pay session.')}
+});
+$('.me').onclick=function(){toast('Settings has its own prototype.')};
+function toast(msg,act,fn){
+ var slot=$('#toastslot');clearTimeout(tt);
+ slot.innerHTML='<div class="toast"><p>'+esc(msg)+'</p>'+(act?'<button type="button" class="btn ghost sm" id="tact">'+esc(act)+'</button>':'')+'<button type="button" class="x" id="tx" aria-label="Dismiss">&times;</button></div>';
+ var t=$('.toast',slot),left=8000,start=Date.now();
+ function arm(){start=Date.now();tt=setTimeout(function(){slot.innerHTML=''},left)}
+ function pause(){clearTimeout(tt);left-=Date.now()-start}
+ t.addEventListener('mouseenter',pause);t.addEventListener('focusin',pause);t.addEventListener('mouseleave',arm);t.addEventListener('focusout',function(e){if(!t.contains(e.relatedTarget))arm()});
+ $('#tx').onclick=function(){clearTimeout(tt);slot.innerHTML='';$('#main').focus()};
+ if(act)$('#tact').onclick=function(){clearTimeout(tt);slot.innerHTML='';fn()};
+ arm();
+}
+document.addEventListener('keydown',function(e){
+ var t=e.target,tag=(t.tagName||'').toLowerCase(),typing=tag==='textarea'||(tag==='input'&&t.type==='text')||tag==='select';
+ if(!S)return;
+ if((e.metaKey||e.ctrlKey)&&e.key==='Enter'&&S.view==='drill'&&S.phase==='edit'){e.preventDefault();lock(false);return}
+ if(typing||e.metaKey||e.ctrlKey||e.altKey)return;
+ if(e.key==='['||e.key===']'){step(e.key===']'?1:-1);return}
+ if(e.key==='?'){toast('1 2 3: how sure. D: I do not know. H: Not now. '+MOD+' Enter: lock. [ and ]: prototype state.');return}
+ if(S.view!=='drill'||S.phase!=='edit')return;
+ var m={'1':'Guess','2':'Fairly sure','3':'Sure'}[e.key];
+ if(m){saveDraft();S.conf=m;render('input[name="conf"][value="'+m+'"]');return}
+ if(e.key.toLowerCase()==='d'){lock(true);return}
+ if(e.key.toLowerCase()==='h'){$('[data-act="notnow"]').click()}
+});
+window.addEventListener('online',function(){$('#net').checked=false;netChange()});
+window.addEventListener('offline',function(){$('#net').checked=true;netChange()});
+function netChange(){if(!S)return;S.net=!$('#net').checked;if(S.net&&S.phase==='offline'){announce('Sent. Grading.');S.phase='grading';render('#st1');later(finish,1400)}else if(S.view==='drill'&&S.phase==='edit'){saveDraft();render()}}
+$('#net').onchange=netChange;
+$('#lnk').onchange=function(){if(S&&S.phase==='graded')render()};
+
+/* prototype switcher */
+var sel=$('#st');ST.forEach(function(s,i){var o=document.createElement('option');o.value=i;o.textContent=(i+1)+'. '+s[0];sel.appendChild(o)});
+function slug(s){return s.toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'')}
+function apply(i){
+ timers.forEach(clearTimeout);timers=[];clearTimeout(tt);$('#toastslot').innerHTML='';
+ var x=ST[i];sel.value=i;$('#net').checked=x[0].indexOf('offline')===0;
+ x[1]();$('#rnote').textContent=x[2];$('#rsys').textContent=x[3];
+ try{var u=new URL(location.href);u.searchParams.set('state',slug(x[0]));history.replaceState(null,'',u)}catch(err){}
+ render();syncFrame();
+}
+function step(d){apply((+sel.value+d+ST.length)%ST.length)}
+sel.onchange=function(){apply(+sel.value)};$('#prev').onclick=function(){step(-1)};$('#next').onclick=function(){step(1)};
+var th=$('#theme'),vw=$('#vw');
+try{th.value=Q.get('theme')||localStorage.getItem('room-theme')||''}catch(err){}
+function setTheme(){if(th.value)document.documentElement.setAttribute('data-theme',th.value);else document.documentElement.removeAttribute('data-theme');try{if(!EMBED)localStorage.setItem('room-theme',th.value)}catch(err){};syncFrame()}
+function syncFrame(){var w=vw.value;$('#vpwrap').hidden=!w;$('#app').hidden=!!w;if(!w)return;var f=$('#vpf');f.style.width=w+'px';
+ var src='drill.html?embed=1&state='+slug(ST[+sel.value][0])+'&theme='+th.value;if(f.getAttribute('src')!==src)f.setAttribute('src',src)}
+th.onchange=setTheme;vw.onchange=syncFrame;
+var q=Q.get('state'),start=2;ST.forEach(function(s,i){if(q&&(slug(s[0])===q||String(i+1)===q))start=i});
+if(th.value)document.documentElement.setAttribute('data-theme',th.value);
+apply(start);
+})();
+</script>
+</body>
+</html>

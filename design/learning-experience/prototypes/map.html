@@ -1,0 +1,470 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Map and growth</title>
+<meta name="description" content="Prototype of the Room Map: weakest now, changed since, the record grid with outlines, glyphs and best-versus-latest rings, the table view, the topic sheet, calibration, practice days and the Growth view for the end of a project.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="anonymous">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wdth,wght@75..100,400..700&amp;family=JetBrains+Mono:wght@400;500&amp;display=swap">
+<link rel="stylesheet" href="../assets/room.css">
+<style>
+:root{--tabbar:0px}
+*{box-sizing:border-box}
+html{scroll-padding:110px 0 calc(var(--tabbar) + 24px)}
+body{position:relative;margin:0;background:var(--paper);color:var(--ink);font-family:var(--sans);-webkit-font-smoothing:antialiased;min-height:100vh;overflow-x:hidden}
+body::after{content:"";position:absolute;inset:0;pointer-events:none;z-index:60;background-image:url(../assets/grain.png);background-size:240px 240px;opacity:var(--grain-op);mix-blend-mode:var(--grain-blend)}
+[hidden]{display:none !important}
+:focus-visible{outline:2px solid var(--accent);outline-offset:3px}
+[tabindex="-1"]:focus{outline:none}
+a{color:var(--ink);text-underline-offset:4px}
+button{font-family:inherit;color:inherit}
+.mono{font-family:var(--mono)}
+.vh{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+/* prototype switcher: outside the product, dashed so nobody reads it as product UI */
+.proto{display:flex;flex-wrap:wrap;align-items:center;gap:8px 12px;margin:10px auto 0;max-width:1180px;padding:8px 12px;border:1.5px dashed var(--control-border);border-radius:12px;font:500 12px/1.3 var(--mono);color:var(--text-3);width:calc(100% - 32px)}
+.proto label{display:flex;align-items:center;gap:8px}
+.proto select,.proto button{font:500 12.5px var(--mono);min-height:44px;padding:0 10px;border:1.5px solid var(--control-border);border-radius:10px;background:var(--card);color:var(--ink);max-width:100%}
+.proto select#st{max-width:min(340px,58vw)}
+.proto .sp{flex:1}
+/* shell */
+.top{position:sticky;top:0;z-index:30;background:var(--paper);border-bottom:1px solid var(--border)}
+.bar{max-width:1180px;margin:0 auto;height:56px;padding:0 32px;display:flex;align-items:center;gap:14px}
+.word{font-size:19px;font-weight:650;font-variation-settings:"wdth" 88;letter-spacing:-.01em}
+.proj{font:500 13px var(--mono);color:var(--text-3)}
+.me{margin-left:auto;width:44px;height:44px;border-radius:50%;border:1.5px solid var(--ink);background:var(--card);font-weight:650;font-size:16px}
+.tabs{max-width:1180px;margin:0 auto;padding:0 32px;display:flex;gap:24px}
+.tab{font:600 15px/1 var(--sans);min-height:44px;padding:0 4px;border-bottom:2px solid transparent;color:var(--text-3);display:flex;align-items:center;gap:8px;text-decoration:none;transition:color .2s}
+.tab:hover{color:var(--ink)}
+.tab[aria-current="page"]{color:var(--ink);border-color:var(--accent)}
+.tab svg{display:none}
+.main{max-width:960px;margin:0 auto;padding:20px 32px 140px;position:relative}
+.link{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:4px 16px;font-size:14px;color:var(--text-3);padding:0 0 12px;border-bottom:1px solid var(--rule)}
+.link b{font-weight:500;color:var(--ink)}
+.btn{font:600 16px/1 var(--sans);min-height:50px;padding:0 26px;border-radius:999px;border:1.5px solid var(--ink);background:var(--ink);color:var(--on-ink);cursor:pointer;transition:background .2s,border-color .2s,color .2s,transform .15s;display:inline-flex;align-items:center;justify-content:center;gap:8px;text-decoration:none}
+.btn:hover{background:var(--accent);border-color:var(--accent);color:#16161A}
+.btn:active{transform:scale(.97)}
+.btn.ghost{background:transparent;color:var(--ink)}
+.btn.ghost:hover{background:var(--ink);color:var(--on-ink)}
+.btn.sm{min-height:44px;font-size:15px;padding:0 18px}
+.btn[disabled]{opacity:.45;cursor:not-allowed;background:var(--ink);border-color:var(--ink);color:var(--on-ink);transform:none}
+.tbtn{min-height:44px;padding:0 6px;border:0;background:none;font:600 15px var(--sans);text-decoration:underline;text-underline-offset:4px;cursor:pointer;color:var(--ink)}
+.note{display:flex;flex-wrap:wrap;align-items:center;gap:4px 12px;margin-top:16px;padding:12px 16px;background:var(--card);border:1.5px solid var(--border);border-radius:14px;font-size:15px;line-height:1.5}
+.note.strong{border-color:var(--ink)}
+.note p{margin:0;flex:1 1 260px}
+.head{display:flex;flex-wrap:wrap;align-items:end;justify-content:space-between;gap:16px 24px;margin-top:24px}
+h1.ph{margin:0;font-size:46px;line-height:1.06;letter-spacing:-.02em;font-weight:650;font-variation-settings:"wdth" 88}
+.lede{margin:10px 0 0;font-size:17px;line-height:1.6;color:var(--text-2);max-width:560px}
+.ctrls{position:relative;z-index:1;display:flex;flex-wrap:wrap;gap:10px;margin-top:20px}
+.toggle{background:var(--paper);display:inline-flex;border:1.5px solid var(--ink);border-radius:999px;padding:3px;gap:3px}
+.tg{font:600 14px/1 var(--sans);min-height:44px;padding:0 16px;border:0;border-radius:999px;background:transparent;color:var(--ink);cursor:pointer;transition:background .25s,color .25s}
+.tg[aria-pressed="true"]{background:var(--ink);color:var(--on-ink)}
+h2.st{margin:0;font-size:24px;line-height:1.3;font-weight:650;font-variation-settings:"wdth" 88}
+.card{background:var(--card);border:1.5px solid var(--border);border-radius:18px;padding:24px}
+.weak{margin-top:24px;border-color:var(--ink)}
+.weak .wt{margin:0;font-size:21px;line-height:1.4;font-weight:600;letter-spacing:-.01em}
+.weak .wt .mono{font-size:.85em;font-weight:500}
+.weak .sub{margin:6px 0 0}
+.acts{display:flex;flex-wrap:wrap;align-items:center;gap:10px;margin-top:18px}
+.sub{font-size:14px;color:var(--text-3);line-height:1.6}
+.lines{margin:16px 0 0;padding:0;list-style:none;font-size:16px;line-height:1.6;color:var(--text-2)}
+.lines li{display:flex;flex-wrap:wrap;align-items:center;gap:0 10px;padding:6px 0;border-top:1px solid var(--rule)}
+.lines li:first-child{border-top:0}
+.lines b{font-weight:600;color:var(--ink)}
+.tp{font:500 .9em var(--mono);color:var(--ink)}
+/* record panel, as on the site */
+.panel{margin-top:24px;background:var(--card);border:1.5px solid var(--border);border-radius:18px;padding:22px 24px 18px}
+.phead{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:8px 16px}
+.dims{list-style:none;margin:12px 0 0;padding:0}
+.dims>li{border-top:1px solid var(--rule)}
+.row,.rowbtn{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(0,1.3fr) 120px 28px;gap:14px;align-items:center;width:100%;min-height:48px;padding:6px 0;text-align:left;background:none;border:0;font:inherit;color:var(--ink)}
+.rowbtn{cursor:pointer;border-radius:10px}
+.rowbtn:hover .nm{text-decoration:underline;text-underline-offset:4px}
+.nm{font-size:15px;font-weight:500}
+.lv{font:500 12px var(--mono);text-align:right;color:var(--text-2)}
+.lv.l0{color:var(--text-4)}.lv.l3{color:var(--accent-text)}
+.chev{justify-self:end;transition:transform .25s var(--ease-out)}
+.rowbtn[aria-expanded="true"] .chev{transform:rotate(90deg)}
+.segs{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:4px}
+.seg{height:14px;border-radius:3px;background:var(--lv0);transition:background-color .55s ease,transform .55s var(--ease-spring)}
+.seg.f1{background:var(--lv1)}.seg.f2{background:var(--lv2)}.seg.f3{background:var(--lv3)}
+.seg[class*=" f"]{box-shadow:inset 0 0 0 1.5px var(--ink)}
+.rise .seg[class*=" f"]{animation:segin .55s var(--ease-spring) both}
+@keyframes segin{from{background:var(--lv0);transform:scaleY(1);box-shadow:none}60%{transform:scaleY(1.15)}}
+.nonote{grid-column:1 / -1;margin:-6px 0 8px;font-size:14px;color:var(--text-3)}
+.tcells{list-style:none;margin:0;padding:4px 0 16px;display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:4px 12px}
+.cell{display:grid;grid-template-columns:44px minmax(0,1fr);grid-template-rows:auto auto;column-gap:10px;align-items:center;width:100%;min-height:56px;padding:4px 8px 4px 0;background:none;border:0;border-radius:12px;text-align:left;cursor:pointer}
+.cell:hover{background:color-mix(in srgb,var(--field) 55%,transparent)}
+.cell .cn{grid-column:2;font:500 13px/1.3 var(--mono);overflow-wrap:anywhere}
+.cell .cl{grid-column:2;font-size:12.5px;color:var(--text-3)}
+.sq{grid-row:1 / span 2;justify-self:center;position:relative;width:28px;height:28px;border-radius:6px;background:var(--lv0);transition:background-color .4s var(--ease-out),transform .4s var(--ease-spring)}
+.sq.l1{background:var(--lv1)}.sq.l2{background:var(--lv2)}.sq.l3{background:var(--lv3)}
+.sq.l1,.sq.l2,.sq.l3{box-shadow:inset 0 0 0 1.5px var(--ink)}
+.sq.l0{box-shadow:inset 0 0 0 1.5px var(--control-border)}
+.sq.ring{box-shadow:inset 0 0 0 1.5px var(--ink),0 0 0 2px var(--card),0 0 0 4px var(--ink)}
+.sq .gl{position:absolute;left:6px;bottom:5px;display:flex;gap:2px;align-items:end}
+.sq .gl i{display:block;width:2px;height:9px;background:#16161A;border-radius:1px}
+.sq.l3 .gl i{background:#F5F4F0}
+.sq.miss::after{content:"";position:absolute;top:-3px;right:-3px;width:6px;height:6px;border-radius:50%;background:var(--ink);box-shadow:0 0 0 2px var(--card)}
+.sq.lit{animation:lit .5s var(--ease-spring)}
+@keyframes lit{from{background:var(--lv0)}50%{transform:scaleY(1.15)}}
+.pfoot{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:10px 18px;margin-top:10px;padding-top:14px;border-top:1px solid var(--rule)}
+.legend{display:flex;flex-wrap:wrap;gap:8px 16px;font-size:12.5px;color:var(--text-3);margin:0;padding:0;list-style:none}
+.legend li{display:inline-flex;align-items:center;gap:8px}
+.legend .sq{width:14px;height:14px;border-radius:3px}
+.legend .sq .gl{display:none}
+.count{font-size:14px;font-weight:650}
+.two{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:24px;margin-top:24px}
+.cal{display:grid;gap:12px;margin:16px 0 0;padding:0;list-style:none}
+.cal li{display:grid;grid-template-columns:96px minmax(0,1fr) 104px;gap:4px 12px;align-items:center;font-size:14px}
+.cal .tr{height:10px;border-radius:5px;background:var(--field);overflow:hidden}
+.cal .tr span{display:block;height:100%;background:var(--ink);border-radius:5px;transform-origin:left;transition:transform .6s var(--ease-out)}
+.cal .fr{font:500 12.5px var(--mono);color:var(--text-2);text-align:right}
+.weeks{display:grid;grid-template-columns:repeat(7,12px);gap:6px;margin-top:16px}
+.wk{width:12px;height:12px;border-radius:3px;background:var(--lv0)}
+.wk.on{background:var(--lv2);box-shadow:inset 0 0 0 1.5px var(--ink)}
+.wk.today{outline:1.5px solid var(--text-dim);outline-offset:2px}
+/* table */
+.tw{margin-top:12px;overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:14px;min-width:560px}
+th{font-weight:600;text-align:left;color:var(--text-3);font-size:12.5px;padding:8px 10px 8px 0;border-bottom:1.5px solid var(--border)}
+td{padding:4px 10px 4px 0;border-bottom:1px solid var(--rule);color:var(--text-2)}
+td .tbtn{font:500 13px var(--mono);padding:0;text-align:left}
+tr.grp td{font-weight:650;color:var(--ink);padding-top:14px}
+/* skeleton and empty */
+.skel .seg,.skel .nm{background:var(--field)}
+.skel .nm{display:block;height:14px;border-radius:3px;width:60%}
+.empty{position:relative;z-index:1}
+.fieldbg{position:absolute;inset:200px 0 auto 30%;display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:24px 12px;pointer-events:none;z-index:0;-webkit-mask-image:linear-gradient(to bottom,transparent,#000 30%,#000 60%,transparent);mask-image:linear-gradient(to bottom,transparent,#000 30%,#000 60%,transparent)}
+.fc{height:14px;border-radius:3px;background:var(--field)}
+.fc.g1{animation:g1 var(--d,9s) ease-in-out infinite}.fc.g2{animation:g2 var(--d,11s) ease-in-out infinite}.fc.g3{animation:g3 var(--d,13s) ease-in-out infinite}
+@keyframes g1{0%,70%,100%{background:var(--field)}80%,88%{background:var(--lv1)}}
+@keyframes g2{0%,62%,100%{background:var(--field)}74%,86%{background:var(--lv2)}}
+@keyframes g3{0%,55%,100%{background:var(--field)}68%,84%{background:var(--accent)}}
+.panel.faint{opacity:.9}
+/* growth */
+.gsum{margin:12px 0 0;font-size:17px;line-height:1.6;color:var(--text-2)}
+.gsum b{color:var(--ink);font-weight:600}
+.panels{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:24px}
+.panels .panel .row{grid-template-columns:minmax(0,1.3fr) minmax(0,1fr) 108px;min-height:40px}
+.drop{margin-top:16px;padding:14px 18px;background:var(--card);border:1.5px solid var(--border);border-left:3px solid var(--ink);border-radius:14px;font-size:16px;line-height:1.6}
+.drop p{margin:0}
+.drop.hl{border-color:var(--ink);border-left-color:var(--accent)}
+.tl{margin-top:16px}
+.trk{display:grid;grid-template-columns:190px minmax(0,1fr);gap:4px 16px;padding:12px 0;border-top:1px solid var(--rule)}
+.trk h3{margin:0;font-size:15px;font-weight:500}
+.line{position:relative;height:20px}
+.line::before{content:"";position:absolute;left:0;right:0;top:9px;height:2px;background:var(--border)}
+.dot{position:absolute;top:5px;width:10px;height:10px;margin-left:-5px;border-radius:50%;background:var(--lv0);box-shadow:0 0 0 1.5px var(--ink)}
+.dot.l1{background:var(--lv1)}.dot.l2{background:var(--lv2)}.dot.l3{background:var(--lv3)}
+.dot.miss{background:var(--card);box-shadow:0 0 0 1.5px var(--ink),0 0 0 3px var(--card),0 0 0 4.5px var(--ink)}
+.dot.hl{box-shadow:0 0 0 2px var(--accent),0 0 0 5px var(--accent-wash)}
+.chg{grid-column:2;margin:4px 0 0;padding:0;list-style:none;display:flex;flex-wrap:wrap;gap:2px 16px;font-size:13px;color:var(--text-3)}
+.tlist{grid-column:1 / -1;margin:0;padding:0;list-style:none}
+.tlist li{display:flex;gap:10px;align-items:center;padding:6px 0;font-size:14px;color:var(--text-2)}
+.axis{display:grid;grid-template-columns:190px minmax(0,1fr);gap:16px}
+.ax{position:relative;height:20px;font:500 11.5px var(--mono);color:var(--text-3)}
+.ax span{position:absolute;transform:translateX(-50%);white-space:nowrap}
+.ev{margin:12px 0 0;padding:0;list-style:none;font:500 13px/1.7 var(--mono);color:var(--text-2)}
+.ev li{padding:6px 0;border-top:1px solid var(--rule);overflow-wrap:anywhere}
+.ev b{color:var(--ink);font-weight:500}
+/* topic sheet: a non-modal dialog; focus is never trapped */
+dialog.sheet{position:fixed;inset:0 0 0 auto;margin:0;width:min(460px,100vw);height:auto;max-height:none;padding:24px 24px 120px;border:0;border-left:1.5px solid var(--border);background:var(--card);color:var(--ink);overflow-y:auto;z-index:45;box-shadow:-12px 0 32px rgba(22,22,26,.08)}
+dialog.sheet[open]{animation:slide .3s var(--ease-out)}
+@keyframes slide{from{transform:translateX(24px);opacity:0}}
+.sheet .x{position:absolute;top:12px;right:12px;width:44px;height:44px;border:0;background:none;border-radius:10px;font-size:22px;cursor:pointer;color:var(--ink)}
+.sheet h2{margin:0;padding-right:44px;font-size:22px;line-height:1.3;font-weight:650;font-variation-settings:"wdth" 88;overflow-wrap:anywhere}
+.sheet h2 .mono{font-size:.8em;font-weight:500}
+.facts{margin:12px 0 0;font-size:15px;line-height:1.7;color:var(--text-2)}
+.facts p{margin:0}
+.hist{list-style:none;margin:12px 0 0;padding:0 0 0 6px;border-left:2px solid var(--border)}
+.hist li{position:relative;padding:8px 0 10px 20px;font-size:14px;line-height:1.5;color:var(--text-2)}
+.hist li .dot{left:-1px;top:13px}
+.hist b{color:var(--ink);font-weight:600}
+.said{display:block;margin-top:4px;font:500 12.5px/1.6 var(--mono);color:var(--text-3)}
+h3.sh{margin:28px 0 0;font-size:17px;font-weight:650}
+.rv{margin-top:20px;padding:18px;border:1.5px solid var(--border);border-left:3px solid var(--accent);border-radius:14px}
+.rv.nudge{animation:nudge .3s var(--ease-out)}
+@keyframes nudge{50%{transform:translateY(-8px)}}
+.eb{margin:0;font-size:13px;font-weight:500;color:var(--accent-text)}
+.qq{margin:6px 0 0;font-size:19px;line-height:1.35;font-weight:600;letter-spacing:-.01em}
+label.fl{display:block;margin-top:16px;font-weight:600;font-size:15px}
+textarea{display:block;width:100%;margin-top:8px;padding:12px 14px;font:400 16px/1.5 var(--sans);color:var(--ink);background:var(--card);border:1.5px solid var(--control-border);border-radius:14px;resize:vertical}
+textarea[readonly]{background:var(--paper)}
+fieldset{border:0;margin:16px 0 0;padding:0;min-width:0}
+legend{font-size:15px;color:var(--text-3);margin-bottom:10px;padding:0}
+.confs{display:flex;flex-wrap:wrap;gap:8px}
+.sure{position:relative;display:inline-flex;align-items:center;min-height:44px;padding:0 16px;border-radius:999px;border:1.5px solid var(--control-border);color:var(--text-2);font:500 15px var(--sans);cursor:pointer;background:transparent;transition:border-color .2s,background .2s,color .2s}
+.sure:hover{border-color:var(--ink)}
+.sure input{position:absolute;opacity:0;inset:0;margin:0;cursor:pointer}
+.sure:has(input:checked){background:var(--ink);border-color:var(--ink);color:var(--on-ink)}
+.sure:has(input:focus-visible){outline:2px solid var(--accent);outline-offset:3px}
+.sure.dk{border-style:dashed}
+.mean{margin:8px 0 0;font-size:14px;color:var(--text-3);min-height:22px}
+.hints{margin-top:14px;padding-top:12px;border-top:1px solid var(--rule);font-size:14px;color:var(--text-3)}
+.ladder{display:inline-grid;grid-template-columns:repeat(3,22px);gap:4px;vertical-align:middle;margin-right:8px}
+.ladder span{height:10px;border-radius:3px;box-shadow:inset 0 0 0 1.5px var(--ink)}
+.ladder span.on{background:var(--ink)}
+.hints ol{margin:8px 0 0;padding:0;list-style:none;display:grid;gap:6px;font-size:15px;line-height:1.5;color:var(--text-2)}
+.hints ol b{font:500 12.5px var(--mono);color:var(--ink);margin-right:8px}
+.verdict{margin-top:16px}
+.verdict h4{margin:0;font-size:26px;font-weight:700;color:var(--accent-text)}
+.verdict h4.ok{color:var(--ink)}
+.verdict p{margin:8px 0 0;font-size:16px;line-height:1.6;color:var(--text-2)}
+.verdict .path{font:500 13px var(--mono);color:var(--ink)}
+.delta{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin-top:12px;padding-top:12px;border-top:1px solid var(--rule);font-size:14px}
+.cue{margin:12px 0 0;font:500 13px/1.7 var(--mono);color:var(--text-2)}
+.chip{display:inline-flex;align-items:center;height:24px;padding:0 10px;border-radius:999px;border:1.5px solid var(--ink);font:500 12px var(--mono);white-space:nowrap}
+.chip.saved{border-style:dashed}
+.toastwrap{position:fixed;left:0;right:0;bottom:calc(var(--tabbar) + 20px);z-index:50;display:flex;justify-content:center;padding:0 16px;pointer-events:none}
+.toast{pointer-events:auto;display:flex;align-items:center;gap:6px 14px;width:100%;max-width:560px;padding:8px 8px 8px 18px;background:var(--card);border:1.5px solid var(--ink);border-radius:14px;font-size:15px;animation:rise .3s var(--ease-out) both}
+.toast p{margin:0;flex:1}
+.rise{animation:rise .8s var(--ease-out) both}
+@keyframes rise{from{opacity:0;transform:translateY(16px)}}
+@media (max-width:960px){.two,.panels{grid-template-columns:minmax(0,1fr)}}
+@media (max-width:640px){
+:root{--tabbar:calc(64px + env(safe-area-inset-bottom))}
+.bar{padding:0 16px}
+.main{padding:14px 16px calc(var(--tabbar) + 110px)}
+.tabs{position:fixed;left:0;right:0;bottom:0;z-index:40;padding:0 0 env(safe-area-inset-bottom);gap:0;background:var(--paper);border-top:1px solid var(--border);display:grid;grid-template-columns:repeat(4,1fr)}
+.tab{flex-direction:column;justify-content:center;gap:4px;height:64px;font-size:12px;border-bottom:0;border-top:2px solid transparent}
+.tab[aria-current="page"]{border-top-color:var(--accent)}
+.tab svg{display:block}
+h1.ph{font-size:31px}
+h2.st{font-size:20px}
+.card,.panel{padding:16px;border-radius:14px}
+.weak .wt{font-size:18px}
+.weak .btn{flex:1}
+.row,.rowbtn{grid-template-columns:minmax(0,1fr) auto 28px;gap:6px 10px}
+.rowbtn .segs,.row .segs{grid-column:1 / -1;grid-row:2}
+.panels .panel .row{grid-template-columns:minmax(0,1fr) auto}
+.tcells{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}
+.trk{grid-template-columns:minmax(0,1fr)}
+.trk .line,.trk .chg,.axis{display:none}
+.tlist{position:static;width:auto;height:auto;overflow:visible;clip:auto;white-space:normal}
+dialog.sheet{inset:auto 0 0 0;width:100%;max-height:86vh;border-left:0;border-top:1.5px solid var(--border);border-radius:18px 18px 0 0;padding:20px 16px calc(var(--tabbar) + 24px)}
+@keyframes slide{from{transform:translateY(24px);opacity:0}}
+.fieldbg{display:none}
+.proto{gap:6px 8px}.proto .sp{display:none}.proto label[for=st]{flex-basis:100%}.proto select#st{flex:1 1 200px;max-width:none;min-width:0}
+}
+@media (prefers-reduced-motion:reduce){
+.fc,.rise,.rise .seg,.sq.lit,dialog.sheet[open],.rv.nudge,.toast{animation:none !important}
+.seg,.sq,.chev,.cal .tr span,.btn,.tg,.sure{transition:none}
+}
+</style>
+</head>
+<body>
+<div class="proto" role="region" aria-label="Prototype controls">
+<label for="st">Prototype state</label>
+<button type="button" id="prev" aria-label="Previous state">[</button>
+<select id="st"></select>
+<button type="button" id="next" aria-label="Next state">]</button>
+<span class="sp"></span>
+<label>Theme <select id="theme"><option value="">System</option><option value="light">Light</option><option value="dark">Dark</option></select></label>
+</div>
+<header class="top">
+<div class="bar"><span class="word">Room</span><span class="proj">orbit-pay</span><button type="button" class="me" aria-label="Sam. Settings are in the Inbox prototype" disabled>S</button></div>
+<nav class="tabs" aria-label="Room">
+<a class="tab" href="inbox.html"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" aria-hidden="true"><path d="M3 13l3-8h12l3 8v6H3z"/><path d="M3 13h5l1 2h6l1-2h5"/></svg>Inbox</a>
+<a class="tab" href="map.html" aria-current="page"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><rect x="4" y="4" width="6" height="6" rx="1.5"/><rect x="14" y="4" width="6" height="6" rx="1.5"/><rect x="4" y="14" width="6" height="6" rx="1.5"/><rect x="14" y="14" width="6" height="6" rx="1.5"/></svg>Map</a>
+<a class="tab" href="drill.html"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M9 9h6v7a3 3 0 0 1-6 0z"/><path d="M12 9V6M5 12h4M15 12h4M6 7l3 2M18 7l-3 2M6 19l3-2M18 19l-3-2"/></svg>Drills</a>
+<a class="tab" href="explainer.html"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" aria-hidden="true"><path d="M6 3h9l3 3v15H6z"/><path d="M9 10h6M9 14h6M9 18h4"/></svg>Explainers</a>
+</nav>
+</header>
+<main class="main" id="main" tabindex="-1"></main>
+<dialog class="sheet" id="sheet" aria-labelledby="shh"></dialog>
+<div class="toastwrap"><div id="toastslot" role="status" aria-live="polite"></div></div>
+<p class="vh" id="live" role="status" aria-live="polite"></p>
+<script>
+(function(){
+'use strict';
+var $=function(s,r){return (r||document).querySelector(s)},$$=function(s,r){return Array.prototype.slice.call((r||document).querySelectorAll(s))};
+/* ---------- fixture: orbit-pay, Sam, 7 Oct (day 0) to 12 Nov (day 36) ---------- */
+var LV=['Not yet','With help','Without help','New situation'],TODAY=36;
+var CONF={g:'Guess',f:'Fairly sure',s:'Sure'},KIND={P:'Prediction',E:'Explain back',R:'Review',T:'New situation question',D:'Drill'},VERD={c:'Compared',C:'Correct',Q:'Not quite',N:'No',K:'Not known yet'};
+var MEAN={g:'I would not bet on it.',f:'More likely right than wrong.',s:'I would be surprised to be wrong.'};
+var DIMS=[['ds','Distributed systems'],['data','Data and storage'],['dbg','Debugging and diagnosis'],['test','Correctness and testing'],['sec','Security'],['read','Reading code']];
+function fd(d){return d<=24?(7+d)+' Oct':(d-24)+' Nov'}
+var T={
+idem:{n:'idempotency',d:'ds',next:52,q:'The worker crashes after the gateway accepted a charge but before it saved the result. On restart it sends the charge again. Why is the customer billed once?',rx:[/(same|reuse|first).{0,40}key|key.{0,40}(same|reuse|first|seen|stored)/i,/idempoten|key|dedup/i],why:'The retry sends the same idempotency key, and the gateway returns the result it stored for that key instead of charging again.',ev:'billing/charge.py:44',h:[]},
+retry:{n:'retry-budget',d:'ds',next:35,q:'Each attempt times out at 0.8 s. The backoff is 0.5 s, then 1 s, with up to 0.1 s of jitter on each. Against a dead gateway, what is the longest time charge() can take before it gives up?',rx:[/4[.,]1/,/3[.,]9|\b4(\.0)?\s*s|4[.,]2/],why:'Three timeouts and two backoffs: 2.4 + 1.5 = 3.9 s, plus up to 0.1 s of jitter per backoff, so 4.1 s.',ev:'billing/retry.py:22',h:['Add the time spent waiting on each attempt.','There are three attempts and two backoffs between them.','Jitter adds up to 0.1 s to each backoff.']},
+outbox:{n:'outbox',d:'ds',next:48,q:'The relay publishes an outbox row, then crashes before it marks the row sent. What happens on restart, and what must consumers do?',rx:[/(again|twice|re-?publish|duplicate|second).{0,80}(idempoten|dedup|ignore|event id|seen)/i,/again|twice|duplicate|dedup|idempoten/i],why:'The relay publishes the row again, so delivery is at least once. Consumers must ignore an event id they have already handled.',ev:'orders/outbox_relay.py:31',h:[]},
+tvf:{n:'timeouts-vs-failures',d:'dbg',next:34,q:'charge() calls the gateway with a 0.8 s timeout and gets ReadTimeout. Did the charge fail? What should the worker do next?',rx:[/(unknown|not know|may|might|could|maybe|unsure).{0,120}(same|idempoten|status|look ?up|query)|(same|idempoten|status|query).{0,120}(unknown|not know|may|might|could)/i,/unknown|not know|may have|might have|could have|same key|idempoten|status/i],why:'A timeout only means the reply did not arrive; the charge may have run. Retry with the same key, so the gateway returns the first result instead of charging twice.',ev:'billing/charge.py:47',h:['What does a timeout tell you about the far side?','Look at what charge() sends as the key on line 44.','The gateway returns the first result for a key it has already seen.']},
+logc:{n:'log-correlation',d:'dbg',next:38,q:'A refund fails in the worker. The API log and the worker log share no field. What do you add so you can follow one request across both?',rx:[/(request|correlation|trace)[ _-]?id/i,/\bid\b|trace|header/i],why:'Pass a request_id from the API into the job and log it on every line in both places.',ev:'worker/logging.py:12',h:[]},
+flaky:{n:'flaky-tests',d:'dbg',next:37,q:'test_settle_batch fails about one run in ten, only in CI. Name one likely cause in this codebase and how you would confirm it.',rx:[/(order|clock|time|sleep|race|shared|parallel).{0,120}(seed|repeat|loop|times|isolat|freeze|random)/i,/order|clock|time|race|shared|parallel/i],why:'The test reads the wall clock near midnight UTC in settle_batch(). Freeze the clock and run it 200 times to confirm.',ev:'tests/test_settle.py:58',h:[]},
+ledger:{n:'ledger-locks',d:'data',next:40,q:'Two transfers debit the same account at once. Without SELECT ... FOR UPDATE, what can go wrong with the balance check?',rx:[/lost update|overdr|negative|both (pass|read|see)|below zero/i,/race|concurren|lock|same time/i],why:'Both transactions read the old balance, both checks pass, and the account goes below zero.',ev:'ledger/transfer.py:66',h:[]},
+cursor:{n:'pagination-cursors',d:'data',next:44,q:'The refunds list pages with OFFSET. New refunds arrive while you page. What do you see, and what does a cursor change?',rx:[/(skip|duplicate|repeat|miss|twice|again).{0,120}(cursor|last id|keyset|stable|after)/i,/skip|duplicate|repeat|miss|twice/i],why:'New rows shift the offset, so you see some refunds twice. A cursor on (created_at, id) starts after the last row you saw.',ev:'api/refunds.py:29',h:[]},
+doubles:{n:'test-doubles',d:'test',next:43,q:'test_charge mocks gateway.charge() to return success. The real client raises CardDeclined on a 402. Which bug can this test never catch?',rx:[/402|declin|raise|exception|error path/i,/error|fail/i],why:'Any bug in the declined path: the mock never raises, so the code that handles CardDeclined never runs.',ev:'tests/test_charge.py:15',h:[]}};
+/* attempts: [day, topic, kind, verdict, confidence, level reached, said] (31) */
+var A=[[0,'idem','P','c','f',0,'Said: the second call returns the stored charge. It did: it returned the stored charge.'],[0,'idem','E','C','f',1,'The key is the order id, so a retry looks the same to the gateway.'],[1,'retry','P','c','g',0,'Said: about 3.9 s. It did: gave up at 4.1 s.'],[1,'retry','E','Q','f',1,'Three tries, so about 2.4 s.'],[2,'ledger','E','C','s',1,'The row lock makes the second transfer wait.'],[3,'idem','R','Q','f',1,'The gateway sees the same request.'],[4,'retry','R','C','s',2,'2.4 + 1.5 plus jitter.'],[5,'ledger','R','C','s',2,'Both read the same balance without the lock.'],[6,'tvf','P','c','s',0,'Said: the worker marks it failed. It did: the charge had gone through.'],[6,'tvf','E','N','s',0,'A timeout means the gateway rejected it.'],[7,'idem','R','C','s',2,'Same key, so the stored result comes back.'],[7,'tvf','R','C','g',2,'We do not know. Retry with the same key.'],[9,'outbox','P','c','f',0,'Said: one event per order. It did: two after the crash.'],[9,'outbox','E','C','f',1,'Write the event in the same transaction as the order.'],[10,'logc','E','Q','g',1,'Log the order id.'],[12,'outbox','R','C','s',2,'The relay can send twice, so consumers dedupe.'],[13,'retry','R','C','s',2,'4.1 s, with the jitter.'],[14,'cursor','P','c','g',0,'Said: no change. It did: one refund showed twice.'],[14,'cursor','E','C','g',1,'Rows shift under OFFSET.'],[15,'doubles','E','Q','g',1,'It cannot catch a slow gateway.'],[17,'logc','R','C','f',2,'A request_id from the API into the job.'],[19,'ledger','T','C','s',3,'Same race in the payout batch: lock the account rows in id order.'],[20,'flaky','P','c','f',0,'Said: ordering between tests. It did: the clock near midnight.'],[20,'flaky','E','Q','g',1,'Something with time.'],[21,'idem','R','N','g',1,'The worker checks the database first.'],[22,'doubles','R','C','f',2,'The declined path never runs.'],[23,'cursor','R','C','s',2,'Keyset on created_at and id.'],[27,'outbox','T','C','s',3,'Webhooks to merchants need the same event id dedupe.'],[32,'idem','R','C','f',2,'The retry reuses the order id key; the gateway returns the first result.'],[33,'tvf','R','N','s',1,'The timeout means it failed, so mark it failed and retry.'],[34,'retry','R','N','f',1,'3.9 s.']];
+function tm(i){if(A[i]&&A[i][7])return A[i][7];if(i===28)return['14:15','14:22'];var h=9+(i*5)%9,m=(i*17)%50;return[h+':'+(m<10?'0':'')+m,h+':'+((m+7)<10?'0':'')+(m+7)]}
+/* ---------- derived record ---------- */
+function rec(asOf){var r={};A.forEach(function(a,i){if(a[0]>asOf)return;var t=r[a[1]]||(r[a[1]]={now:0,best:0,att:[],last:-1,miss:false,bestDay:-1,graded:0});t.att.push(i);if(a[2]!=='P'){t.graded++;t.now=a[5];if(a[5]>=t.best){t.best=a[5];t.bestDay=a[0]}t.last=i;t.miss=(a[3]==='N'&&a[4]==='s')}});return r}
+function dimTopics(r,d){return Object.keys(T).filter(function(k){return T[k].d===d&&r[k]})}
+function dimLevel(r,d){var l=dimTopics(r,d).map(function(k){return r[k].now}).sort(function(a,b){return b-a});return l.length?l[Math.ceil(l.length/2)-1]:0}
+function calib(from,to){var c={g:[0,0],f:[0,0],s:[0,0]},n=0;A.forEach(function(a){if(a[0]<from||a[0]>to||a[2]==='P'||!a[4]||a[3]==='K')return;c[a[4]][1]++;n++;if(a[3]==='C')c[a[4]][0]++});c.n=n;return c}
+/* ---------- view state ---------- */
+var S,lastFocus=null,tt;
+function fresh(){return {asOf:TODAY,since:31,status:'ok',view:'record',mode:'grid',scope:'this',open:{},sheet:null,rv:null,offline:false,hl:null,lit:null,focus:null}}
+var esc=function(s){return String(s).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]})};
+var CHEV='<svg class="chev" width="14" height="14" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 2l4 4-4 4"/></svg>';
+function segs(l){var h='';for(var i=1;i<=3;i++)h+='<span class="seg'+(i<=l?' f'+i:'')+'"></span>';return '<span class="segs" aria-hidden="true">'+h+'</span>'}
+function bars(l){var h='';for(var i=0;i<l;i++)h+='<i></i>';return '<span class="gl">'+h+'</span>'}
+function sq(t,extra){return '<span class="sq l'+t.now+(t.best>t.now?' ring':'')+(t.miss?' miss':'')+(extra||'')+'" aria-hidden="true">'+bars(t.now)+'</span>'}
+function cellName(k,t){return T[k].n+': now '+LV[t.now]+(t.best>t.now?', best '+LV[t.best]:'')+(t.miss?', sure miss':'')}
+function due(r){return Object.keys(T).filter(function(k){return r[k]&&T[k].next<=S.asOf&&S.asOf===TODAY})}
+function shellTop(){return (S.offline?'<div class="note strong" role="status"><p>Showing your map from 14:20. It updates when you are back online.</p></div>':'')+'<div class="link"><span>Linked to: <b>orbit-pay</b> · cloud session</span><a class="tbtn" href="flow.html">Back to the build</a></div>'}
+function head(){var g=S.view==='growth';return '<div class="head"><div><h1 class="ph">'+(g?'Growth':'Map')+'</h1><p class="lede">'+(g?'What changed in what you can do without the agent, from the start of this project to now.':'What you can do without the agent, by area. It goes down when you forget, so it stays true.')+'</p></div></div>'+
+ '<div class="ctrls"><div class="toggle" role="group" aria-label="View"><button type="button" class="tg" data-v="record" aria-pressed="'+!g+'">Record</button><button type="button" class="tg" data-v="growth" aria-pressed="'+g+'">Growth</button></div>'+
+ (g?'':'<div class="toggle" role="group" aria-label="Layout"><button type="button" class="tg" data-m="grid" aria-pressed="'+(S.mode==='grid')+'">Grid</button><button type="button" class="tg" data-m="table" aria-pressed="'+(S.mode==='table')+'">Table</button></div>')+
+ '<div class="toggle" role="group" aria-label="Projects"><button type="button" class="tg" data-s="this" aria-pressed="'+(S.scope==='this')+'">This project</button><button type="button" class="tg" data-s="all" aria-pressed="'+(S.scope==='all')+'">All projects</button></div></div>'+
+ (S.scope==='all'?'<div class="note"><p>All projects: orbit-pay is the only project with answers so far.</p></div>':'')}
+function field(){var h='';for(var i=0;i<42;i++){var x=Math.sin((i+3)*12.9898)*43758.5453,r=x-Math.floor(x),y=Math.sin((i+3)*78.233)*12345.678,q=y-Math.floor(y);h+='<i class="fc'+(r<.12?' g1':r<.2?' g2':r<.25?' g3':'')+'" style="--d:'+(8+q*7).toFixed(1)+'s;animation-delay:-'+(q*9).toFixed(1)+'s"></i>'}return '<div class="fieldbg" aria-hidden="true">'+h+'</div>'}
+function legend(){return '<ul class="legend" aria-label="Key"><li><span class="sq l1" aria-hidden="true"></span>With help</li><li><span class="sq l2" aria-hidden="true"></span>Without help</li><li><span class="sq l3" aria-hidden="true"></span>New situation</li><li><span class="sq l1 ring" aria-hidden="true"></span>Ring: your best was higher</li><li><span class="sq l1 miss" aria-hidden="true"></span>Dot: wrong when you chose Sure</li></ul>'}
+function gridPanel(r,opts){opts=opts||{};var h='<section class="panel'+(opts.faint?' faint':'')+(opts.rise?' rise':'')+'" aria-labelledby="rph"'+(opts.busy?' aria-busy="true"':'')+'><div class="phead"><h2 class="st" id="rph">Your record</h2>'+(opts.busy?'<span class="sub">Loading your map.</span>':'<span class="sub">Tap an area to see its topics.</span>')+'</div><ul class="dims">';
+ DIMS.forEach(function(d){var ks=opts.empty||opts.busy?[]:dimTopics(r,d[0]),l=ks.length?dimLevel(r,d[0]):0,word=LV[l];
+  if(opts.busy){h+='<li class="skel"><div class="row"><span class="nm"></span>'+segs(0)+'<span></span><span></span></div></li>';return}
+  if(!ks.length){h+='<li><div class="row"><span class="nm">'+d[1]+'<span class="vh">: Not yet</span></span>'+segs(0)+'<span class="lv l0" aria-hidden="true">Not yet</span><span></span>'+(opts.empty?'':'<p class="nonote">No topics yet. The agent adds one when a change touches this area.</p>')+'</div></li>';return}
+  var op=!!S.open[d[0]],nw=ks.filter(function(k){return r[k].now>=2}).length;
+  h+='<li><button type="button" class="rowbtn" aria-expanded="'+op+'" aria-controls="tc-'+d[0]+'" data-dim="'+d[0]+'"><span class="nm">'+d[1]+'<span class="vh">: '+word+'. '+nw+' of '+ks.length+' topics without help.</span></span>'+segs(l)+'<span class="lv l'+l+'" aria-hidden="true">'+word+'</span>'+CHEV+'</button><ul class="tcells" id="tc-'+d[0]+'"'+(op?'':' hidden')+'>'+
+  ks.map(function(k){var t=r[k];return '<li><button type="button" class="cell" data-t="'+k+'" aria-label="'+esc(cellName(k,t))+'">'+sq(t,S.lit===k?' lit':'')+'<span class="cn">'+T[k].n+'</span><span class="cl">'+LV[t.now]+(t.best>t.now?' · best '+LV[t.best]:'')+(t.miss?' · sure miss':'')+'</span></button></li>'}).join('')+'</ul></li>'});
+ var all=Object.keys(r).length,w=Object.keys(r).filter(function(k){return r[k].now>=2}).length;
+ return h+'</ul><div class="pfoot">'+(opts.busy||opts.empty?'<span></span>':legend())+'<span class="count">'+(opts.busy||opts.empty?'':w+' of '+all+' topics without help')+'</span></div></section>'}
+function tablePanel(r){var h='<section class="panel" aria-labelledby="rph"><div class="phead"><h2 class="st" id="rph">Your record</h2><span class="sub">The same record as a table.</span></div><div class="tw" role="region" aria-label="Record table" tabindex="0"><table><caption class="vh">Your record by topic</caption><thead><tr><th scope="col">Topic</th><th scope="col">Now</th><th scope="col">Best</th><th scope="col">Last answer</th><th scope="col">Next review</th></tr></thead><tbody>';
+ DIMS.forEach(function(d){var ks=dimTopics(r,d[0]);h+='<tr class="grp"><td colspan="5">'+d[1]+' · '+(ks.length?LV[dimLevel(r,d[0])]:'No topics yet')+'</td></tr>';
+  ks.forEach(function(k){var t=r[k],a=A[t.last];h+='<tr><td><button type="button" class="tbtn" data-t="'+k+'">'+T[k].n+'</button></td><td>'+LV[t.now]+'</td><td>'+LV[t.best]+'</td><td>'+fd(a[0])+', '+VERD[a[3]]+(t.miss?', sure miss':'')+'</td><td>'+(T[k].next<=S.asOf?'Due since '+fd(T[k].next):fd(T[k].next))+'</td></tr>'})});
+ return h+'</tbody></table></div></section>'}
+function calCard(c,title,hid){var h='<section class="card" aria-labelledby="'+hid+'"><h2 class="st" id="'+hid+'">'+title+'</h2>';
+ if(c.n<10)return h+'<p class="sub">Shown after 10 answers. You have '+c.n+'.</p></section>';
+ h+='<ul class="cal">';['g','f','s'].forEach(function(k){var v=c[k];h+='<li><span>'+CONF[k]+'</span><span class="tr" aria-hidden="true"><span style="transform:scaleX('+(v[1]?v[0]/v[1]:0)+')"></span></span><span class="fr">right '+v[0]+' of '+v[1]+'</span></li>'});
+ return h+'</ul><p class="sub">If you are well calibrated, Sure is right almost every time.</p></section>'}
+function weeks(none){var days={},h='',n=0;if(!none)A.forEach(function(a){days[a[0]]=1});for(var d=S.asOf-27;d<=S.asOf;d++){var on=!!days[d];if(on)n++;h+='<span class="wk'+(on?' on':'')+(d===S.asOf?' today':'')+'"></span>'}
+ return '<section class="card" aria-labelledby="wkh"><h2 class="st" id="wkh">Last 4 weeks</h2><div class="weeks" role="img" aria-label="Practice on '+n+' of the last 28 days.">'+h+'</div><p class="sub">Days with practice, last 4 weeks.</p></section>'}
+function weakest(r){var best=null;DIMS.forEach(function(d){var ks=dimTopics(r,d[0]);if(!ks.length)return;var l=dimLevel(r,d[0]);if(!best||l<best.l)best={d:d,l:l,ks:ks}});if(!best)return null;
+ var k=best.ks.slice().sort(function(a,b){return (r[a].now-r[b].now)||((r[b].miss?1:0)-(r[a].miss?1:0))})[0],t=r[k],nw=best.ks.filter(function(x){return r[x].now>=2}).length;
+ return {k:k,html:'Weakest now: '+best.d[1]+'. <span class="mono">'+T[k].n+'</span> '+(t.miss?'was a sure miss on '+fd(A[t.last][0])+'.':'is '+LV[t.now]+'.'),sub:nw+' of '+best.ks.length+' topics in this area without help.'}}
+function changed(r){var o=rec(S.since),up=[],dn=[];Object.keys(r).forEach(function(k){var was=o[k]?o[k].now:null,n=r[k].now;if(r[k].graded===0)return;
+ if(was===null||(o[k]&&o[k].graded===0))up.push('<span class="tp">'+T[k].n+'</span> is new at '+LV[n]);else if(n>was)up.push('<span class="tp">'+T[k].n+'</span> is '+LV[n]);else if(n<was)dn.push('<span class="tp">'+T[k].n+'</span> is '+LV[n]+' (was '+LV[was]+')')});
+ var it=up.concat(dn);return it.length?'<b>Since '+fd(S.since)+':</b> '+it.join('. ')+'.':'<b>Since '+fd(S.since)+':</b> no changes.'}
+function renderRecord(){var r=rec(S.asOf),w=weakest(r),dl=due(r);
+ var h=shellTop()+head();
+ if(w)h+='<section class="card weak rise" aria-labelledby="wkt"><p class="wt" id="wkt">'+w.html+'</p><p class="sub">'+w.sub+'</p><div class="acts"><button type="button" class="btn sm" data-review="'+w.k+'">Review now</button><a class="btn sm ghost" href="drill.html?topic='+T[w.k].n+'">Drill this</a></div></section>';
+ h+='<ul class="lines"><li><span>'+changed(r)+'</span></li><li>'+(dl.length?'<span><b>Due: '+dl.length+'.</b> '+dl.map(function(k){return '<span class="tp">'+T[k].n+'</span>'}).join(', ')+'.</span><button type="button" class="tbtn" data-review="'+dl[0]+'">Start review</button>':'<span><b>Nothing is due.</b> The next review is on '+fd(S.asOf+1)+'.</span>')+'</li></ul>';
+ h+=S.mode==='table'?tablePanel(r):gridPanel(r,{rise:S.anim});
+ h+='<div class="two">'+calCard(calib(0,S.asOf),'How sure vs how right','clh')+weeks()+'</div>';
+ return h}
+function renderGrowth(){var h=shellTop()+head();
+ if(S.asOf<14)return h+field()+'<div class="card empty" style="margin-top:24px"><p class="gsum" style="margin:0">Growth shows after two weeks of answers on this project.</p><p class="sub">Your first answer was on 7 Oct. Growth opens on 21 Oct.</p></div>';
+ var r0=rec(0),r=rec(S.asOf),ks=Object.keys(r),w0=Object.keys(r0).filter(function(k){return r0[k].now>=2}).length,w=ks.filter(function(k){return r[k].now>=2}),tr=ks.filter(function(k){return r[k].now===3});
+ h+='<section style="margin-top:28px" aria-labelledby="gh"><h2 class="st" id="gh"><span class="mono" style="font-size:.8em">orbit-pay</span> · 7 Oct to '+fd(S.asOf)+'</h2><p class="gsum"><b>'+A.filter(function(a){return a[0]<=S.asOf}).length+' questions, '+ks.length+' topics.</b> Without help or better: '+w.length+' topics (was '+w0+'). New situation: '+tr.length+' ('+tr.map(function(k){return T[k].n}).join(', ')+').</p></section>';
+ h+='<div class="panels">'+[['Start','7 Oct',r0],['Now',fd(S.asOf),r]].map(function(p,i){return '<section class="panel" aria-labelledby="gp'+i+'"><h3 class="st" id="gp'+i+'" style="font-size:18px">'+p[0]+' <span class="sub">('+p[1]+')</span></h3><ul class="dims">'+DIMS.map(function(d){var l=dimTopics(p[2],d[0]).length?dimLevel(p[2],d[0]):0;return '<li><div class="row"><span class="nm">'+d[1]+'<span class="vh">: '+LV[l]+'</span></span>'+segs(l)+'<span class="lv l'+l+'" aria-hidden="true">'+LV[l]+'</span></div></li>'}).join('')+'</ul></section>'}).join('')+'</div>';
+ var drops=ks.filter(function(k){return r[k].best>r[k].now});
+ if(drops.length)h+='<section style="margin-top:32px" aria-labelledby="drh"><h2 class="st" id="drh">Lower than at their best</h2><p class="sub">The record goes down when a review finds that something faded. These return sooner.</p>'+drops.map(function(k){return '<div class="drop'+(S.hl===k?' hl':'')+'" id="drop-'+k+'"><p><span class="tp">'+T[k].n+'</span> was '+LV[r[k].best]+' on '+fd(r[k].bestDay)+'. It is '+LV[r[k].now]+' now.</p><p class="sub">'+(r[k].miss?'You chose Sure on '+fd(A[r[k].last][0])+' and the answer was wrong. ':'Missed at its review on '+fd(A[r[k].last][0])+'. ')+'<button type="button" class="tbtn" data-t="'+k+'">See its answers</button></p></div>'}).join('')+'</section>';
+ h+='<section style="margin-top:32px" aria-labelledby="tlh"><h2 class="st" id="tlh">The month, area by area</h2><p class="sub">One dot per graded answer, filled with the level it reached. A hollow ringed dot is a wrong answer given as Sure.</p><div class="tl">';
+ DIMS.forEach(function(d){var tk=dimTopics(r,d[0]);var at=[];A.forEach(function(a,i){if(a[0]<=S.asOf&&a[2]!=='P'&&T[a[1]].d===d[0])at.push(i)});
+  var prev={},chg=[];at.forEach(function(i){var a=A[i];if(prev[a[1]]!==a[5])chg.push([i,T[a[1]].n+': '+LV[a[5]]+', '+fd(a[0])]);prev[a[1]]=a[5]});
+  h+='<div class="trk"><h3>'+d[1]+'</h3>'+(at.length?'<div class="line" aria-hidden="true">'+at.map(function(i){var a=A[i],m=a[3]==='N'&&a[4]==='s';return '<span class="dot l'+a[5]+(m?' miss':'')+(S.hl===a[1]&&i===r[a[1]].last?' hl':'')+'" style="left:'+(a[0]/S.asOf*100).toFixed(2)+'%"></span>'}).join('')+'</div><ul class="chg" aria-hidden="true">'+chg.map(function(c){return '<li>'+c[1]+'</li>'}).join('')+'</ul><ol class="tlist vh">'+at.map(function(i){var a=A[i],m=a[3]==='N'&&a[4]==='s';return '<li><span class="dot l'+a[5]+(m?' miss':'')+'" style="position:static;margin:0 4px;flex:none" aria-hidden="true"></span><span>'+fd(a[0])+' · <span class="tp">'+T[a[1]].n+'</span> · '+KIND[a[2]]+' · '+VERD[a[3]]+(m?' as Sure':'')+' · '+LV[a[5]]+'</span></li>'}).join('')+'</ol>':'<p class="sub" style="margin:0">No answers in this area yet.</p>')+'</div>'});
+ var ax='';[0,7,14,21,28,35].forEach(function(d){if(d<=S.asOf)ax+='<span style="left:'+(d/S.asOf*100)+'%">'+fd(d)+'</span>'});
+ h+='<div class="axis" aria-hidden="true"><span></span><div class="ax">'+ax+'</div></div></div></section>';
+ h+='<div class="two">'+calCard(calib(0,13),'How sure vs how right, 7 to 20 Oct','c1')+calCard(calib(14,S.asOf),'How sure vs how right, 21 Oct to '+fd(S.asOf),'c2')+'</div>';
+ h+='<section class="card" style="margin-top:24px" aria-labelledby="evh"><h2 class="st" id="evh">Evidence of your own work</h2><p class="sub">4 commits and 2 tests you wrote without the agent. You marked them at commit time.</p><ul class="ev"><li><b>3c9e1a7</b> Use the order id as the idempotency key in charge()</li><li><b>8f02d4b</b> Cap total retry time at 5 s in the payment worker</li><li><b>b71e5c0</b> Add request_id to worker log lines</li><li><b>e4a6f19</b> Lock the account row before the balance check</li><li><b>test</b> tests/test_outbox.py::test_relay_republishes_after_crash</li><li><b>test</b> tests/test_charge.py::test_declined_card_is_not_retried</li></ul></section>';
+ h+='<section class="card" style="margin-top:24px" aria-labelledby="afh"><h2 class="st" id="afh">After the project</h2><p class="sub" id="keepl">'+(S.keep==='stop'?'Reviews for orbit-pay are stopped. Your record stays.':S.keep==='keep'?'Kept. Reviews continue for this project until 6 May.':'Reviews continue for this project until 6 May.')+'</p><div class="acts">'+(S.keep?'<button type="button" class="tbtn" data-keep="">Undo</button>':'<button type="button" class="btn sm" data-keep="keep">Keep them</button><button type="button" class="btn sm ghost" data-keep="stop">Stop them</button>')+'<button type="button" class="tbtn" id="dl">Download this project\'s record</button></div></section>';
+ return h}
+function render(){var m=$('#main'),h;
+ if(S.status==='loading')h=shellTop()+head()+gridPanel({}, {busy:true})+'<p class="vh">Loading your map.</p>';
+ else if(S.status==='error')h=shellTop()+head()+'<div class="note strong" role="alert"><p>The map did not load. Your record is safe in learning-record.</p><button type="button" class="btn sm" id="retry">Try again</button></div>';
+ else if(S.status==='empty')h=shellTop()+head()+field()+'<div class="card empty weak"><p class="wt">Your record is empty. It fills when you answer questions about this project.</p><div class="acts"><a class="btn sm ghost" href="onboarding.html">Change areas</a></div></div>'+gridPanel({}, {empty:true,faint:true})+'<div class="two">'+calCard({n:0},'How sure vs how right','clh')+weeks(true)+'</div>';
+ else h=S.view==='growth'?renderGrowth():renderRecord();
+ m.innerHTML=h;m.setAttribute('aria-busy',String(S.status==='loading'));S.anim=false;S.lit=null;
+ if(S.focus){var f=$(S.focus,m);if(f){f.focus();if(S.focus.indexOf('drop')>=0)f.scrollIntoView({block:'center'})}S.focus=null}}
+/* ---------- topic sheet and review ---------- */
+function verdictOf(k,ans){var t=T[k];if(t.rx[0].test(ans))return 'C';if(t.rx[1].test(ans))return 'Q';return 'N'}
+function renderSheet(){var k=S.sheet,r=rec(S.asOf),t=r[k],tp=T[k],dn=tp.next<=S.asOf,dim=DIMS.filter(function(d){return d[0]===tp.d})[0][1],la=t.last>=0?A[t.last]:null,tms=t.last>=0?tm(t.last):null,rv=S.rv;
+ var h='<button type="button" class="x" id="shx" aria-label="Close topic">&times;</button><p class="eb">Topic</p><h2 id="shh" tabindex="-1"><span class="mono">'+tp.n+'</span> · '+dim+'</h2><div class="facts"><p>Best: '+LV[t.best]+'. Now: '+LV[t.now]+'.</p><p>'+(dn&&!(rv&&rv.done)?'Due since '+fd(tp.next)+'.':'Next review: '+fd(rv&&rv.next!=null?rv.next:tp.next)+'.')+'</p>'+(tms?'<p>Answer fixed '+tms[0]+'. You locked '+tms[1]+'.</p>':'')+(t.miss?'<p>Sure miss on '+fd(la[0])+'. It is marked on your map until you get it right.</p>':'')+'</div>';
+ if(!rv)h+='<div class="acts"><button type="button" class="btn sm" data-review="'+k+'">Review now</button><a class="btn sm ghost" href="drill.html?topic='+tp.n+'">Drill this</a></div>';
+ else h+=reviewHtml(k,rv);
+ var hide=dn&&!(rv&&rv.done);
+ h+='<h3 class="sh">History</h3>'+(hide?'<p class="sub">This topic is due, so your past answers stay hidden until you answer the review.</p>':'')+'<ol class="hist">'+t.att.slice().reverse().map(function(i){var a=A[i],m=a[3]==='N'&&a[4]==='s',p=a[2]==='P';return '<li><span class="dot l'+(p?0:a[5])+(m?' miss':'')+'" aria-hidden="true"'+(p?' style="background:var(--card)"':'')+'></span><b>'+fd(a[0])+'</b> · '+KIND[a[2]]+' · <b>'+VERD[a[3]]+'</b>'+(a[4]?' · '+CONF[a[4]]:'')+(p?'':' · '+LV[a[5]])+(m?' · sure miss':'')+(!hide&&a[6]?'<span class="said">'+esc(a[6])+'</span>':'')+'</li>'}).join('')+'</ol>';
+ $('#sheet').innerHTML=h}
+function reviewHtml(k,rv){var tp=T[k],lk=rv.locked;
+ var h='<form class="rv'+(rv.nudge?' nudge':'')+'" id="rvf" aria-labelledby="rvq"><p class="eb">Review · About 1 min · answer fixed '+rv.fixed+'</p><p class="qq" id="rvq">'+esc(tp.q)+'</p><label class="fl" for="rva">Your answer</label><textarea id="rva" rows="3"'+(lk?' readonly':'')+'>'+esc(rv.text||'')+'</textarea>';
+ h+='<fieldset'+(lk?' disabled':'')+'><legend>How sure are you?</legend><div class="confs">'+['g','f','s'].map(function(c){return '<label class="sure"><input type="radio" name="conf" value="'+c+'"'+(rv.conf===c?' checked':'')+' aria-describedby="mean">'+CONF[c]+'</label>'}).join('')+'<button type="button" class="sure dk" id="dk">I do not know</button></div><p class="mean" id="mean">'+(rv.conf?MEAN[rv.conf]:'Guess, Fairly sure or Sure. Each one has a meaning.')+'</p></fieldset>';
+ if(tp.h.length&&!lk)h+='<div class="hints"><span class="ladder" aria-hidden="true">'+[0,1,2].map(function(i){return '<span'+(i<rv.hints?' class="on"':'')+'></span>'}).join('')+'</span>Hints used: '+rv.hints+' of 3'+(rv.hints<3?' <button type="button" class="tbtn" id="hint">Hint</button>':'')+(rv.hints?'<ol>'+tp.h.slice(0,rv.hints).map(function(x,i){return '<li><b>H'+(i+1)+'</b>'+esc(x)+'</li>'}).join('')+'</ol>':'')+'</div>';
+ if(!lk)h+='<div class="acts"><button type="submit" class="btn sm" id="lock"'+(rv.conf?'':' disabled')+'>Lock my answer</button><button type="button" class="tbtn" id="rvx">Not now</button></div>';
+ h+='<div class="verdict" role="status" aria-live="polite">'+(rv.out||'')+'</div></form>';return h}
+function openSheet(k,review,from){lastFocus=from||document.activeElement;S.sheet=k;S.rv=review?{conf:null,hints:0,text:'',fixed:'09:41'}:null;renderSheet();var d=$('#sheet');if(!d.open)d.show();if(review){var ta=$('#rva');ta&&ta.focus()}else $('#shh').focus()}
+function closeSheet(){var d=$('#sheet');if(d.open)d.close();S.sheet=null;S.rv=null;if(lastFocus&&document.body.contains(lastFocus))lastFocus.focus();else{var c=$('[data-t="'+(lastFocus&&lastFocus.dataset?lastFocus.dataset.t:'')+'"]');if(c)c.focus()}}
+function lock(dk){var k=S.sheet,rv=S.rv,ta=$('#rva');rv.text=ta?ta.value:'';rv.locked=true;rv.dk=!!dk;rv.nudge=true;
+ if(S.offline){rv.out='<p><span class="chip saved">Saved here</span> The result is shown when you are back online.</p>';renderSheet();say('Saved here.');return}
+ rv.out='<p>Locked. Grading.</p>';renderSheet();say('Locked. Grading.');
+ tt=setTimeout(function(){var r=rec(S.asOf),t=r[k],tp=T[k],v=dk?'K':verdictOf(k,rv.text),before=t.now,lvl=before,next,hinted=rv.hints>0;
+  if(v==='C')lvl=Math.max(before,hinted?1:2);else if(v==='N'||v==='K')lvl=Math.max(0,before-1);
+  next=v==='C'?S.asOf+14:v==='Q'?S.asOf+3:S.asOf+1;
+  var nd=new Date(),lt=nd.getHours()+':'+('0'+nd.getMinutes()).slice(-2);A.push([S.asOf,k,'R',v,dk?null:rv.conf,lvl,rv.text||'I do not know.',[rv.fixed,lt]]);T[k].next=next;rv.next=next;rv.done=true;rv.nudge=false;
+  var word={C:'Correct.',Q:'Not quite.',N:'No.',K:'Not known yet.'}[v],back=v==='C'||v==='Q'?'Back on '+fd(next)+'.':'Back tomorrow.';
+  var body=v==='C'?tp.why:v==='Q'?'Part of it. '+tp.why:v==='K'?'Here is the answer. '+tp.why:tp.why;
+  rv.out='<h4 tabindex="-1" id="vh"'+(v==='C'?' class="ok"':'')+'>'+word+'</h4><p>'+esc(body)+' <span class="path">'+tp.ev+'</span>.</p>'+(v==='N'&&rv.conf==='s'?'<p>You chose Sure. It returns tomorrow and is marked on your map.</p>':'')+(v==='C'&&hinted?'<p>You used a hint, so this counts as With help.</p>':'')+'<p>'+back+'</p>'+
+   '<div class="delta"><span>Your record:</span> '+sq({now:lvl,best:Math.max(t.best,lvl),miss:v==='N'&&rv.conf==='s'},' lit')+' <span class="tp">'+tp.n+'</span> '+(lvl===before?'stays '+LV[lvl]:LV[before]+' <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-label="to"><path d="M4 2l4 4-4 4"/></svg> '+LV[lvl])+'</div><p class="cue">Back to: retries in the payment worker. Next: the cap on total retry time.</p>';
+  S.lit=k;S.open[tp.d]=true;render();renderSheet();var vh=$('#vh');vh&&vh.focus()},900)}
+function say(t){var s=$('#live');s.textContent='';setTimeout(function(){s.textContent=t},30)}
+function toast(msg){var s=$('#toastslot');s.innerHTML='<div class="toast"><p>'+msg+'</p><button type="button" class="tbtn" id="tx">Close</button></div>';$('#tx').onclick=function(){s.innerHTML=''}}
+/* ---------- events ---------- */
+document.addEventListener('click',function(e){var b=e.target.closest('button,a');if(!b)return;
+ if(b.dataset.v){S.view=b.dataset.v;S.anim=true;closeSheet();render();S.focus=null;$('[data-v="'+S.view+'"]').focus();return}
+ if(b.dataset.m){S.mode=b.dataset.m;render();$('[data-m="'+S.mode+'"]').focus();return}
+ if(b.dataset.s){S.scope=b.dataset.s;render();$('[data-s="'+S.scope+'"]').focus();return}
+ if(b.dataset.dim){var d=b.dataset.dim;S.open[d]=!S.open[d];b.setAttribute('aria-expanded',String(S.open[d]));$('#tc-'+d).hidden=!S.open[d];return}
+ if(b.dataset.review){e.preventDefault();openSheet(b.dataset.review,true,b);return}
+ if(b.dataset.t){openSheet(b.dataset.t,false,b);return}
+ if(b.dataset.keep!==undefined){S.keep=b.dataset.keep||null;render();var k=$('#keepl');k.setAttribute('tabindex','-1');k.focus();return}
+ if(b.id==='dl'){var blob=new Blob([JSON.stringify({project:'orbit-pay',learner:'Sam',levels:LV,attempts:A.map(function(a){return {date:fd(a[0]),topic:T[a[1]].n,kind:KIND[a[2]],verdict:VERD[a[3]],confidence:a[4]?CONF[a[4]]:null,level:LV[a[5]]}})},null,2)],{type:'application/json'}),u=URL.createObjectURL(blob),a=document.createElement('a');a.href=u;a.download='orbit-pay-record.json';document.body.appendChild(a);a.click();a.remove();setTimeout(function(){URL.revokeObjectURL(u)},1000);toast('Downloaded orbit-pay-record.json.');return}
+ if(b.id==='retry'){S.status='loading';render();tt=setTimeout(function(){S.status='ok';S.anim=true;render()},900);return}
+ if(b.id==='shx'){closeSheet();return}
+ if(b.id==='rvx'){S.rv=null;renderSheet();toast('OK. It stays due.');$('#shh').focus();return}
+ if(b.id==='hint'){S.rv.text=$('#rva').value;S.rv.hints++;renderSheet();say('Hint '+S.rv.hints+' of 3 shown.');$('#hint')?$('#hint').focus():$('#rva').focus();return}
+ if(b.id==='dk'){lock(true);return}
+});
+document.addEventListener('change',function(e){if(e.target.name==='conf'){S.rv.conf=e.target.value;S.rv.text=$('#rva').value;$('#mean').textContent=MEAN[S.rv.conf];$('#lock').disabled=false}});
+document.addEventListener('submit',function(e){if(e.target.id==='rvf'){e.preventDefault();if(S.rv&&S.rv.conf&&!S.rv.locked)lock(false)}});
+document.addEventListener('keydown',function(e){if(e.key==='Escape'&&S.sheet){e.preventDefault();closeSheet();return}
+ if(S.rv&&!S.rv.locked&&(e.metaKey||e.ctrlKey)&&e.key==='Enter'&&S.rv.conf){e.preventDefault();lock(false);return}
+ var tag=(e.target.tagName||'').toLowerCase();if(tag==='textarea'||tag==='input'||tag==='select')return;
+ if(S.rv&&!S.rv.locked&&/^[123]$/.test(e.key)){var r=$$('#rvf input[name=conf]')[+e.key-1];if(r){r.checked=true;r.dispatchEvent(new Event('change',{bubbles:true}));r.focus()}}
+ if(e.key==='['){step(-1)}if(e.key===']'){step(1)}});
+/* ---------- prototype states ---------- */
+var BASE=A.slice(),BASEN={};Object.keys(T).forEach(function(k){BASEN[k]=T[k].next});
+var STATES=[
+['empty first run with faint grid',function(){S.status='empty'}],
+['loading',function(){S.status='loading'}],
+['normal grid',function(){S.anim=true}],
+['table view',function(){S.mode='table'}],
+['dimension expanded with topic cells',function(){S.open.dbg=true;S.open.data=true;S.focus='[data-dim="dbg"]'}],
+['topic sheet with timeline',function(){S.open.ds=true;S.after=function(){openSheet('idem',false,$('[data-t="idem"]'))}}],
+['decay: best ring above latest fill',function(){S.open.ds=true;S.focus='[data-t="retry"]'}],
+['sure miss mark',function(){S.open.dbg=true;S.after=function(){openSheet('tvf',false,$('[data-t="tvf"]'))}}],
+['calibration hidden under 10 answers',function(){S.asOf=3;S.since=1;S.focus='#clh'}],
+['calibration shown',function(){S.focus='#clh'}],
+['growth: start vs now with timeline',function(){S.view='growth';S.anim=true}],
+['growth: a drop explained',function(){S.view='growth';S.hl='retry';S.focus='#drop-retry .tbtn'}],
+['growth empty under two weeks',function(){S.view='growth';S.asOf=8;S.since=6}],
+['offline: map from 14:20',function(){S.offline=true}],
+['error: map did not load',function(){S.status='error'}],
+['dark theme',function(){S.dark=true;S.open.ds=true;S.open.dbg=true}]];
+var sel=$('#st');STATES.forEach(function(s,i){var o=document.createElement('option');o.value=i;o.textContent=(i+1)+'. '+s[0];sel.appendChild(o)});
+function slug(s){return s.toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'')}
+function apply(i){clearTimeout(tt);var d=$('#sheet');if(d.open)d.close();$('#toastslot').innerHTML='';A.length=0;BASE.forEach(function(a){A.push(a)});Object.keys(T).forEach(function(k){T[k].next=BASEN[k]});
+ S=fresh();STATES[i][1]();sel.value=i;setTheme();try{history.replaceState(null,'','?state='+slug(STATES[i][0]))}catch(err){}
+ render();if(S.after){var f=S.after;S.after=null;f()}}
+function step(n){apply((+sel.value+n+STATES.length)%STATES.length)}
+sel.onchange=function(){apply(+sel.value)};$('#prev').onclick=function(){step(-1)};$('#next').onclick=function(){step(1)};
+var th=$('#theme');try{th.value=localStorage.getItem('room-theme')||''}catch(err){}
+function setTheme(){var v=S&&S.dark?'dark':th.value;if(v)document.documentElement.setAttribute('data-theme',v);else document.documentElement.removeAttribute('data-theme')}
+th.onchange=function(){if(S)S.dark=false;setTheme();try{localStorage.setItem('room-theme',th.value)}catch(err){}};
+var q=new URLSearchParams(location.search).get('state'),start=2;
+STATES.forEach(function(s,i){if(q&&(slug(s[0])===q||String(i+1)===q))start=i});
+apply(start);
+})();
+</script>
+</body>
+</html>

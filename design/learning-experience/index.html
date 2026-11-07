@@ -1,0 +1,590 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Learning experience</title>
+<meta name="description" content="The learning experience for learning-while-building: how building and learning hand off, the journeys as a storyboard, and the eight prototype pages.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="anonymous">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wdth,wght@75..100,400..700&amp;family=JetBrains+Mono:wght@400;500&amp;display=swap">
+<style>
+:root{--paper:#F5F4F0;--card:#FFFFFF;--field:#ECE9E1;--rule:#EFEDE6;--border:#DAD8D0;--ink:#16161A;--on-ink:#F5F4F0;--t2:#45454D;--t3:#5F5F68;--t4:#6E6E77;--dim:#7A7A83;
+--accent:#E8541E;--at:#C2410C;--wash:rgba(232,84,30,.16);--lv0:#EFEDE6;--lv1:#F6C9AF;--lv2:#EE8B5B;--lv3:#C2410C;
+--sans:"Instrument Sans",system-ui,sans-serif;--mono:"JetBrains Mono",ui-monospace,monospace;--ease:cubic-bezier(.2,.7,.2,1);--spring:cubic-bezier(.3,1.6,.5,1);--gb:multiply;--go:.5;color-scheme:light}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--paper:#141417;--card:#1D1D21;--field:#26262B;--rule:#2A2A30;--border:#3A3A40;--ink:#F2F1EC;--on-ink:#141417;--t2:#B4B3AE;--t3:#9A9AA2;--t4:#9A9AA2;--dim:#8A8A92;--at:#F07A4A;--lv0:#2A2A30;--gb:screen;--go:.1;color-scheme:dark}}
+:root[data-theme="dark"]{--paper:#141417;--card:#1D1D21;--field:#26262B;--rule:#2A2A30;--border:#3A3A40;--ink:#F2F1EC;--on-ink:#141417;--t2:#B4B3AE;--t3:#9A9AA2;--t4:#9A9AA2;--dim:#8A8A92;--at:#F07A4A;--lv0:#2A2A30;--gb:screen;--go:.1;color-scheme:dark}
+*{box-sizing:border-box}
+html{scroll-padding-top:24px}
+body{position:relative;margin:0;background:var(--paper);color:var(--ink);font-family:var(--sans);-webkit-font-smoothing:antialiased;min-height:100vh}
+/* grain: drawn inline so the page needs no file outside this folder */
+body::after{content:"";position:fixed;inset:0;pointer-events:none;z-index:60;opacity:var(--go);mix-blend-mode:var(--gb);background-size:240px 240px;
+background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='240' height='240'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 .5 0 0 0 0 .5 0 0 0 0 .5 0 0 0 .22 0'/%3E%3C/filter%3E%3Crect width='240' height='240' filter='url(%23n)'/%3E%3C/svg%3E")}
+:focus-visible{outline:2px solid var(--accent);outline-offset:3px}
+a{color:var(--ink);text-underline-offset:4px}
+a:hover{color:var(--at)}
+.mono{font-family:var(--mono)}
+.vh{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+.wrap{max-width:1180px;margin:0 auto;padding:0 32px}
+.h1{margin:0;font-size:64px;line-height:1.02;letter-spacing:-.025em;font-weight:650;font-variation-settings:"wdth" 88;text-wrap:balance}
+.h2{margin:0;font-size:46px;line-height:1.06;letter-spacing:-.02em;font-weight:650;font-variation-settings:"wdth" 88;text-wrap:balance}
+.h3{margin:0;font-size:21px;line-height:1.25;font-weight:650}
+.p{margin:20px 0 0;font-size:19px;line-height:1.6;color:var(--t2);max-width:640px;text-wrap:pretty}
+.small{font-size:14px;line-height:1.6;color:var(--t3)}
+.eyebrow{font:500 13px/1.4 var(--mono);color:var(--at);margin:0 0 14px}
+.sec{padding:140px 0 0}
+.top{height:76px;display:flex;align-items:center;justify-content:space-between;gap:24px}
+.top a{text-decoration:none}
+.brand{font-size:16px;font-weight:650;display:inline-flex;align-items:center;gap:10px;min-height:44px}
+.brand .sub{font-weight:500;color:var(--t3)}
+.navl{display:flex;gap:28px;font-size:15px}
+.navl a{display:inline-flex;align-items:center;min-height:44px}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;font:600 16px/1 var(--sans);min-height:50px;padding:0 26px;border-radius:999px;border:1.5px solid var(--ink);background:var(--ink);color:var(--on-ink);text-decoration:none;transition:background .2s,border-color .2s,color .2s,transform .15s}
+.btn:hover{background:var(--accent);border-color:var(--accent);color:#16161A}
+.btn:active{transform:scale(.97)}
+.btn.ghost{background:transparent;color:var(--ink)}
+.btn.ghost:hover{background:var(--ink);color:var(--on-ink)}
+.ctas{display:flex;flex-wrap:wrap;gap:12px;margin-top:32px}
+
+/* hero */
+.hero{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.05fr);gap:64px;align-items:center;padding:56px 0 20px}
+.lead{font-size:20px}
+.doors{position:relative;display:grid;grid-template-columns:minmax(0,1.35fr) minmax(0,1fr);gap:20px;align-items:end}
+.dlab{font:500 11.5px/1 var(--mono);color:var(--t3);margin:0 0 8px;display:flex;align-items:center;gap:8px}
+.dlab::before{content:"";width:6px;height:6px;border-radius:50%;background:var(--accent)}
+.win{background:var(--card);border:1.5px solid var(--border);border-radius:16px;overflow:hidden}
+.win .bar{height:30px;display:flex;align-items:center;gap:6px;padding:0 12px;border-bottom:1px solid var(--rule)}
+.win .bar i{width:8px;height:8px;border-radius:50%;background:var(--field)}
+.win .bar span{margin-left:8px;font:500 11px/1 var(--mono);color:var(--t4)}
+.tx{padding:14px 16px 16px;font:400 12px/1.65 var(--mono);color:var(--t2)}
+.tx p{margin:0 0 8px}
+.tx .me{color:var(--ink);font-family:var(--sans);font-size:13.5px;font-weight:500;background:var(--rule);border-radius:10px;padding:8px 11px;display:inline-block}
+.tx .tool{color:var(--dim)}
+.qcard{border:1.5px solid var(--ink);border-radius:12px;padding:10px 12px;margin:10px 0 8px;background:var(--card)}
+.qcard b{display:block;font-weight:500;color:var(--at);margin-bottom:4px}
+.qcard .q{font-family:var(--sans);font-size:13.5px;line-height:1.45;color:var(--ink);font-weight:600}
+.lock{display:inline-flex;align-items:center;gap:6px;color:var(--ink);font-weight:500}
+.chip{display:inline-flex;align-items:center;gap:6px;font:500 10.5px/1 var(--mono);padding:5px 8px;border-radius:999px;border:1.5px solid var(--border);color:var(--t3)}
+.chip.on{border-color:var(--ink);color:var(--ink)}
+.chip.hot{border-color:var(--at);color:var(--at)}
+.phone{width:100%;max-width:230px;justify-self:end;border:1.5px solid var(--ink);border-radius:30px;padding:10px;background:var(--card)}
+.phone .scr{border-radius:22px;background:var(--paper);padding:12px 12px 10px;min-height:330px;display:flex;flex-direction:column;gap:9px;position:relative;overflow:hidden}
+.phone .notch{width:60px;height:6px;border-radius:3px;background:var(--field);margin:0 auto 4px}
+.rtop{display:flex;justify-content:space-between;align-items:center;font-size:12px;font-weight:650}
+.rtop span{font:500 10px/1 var(--mono);color:var(--t4)}
+.rq{background:var(--card);border:1.5px solid var(--border);border-radius:14px;padding:10px}
+.rq .r{font:500 9.5px/1.3 var(--mono);color:var(--at)}
+.rq .q{font-size:12.5px;line-height:1.4;font-weight:600;margin-top:5px}
+.fieldl{height:34px;border:1.5px solid var(--border);border-radius:9px;margin-top:8px;padding:6px 8px;font-size:10.5px;line-height:1.35;color:var(--t2);overflow:hidden}
+.pills{display:flex;gap:4px;margin-top:8px;flex-wrap:wrap}
+.pill{font:500 10px/1 var(--sans);padding:6px 8px;border-radius:999px;border:1.5px solid var(--dim);color:var(--t2)}
+.pill.on{background:var(--ink);border-color:var(--ink);color:var(--on-ink)}
+.mbtn{margin-top:8px;height:28px;border-radius:999px;background:var(--ink);color:var(--on-ink);font-size:11px;font-weight:600;display:flex;align-items:center;justify-content:center}
+.tabsb{margin-top:auto;display:grid;grid-template-columns:repeat(4,1fr);gap:4px;border-top:1px solid var(--rule);padding-top:8px;font-size:9px;color:var(--t4);text-align:center}
+.tabsb b{font-weight:600;color:var(--ink)}
+.tether{position:absolute;left:46%;right:40%;top:46%;height:2px;background:repeating-linear-gradient(90deg,var(--border) 0 6px,transparent 6px 11px);pointer-events:none}
+.tether .dot{position:absolute;top:-6px;width:14px;height:14px;border-radius:50%;background:var(--accent);box-shadow:0 0 0 5px var(--wash);animation:hop 4.2s var(--ease) infinite}
+@keyframes hop{0%,12%{left:0;opacity:0}20%{opacity:1}62%{left:calc(100% - 14px);opacity:1}74%,100%{left:calc(100% - 14px);opacity:0}}
+.same{margin:16px 0 0;text-align:center}
+
+/* the four properties */
+.four{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:20px;margin-top:44px}
+.prop{border-top:1.5px solid var(--ink);padding-top:18px}
+.prop .k{font:500 12px/1 var(--mono);color:var(--at)}
+.prop h3{margin:10px 0 0;font-size:20px;font-weight:650}
+.prop p{margin:8px 0 0;font-size:16px;line-height:1.55;color:var(--t2)}
+.prop .test{margin-top:12px;font:400 12px/1.5 var(--mono);color:var(--t3)}
+
+/* storyboard */
+.board{list-style:none;margin:48px 0 0;padding:0;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:20px;counter-reset:f}
+.frame{background:var(--card);border:1.5px solid var(--border);border-radius:18px;padding:18px 18px 20px;display:flex;flex-direction:column;gap:14px}
+.fhead{display:flex;justify-content:space-between;align-items:center;gap:10px}
+.fnum{width:32px;height:32px;border-radius:50%;background:var(--accent);color:#16161A;display:inline-flex;align-items:center;justify-content:center;font-weight:700;font-size:15px;flex:none}
+.fsurf{font:500 11.5px/1 var(--mono);color:var(--t3)}
+.shot{height:150px;border-radius:12px;background:var(--paper);border:1px solid var(--rule);padding:12px;overflow:hidden;font:400 11px/1.55 var(--mono);color:var(--t2);position:relative}
+.shot p{margin:0 0 6px}
+.shot .me{font-family:var(--sans);font-size:12px;color:var(--ink);background:var(--rule);border-radius:8px;padding:5px 8px;display:inline-block}
+.shot .ink{color:var(--ink)}
+.shot .hot{color:var(--at)}
+.shot .v{font-family:var(--sans);font-size:17px;font-weight:700;color:var(--at)}
+.shot .v.ok{color:var(--ink)}
+.frame h3{margin:0;font-size:18px;font-weight:650}
+.frame p.d{margin:-6px 0 0;font-size:15px;line-height:1.55;color:var(--t2)}
+.frame .go{font-size:14px;margin-top:auto;display:inline-flex;min-height:44px;align-items:center}
+.mph{position:absolute;right:12px;top:10px;bottom:-30px;width:96px;border:1.5px solid var(--ink);border-radius:18px;background:var(--card);padding:10px 8px;display:flex;flex-direction:column;gap:6px}
+.mph i{display:block;height:6px;border-radius:3px;background:var(--field)}
+.mph i.w6{width:60%}
+.mph .lk{height:18px;border-radius:999px;background:var(--ink);margin-top:4px}
+.minirow{display:grid;grid-template-columns:repeat(3,1fr);gap:3px;width:90px}
+.minirow i{height:10px;border-radius:2px;background:var(--lv0)}
+.more{margin-top:56px;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0 48px}
+.jrow{display:grid;grid-template-columns:44px minmax(0,1fr) auto;gap:14px;align-items:baseline;padding:16px 0;border-top:1px solid var(--border)}
+.jrow .k{font:500 13px/1 var(--mono);color:var(--at)}
+.jrow .t{font-size:17px;font-weight:600}
+.jrow .s{display:block;font-size:15px;line-height:1.5;color:var(--t2);font-weight:400;margin-top:4px}
+.jrow a{font-size:14px;white-space:nowrap;min-height:44px;display:inline-flex;align-items:center;margin:-12px 0}
+
+/* prototype grid */
+.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:24px;margin-top:48px}
+.pcard{position:relative;display:flex;flex-direction:column;background:var(--card);border:1.5px solid var(--border);border-radius:18px;overflow:hidden;text-decoration:none;color:var(--ink);transition:border-color .25s,transform .35s var(--ease)}
+.pcard:hover{border-color:var(--ink);color:var(--ink);transform:translateY(-3px)}
+.pcard:hover .open{color:var(--at)}
+.pv .m{overflow:hidden}
+.pv{height:230px;background:var(--paper);border-bottom:1px solid var(--rule);padding:22px;overflow:hidden;position:relative}
+.pbody{padding:20px 22px 22px;display:flex;flex-direction:column;gap:6px}
+.pmeta{display:flex;justify-content:space-between;gap:12px;font:500 12px/1.4 var(--mono);color:var(--t3)}
+.pbody h3{margin:4px 0 0;font-size:22px;font-weight:650}
+.pbody p{margin:0;font-size:16px;line-height:1.55;color:var(--t2)}
+.open{margin-top:8px;font-size:15px;font-weight:600;transition:color .2s}
+/* preview primitives */
+.m{background:var(--card);border:1.5px solid var(--border);border-radius:12px;padding:10px 12px}
+.mi{font:400 10.5px/1.5 var(--mono);color:var(--t3)}
+.mt{font-size:13px;font-weight:600;line-height:1.35;color:var(--ink)}
+.bar6{height:6px;border-radius:3px;background:var(--field);margin-top:6px}
+.segs{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:4px}
+.seg{height:12px;border-radius:3px;background:var(--lv0)}
+.f1{background:var(--lv1)!important}.f2{background:var(--lv2)!important}.f3{background:var(--lv3)!important}
+.ring{box-shadow:inset 0 0 0 1.5px var(--ink)}
+.pv .fl{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.pv .bx{height:38px;border-radius:9px;border:1.5px solid var(--ink);background:var(--card);display:flex;align-items:center;justify-content:center;font-size:10.5px;font-weight:600;text-align:center}
+.pv .bx.dk{background:var(--ink);color:var(--on-ink)}
+.pv .ln{position:relative;height:18px}
+.pv .ln::before{content:"";position:absolute;left:12.5%;right:12.5%;top:8px;height:2px;background:var(--border)}
+.pv .ln::after{content:"";position:absolute;left:37.5%;top:3px;width:12px;height:12px;margin-left:-6px;border-radius:50%;background:var(--accent);box-shadow:0 0 0 4px var(--wash)}
+.irow{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px;align-items:center;padding:7px 0;border-top:1px solid var(--rule);font-size:12px}
+.irow .mi{font-size:10px}
+.cap{font:500 10px/1 var(--mono);color:var(--t3);margin:0 0 6px}
+.prow{display:grid;grid-template-columns:minmax(0,1fr) 120px;gap:12px;align-items:center;padding:7px 0;border-top:1px solid var(--rule);font-size:12px}
+.code{font:400 10.5px/1.7 var(--mono);color:var(--t2);background:var(--card);border:1.5px solid var(--border);border-radius:10px;padding:8px 10px}
+.code .hl{background:var(--wash);margin:0 -10px;padding:0 10px;display:block}
+.code .n{color:var(--dim);display:inline-block;width:2.2em}
+.ladder{display:flex;gap:4px}
+.ladder i{width:22px;height:8px;border-radius:2px;background:var(--lv0)}
+
+/* phases */
+.phases{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:20px;margin-top:44px}
+.ph{background:var(--card);border:1.5px solid var(--border);border-radius:18px;padding:22px 22px 24px}
+.ph .k{display:flex;justify-content:space-between;align-items:center;gap:10px}
+.ph h3{margin:14px 0 0;font-size:20px;font-weight:650}
+.ph ul{margin:12px 0 0;padding:0 0 0 18px;display:flex;flex-direction:column;gap:8px;font-size:15.5px;line-height:1.5;color:var(--t2)}
+.ph code{font:400 13px/1 var(--mono);color:var(--ink)}
+.tag{font:500 11px/1 var(--mono);padding:5px 8px;border-radius:999px;border:1.5px solid var(--border);color:var(--t3)}
+.tag.t{border-color:var(--ink);color:var(--ink)}
+.legend{display:flex;flex-wrap:wrap;gap:8px 18px;margin-top:20px;font-size:13px;color:var(--t3)}
+.legend span{display:inline-flex;align-items:center;gap:6px}
+.legend i{width:12px;height:12px;border-radius:3px}
+
+footer{display:flex;flex-wrap:wrap;justify-content:space-between;gap:16px;margin-top:120px;padding:24px 0 48px;border-top:1px solid var(--border);font-size:14px;color:var(--t3)}
+footer .links{display:flex;flex-wrap:wrap;gap:8px 24px}
+footer a{display:inline-flex;min-height:44px;align-items:center;margin:-12px 0}
+
+/* motion: quiet. Hero rises once; sections fade in on scroll; record cells light up */
+.rise{opacity:0;transform:translateY(16px);animation:rise .8s var(--ease) forwards}
+.rise.d1{animation-delay:.1s}.rise.d2{animation-delay:.2s}.rise.d3{animation-delay:.3s}
+@keyframes rise{to{opacity:1;transform:none}}
+.lit{animation:lit 1.2s ease .9s both}
+@keyframes lit{from{background:var(--lv0)}}
+@supports (animation-timeline:view()){
+.sv{animation:sv linear both;animation-timeline:view();animation-range:entry 0% entry 55%}
+@keyframes sv{from{opacity:0;transform:translateY(24px)}}
+}
+
+@media (max-width:1000px){
+.hero{grid-template-columns:minmax(0,1fr);gap:48px}
+.four{grid-template-columns:repeat(2,minmax(0,1fr));gap:32px 24px}
+.board{grid-template-columns:repeat(2,minmax(0,1fr))}
+.phases{grid-template-columns:minmax(0,1fr)}
+.more{grid-template-columns:minmax(0,1fr)}
+}
+@media (max-width:720px){
+.grid{grid-template-columns:minmax(0,1fr)}
+}
+@media (max-width:640px){
+.wrap{padding:0 16px}
+.h1{font-size:42px}
+.h2{font-size:31px}
+.p{font-size:17px}
+.lead{font-size:18px}
+.sec{padding-top:96px}
+.navl{display:none}
+.doors{grid-template-columns:minmax(0,1fr) 150px;gap:12px}
+.phone{border-radius:24px;padding:7px}
+.phone .scr{min-height:290px;padding:10px 8px 8px;border-radius:18px}
+.tether{display:none}
+.tx{padding:12px;font-size:11px}
+.four{grid-template-columns:minmax(0,1fr)}
+.board{grid-template-columns:minmax(0,1fr)}
+.pv{height:auto;min-height:180px;padding:16px}
+.pv .m[style]{height:auto!important}
+.pill{padding:5px 6px;font-size:9.5px}
+.jrow{grid-template-columns:36px minmax(0,1fr)}
+.jrow a{grid-column:2;margin:0}
+footer{margin-top:96px}
+}
+@media (max-width:380px){
+.doors{grid-template-columns:minmax(0,1fr)}
+.phone{justify-self:center}
+}
+@media (prefers-reduced-motion:reduce){
+.rise{opacity:1;transform:none;animation:none}
+.lit,.sv,.tether .dot{animation:none!important}
+.tether .dot{display:none}
+.pcard,.pcard:hover{transition:none;transform:none}
+}
+</style>
+</head>
+<body>
+
+<header class="wrap top">
+<a href="#top" class="brand">learning-while-building <span class="sub">· Learning experience</span></a>
+<nav class="navl" aria-label="Sections">
+<a href="#seamless">Seamless</a>
+<a href="#journeys">Journeys</a>
+<a href="#prototypes">Prototypes</a>
+<a href="#phases">How it ships</a>
+<a href="https://0xfauzi.github.io/explain-pr/">Site</a>
+</nav>
+</header>
+
+<main>
+<!-- HERO -->
+<section id="top" class="wrap hero">
+<div>
+<p class="eyebrow rise">Design · 7 Nov 2026</p>
+<h1 class="h1 rise">You build in chat. You learn in the Room. One card moves between them.</h1>
+<p class="p lead rise d1">The agent does the work. At two moments in a task, it stops and asks you one question: before it builds, and after it works. You answer where you are: in chat on the laptop, or in the Room on your phone.</p>
+<p class="p rise d2">The answer comes home with nothing copied. The agent grades it against an answer it fixed before it asked. One line puts you back in the build. Days later the idea comes back as a new question, and your record shows what you can do without the agent.</p>
+<div class="ctas rise d3">
+<a class="btn" href="prototypes/flow.html">Open the flow</a>
+<a class="btn ghost" href="#prototypes">See all eight pages</a>
+</div>
+</div>
+
+<figure class="rise d2" style="margin:0" aria-labelledby="doorscap">
+<div class="doors" aria-hidden="true">
+<div>
+<p class="dlab">Chat · laptop</p>
+<div class="win">
+<div class="bar"><i></i><i></i><i></i><span>orbit-pay · cloud session</span></div>
+<div class="tx">
+<p><span class="me">Add retries with backoff to the charge call.</span></p>
+<p class="tool">Edit billing/charge.py · +24 −3</p>
+<p class="tool">Bash pytest -k retry · 2 passed</p>
+<div class="qcard"><b>Question · idempotency · after it works</b><span class="q">Why can the worker retry charge() without charging the customer twice?</span></div>
+<p>Answer here, or in the Room: <span style="color:var(--ink);text-decoration:underline">Open card</span></p>
+<p class="lock">From the Room: idempotency, Correct, now Without help.</p>
+</div>
+</div>
+</div>
+<div>
+<p class="dlab">Room · phone</p>
+<div class="phone"><div class="scr">
+<div class="notch"></div>
+<div class="rtop">Room <span>orbit-pay</span></div>
+<div class="rq">
+<div class="r">After it works · idempotency</div>
+<div class="q">Why can the worker retry charge() without charging twice?</div>
+<div class="fieldl">The key is the order id, so the gateway returns the first charge.</div>
+<div class="pills"><span class="pill">Guess</span><span class="pill">Fairly sure</span><span class="pill on">Sure</span></div>
+<div class="mbtn">Lock my answer</div>
+</div>
+<div class="rq" style="padding:9px 10px">
+<div style="font-size:14px;font-weight:700">Correct.</div>
+<div class="segs" style="margin-top:7px"><i class="seg f1"></i><i class="seg f2 lit"></i><i class="seg"></i></div>
+</div>
+<div class="tabsb"><b>Inbox</b><span>Map</span><span>Drills</span><span>Explainers</span></div>
+</div></div>
+</div>
+<div class="tether"><span class="dot"></span></div>
+</div>
+<figcaption id="doorscap" class="small same">The same card in the same state at every door. Answer on the phone; the grade is in chat on your next message.</figcaption>
+</figure>
+</section>
+
+<!-- SEAMLESS -->
+<section id="seamless" class="wrap sec sv">
+<p class="eyebrow">What seamless means</p>
+<h2 class="h2">Not learning all the time. Four things you can test.</h2>
+<p class="p">Interruption research says a question at the wrong moment costs more than it teaches. So the agent asks only at breaks the work already has, and every detour ends with the way back.</p>
+<div class="four">
+<div class="prop"><span class="k">01</span><h3>No copying</h3><p>You never copy a question, an id, a link or an answer from one place to another.</p><div class="test">Test: 0 copy and paste actions in a recorded session.</div></div>
+<div class="prop"><span class="k">02</span><h3>No re-explaining</h3><p>Chat, the Room on the desktop and the Room on the phone show the same card in the same state.</p><div class="test">Test: open one card at three doors; same prompt, same state.</div></div>
+<div class="prop"><span class="k">03</span><h3>No stall</h3><p>The build waits only for a prediction you chose to answer. "Not now" is two words or one tap.</p><div class="test">Test: "Not now" to the next tool call in under 5 s.</div></div>
+<div class="prop"><span class="k">04</span><h3>Resume in one line</h3><p>Every learning exchange ends with the same cue: <span class="mono" style="font-size:14px">Back to: &lt;task&gt;. Next: &lt;step&gt;.</span></p><div class="test">Test: every graded reply ends with that line.</div></div>
+</div>
+</section>
+
+<!-- JOURNEYS -->
+<section id="journeys" class="wrap sec">
+<div class="sv">
+<p class="eyebrow">Storyboard · one task in orbit-pay</p>
+<h2 class="h2">Sam adds retries to a payment worker, and learns two ideas while doing it.</h2>
+<p class="p">Six frames from journeys a, b and c. The build never stops for longer than a reply. The answer on the phone reaches the laptop without a command.</p>
+</div>
+<ol class="board">
+<li class="frame sv">
+<div class="fhead"><span class="fnum" aria-hidden="true">1</span><span class="fsurf">Chat · laptop</span></div>
+<div class="shot" aria-hidden="true">
+<p><span class="me">Add retries with backoff to charge(). Three attempts max.</span></p>
+<p class="tool" style="color:var(--dim)">Card sealed · sha256 9c1e…</p>
+<p class="ink">Question · retry-budget · before the build</p>
+<p>Against a dead gateway, how long until charge() gives up?</p>
+</div>
+<h3>One prediction, then the build starts</h3>
+<p class="d">The agent fixes the answer first, asks one question and starts the edit at once. It does not wait.</p>
+</li>
+<li class="frame sv">
+<div class="fhead"><span class="fnum" aria-hidden="true">2</span><span class="fsurf">Chat · laptop</span></div>
+<div class="shot" aria-hidden="true">
+<p class="tool" style="color:var(--dim)">Edit billing/charge.py</p>
+<p><span class="me">about 3.9 s, fairly sure</span></p>
+<p class="ink">Locked. Shown after test_retry_budget runs.</p>
+<p class="tool" style="color:var(--dim)">Edit billing/retry.py</p>
+</div>
+<h3>Answer mid-build, in one line</h3>
+<p class="d">Sam replies while the agent works. The answer locks with a confidence. The build goes on.</p>
+</li>
+<li class="frame sv">
+<div class="fhead"><span class="fnum" aria-hidden="true">3</span><span class="fsurf">Chat · laptop</span></div>
+<div class="shot" aria-hidden="true">
+<p>You said: <span class="ink">about 3.9 s (fairly sure)</span></p>
+<p>It did: <span class="ink">gave up at 4.1 s</span></p>
+<p class="v">Not quite.</p>
+<p>The test also waits for the jitter. billing/retry.py:22</p>
+<p class="ink">Back to: retries. Next: the cap on retry time.</p>
+</div>
+<h3>You said, it did</h3>
+<p class="d">The test runs, and the gap is named next to the evidence. A prediction never lowers the record.</p>
+</li>
+<li class="frame sv">
+<div class="fhead"><span class="fnum" aria-hidden="true">4</span><span class="fsurf">Chat · laptop</span></div>
+<div class="shot" aria-hidden="true">
+<p>Retries are in. 2 tests pass.</p>
+<p class="ink">Question · idempotency · after it works</p>
+<p>Why can the worker retry charge() without charging twice?</p>
+<p>Or answer in the Room: <span class="ink" style="text-decoration:underline">Open card</span></p>
+</div>
+<h3>Explain it back after it works</h3>
+<p class="d">The summary does not explain the mechanism. The turn ends with one specific question, so nothing waits on it.</p>
+</li>
+<li class="frame sv">
+<div class="fhead"><span class="fnum" aria-hidden="true">5</span><span class="fsurf">Room · phone</span></div>
+<div class="shot" aria-hidden="true">
+<p class="hot">Inbox · Now</p>
+<p class="ink">After: idempotency</p>
+<p>About 1 min</p>
+<p class="v ok" style="margin-top:14px">Correct.</p>
+<div class="minirow"><i class="f1"></i><i class="f2 lit"></i><i></i></div>
+<div class="mph"><i></i><i class="w6"></i><i></i><i class="w6"></i><span class="lk"></span></div>
+</div>
+<h3>Away from the desk, answer on the phone</h3>
+<p class="d">The Room shows the same card. Sam locks, the page grades it, and one record cell lights up.</p>
+</li>
+<li class="frame sv">
+<div class="fhead"><span class="fnum" aria-hidden="true">6</span><span class="fsurf">Chat · laptop</span></div>
+<div class="shot" aria-hidden="true">
+<p><span class="me">Now add a dead letter queue for failed charges.</span></p>
+<p class="ink">From the Room: idempotency, Correct, now Without help. Back on 10 Nov.</p>
+<p class="tool" style="color:var(--dim)">Read billing/worker.py</p>
+</div>
+<h3>Back at the laptop, the grade is already there</h3>
+<p class="d">On the next message the agent reads the Room, adds the grade to the record and gets on with the work.</p>
+</li>
+</ol>
+
+<div class="more">
+<div>
+<div class="jrow sv"><span class="k">c</span><span class="t">Every grade<span class="s">Correct, Not quite, No, and confident but wrong.</span></span><a href="prototypes/verdict.html">Verdict</a></div>
+<div class="jrow sv"><span class="k">d</span><span class="t">A review days later<span class="s">A new question on the same idea. Old answers show only after you lock.</span></span><a href="prototypes/inbox.html">Inbox</a></div>
+<div class="jrow sv"><span class="k">e</span><span class="t">What am I weak at?<span class="s">Weakest first, then what changed, then what is due.</span></span><a href="prototypes/map.html">Map</a></div>
+<div class="jrow sv"><span class="k">f</span><span class="t">A debugging drill<span class="s">A planted bug from your own history. Name the cause and a check.</span></span><a href="prototypes/drill.html">Drill</a></div>
+</div>
+<div>
+<div class="jrow sv"><span class="k">g</span><span class="t">An explainer<span class="s">Predict before each section, then read on.</span></span><a href="prototypes/explainer.html">Explainer</a></div>
+<div class="jrow sv"><span class="k">h</span><span class="t">First run<span class="s">No tour. A privacy check, your areas, then a real question.</span></span><a href="prototypes/onboarding.html">First run</a></div>
+<div class="jrow sv"><span class="k">i</span><span class="t">Skip or miss<span class="s">"Not now" never counts as a miss. No "you missed" copy.</span></span><a href="prototypes/card.html">Card</a></div>
+<div class="jrow sv"><span class="k">j</span><span class="t">Project end<span class="s">Start and now side by side. Drops are shown, not hidden.</span></span><a href="prototypes/map.html?state=growth-start-vs-now-with-timeline">Growth</a></div>
+</div>
+</div>
+</section>
+
+<!-- PROTOTYPES -->
+<section id="prototypes" class="wrap sec">
+<div class="sv">
+<p class="eyebrow">Prototypes · 8 pages</p>
+<h2 class="h2">Every surface, every state.</h2>
+<p class="p">Each page has a dashed "Prototype state" strip. Use the select, the <span class="mono">[</span> and <span class="mono">]</span> keys or <span class="mono" style="white-space:nowrap">?state=</span> to step through the states. Each works at phone width and in dark mode.</p>
+</div>
+<div class="grid">
+
+<a class="pcard sv" href="prototypes/flow.html">
+<div class="pv" aria-hidden="true">
+<div style="display:grid;grid-template-columns:minmax(0,1fr) 84px;gap:14px;align-items:end;height:100%">
+<div class="m" style="height:100%;display:flex;flex-direction:column;gap:6px">
+<div class="mi">orbit-pay · cloud session</div>
+<div class="mi" style="color:var(--ink)">Question · retry-budget · before</div>
+<div class="mt">How long until charge() gives up?</div>
+<div class="mi">Locked. Shown after the test runs.</div>
+<div class="mi">You said 3.9 s · It did 4.1 s</div>
+<div class="mi" style="color:var(--ink)">From the Room: idempotency, Correct.</div>
+</div>
+<div style="border:1.5px solid var(--ink);border-radius:18px;background:var(--card);padding:10px 7px;height:92%;display:flex;flex-direction:column;gap:6px">
+<i class="bar6" style="margin:0"></i><i class="bar6" style="margin:0;width:70%"></i>
+<div class="mi" style="font-size:9px;font-weight:700;color:var(--ink);font-family:var(--sans)">Correct.</div>
+<div class="segs"><i class="seg f1" style="height:8px"></i><i class="seg f2 lit" style="height:8px"></i><i class="seg" style="height:8px"></i></div>
+</div>
+</div>
+</div>
+<div class="pbody"><div class="pmeta"><span>flow.html</span><span>13 states · journeys a, b, c, i</span></div><h3>Build and learn flow</h3><p>Chat on a laptop beside the Room on a phone, so you can watch one card move from build to learning and back.</p><span class="open">Open the flow →</span></div>
+</a>
+
+<a class="pcard sv" href="prototypes/inbox.html">
+<div class="pv" aria-hidden="true">
+<div class="m" style="height:100%">
+<div style="display:flex;justify-content:space-between;font-size:13px;font-weight:650">Room <span class="mi">orbit-pay</span></div>
+<p class="cap" style="margin-top:12px">Now</p>
+<div class="irow" style="border-top:0"><span>After: idempotency</span><span class="mi">About 1 min</span></div>
+<p class="cap" style="margin-top:8px">Due 2</p>
+<div class="irow"><span>Review: retry-budget</span><span class="mi">3 days</span></div>
+<div class="irow"><span>Review: idempotency</span><span class="mi" style="color:var(--at)">2 days late</span></div>
+</div>
+</div>
+<div class="pbody"><div class="pmeta"><span>inbox.html</span><span>16 states · journeys b, d, i</span></div><h3>Room inbox</h3><p>Now, Due and Later, with a cap of 5 a day, pause, away, offline and error states.</p><span class="open">Open the inbox →</span></div>
+</a>
+
+<a class="pcard sv" href="prototypes/card.html">
+<div class="pv" aria-hidden="true">
+<div class="m" style="height:100%">
+<div class="mi" style="color:var(--at)">Before the build · retry-budget · With help</div>
+<div class="mt" style="margin-top:6px">When test_retry_budget runs against a dead gateway, how long until charge() gives up?</div>
+<div class="fieldl" style="height:30px">about 3.9 s</div>
+<div class="pills"><span class="pill">Guess</span><span class="pill on">Fairly sure</span><span class="pill">Sure</span><span class="pill" style="border-style:dashed">I do not know</span></div>
+<div class="mbtn" style="width:130px">Lock my answer</div>
+</div>
+</div>
+<div class="pbody"><div class="pmeta"><span>card.html</span><span>15 states · journeys a to d</span></div><h3>Question card</h3><p>Every kind of question and answer shape, with the confidence choice, "I do not know", "Not now" and hints.</p><span class="open">Open the card →</span></div>
+</a>
+
+<a class="pcard sv" href="prototypes/verdict.html">
+<div class="pv" aria-hidden="true">
+<div class="m" style="height:100%">
+<div style="display:grid;grid-template-columns:70px minmax(0,1fr);gap:4px 10px;font-size:12px"><span class="mi">You said</span><span>about 3.9 s (fairly sure)</span><span class="mi">It did</span><span>gave up at 4.1 s</span></div>
+<div style="font-size:20px;font-weight:700;color:var(--at);margin-top:10px">Not quite.</div>
+<div class="mi" style="margin-top:4px">Three timeouts plus two backoffs is 3.9 s. The jitter adds up to 0.2 s.</div>
+<div class="prow" style="margin-top:8px"><span style="font-weight:600">Idempotency</span><div class="segs"><i class="seg f1"></i><i class="seg f2 lit"></i><i class="seg"></i></div></div>
+<div class="mi" style="color:var(--ink)">Back to: retries. Next: the cap.</div>
+</div>
+</div>
+<div class="pbody"><div class="pmeta"><span>verdict.html</span><span>11 states · journeys a, c, d</span></div><h3>Verdict and compare</h3><p>What you said next to what happened, the plain grade, the record change up or down, and the way back.</p><span class="open">Open the verdict →</span></div>
+</a>
+
+<a class="pcard sv" href="prototypes/map.html">
+<div class="pv" aria-hidden="true">
+<div class="m" style="height:100%">
+<div style="display:flex;justify-content:space-between;align-items:center"><span style="font-size:13px;font-weight:650">Your record</span><span class="mi">orbit-pay</span></div>
+<div class="prow" style="margin-top:8px"><span>Distributed systems</span><div class="segs"><i class="seg f1"></i><i class="seg f2"></i><i class="seg f3 lit"></i></div></div>
+<div class="prow"><span>Data and storage</span><div class="segs"><i class="seg f1"></i><i class="seg f2 lit"></i><i class="seg"></i></div></div>
+<div class="prow"><span>Debugging</span><div class="segs"><i class="seg f1"></i><i class="seg ring"></i><i class="seg"></i></div></div>
+<div class="prow"><span>Security</span><div class="segs"><i class="seg"></i><i class="seg"></i><i class="seg"></i></div></div>
+</div>
+</div>
+<div class="pbody"><div class="pmeta"><span>map.html</span><span>16 states · journeys e, j</span></div><h3>Map and growth</h3><p>What you can do without the agent, weakest first, with decay shown as a ring and growth at project end.</p><span class="open">Open the map →</span></div>
+</a>
+
+<a class="pcard sv" href="prototypes/drill.html">
+<div class="pv" aria-hidden="true">
+<div class="m" style="height:100%">
+<div class="mi" style="color:var(--at)">Drill · timeouts-vs-failures</div>
+<div class="code" style="margin-top:6px"><span style="color:var(--at)">FAILED</span> test_no_double_charge<br>assert charges == 1 · got 2</div>
+<div class="code" style="margin-top:8px"><span class="n">44</span>def idem_key(order, n):<br><span class="hl"><span class="n">45</span>  return f"{order.id}-{n}"</span></div>
+<div style="display:flex;justify-content:space-between;align-items:center;margin-top:10px"><span class="mi">Hints used: 1 of 3</span><span class="ladder"><i class="f2"></i><i></i><i></i></span></div>
+</div>
+</div>
+<div class="pbody"><div class="pmeta"><span>drill.html</span><span>15 states · journey f</span></div><h3>Debugging drill</h3><p>A planted bug from the project's history. You name the cause and a check, with up to three hints.</p><span class="open">Open the drill →</span></div>
+</a>
+
+<a class="pcard sv" href="prototypes/explainer.html">
+<div class="pv" aria-hidden="true">
+<div class="mi">Explainer · PR 128</div>
+<div style="font-size:17px;font-weight:650;font-variation-settings:'wdth' 88;margin:4px 0 12px">How the retry path works</div>
+<div class="fl"><span class="bx">Worker</span><span class="bx dk">charge()</span><span class="bx">Gateway</span><span class="bx">Ledger</span></div>
+<div class="ln"></div>
+<div class="m" style="margin-top:4px;border-color:var(--ink)"><div class="mi" style="color:var(--at)">Before you read on</div><div class="mt" style="font-size:12px">The gateway times out after the charge ran. What does the worker do next?</div></div>
+</div>
+<div class="pbody"><div class="pmeta"><span>explainer.html</span><span>11 states · journey g</span></div><h3>Explainer</h3><p>A page about one change, with a diagram and a question before each key section opens.</p><span class="open">Open the explainer →</span></div>
+</a>
+
+<a class="pcard sv" href="prototypes/onboarding.html">
+<div class="pv" aria-hidden="true">
+<div class="m" style="height:100%;display:flex;flex-direction:column;gap:8px">
+<div class="mi">orbit-pay · agent session</div>
+<div style="align-self:flex-end;font-size:12px;background:var(--rule);border-radius:9px;padding:6px 9px">use learning while building on this project</div>
+<div class="mt" style="font-weight:500;font-size:12.5px">This repo is public. A record in it would be public too. I can keep your record in a private repo, learning-record.</div>
+<div class="pills"><span class="pill on">yes</span><span class="pill">keep it local</span></div>
+<div class="mi">I'll track: Distributed systems, Data and storage, Debugging and diagnosis…</div>
+</div>
+</div>
+<div class="pbody"><div class="pmeta"><span>onboarding.html</span><span>13 states · journeys h, i</span></div><h3>First run and settings</h3><p>No tour: a privacy choice, your areas and a mode in chat, then the empty Room and Settings.</p><span class="open">Open first run →</span></div>
+</a>
+
+</div>
+</section>
+
+<!-- PHASES -->
+<section id="phases" class="wrap sec">
+<div class="sv">
+<p class="eyebrow">How it ships</p>
+<h2 class="h2">Phase 1 uses only what we tested. Each upgrade has a fallback that already works.</h2>
+<p class="p">One card, one store, many doors. A small <span class="mono">lwb</span> MCP server owns each card. The Room is a private claude.ai page that opens beside the session and in the Claude app on the phone.</p>
+</div>
+<div class="phases">
+<div class="ph sv">
+<div class="k"><span class="tag t">Phase 1</span><span class="small">tested</span></div>
+<h3>Pull on the next message</h3>
+<ul>
+<li>The skill tells the agent when to ask. It calls <code>lwb_seal</code>, <code>lwb_post</code>, <code>lwb_lock</code>.</li>
+<li>A Room answer is locked in the page's database and graded on the page.</li>
+<li>Your next message pulls it into the record. One extra turn at most.</li>
+</ul>
+</div>
+<div class="ph sv">
+<div class="k"><span class="tag">Phase 2</span><span class="small">after named tests</span></div>
+<h3>The tap rings the session</h3>
+<ul>
+<li>Hooks make the moments automatic: session start, a failing test, tests passing.</li>
+<li>Lock my answer on the phone also wakes the session. The grade is in chat with no extra turn.</li>
+<li>One push a day at most, and never while you are at the machine.</li>
+</ul>
+</div>
+<div class="ph sv">
+<div class="k"><span class="tag">Phase 3</span><span class="small">end state</span></div>
+<h3>Every harness, every door</h3>
+<ul>
+<li>A pane beside the chat on the local desktop app while the agent keeps building.</li>
+<li>Codex and other agents through MCP forms and an inbox of sealed answers.</li>
+<li>The same card, the same lock, the same record in each.</li>
+</ul>
+</div>
+</div>
+<div class="legend" aria-label="Record levels">
+<span><i style="background:var(--lv0);box-shadow:inset 0 0 0 1px var(--border)"></i>Not yet</span>
+<span><i style="background:var(--lv1)"></i>With help</span>
+<span><i style="background:var(--lv2)"></i>Without help</span>
+<span><i style="background:var(--lv3)"></i>New situation</span>
+<span><i style="box-shadow:inset 0 0 0 1.5px var(--ink)"></i>Best level, when the latest is lower</span>
+</div>
+</section>
+</main>
+
+<footer class="wrap">
+<span>learning-while-building · design for the learning experience</span>
+<span class="links">
+<a href="experience.md">Experience spec</a>
+<a href="architecture/recommended.md">Architecture</a>
+<a href="research/learning-science.md">Learning science</a>
+<a href="https://github.com/0xfauzi/explain-pr">GitHub</a>
+</span>
+</footer>
+
+</body>
+</html>

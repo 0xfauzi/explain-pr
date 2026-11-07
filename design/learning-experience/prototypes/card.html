@@ -1,0 +1,563 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Question card</title>
+<meta name="description" content="Prototype of the Room question card: every kind and answer shape, confidence with meanings, I do not know, Not now, the hint ladder, the action bar, and the locked, grading, offline and error states.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="anonymous">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wdth,wght@75..100,400..700&amp;family=JetBrains+Mono:wght@400;500&amp;display=swap">
+<link rel="stylesheet" href="../assets/room.css">
+<style>
+:root{--tabbar:0px;--abar:0px}
+*{box-sizing:border-box}
+html{scroll-padding:72px 0 calc(var(--tabbar) + var(--abar) + 24px)}
+body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--sans);-webkit-font-smoothing:antialiased;min-height:100vh}
+body::after{content:"";position:fixed;inset:0;pointer-events:none;z-index:60;background-image:url(../assets/grain.png);background-size:240px 240px;opacity:var(--grain-op);mix-blend-mode:var(--grain-blend)}
+[hidden]{display:none !important}
+:focus-visible{outline:2px solid var(--accent);outline-offset:3px}
+a{color:var(--ink);text-underline-offset:4px}
+button,input,textarea{font-family:inherit;color:inherit}
+.mono{font-family:var(--mono)}
+.vh{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+/* prototype controls: outside the product, dashed so nobody reads them as product UI */
+.proto{display:flex;flex-wrap:wrap;align-items:center;gap:8px 12px;margin:10px auto 0;max-width:1180px;padding:8px 12px;border:1.5px dashed var(--control-border);border-radius:12px;font:500 12px/1.3 var(--mono);color:var(--text-3);width:calc(100% - 32px)}
+.proto label{display:flex;align-items:center;gap:8px}
+.proto select,.proto button{font:500 12.5px var(--mono);min-height:44px;padding:0 10px;border:1.5px solid var(--control-border);border-radius:10px;background:var(--card);color:var(--ink);max-width:100%;cursor:pointer}
+.proto select#st{max-width:min(360px,58vw)}
+.proto input[type=checkbox]{width:20px;height:20px;accent-color:var(--ink)}
+.proto .ck{min-height:44px}
+.proto .sp{flex:1}
+.embed .proto,.embed .rail{display:none}
+.vpwrap{display:flex;justify-content:center;padding:24px 16px 48px}
+.vpwrap iframe{border:1.5px solid var(--control-border);border-radius:28px;background:var(--paper);height:820px;max-width:100%}
+/* shell */
+.top{position:sticky;top:0;z-index:30;background:var(--paper);border-bottom:1px solid var(--border)}
+.bar{max-width:1180px;margin:0 auto;height:56px;padding:0 32px;display:flex;align-items:center;gap:14px}
+.word{font-size:19px;font-weight:650;font-variation-settings:"wdth" 88;letter-spacing:-.01em}
+.proj{font:500 13px var(--mono);color:var(--text-3)}
+.me{margin-left:auto;width:44px;height:44px;border-radius:50%;border:1.5px solid var(--ink);background:var(--card);font-weight:650;font-size:16px;cursor:pointer}
+.tabs{max-width:1180px;margin:0 auto;padding:0 32px;display:flex;gap:24px}
+.tab{font:600 15px/1 var(--sans);min-height:44px;padding:0 4px;border-bottom:2px solid transparent;color:var(--text-3);display:flex;align-items:center;gap:8px;text-decoration:none}
+.tab:hover{color:var(--ink)}
+.tab[aria-current="page"]{color:var(--ink);border-color:var(--accent)}
+.tab svg{display:none}
+.layout{max-width:1180px;margin:0 auto;padding:16px 32px 140px;display:grid;grid-template-columns:minmax(0,640px);justify-content:center;gap:32px}
+@media (min-width:1100px){.layout{grid-template-columns:minmax(0,640px) 300px;gap:56px}.rail{position:sticky;top:120px;align-self:start}}
+.link{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:0 16px;font-size:14px;color:var(--text-3);border-bottom:1px solid var(--rule)}
+.link b{font-weight:500;color:var(--ink)}
+.btn{font:600 16px/1 var(--sans);min-height:50px;padding:0 26px;border-radius:999px;border:1.5px solid var(--ink);background:var(--ink);color:var(--on-ink);cursor:pointer;transition:background .2s,border-color .2s,color .2s,transform .15s,opacity .2s;display:inline-flex;align-items:center;justify-content:center;gap:10px;text-decoration:none}
+.btn:hover{background:var(--accent);border-color:var(--accent);color:#16161A}
+.btn:active{transform:scale(.97)}
+.btn.ghost{background:transparent;color:var(--ink)}
+.btn.ghost:hover{background:var(--ink);color:var(--on-ink)}
+.btn.sm{min-height:44px;font-size:15px;padding:0 18px}
+.btn[aria-disabled="true"],.btn[aria-disabled="true"]:hover{background:var(--field);border-color:var(--field);color:var(--text-3);cursor:not-allowed}
+.btn[aria-disabled="true"]:active{transform:none}
+.tbtn{min-height:44px;padding:0 6px;border:0;background:none;font:600 15px var(--sans);text-decoration:underline;text-underline-offset:4px;cursor:pointer;color:var(--ink);display:inline-flex;align-items:center;gap:6px}
+.kc{display:inline-flex;align-items:center;justify-content:center;min-width:22px;height:22px;padding:0 6px;border:1.5px solid currentColor;border-radius:6px;font:500 12px var(--mono);opacity:.8}
+@media (hover:none){.kc{display:none !important}}
+.note{display:flex;flex-wrap:wrap;align-items:center;gap:4px 12px;margin-top:16px;padding:12px 16px;background:var(--card);border:1.5px solid var(--ink);border-radius:14px;font-size:15px;line-height:1.5}
+.note p{margin:0;flex:1 1 260px}
+/* the card */
+.qcard{margin-top:16px;background:var(--card);border:1.5px solid var(--border);border-left:3px solid var(--accent);border-radius:18px;padding:24px 24px 0}
+.qcard.nudge{animation:nudge .3s var(--ease-out)}
+@keyframes nudge{50%{transform:translateY(-8px)}}
+.qhead{display:flex;justify-content:space-between;align-items:flex-start;gap:12px}
+.eb{font-size:13px;font-weight:500;color:var(--accent-text)}
+.lvl{font:500 13px var(--mono);color:var(--text-3);margin-top:4px}
+.chip{display:inline-flex;align-items:center;gap:6px;height:24px;padding:0 10px;border-radius:999px;border:1.5px solid var(--ink);font:500 12px var(--mono);white-space:nowrap}
+.chip.locked{background:var(--ink);color:var(--on-ink)}
+.chip.miss{border-color:var(--accent-text);color:var(--accent-text)}
+.chip.saved{border-style:dashed}
+.qq{margin:12px 0 0;font-size:24px;line-height:1.3;font-weight:600;letter-spacing:-.01em;text-wrap:pretty}
+.ex{margin:16px 0 0;background:var(--paper);border:1.5px solid var(--border);border-radius:14px;overflow:hidden}
+.ex .hd{display:block;padding:10px 18px 0;font:500 12.5px var(--mono);color:var(--text-3)}
+.ex pre{margin:0;padding:6px 0 12px;font:500 13px/1.8 var(--mono);overflow-x:auto}
+.ex .ln{display:block;padding:0 18px;white-space:pre}
+.ex .ln.hl{background:var(--accent-wash)}
+.ex i{display:inline-block;width:2.4em;color:var(--text-dim);font-style:normal}
+details.code{margin-top:14px}
+details.code summary{min-height:44px;display:inline-flex;align-items:center;font-weight:600;cursor:pointer;text-decoration:underline;text-underline-offset:4px}
+.fl{display:block;margin-top:20px;font-weight:600;font-size:15px}
+textarea,.other{display:block;width:100%;margin-top:8px;padding:12px 14px;font:400 16px/1.5 var(--sans);color:var(--ink);background:var(--card);border:1.5px solid var(--control-border);border-radius:14px}
+textarea{resize:vertical;min-height:120px}
+textarea[readonly]{background:var(--paper)}
+fieldset{border:0;margin:20px 0 0;padding:0;min-width:0}
+legend{font-size:15px;font-weight:600;margin-bottom:8px;padding:0}
+/* choice */
+.opts{border-bottom:1px solid var(--border)}
+.opt{position:relative;display:grid;grid-template-columns:28px minmax(0,1fr);gap:12px;align-items:center;min-height:56px;padding:12px 4px;border-top:1px solid var(--border);font:500 18px/1.4 var(--sans);cursor:pointer;transition:padding .2s}
+.opt:hover{padding-left:12px}
+.opt input{position:absolute;opacity:0;inset:0;margin:0;cursor:pointer}
+.opt .k{font:500 13px/1 var(--mono);color:var(--text-3)}
+.opt:has(input:checked){font-weight:650}
+.opt:has(input:checked) .k{color:var(--accent-text)}
+.opt:has(input:checked)::after{content:"";position:absolute;right:6px;top:50%;width:10px;height:10px;margin-top:-5px;border-radius:50%;background:var(--ink)}
+.opt:has(input:focus-visible){outline:2px solid var(--accent);outline-offset:-2px;border-radius:8px}
+/* line pick */
+.pick{margin-top:8px;background:var(--paper);border:1.5px solid var(--border);border-radius:14px;overflow-x:auto;padding:6px 0}
+.pick .hd{display:block;padding:4px 16px 6px;font:500 12.5px var(--mono);color:var(--text-3)}
+.pl{position:relative;display:flex;align-items:center;min-height:44px;padding:0 16px 0 13px;border-left:3px solid transparent;font:500 13px var(--mono);white-space:pre;cursor:pointer;min-width:max-content}
+.pl:hover{background:color-mix(in srgb,var(--field) 60%,transparent)}
+.pl input{position:absolute;opacity:0;inset:0;margin:0;cursor:pointer}
+.pl i{display:inline-block;width:2.4em;color:var(--text-dim);font-style:normal}
+.pl:has(input:checked){background:var(--accent-wash);border-left-color:var(--ink)}
+.pl:has(input:focus-visible){outline:2px solid var(--accent);outline-offset:-2px}
+/* order */
+.ord{list-style:none;margin:8px 0 0;padding:0;border-top:1px solid var(--border)}
+.ord li{display:grid;grid-template-columns:28px minmax(0,1fr) auto;gap:10px;align-items:center;min-height:60px;padding:8px 0;border-bottom:1px solid var(--border);font-size:16px;line-height:1.45}
+.ord li.moved{animation:moved .7s var(--ease-out)}
+@keyframes moved{from{background:var(--accent-wash)}}
+.ord .n{font:500 13px var(--mono);color:var(--text-3)}
+.mv{display:flex;gap:4px}
+.mv button{width:44px;height:44px;border:1.5px solid var(--control-border);border-radius:12px;background:var(--card);cursor:pointer;display:inline-flex;align-items:center;justify-content:center}
+.mv button:hover{border-color:var(--ink)}
+.mv button[disabled]{opacity:.35;cursor:default}
+/* confidence */
+.confs{display:flex;flex-wrap:wrap;gap:8px}
+.sure{position:relative;display:inline-flex;align-items:center;min-height:44px;padding:0 18px;border-radius:999px;border:1.5px solid var(--control-border);color:var(--text-2);font:500 15px var(--sans);cursor:pointer;transition:border-color .2s,background .2s,color .2s}
+.sure:hover{border-color:var(--ink)}
+.sure input{position:absolute;opacity:0;inset:0;margin:0;cursor:pointer}
+.sure:has(input:checked){background:var(--ink);border-color:var(--ink);color:var(--on-ink)}
+.sure:has(input:focus-visible){outline:2px solid var(--accent);outline-offset:3px}
+.sure .kc{margin-left:8px;min-width:18px;height:18px;font-size:11px}
+.mean{margin:8px 0 0;font-size:14px;color:var(--text-3);min-height:22px}
+.mean b{font-weight:600;color:var(--ink)}
+/* hints */
+.hints{margin-top:20px;padding-top:12px;border-top:1px solid var(--rule);display:flex;flex-wrap:wrap;align-items:center;gap:4px 14px;font-size:14px;color:var(--text-3)}
+.ladder{display:inline-grid;grid-template-columns:repeat(3,28px);gap:4px;vertical-align:middle;margin-right:10px}
+.ladder span{height:10px;border-radius:3px;box-shadow:inset 0 0 0 1.5px var(--ink);transition:background .4s var(--ease-out)}
+.ladder span.on{background:var(--ink)}
+.hints ol{flex:1 1 100%;margin:4px 0 0;padding:0;list-style:none;display:grid;gap:6px;font-size:15px;line-height:1.5;color:var(--text-2)}
+.hints ol li{padding:10px 14px;background:var(--paper);border-radius:10px}
+.hints ol li.in{animation:rise .5s var(--ease-out) both}
+.hints ol b{font:500 12.5px var(--mono);color:var(--ink);margin-right:8px}
+.hints .cap{flex:1 1 100%;margin:0;color:var(--ink)}
+details.more summary{list-style:none;min-height:44px;display:inline-flex;align-items:center;font-weight:600;color:var(--ink);cursor:pointer;text-decoration:underline;text-underline-offset:4px}
+details.more summary::-webkit-details-marker{display:none}
+/* action bar */
+.quiet{font-size:14px;color:var(--text-3);margin:14px 0 0}
+.abar{display:grid;grid-template-columns:minmax(0,1fr) auto;grid-template-areas:"why acts" "help lock" "snz snz";align-items:center;gap:10px 16px;margin:20px -24px 0;padding:14px 24px;border-top:1px solid var(--rule);background:var(--card);border-radius:0 0 18px 18px}
+.abar .why2{grid-area:why;font-size:13px;color:var(--text-3);min-width:0}
+.abar .row2{grid-area:acts;justify-content:flex-end}.abar .lock{grid-area:lock;justify-self:end}.abar .helper{grid-area:help}.abar .snooze{grid-area:snz}
+.abar .row2{display:flex;gap:10px}
+.abar .pill{min-height:44px;padding:0 16px;border-radius:999px;border:1.5px solid var(--control-border);background:transparent;font:500 15px var(--sans);cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:8px;color:var(--ink)}
+.abar .pill:hover{border-color:var(--ink)}
+.abar .pill.dk{border-style:dashed}
+.abar .pill[aria-expanded="true"]{background:var(--ink);color:var(--on-ink);border-color:var(--ink)}
+.helper{margin:0;font-size:14px;color:var(--text-3)}
+.helper.warn{color:var(--ink);font-weight:500}
+.snooze{flex:1 1 100%;display:flex;flex-wrap:wrap;align-items:center;gap:8px;justify-content:flex-end}
+.snooze span{font-size:14px;color:var(--text-3);margin-right:4px}
+/* after lock */
+.state{margin:20px 0 0;font-size:16px;line-height:1.6}
+.state b{font-weight:650}
+.said{margin:16px 0 0;padding:12px 16px;border-left:3px solid var(--border);color:var(--text-2);font-size:16px;line-height:1.5}
+.said .cap{display:block;font-size:13px;color:var(--text-3);margin-bottom:4px}
+.said .chip{margin-left:6px;vertical-align:1px}
+.dots::after{content:"";display:inline-block;width:1.2em;text-align:left;animation:dots 1.2s steps(4) infinite}
+@keyframes dots{0%{content:""}25%{content:"."}50%{content:".."}75%{content:"..."}}
+.verdict{margin:20px 0 0;padding:20px 22px;border-radius:14px;background:var(--paper);border:1.5px solid var(--border)}
+.verdict.in{animation:rise .6s var(--ease-out) both}
+@keyframes rise{from{opacity:0;transform:translateY(10px)}}
+.vw{margin:0;font-size:26px;font-weight:700;color:var(--accent-text);outline-offset:6px}
+.vw.ok{color:var(--ink)}
+.why{margin:8px 0 0;font-size:16px;line-height:1.6;color:var(--text-2)}
+.belief{margin:10px 0 0;font-size:15px;line-height:1.6;color:var(--text-3)}
+.delta{margin-top:16px;padding-top:14px;border-top:1px solid var(--border);display:grid;grid-template-columns:minmax(0,1fr) 150px;gap:6px 14px;align-items:center;font-size:14px;color:var(--text-3)}
+.delta b{font:500 13px var(--mono);color:var(--ink);margin-right:6px}
+.delta svg{vertical-align:-2px;margin:0 4px}
+.segs{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:4px}
+.seg{height:14px;border-radius:3px;background:var(--lv0);transition:background-color .4s var(--ease-out),transform .4s var(--ease-spring)}
+.seg.f1{background:var(--lv1);box-shadow:inset 0 0 0 1.5px var(--ink)}.seg.f2{background:var(--lv2);box-shadow:inset 0 0 0 1.5px var(--ink)}.seg.f3{background:var(--lv3);box-shadow:inset 0 0 0 1.5px var(--ink)}
+.seg.lit{transform:scaleY(1.15)}
+.cue{margin:14px 0 0;font:500 13px/1.7 var(--mono);color:var(--text-2)}
+.done{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin:20px -24px 0;padding:14px 24px;border-top:1px solid var(--rule)}
+.tail{height:24px}
+/* skeleton */
+.sk{display:block;border-radius:6px;background:var(--field)}
+/* inbox stub after Not now */
+.gh{margin:28px 0 10px;font-size:20px;font-weight:650;font-variation-settings:"wdth" 88}
+.list{list-style:none;margin:0;padding:0;background:var(--card);border:1.5px solid var(--border);border-radius:18px;overflow:hidden}
+.ra{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:2px 16px;align-items:center;min-height:64px;padding:12px 20px;text-decoration:none;color:var(--ink)}
+.ra:hover{background:color-mix(in srgb,var(--field) 45%,transparent)}
+.ra .rt{grid-row:1 / span 3;grid-column:2}
+.tp{font:500 15px/1.4 var(--mono)}
+.sub{font-size:14px;color:var(--text-3)}
+.empty{margin:0;font-size:16px;color:var(--text-2)}
+/* prototype rail */
+.rail{padding:16px 18px;border:1.5px dashed var(--control-border);border-radius:14px;font-size:14px;line-height:1.6;color:var(--text-2)}
+.rail h2{margin:0 0 6px;font:500 12px var(--mono);color:var(--text-3)}
+.rail p{margin:0 0 10px}
+.rail pre{margin:0;font:500 12px/1.7 var(--mono);white-space:pre-wrap;overflow-wrap:anywhere;color:var(--text-3)}
+/* toast */
+.toastwrap{position:fixed;left:0;right:0;bottom:calc(var(--tabbar) + 20px);z-index:40;display:flex;justify-content:center;padding:0 16px;pointer-events:none}
+.toast{pointer-events:auto;display:flex;align-items:center;gap:6px 14px;width:100%;max-width:576px;padding:8px 8px 8px 18px;background:var(--card);border:1.5px solid var(--ink);border-radius:14px;font-size:16px;box-shadow:0 8px 24px rgba(22,22,26,.08);animation:rise .3s var(--ease-out) both}
+.toast p{margin:0;flex:1}
+.toast .x{width:44px;height:44px;border:0;background:none;cursor:pointer;border-radius:10px;font-size:20px;line-height:1}
+@media (max-width:640px){
+:root{--tabbar:calc(64px + env(safe-area-inset-bottom));--abar:120px}
+.bar{padding:0 16px}
+.layout{padding:12px 16px calc(var(--tabbar) + 32px)}
+.tabs{position:fixed;left:0;right:0;bottom:0;z-index:30;padding:0 0 env(safe-area-inset-bottom);gap:0;background:var(--paper);border-top:1px solid var(--border);display:grid;grid-template-columns:repeat(4,1fr)}
+.tab{flex-direction:column;justify-content:center;gap:4px;height:64px;font-size:12px;border-bottom:0;border-top:2px solid transparent}
+.tab[aria-current="page"]{border-top-color:var(--accent)}
+.tab svg{display:block}
+.qcard{padding:16px 16px 0;border-radius:14px}
+.qq{font-size:20px}
+.vw{font-size:22px}
+.opt{font-size:17px}
+.abar{position:sticky;bottom:var(--tabbar);z-index:20;margin:20px -16px 0;padding:12px 16px;border-radius:0 0 14px 14px;box-shadow:0 -10px 20px -14px rgba(22,22,26,.25);grid-template-columns:minmax(0,1fr);grid-template-areas:"snz" "acts" "lock" "help";gap:8px}
+.abar .lock{justify-self:stretch}
+.abar .why2,.abar .kc{display:none}
+.abar .pill{white-space:nowrap;padding:0 12px}
+.abar .row2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.abar .btn{width:100%}
+.snooze{justify-content:flex-start}
+.proto{gap:4px 8px}.proto .lbl{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+.done{margin:20px -16px 0;padding:14px 16px}
+.done .btn{width:100%}
+.delta{grid-template-columns:minmax(0,1fr)}
+.ra{padding:12px 16px}
+}
+@media (prefers-reduced-motion:reduce){
+.qcard.nudge,.verdict.in,.toast,.ord li.moved,.hints ol li.in,.dots::after{animation:none !important}
+.seg,.ladder span,.btn,.sure,.opt{transition:none}
+.dots::after{content:"..."}
+}
+</style>
+</head>
+<body>
+<div class="proto" role="region" aria-label="Prototype controls">
+<label for="st" class="lbl">Prototype state</label>
+<button type="button" id="prev" aria-label="Previous state">[</button>
+<select id="st"></select>
+<button type="button" id="next" aria-label="Next state">]</button>
+<span class="sp"></span>
+<label class="ck"><input type="checkbox" id="net"> Offline</label>
+<label>Width <select id="vw"><option value="">Fit</option><option value="390">390</option><option value="768">768</option></select></label>
+<label>Theme <select id="theme"><option value="">System</option><option value="light">Light</option><option value="dark">Dark</option></select></label>
+</div>
+<div class="vpwrap" id="vpwrap" hidden><iframe id="vpf" title="The card at the chosen width"></iframe></div>
+
+<div id="app">
+<header class="top">
+<div class="bar">
+<span class="word">Room</span><span class="proj">orbit-pay</span>
+<button type="button" class="me" data-act="settings" aria-label="Sam. Open settings">S</button>
+</div>
+<nav class="tabs" aria-label="Room">
+<a class="tab" href="inbox.html" aria-current="page"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" aria-hidden="true"><path d="M3 13l3-8h12l3 8v6H3z"/><path d="M3 13h5l1 2h6l1-2h5"/></svg>Inbox</a>
+<a class="tab" href="map.html"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><rect x="4" y="4" width="6" height="6" rx="1.5"/><rect x="14" y="4" width="6" height="6" rx="1.5"/><rect x="4" y="14" width="6" height="6" rx="1.5"/><rect x="14" y="14" width="6" height="6" rx="1.5"/></svg>Map</a>
+<a class="tab" href="drill.html"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M9 9h6v7a3 3 0 0 1-6 0z"/><path d="M12 9V6M5 12h4M15 12h4M6 7l3 2M18 7l-3 2M6 19l3-2M18 19l-3-2"/></svg>Drills</a>
+<a class="tab" href="explainer.html"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" aria-hidden="true"><path d="M6 3h9l3 3v15H6z"/><path d="M9 10h6M9 14h6M9 18h4"/></svg>Explainers</a>
+</nav>
+</header>
+<div class="layout">
+<main id="main" tabindex="-1"></main>
+<aside class="rail" aria-label="About this prototype state"><h2>About this state</h2><p id="rnote"></p><pre id="rsys"></pre></aside>
+</div>
+<div class="toastwrap"><div id="toastslot" role="status" aria-live="polite"></div></div>
+<p class="vh" id="live" aria-live="polite"></p>
+</div>
+
+<script>
+(function(){
+'use strict';
+var $=function(s,r){return (r||document).querySelector(s)}, $$=function(s,r){return Array.prototype.slice.call((r||document).querySelectorAll(s))};
+var esc=function(s){return String(s).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]})};
+var Q=new URLSearchParams(location.search), EMBED=Q.get('embed')==='1';
+if(EMBED)document.documentElement.classList.add('embed');
+var LV=['Not yet','With help','Without help','New situation'];
+var MEAN={Guess:'I would not bet on it.','Fairly sure':'More likely right than wrong.',Sure:'I would be surprised to be wrong.'};
+var MOD=/Mac|iPhone|iPad/.test(navigator.platform||navigator.userAgent)?'Cmd':'Ctrl';
+var CUE='Back to: retries in the payment worker. Next: the dead letter queue.';
+var CHEV='<svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 2l4 4-4 4"/></svg>';
+var BACK='<svg width="14" height="14" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 2L4 6l4 4"/></svg>';
+var UP='<svg width="14" height="14" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2.5 7.5L6 4l3.5 3.5"/></svg>';
+var DOWN='<svg width="14" height="14" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2.5 4.5L6 8l3.5-3.5"/></svg>';
+var TICK='<svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 6.5l2.5 2.5L10 3"/></svg>';
+var CHARGE=['def charge(order):','    for attempt in range(3):','        try:','            return gateway.charge(','                order.card,','                order.amount,','                idempotency_key=order.id,','                timeout=0.8,','            )','        except gateway.Timeout:','            if attempt < 2:','                sleep(backoff(attempt))','    raise ChargeFailed(order.id)'];
+var BUGGY=CHARGE.slice();BUGGY[6]='                idempotency_key=f"{order.id}:{attempt}",';
+
+/* fixture: orbit-pay cards (the shared fixture.js, inlined so this page stands alone) */
+var CARDS={
+c_3f9c:{kind:'predict',shape:'text',topic:'retry-budget',lv:1,reason:'Before the build',code:CHARGE,path:'billing/charge.py:41-53',hl:[42,48,52],showCode:true,
+ q:'Each attempt times out at 0.8 s and the backoff is 0.5 s, then 1 s. When test_retry_budget runs against a dead gateway, how long until charge() gives up?',
+ ans:'test_retry_budget shows it: about 4.1 s. Three timeouts of 0.8 s, backoffs of 0.5 s and 1 s, and up to 0.1 s of jitter on each backoff. billing/retry.py:22.'},
+c_7a21:{kind:'explain',shape:'text',topic:'idempotency',lv:1,reason:'After it works',code:CHARGE,path:'billing/charge.py:41-53',hl:[47],
+ q:'Why can the worker retry charge() without charging the customer twice?',
+ hints:['Look at what the worker sends with every charge call.','billing/charge.py:47 passes a key. Where does its value come from?','The gateway keeps the result for each key it has seen.'],
+ rx:[/order.?id/i,/key|idempot/i],next:['10 Nov','8 Nov'],
+ why:['The key is the order id (billing/charge.py:47), and the gateway returns the stored result for a repeated key.','The key is what makes it safe, yes. But the key must be the order id, not a new UUID per attempt; a new UUID per attempt charges twice. billing/charge.py:47.','The timeout does not make it safe. A timeout only means the reply did not arrive; the charge may have run. The key at billing/charge.py:47 is what stops a second charge.'],
+ ans:'The key is the order id (billing/charge.py:47). The gateway returns the stored result for a repeated key, so a retry does not charge again.'},
+c_9b04:{kind:'review',shape:'choice',topic:'retry-budget',lv:1,reason:'Review · 3 days',
+ q:'A refund call uses the same retry: 0.8 s timeout per attempt, a backoff of 0.5 s that doubles, 4 attempts and no wait after the last. How long until refund() gives up on a dead gateway?',
+ opts:[['3.2 s',1],['3.5 s',1],['6.7 s',2],['10.7 s',0]],rx:[/6[.,]7/,/6[.,]7/],next:['28 Nov','10 Nov'],
+ why:['Four timeouts of 0.8 s and three backoffs: 3.2 + 0.5 + 1 + 2 = 6.7 s. billing/retry.py:22.','You have one part of it. Add the four timeouts (3.2 s) and the three backoffs (3.5 s): 6.7 s. billing/retry.py:22.','There is no wait after the last attempt, so there are three backoffs, not four. 3.2 + 0.5 + 1 + 2 = 6.7 s. billing/retry.py:22.'],
+ ans:'Four timeouts of 0.8 s (3.2 s) plus backoffs of 0.5, 1 and 2 s (3.5 s): 6.7 s. billing/retry.py:22.'},
+c_9b05:{kind:'review',shape:'order',topic:'timeouts-vs-failures',lv:1,reason:'Review · 1 day',
+ q:'charge() timed out after 0.8 s, but the gateway ran the charge. Put these in the order they happen.',
+ items:['The worker sends charge() with key ord_1042.','The gateway charges the card.','The reply is lost. The worker gets gateway.Timeout.','The worker waits 0.5 s.','The worker sends key ord_1042 again.','The gateway returns the stored result. No second charge.'],start:[2,0,4,1,5,3],next:['10 Nov','8 Nov'],
+ why:['The charge ran before the reply was lost, so the timeout is not a failure. The repeat is safe because the key is the same. worker/charge_job.py:31.','Most of it holds. The gateway charges the card before the reply is lost: a timeout comes after the work, not instead of it. worker/charge_job.py:31.','A timeout means the reply did not arrive. The charge ran first, then the reply was lost, then the worker sent the same key. worker/charge_job.py:31.'],
+ ans:'Send, charge, reply lost and Timeout, wait 0.5 s, send the same key, stored result returned. worker/charge_job.py:31.'},
+c_9b06:{kind:'diagnose',shape:'line',topic:'idempotency',lv:1,reason:'A test fails',code:BUGGY,path:'billing/charge.py:41-53',right:47,near:[44,51,52],
+ q:'test_no_double_charge fails: after a gateway timeout, the customer is charged twice. Which line causes it?',
+ hints:['The second charge comes from the retry, not the first call.','What does the gateway compare to know a call is a repeat?','Read the key on each attempt: is it the same both times?'],next:['10 Nov','8 Nov'],
+ why:['The key includes the attempt number, so the retry has a new key and the gateway charges again. billing/charge.py:47.','That line is on the retry path, yes. But it only repeats the call. The call is a new charge because the key at billing/charge.py:47 changes on each attempt.','That line does not decide if a call is a repeat. The key at billing/charge.py:47 includes the attempt number, so every retry is a new charge.'],
+ ans:'Line 47. The key includes the attempt number, so the gateway sees each retry as a new charge.'},
+c_9b07:{kind:'transfer',shape:'text',topic:'idempotency',lv:2,reason:'In new code',
+ q:'A refund call now retries too. It uses a new UUID as its key on every attempt. What happens when the first attempt times out but the refund ran?',
+ hints:['What does the gateway use to know a call is a repeat?','billing/refund.py:19 makes the key. When is it made?','A new key looks like a new refund to the gateway.'],
+ rx:[/twice|two|double|second refund|again/i,/key|uuid/i],next:['28 Nov','10 Nov'],
+ why:['Each attempt has a new key, so the gateway sees a new refund and pays it again. billing/refund.py:19.','The key is the cause, yes. Say the result: a new key per attempt means a second refund. billing/refund.py:19.','The gateway cannot match a new UUID to the first attempt, so it refunds twice. billing/refund.py:19.'],
+ ans:'The second attempt has a new key, so the gateway refunds twice. billing/refund.py:19.'}
+};
+var GOOD='The key is the order id, so the gateway sees the same key and returns the first charge.';
+var PRED='About 3.9 s. Three timeouts of 0.8 s plus 0.5 s and 1 s of backoff.';
+
+var ST=[
+['loading',function(){use('c_7a21');S.phase='loading'},'The card is fetched from the Room db. A skeleton in the shape of the card, no spinner. The region is aria-busy and says "Loading the question."','GET cards/c_7a21 (Room db)\nthe card shape is known, so the skeleton matches it'],
+['waiting: lock disabled until confidence',function(){use('c_3f9c')},'A prediction before the build. The code is shown. Lock my answer is aria-disabled, not removed, so it stays in the focus order and says why. Try the keys 1, 2, 3, D, H and '+MOD+' Enter.','c_3f9c sealed 13:57 (rubric 9c1e4b07)\nstate: delivered(room)'],
+['waiting: confidence chosen',function(){use('c_3f9c');S.draft=PRED;S.conf='Fairly sure'},'With a confidence chosen, its meaning is shown under the pills and Lock is active. The meaning is the radio\'s description for screen readers.','confidence: fairly sure\nlock not sent yet'],
+['choice shape',function(){use('c_9b04')},'A review 3 days later. No code, no old answer on screen. Letter keys A to D choose; Other opens a text field. On choice cards I do not know moves to key X, because D is an option.','c_9b04 review, interval 3 days\nshape: choice'],
+['line-pick shape',function(){use('c_9b06')},'A diagnose card from a failing test. The excerpt becomes a group of lines; each line is a 44px target. Arrow keys move the choice.','c_9b06 diagnose, shape: line-pick\ncorrect line sealed in the rubric'],
+['order shape',function(){use('c_9b05')},'Put the events in order with move up and move down. No drag only. The moved item flashes once, so you can see where it went.','c_9b05 review, shape: order\nannounces "Moved to 2 of 6."'],
+['transfer: the idea in new code',function(){use('c_9b07')},'At Without help, the question moves to code you have not seen. Hint is under More here, and is never offered at New situation.','c_9b07 transfer, level_at_ask: recalls'],
+['hint 1 of 3 shown',function(){use('c_7a21');S.hints=1},'One hint used. The ladder fills one cell. The attempt is now capped at With help, and the card says so once, plainly.','lwb_hint c_7a21 level=1\nattempt cap: with help'],
+['answered: prediction locked, shown after the test runs',function(){use('c_3f9c');S.draft=PRED;S.conf='Fairly sure';S.phase='locked'},'Locked is final. The controls go read only and the answer is quoted back. Nothing is shown until test_retry_budget runs; then the Compare appears here and in chat.','lwb_lock c_3f9c door=room 13:59\nobservable: pytest -k test_retry_budget'],
+['answered: explain locked, grading',function(){use('c_7a21');S.draft=GOOD;S.conf='Sure';S.phase='grading';S.hold=true},'Locked, then Grading, announced once. Held here so you can see it. Lock any other card to see the grade arrive.','rubric doc read after lock\nsample: grading on the page'],
+['answered: saved, Claude adds it on your next message',function(){use('c_7a21');S.draft=GOOD;S.conf='Sure';S.phase='saved'},'Phase 1 when the page cannot grade: the answer is saved in the Room db and the session grades it on the next message.','Room db: c_7a21 locked 14:02 door=room-phone\npull rule on the next message'],
+['dont know',function(){use('c_7a21');S.dk=true;S.conf='Guess';S.phase='graded';S.v=grade()},'I do not know locks a real answer at Guess. The verdict is "Not known yet." with the answer. No red, no "No.", and it returns tomorrow.','lwb_lock c_7a21 dont_know=true confidence=guess\nreview: tomorrow'],
+['not now with undo',function(){use('c_7a21');S.draft='The key is';S.phase='notnow';S.when='After this build'},'Not now offers three times. The card closes to the Inbox and a toast offers Undo for 8 s; it pauses on hover and focus. Undo brings back the draft.','lwb_snooze c_7a21 until=after-build\nsnooze never counts as a miss'],
+['offline: saved here',function(){use('c_7a21');S.draft=GOOD;S.conf='Sure';S.phase='offline';S.net=false},'No network. Lock still works and the answer waits on this phone. Clear Offline in the prototype bar to see it send and grade.','page storage queue, retry on "online"\nchat still shows c_7a21 as Open'],
+['error: grader failed',function(){use('c_7a21');S.draft=GOOD;S.conf='Sure';S.phase='gerr'},'The answer is locked and safe. The error says what failed and what still works. Try again runs the grader again.','sample: error\nlocked answer kept; session can grade'],
+['error: already answered in chat',function(){use('c_7a21');S.phase='elsewhere'},'Sam answered in chat at 14:01. The earliest lock wins, so the Room shows that, not a second form.','lwb_lock c_7a21 door=chat 14:01 (wins)\nRoom form not offered']
+];
+
+var S, timers=[], tt;
+function use(id){S={id:id,conf:null,draft:'',choice:null,other:'',pick:null,order:null,hints:0,phase:'edit',snz:false,net:!$('#net').checked};var c=C();if(c.start)S.order=c.start.slice();S.lockedAt='14:02'}
+function C(){return CARDS[S.id]}
+function later(fn,ms){timers.push(setTimeout(fn,ms))}
+function announce(t){var l=$('#live');l.textContent='';setTimeout(function(){l.textContent=t},40)}
+function hasAnswer(){var c=C();if(c.shape==='text')return !!S.draft.trim();if(c.shape==='choice')return S.choice!==null&&(S.choice!=='o'||!!S.other.trim());if(c.shape==='line')return S.pick!==null;return true}
+function canLock(){return !!S.conf&&hasAnswer()}
+function dkKey(){return C().shape==='choice'?'X':'D'}
+
+/* ---------- grading (prototype: patterns stand in for the sealed rubric) ---------- */
+function grade(){
+ var c=C(),s;
+ if(S.dk)return {w:'dk'};
+ if(c.shape==='text'||(c.shape==='choice'&&S.choice==='o')){var t=c.shape==='text'?S.draft:S.other;s=c.rx.filter(function(r){return r.test(t)}).length;if(c.shape==='choice'&&s)s=2}
+ else if(c.shape==='choice')s=c.opts[S.choice][1];
+ else if(c.shape==='line')s=S.pick===c.right?2:c.near.indexOf(S.pick)>=0?1:0;
+ else{var ok=S.order.filter(function(v,i){return v===i}).length;s=ok===6?2:ok>=3?1:0}
+ var w=['wrong','partial','right'][s];if(w==='wrong'&&S.conf==='Sure')w='cw';return {w:w};
+}
+function lock(dk){
+ if(dk){S.dk=true;S.conf='Guess'}
+ else if(!canLock()){var h=$('#helper');if(h){h.classList.add('warn');h.textContent=S.conf?'Write your answer first, or choose I do not know.':'Choose how sure you are first.'}
+  var f=S.conf?($('#ans')||$('.opts input,.pick input,.ord button')):$('input[name="conf"]');if(f)f.focus();return}
+ if(!dk)saveDraft();
+ S.snz=false;
+ var kind=C().kind;
+ if(kind==='predict'&&!dk){S.phase='locked';render('#st1');nudge();announce('Locked. Shown after the test runs.');return}
+ if(!S.net){S.phase='offline';render('#st1');nudge();announce('Locked. Saved on this phone.');return}
+ S.phase='grading';S.hold=false;render('#st1');nudge();announce('Locked. Grading.');
+ later(finish,1600);
+}
+function finish(){S.v=grade();S.phase='graded';render('#vh')}
+function nudge(){var q=$('.qcard');if(q){q.classList.remove('nudge');void q.offsetWidth;q.classList.add('nudge')}}
+function saveDraft(){var a=$('#ans');if(a)S.draft=a.value;var o=$('#other');if(o)S.other=o.value}
+
+/* ---------- render ---------- */
+function chip(t){var cls={Locked:'locked','Saved here':'saved','Not quite':'miss',No:'miss','No · sure':'miss'}[t]||'';return '<span class="chip '+cls+'">'+(t==='Correct'?TICK:'')+esc(t)+'</span>'}
+function chipNow(){var p=S.phase;if(p==='edit')return 'Open';if(p==='offline')return 'Saved here';if(p==='graded'){var w=S.v.w;return {right:'Correct',partial:'Not quite',wrong:'No',cw:'No · sure',dk:'Locked'}[w]}return 'Locked'}
+function excerpt(c,lines){return '<div class="ex"><span class="hd">'+esc(c.path)+'</span><pre>'+lines.map(function(l,i){var n=41+i;return '<span class="ln'+(c.hl&&c.hl.indexOf(n)>=0?' hl':'')+'"><i>'+n+'</i>'+esc(l)+'</span>'}).join('')+'</pre></div>'}
+function head(c){
+ return '<div class="qhead"><div><div class="eb">'+esc(c.reason)+'</div><div class="lvl">'+esc(c.topic)+' · '+LV[c.lv]+'</div></div>'+chip(chipNow())+'</div>'+
+  '<h1 class="qq" id="qp">'+esc(c.q)+'</h1>';
+}
+function control(c,ro){
+ var d=ro?' disabled':'',h='';
+ if(c.shape==='text')h='<label class="fl" for="ans">Your answer</label><textarea id="ans" rows="4"'+(ro?' readonly':'')+'>'+esc(S.draft)+'</textarea>';
+ else if(c.shape==='choice'){h='<fieldset><legend>Choose one</legend><div class="opts">'+c.opts.map(function(o,i){var k='ABCD'[i];return '<label class="opt"><input type="radio" name="ch" value="'+i+'"'+(S.choice===i?' checked':'')+d+'><span class="k">'+k+'</span><span>'+esc(o[0])+'</span></label>'}).join('')+
+  '<label class="opt"><input type="radio" name="ch" value="o"'+(S.choice==='o'?' checked':'')+d+'><span class="k">E</span><span>Other</span></label></div></fieldset>'+
+  (S.choice==='o'?'<label class="fl" for="other">Your answer</label><input class="other" id="other" type="text" value="'+esc(S.other)+'"'+(ro?' readonly':'')+'>':'')}
+ else if(c.shape==='line')h='<fieldset><legend>Tap the line</legend><div class="pick"><span class="hd">'+esc(c.path)+'</span>'+c.code.map(function(l,i){var n=41+i;return '<label class="pl"><input type="radio" name="line" value="'+n+'"'+(S.pick===n?' checked':'')+d+' aria-label="Line '+n+': '+esc(l.trim())+'"><i aria-hidden="true">'+n+'</i><span aria-hidden="true">'+esc(l)+'</span></label>'}).join('')+'</div></fieldset>';
+ else h='<fieldset><legend>Put these in order</legend><ol class="ord">'+S.order.map(function(v,i){var t=c.items[v];return '<li data-i="'+i+'"><span class="n" aria-hidden="true">'+(i+1)+'</span><span>'+esc(t)+'</span>'+(ro?'':'<span class="mv"><button type="button" data-mv="-1" data-i="'+i+'" aria-label="Move up: '+esc(t)+'"'+(i===0?' disabled':'')+'>'+UP+'</button><button type="button" data-mv="1" data-i="'+i+'" aria-label="Move down: '+esc(t)+'"'+(i===S.order.length-1?' disabled':'')+'>'+DOWN+'</button></span>')+'</li>'}).join('')+'</ol></fieldset>';
+ return h;
+}
+function confs(){
+ return '<fieldset><legend>How sure are you?</legend><div class="confs">'+['Guess','Fairly sure','Sure'].map(function(n,i){return '<label class="sure"><input type="radio" name="conf" value="'+n+'"'+(S.conf===n?' checked':'')+' aria-describedby="mean">'+n+'<span class="kc" aria-hidden="true">'+(i+1)+'</span></label>'}).join('')+'</div>'+
+  '<p class="mean" id="mean">'+(S.conf?'<b>'+S.conf+':</b> '+MEAN[S.conf]:'Guess, Fairly sure or Sure. Each one has a meaning.')+'</p></fieldset>';
+}
+function hints(c){
+ if(!c.hints||c.lv>2)return '';
+ var n=S.hints,l='<span class="ladder" aria-hidden="true">'+[0,1,2].map(function(i){return '<span'+(i<n?' class="on"':'')+'></span>'}).join('')+'</span>';
+ var body='<span>'+l+'Hints used: '+n+' of 3</span>'+(n<3?'<button type="button" class="tbtn" data-act="hint">Hint</button>':'')+
+  (n?'<ol>'+c.hints.slice(0,n).map(function(t,i){return '<li'+(i===n-1&&S.newHint?' class="in"':'')+'><b>H'+(i+1)+'</b>'+esc(t)+'</li>'}).join('')+'</ol><p class="cap">Using a hint is fine. This attempt now counts as With help.</p>':'');
+ if(c.lv===2&&!n)return '<div class="hints"><details class="more"><summary>More</summary><div class="hints" style="border:0;margin-top:4px;padding-top:0">'+body+'</div></details></div>';
+ return '<div class="hints">'+body+'</div>';
+}
+function abar(c){
+ var dk=dkKey();
+ var h='<div class="abar"><span class="why2">'+esc(c.reason)+' · '+esc(c.topic)+'</span>'+
+  '<div class="row2"><button type="button" class="pill" data-act="notnow" aria-expanded="'+S.snz+'" aria-controls="snz">Not now<span class="kc" aria-hidden="true">H</span></button>'+
+  '<button type="button" class="pill dk" data-act="dk">I do not know<span class="kc" aria-hidden="true">'+dk+'</span></button></div>'+
+  '<button type="submit" class="btn lock" aria-disabled="'+!S.conf+'" aria-describedby="helper">Lock my answer<span class="kc" aria-hidden="true">'+MOD+' Enter</span></button>';
+ if(S.snz)h+='<div class="snooze" id="snz" role="group" aria-label="Move to Later"><span>Ask again</span>'+['After this build','Tomorrow','Next week'].map(function(w){return '<button type="button" class="btn ghost sm" data-snz="'+w+'">'+w+'</button>'}).join('')+'</div>';
+ h+='<p class="helper" id="helper">'+(S.conf?'':'Choose how sure you are first.')+'</p></div>';
+ return h;
+}
+function said(c,who){
+ var t=S.dk?'I do not know.':c.shape==='text'?S.draft:c.shape==='choice'?(S.choice==='o'?S.other:c.opts[S.choice][0]):c.shape==='line'?'Line '+S.pick:'The order above';
+ return '<blockquote class="said"><span class="cap">'+(who||'You said')+'</span>'+esc(t)+' '+chip(S.conf)+'</blockquote>';
+}
+function verdict(c){
+ var w=S.v.w,lvUp=w==='right'&&!S.hints&&c.lv<3,h;
+ if(w==='dk')h='<h2 class="vw ok" id="vh" tabindex="-1">Not known yet.</h2><p class="why">This is the answer: '+esc(c.ans)+'</p><p class="why">Back tomorrow.</p>';
+ else{var word={right:'Correct.',partial:'Not quite.',wrong:'No.',cw:'No.'}[w],why=c.why[{right:0,partial:1,wrong:2,cw:2}[w]],nx=w==='right'?'Back on '+c.next[0]+'.':w==='partial'?'Back on '+c.next[1]+'.':'Back tomorrow.';
+  h='<h2 class="vw'+(w==='right'?' ok':'')+'" id="vh" tabindex="-1">'+word+'</h2><p class="why">'+esc(why)+' '+nx+'</p>';
+  if(w==='cw')h+='<p class="belief">You chose Sure. This is the kind of error that is easiest to fix when you see the reason. It returns tomorrow.</p>';
+  if(w==='right'&&S.hints)h+='<p class="belief">You used a hint, so this attempt counts as With help.</p>';
+  if(lvUp){var to=c.lv+1;h+='<div class="delta"><span>Your record: <b>'+esc(c.topic)+'</b>'+LV[c.lv]+CHEV+LV[to]+'</span><span class="segs" aria-hidden="true">'+[1,2,3].map(function(i){return '<span class="seg'+(i<=c.lv?' f'+i:'')+'" data-to="'+(i===to?'f'+i:'')+'"></span>'}).join('')+'</span></div>'}}
+ return '<section class="verdict in" role="status" aria-labelledby="vh">'+h+(S.phase==='elsewhere'?'':'<p class="belief">Saved. Claude adds this to your record on your next message.</p>')+'<p class="cue">'+CUE+'</p></section>'+
+  '<div class="done"><button type="button" class="btn" data-act="build">Back to the build</button><a class="tbtn" href="inbox.html">Inbox</a></div>';
+}
+function render(focusSel){
+ clearTimeout(tt);
+ var c=C(),m=$('#main'),h='<div class="link"><a class="tbtn" href="inbox.html" style="margin-left:-6px">'+BACK+'Inbox</a><span>Linked to: <b>orbit-pay</b> · cloud session</span></div>';
+ m.removeAttribute('aria-busy');
+ if(S.phase==='loading'){m.setAttribute('aria-busy','true');
+  h+='<div class="qcard" aria-hidden="true"><span class="sk" style="width:120px;height:13px"></span><span class="sk" style="width:180px;height:13px;margin-top:8px"></span><span class="sk" style="width:96%;height:24px;margin-top:20px"></span><span class="sk" style="width:70%;height:24px;margin-top:8px"></span><span class="sk" style="width:120px;height:15px;margin-top:28px"></span><span class="sk" style="height:120px;margin-top:10px;border-radius:14px"></span><span class="sk" style="width:60%;height:44px;margin-top:20px;border-radius:999px"></span><div class="tail"></div></div><p class="vh">Loading the question.</p>';
+  m.innerHTML=h;return}
+ if(S.phase==='notnow'){h+='<h2 class="gh">Now</h2><p class="empty">Nothing is open now.</p><h2 class="gh">Later</h2><ul class="list"><li><a class="ra" href="#" data-act="reopen"><span class="eb">Later</span><span class="tp">'+esc(c.topic)+'</span><span class="sub">'+esc(S.when)+'</span><span class="rt">'+chip('Open')+'</span></a></li></ul>';
+  m.innerHTML=h;return}
+ var ro=S.phase!=='edit';
+ if(S.phase==='offline')h+='<div class="note" role="status"><p>You are offline. Answers are saved on this device and sent when you are back online.</p></div>';
+ h+='<form class="qcard" id="card" aria-labelledby="qp" novalidate>'+head(c);
+ if(S.phase==='elsewhere'){
+  h+='<div class="note" style="border-color:var(--border)"><p>This question was answered in chat at 14:01.</p><button type="button" class="tbtn" data-act="result">Open the result</button></div>';
+  if(S.v){h+=said(c,'You said in chat, 14:01')+verdict(c)}else h+='<div class="tail"></div>';
+  return paint(m,h+'</form>',focusSel);
+ }
+ if(c.code){var ex=excerpt(c,c.code);if(c.shape==='line')ex='';else if(c.showCode)h+=ex;else h+='<details class="code"'+(S.codeOpen?' open':'')+'><summary>Show the code</summary>'+ex+'</details>'}
+ if(ro&&c.shape==='text'&&!S.dk){/* answer is quoted below instead */}
+ else if(!(ro&&S.dk))h+=control(c,ro);
+ if(!ro){h+=confs()+hints(c);if(c.kind==='predict')h+='<p class="quiet">A wrong guess here costs nothing.</p>';h+=abar(c)}
+ else{
+  h+=said(c);
+  var p=S.phase,st='';
+  if(p==='locked')st='<b>Locked.</b> Shown after the test runs.';
+  else if(p==='grading')st='<b>Locked.</b> <span class="dots">Grading</span>';
+  else if(p==='saved')st='<b>Saved.</b> Claude adds it to your record on your next message.';
+  else if(p==='offline')st='Your answer is saved on this phone and sent when you are back online.';
+  else if(p==='gerr')st='<b>Locked.</b> Grading failed. Try again, or Claude grades it on your next message.';
+  if(st)h+='<p class="state" id="st1" tabindex="-1">'+st+'</p>';
+  if(p==='gerr')h+='<div class="done"><button type="button" class="btn sm" data-act="retry">Try again</button><button type="button" class="btn ghost sm" data-act="build">Back to the build</button></div>';
+  else if(p==='graded')h+=verdict(c);
+  else h+='<div class="done"><button type="button" class="btn ghost sm" data-act="build">Back to the build</button></div>';
+ }
+ paint(m,h+'</form>',focusSel);
+}
+function paint(m,h,focusSel){
+ m.innerHTML=h;S.newHint=false;
+ var segs=$$('.seg[data-to]').filter(function(s){return s.dataset.to});
+ if(segs.length)setTimeout(function(){segs.forEach(function(s){s.classList.add(s.dataset.to,'lit');setTimeout(function(){s.classList.remove('lit')},450)})},matchMedia('(prefers-reduced-motion: reduce)').matches?0:500);
+ if(focusSel){var f=$(focusSel);if(f)f.focus()}
+}
+
+/* ---------- events ---------- */
+var main=$('#main');
+main.addEventListener('submit',function(e){e.preventDefault();lock(false)});
+main.addEventListener('input',function(e){
+ if(e.target.id==='ans')S.draft=e.target.value;
+ if(e.target.id==='other')S.other=e.target.value;
+ var h=$('#helper');if(h&&h.classList.contains('warn')&&canLock()){h.classList.remove('warn');h.textContent=''}
+});
+main.addEventListener('toggle',function(e){if(e.target.classList.contains('code'))S.codeOpen=e.target.open},true);
+main.addEventListener('change',function(e){
+ var t=e.target;saveDraft();
+ if(t.name==='conf'){S.conf=t.value;render('input[name="conf"][value="'+t.value+'"]')}
+ else if(t.name==='ch'){S.choice=t.value==='o'?'o':+t.value;render(S.choice==='o'?'#other':'input[name="ch"][value="'+t.value+'"]')}
+ else if(t.name==='line'){S.pick=+t.value;render('input[name="line"][value="'+t.value+'"]')}
+});
+main.addEventListener('click',function(e){
+ var mv=e.target.closest('[data-mv]');
+ if(mv){saveDraft();var i=+mv.dataset.i,d=+mv.dataset.mv,j=i+d,o=S.order,x=o[i];o[i]=o[j];o[j]=x;render();
+  var li=$('.ord li[data-i="'+j+'"]');li.classList.add('moved');var b=$('[data-mv="'+d+'"]',li);if(b.disabled)b=$('[data-mv="'+(-d)+'"]',li);b.focus();
+  announce('Moved to '+(j+1)+' of '+o.length+'.');return}
+ var s=e.target.closest('[data-snz]');if(s){notNow(s.dataset.snz);return}
+ var a=e.target.closest('[data-act]');if(!a)return;var k=a.dataset.act;
+ if(k==='hint'){saveDraft();S.hints++;S.newHint=true;render('[data-act="hint"]');if(!$('[data-act="hint"]'))$('.hints ol li:last-child').setAttribute('tabindex','-1'),$('.hints ol li:last-child').focus();announce('Hint '+S.hints+' of 3 shown.')}
+ else if(k==='dk')lock(true);
+ else if(k==='notnow'){saveDraft();S.snz=!S.snz;render(S.snz?'[data-snz]':'[data-act="notnow"]')}
+ else if(k==='retry'){S.phase='grading';render('#st1');announce('Grading.');later(finish,1400)}
+ else if(k==='result'){S.draft=GOOD;S.conf='Sure';S.v={w:'right'};render('#vh')}
+ else if(k==='reopen'){e.preventDefault();S.phase='edit';$('#toastslot').innerHTML='';render('#ans')}
+ else if(k==='build')toast('In the product this opens the orbit-pay session.');
+});
+$('.me').onclick=function(){toast('Settings has its own prototype: onboarding.html.')};
+function notNow(when){S.phase='notnow';S.when=when;S.snz=false;render();$('#main').focus();
+ toast('Moved to Later.','Undo',function(){S.phase='edit';render('#ans')||0;var f=$('#ans')||$('input[name="conf"]');if(f)f.focus();announce('Back in Now.')})}
+function toast(msg,act,fn){
+ var slot=$('#toastslot');clearTimeout(tt);
+ slot.innerHTML='<div class="toast"><p>'+esc(msg)+'</p>'+(act?'<button type="button" class="btn ghost sm" id="tact">'+esc(act)+'</button>':'')+'<button type="button" class="x" id="tx" aria-label="Dismiss">&times;</button></div>';
+ var t=$('.toast',slot),left=8000,start=Date.now();
+ function arm(){start=Date.now();tt=setTimeout(function(){slot.innerHTML=''},left)}
+ function pause(){clearTimeout(tt);left-=Date.now()-start}
+ t.addEventListener('mouseenter',pause);t.addEventListener('focusin',pause);t.addEventListener('mouseleave',arm);t.addEventListener('focusout',function(e){if(!t.contains(e.relatedTarget))arm()});
+ $('#tx').onclick=function(){clearTimeout(tt);slot.innerHTML='';$('#main').focus()};
+ if(act)$('#tact').onclick=function(){clearTimeout(tt);slot.innerHTML='';fn()};
+ arm();
+}
+document.addEventListener('keydown',function(e){
+ var t=e.target,tag=(t.tagName||'').toLowerCase(),typing=tag==='textarea'||(tag==='input'&&t.type==='text')||tag==='select';
+ if(!S)return;
+ if((e.metaKey||e.ctrlKey)&&e.key==='Enter'&&S.phase==='edit'){e.preventDefault();saveDraft();lock(false);return}
+ if(e.key==='Escape'&&S.snz){S.snz=false;render('[data-act="notnow"]');return}
+ if(typing||e.metaKey||e.ctrlKey||e.altKey)return;
+ if(e.key==='['||e.key===']'){step(e.key===']'?1:-1);return}
+ if(e.key==='?'){toast('1 2 3: how sure. '+dkKey()+': I do not know. H: Not now. '+MOD+' Enter: lock. [ and ]: prototype state.');return}
+ if(S.phase!=='edit')return;
+ var c=C(),k=e.key.toLowerCase(),m={'1':'Guess','2':'Fairly sure','3':'Sure'}[e.key];
+ if(m){saveDraft();S.conf=m;render('input[name="conf"][value="'+m+'"]');return}
+ if(c.shape==='choice'&&'abcde'.indexOf(k)>=0&&k.length===1){saveDraft();S.choice=k==='e'?'o':'abcd'.indexOf(k);render(S.choice==='o'?'#other':'input[name="ch"][value="'+S.choice+'"]');e.preventDefault();return}
+ if(k===dkKey().toLowerCase()){lock(true);return}
+ if(k==='h'){$('[data-act="notnow"]').click()}
+});
+window.addEventListener('online',function(){$('#net').checked=false;netChange()});
+window.addEventListener('offline',function(){$('#net').checked=true;netChange()});
+function netChange(){if(!S)return;S.net=!$('#net').checked;if(S.net&&S.phase==='offline'){announce('Sent.');S.phase='grading';render('#st1');later(finish,1400)}}
+$('#net').onchange=netChange;
+
+/* ---------- prototype switcher ---------- */
+var sel=$('#st');ST.forEach(function(s,i){var o=document.createElement('option');o.value=i;o.textContent=(i+1)+'. '+s[0];sel.appendChild(o)});
+function slug(s){return s.toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'')}
+function apply(i){
+ timers.forEach(clearTimeout);timers=[];clearTimeout(tt);$('#toastslot').innerHTML='';
+ var x=ST[i];sel.value=i;$('#net').checked=x[0].indexOf('offline')===0;
+ x[1]();$('#rnote').textContent=x[2];$('#rsys').textContent=x[3];
+ try{var u=new URL(location.href);u.searchParams.set('state',slug(x[0]));history.replaceState(null,'',u)}catch(err){}
+ render();
+ if(S.phase==='notnow')toast('Moved to Later.','Undo',function(){S.phase='edit';render('#ans');announce('Back in Now.')});
+ syncFrame();
+}
+function step(d){apply((+sel.value+d+ST.length)%ST.length)}
+sel.onchange=function(){apply(+sel.value)};$('#prev').onclick=function(){step(-1)};$('#next').onclick=function(){step(1)};
+var th=$('#theme'),vw=$('#vw');
+try{th.value=Q.get('theme')||localStorage.getItem('room-theme')||''}catch(err){}
+function setTheme(){if(th.value)document.documentElement.setAttribute('data-theme',th.value);else document.documentElement.removeAttribute('data-theme');try{if(!EMBED)localStorage.setItem('room-theme',th.value)}catch(err){};syncFrame()}
+function syncFrame(){var w=vw.value;$('#vpwrap').hidden=!w;$('#app').hidden=!!w;if(!w)return;var f=$('#vpf');f.style.width=w+'px';
+ var src='card.html?embed=1&state='+slug(ST[+sel.value][0])+'&theme='+th.value;if(f.getAttribute('src')!==src)f.setAttribute('src',src)}
+th.onchange=setTheme;vw.onchange=syncFrame;
+var q=Q.get('state'),start=1;ST.forEach(function(s,i){if(q&&(slug(s[0])===q||String(i+1)===q))start=i});
+if(th.value)document.documentElement.setAttribute('data-theme',th.value);
+apply(start);
+})();
+</script>
+</body>
+</html>
