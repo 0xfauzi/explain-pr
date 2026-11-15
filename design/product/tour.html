@@ -1,0 +1,124 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Firsthand walkthrough</title>
+<meta name="description" content="A step by step walkthrough of Firsthand: one developer, one project, from install to the end of the project.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="anonymous">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wdth,wght@75..100,400..700&amp;family=JetBrains+Mono:wght@400;500&amp;display=swap">
+<link rel="stylesheet" href="assets/room.css">
+<style>
+html,body{height:100%}
+body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--sans);-webkit-font-smoothing:antialiased}
+body::after{content:"";position:fixed;inset:0;pointer-events:none;z-index:60;background-image:url(assets/grain.png);background-size:240px 240px;opacity:var(--grain-op);mix-blend-mode:var(--grain-blend)}
+a{color:var(--ink);text-underline-offset:4px}
+button{font-family:inherit;color:inherit}
+.page{min-height:100%;display:grid;grid-template-rows:auto 1fr auto}
+.top{display:flex;align-items:center;gap:12px;max-width:1120px;width:100%;margin:0 auto;padding:16px 32px}
+.word{font-size:19px;font-weight:650;font-variation-settings:"wdth" 88;letter-spacing:-.01em}
+.top .sub{font:500 13px var(--mono);color:var(--text-3)}
+.top .all{margin-left:auto;font-size:14px;color:var(--text-3)}
+.stage{max-width:1120px;width:100%;margin:0 auto;padding:8px 32px 24px;display:grid;grid-template-columns:minmax(0,1fr) 400px;gap:56px;align-items:center}
+.count{font:500 13px var(--mono);color:var(--accent-text)}
+h1{margin:10px 0 0;font-size:40px;line-height:1.08;letter-spacing:-.02em;font-weight:650;font-variation-settings:"wdth" 88;text-wrap:balance}
+.say{margin:16px 0 0;font-size:18px;line-height:1.55;color:var(--text-2);max-width:520px;text-wrap:pretty}
+.try{margin:18px 0 0;padding-left:14px;border-left:3px solid var(--accent);font-size:15px;line-height:1.5;color:var(--ink);max-width:480px}
+.copy{animation:rise .45s var(--ease-out) both}
+@keyframes rise{from{opacity:0;transform:translateY(8px)}}
+.bars{display:flex;gap:5px;margin:32px 0 0;padding:0;list-style:none;flex-wrap:wrap}
+.bars button{width:30px;height:44px;border:0;background:none;padding:0;cursor:pointer;display:flex;align-items:center}
+.bars button span{display:block;width:100%;height:10px;border-radius:3px;background:var(--lv0);box-shadow:inset 0 0 0 1.5px var(--control-border);transition:background-color .35s var(--ease-out),transform .35s var(--ease-spring)}
+.bars button.done span{background:var(--lv2);box-shadow:inset 0 0 0 1.5px var(--ink)}
+.bars button[aria-current="step"] span{background:var(--accent);box-shadow:inset 0 0 0 1.5px var(--ink);transform:scaleY(1.4)}
+.frame{position:relative;width:400px;height:min(780px,calc(100dvh - 190px));min-height:520px;border:1.5px solid var(--ink);border-radius:30px;overflow:hidden;background:var(--paper);box-shadow:0 24px 60px -30px rgba(22,22,26,.35)}
+.frame iframe{display:block;width:100%;height:100%;border:0;background:var(--paper);transition:opacity .25s}
+.frame.busy iframe{opacity:0}
+.frame .ld{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font:500 13px var(--mono);color:var(--text-3);pointer-events:none;opacity:0;transition:opacity .2s}
+.frame.busy .ld{opacity:1}
+.nav{position:sticky;bottom:0;z-index:20;background:var(--paper);border-top:1px solid var(--border)}
+.nav .in{max-width:1120px;margin:0 auto;padding:12px 32px calc(12px + env(safe-area-inset-bottom));display:flex;align-items:center;gap:12px}
+.btn{font:600 16px/1 var(--sans);min-height:50px;padding:0 28px;border-radius:999px;border:1.5px solid var(--ink);background:var(--ink);color:var(--on-ink);cursor:pointer;transition:background .2s,border-color .2s,color .2s,transform .15s;display:inline-flex;align-items:center;justify-content:center;gap:10px;text-decoration:none}
+@media (hover:hover){.btn:hover{background:var(--accent);border-color:var(--accent);color:#16161A}}
+.btn:active{transform:scale(.97)}
+.btn.ghost{background:transparent;color:var(--ink)}
+@media (hover:hover){.btn.ghost:hover{background:var(--ink);color:var(--on-ink)}}
+.btn[disabled]{opacity:.35;cursor:default;transform:none}
+.btn[disabled]:hover{background:transparent;color:var(--ink);border-color:var(--ink)}
+.nav .next{margin-left:auto}
+.nav .hint{font-size:13px;color:var(--text-3)}
+.end{margin-top:24px;display:flex;flex-wrap:wrap;gap:10px}
+@media (hover:none){.nav .hint{display:none}}
+@media (max-width:900px){
+.top{padding:12px 16px}.top .sub{display:none}
+.stage{grid-template-columns:minmax(0,1fr);gap:16px;padding:4px 16px 16px;align-items:start}
+h1{font-size:26px;margin-top:6px}.say{font-size:16px;margin-top:8px}.try{font-size:14px;margin-top:10px}
+.bars{margin:14px 0 0;gap:4px}.bars button{width:24px;height:32px}
+.frame{width:100%;height:68dvh;min-height:440px;border-radius:20px}
+.nav .in{padding:10px 16px calc(10px + env(safe-area-inset-bottom))}
+.nav .btn{flex:1}
+.nav .hint{display:none}
+}
+@media (prefers-reduced-motion:reduce){.copy{animation:none}.bars button span,.frame iframe,.btn{transition:none}}
+</style>
+</head>
+<body>
+<div class="page">
+<header class="top"><span class="word">Firsthand</span><span class="sub">Walkthrough</span><a class="all" href="prototypes/index.html" id="all">All screens</a></header>
+<main class="stage">
+<div>
+<div class="copy" id="copy" aria-live="polite"></div>
+<ol class="bars" id="bars" aria-label="Steps"></ol>
+</div>
+<div class="frame busy" id="frame"><iframe id="view" title="The screen for this step"></iframe><span class="ld">Loading</span></div>
+</main>
+<nav class="nav" aria-label="Walkthrough"><div class="in">
+<button type="button" class="btn ghost" id="back">Back</button>
+<span class="hint">Arrow keys also work.</span>
+<button type="button" class="btn next" id="next">Next</button>
+</div></nav>
+</div>
+<script>
+(function(){
+'use strict';
+var STEPS=[
+ {h:'Install it into the agent you already use.',s:'Sam is building orbit-pay, a payments service, with a coding agent that writes most of the code. Sam runs one command inside the agent. Firsthand lists the files it will write, asks one question, and says where the record lives: a git repo on this computer, with no remote.',t:'Try it: select Y, then N.',u:'install.html'},
+ {h:'First, facts about your own project.',s:'There is no tour and no quiz. Within minutes the Room, a page served by this computer, holds two notes from a run over the last 40 commits. In 4 of 12 changes that added tests, every new test passes with the change undone.',t:'Nothing is asked here. The scan decides what to ask first.',u:'inbox.html?state=first'},
+ {h:'Starting a task: name the check for done.',s:'Sam gives the agent a task with several parts and names no check. Firsthand prints one line in the chat. Sam names a check that fails now and will pass when the task is done, and the agent gets it as a failing test to write first. The check is graded by a run with the change undone.',t:'Try it: select Send, then Yes. The word "skip" always works.',u:'brief.html'},
+ {h:'The agent says done: which test proves it?',s:'Two days later the agent finishes a change and adds three tests. Sam reads the assertion lines and picks the test that would still pass with the change undone. The answer locks before the result is shown. The agent never waits for it.',t:'Try it: pick an answer, then Show the result.',u:'revert.html'},
+ {h:'The result is what happened.',s:'Firsthand undid the change in a scratch copy, kept the tests and ran them. Sam said none. One test still passes without the change, and the result names the line that would have shown it. No model graded this. The agent gets the finding as one line and fixes the test.',t:'Open More for the other tests, the counts and what was sent to the agent.',u:'revert.html?state=miss'},
+ {h:'A test fails: where is the cause?',s:'A webhook test fails. Before the agent fixes it, Sam names the part of the system where the cause is. The call waits until the test passes again. Then it is checked against where the fix landed, and by running the test with the fix undone.',t:'Try it: pick a file. The result appears as it would later that day.',u:'callit.html'},
+ {h:'A step you cannot undo: what gets you back?',s:'The change gains a migration that drops a column. Sam picks what would recover from it and says what would be lost. Firsthand rehearses each way back on a scratch database. Later, when the agent is about to run the migration against production, a fact prints beside the approval prompt with no question at all.',t:'Try it: pick one, lock it, then select Back to the build to see the hazard line.',u:'risk.html'},
+ {h:'A week later, the idea comes back.',s:'Sam missed the idea behind the revert test, so it returns once as a review: a different change from the project history, with the source hidden. It is checked by a run on that commit. At most 3 reviews a day, and one reminder a day at a time Sam chose.',t:'This works on a phone paired to the computer with one tap.',u:'review.html'},
+ {h:'The skills map shows calls, not a score.',s:'Eleven skills, each with two segments: Shown and Reliable. Each row gives the counts behind the level, what one fixed answer would have scored, and what the evidence does not cover. When a skill is Reliable its questions go quiet and another skill takes the slot.',t:'Try it: open a row.',u:'skills.html?state=open'},
+ {h:'A drill, when Sam chooses.',s:'Drills run away from the build, on old commits in a scratch copy. In a Proof audit Sam marks each test of an old change: proves it, or would pass anyway. Each mark is checked by a run on that commit. There is no timer.',t:'Try it: mark all four tests.',u:'drill.html'},
+ {h:'At the end, the record in counts.',s:'Sam runs one command when the project ends. The page gives what was asked, answered and scored, which skills moved, how sure calls compared with unsure ones, and the decisions still to look at again. There is no certificate. Reviews carry on if Sam keeps them.',u:'wrap.html',end:true}
+];
+STEPS.forEach(function(x){x.u='prototypes/'+x.u});
+var $=function(s){return document.querySelector(s)};
+var esc=function(s){return String(s).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]})};
+var cur=0,view=$('#view'),frame=$('#frame'),bars=$('#bars');
+bars.innerHTML=STEPS.map(function(x,i){return '<li><button type="button" data-i="'+i+'" aria-label="Step '+(i+1)+': '+esc(x.h)+'"><span></span></button></li>'}).join('');
+function src(x){return x.u+(x.u.indexOf('?')<0?'?':'&')+'tour=1'}
+function go(i,push){
+ cur=Math.max(0,Math.min(STEPS.length-1,i));var x=STEPS[cur];
+ var c=$('#copy');c.classList.remove('copy');void c.offsetWidth;c.classList.add('copy');
+ c.innerHTML='<p class="count">Step '+(cur+1)+' of '+STEPS.length+'</p><h1>'+esc(x.h)+'</h1><p class="say">'+esc(x.s)+'</p>'+(x.t?'<p class="try">'+esc(x.t)+'</p>':'')+
+  (x.end?'<div class="end"><a class="btn ghost" href="'+$('#all').getAttribute('href')+'">See all screens</a><a class="btn ghost" href="PRODUCT.md">Read the full design</a></div>':'');
+ var s=src(x);if(view.getAttribute('src')!==s){frame.classList.add('busy');view.setAttribute('src',s)}
+ Array.prototype.forEach.call(bars.querySelectorAll('button'),function(b,j){b.classList.toggle('done',j<cur);if(j===cur)b.setAttribute('aria-current','step');else b.removeAttribute('aria-current')});
+ $('#back').disabled=cur===0;
+ var n=$('#next');n.textContent=cur===0?'Start':cur===STEPS.length-1?'Start again':'Next';
+ try{history.replaceState(null,'','#'+(cur+1))}catch(e){}
+}
+view.addEventListener('load',function(){frame.classList.remove('busy')});
+$('#back').onclick=function(){go(cur-1)};
+$('#next').onclick=function(){go(cur===STEPS.length-1?0:cur+1);if(matchMedia('(max-width:900px)').matches)window.scrollTo({top:0,behavior:'smooth'})};
+bars.addEventListener('click',function(e){var b=e.target.closest('button');if(b)go(+b.dataset.i)});
+document.addEventListener('keydown',function(e){if(e.key==='ArrowRight')go(cur+1);if(e.key==='ArrowLeft')go(cur-1)});
+var h=parseInt((location.hash||'').slice(1),10);go(h>0?h-1:0);
+})();
+</script>
+</body>
+</html>

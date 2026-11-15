@@ -330,7 +330,7 @@ These come from learning research that is mostly older than 2023 or from classro
 
 ## What this means for a tool that trains people while they build
 
-Delegating the work can weaken the skills needed to check it, so a training tool cannot simply watch. At a few natural pauses it should ask for a prediction, a hypothesis or a check before showing the answer, and then show the person what actually happened. The supporting studies suggest that order keeps learning, while full delegation and handing errors straight back do not [Study, students, partly vendor]. Prompts should be rare, varied, matched to the person's level, and tied to checkable feedback. None of this has been tested as an intervention, so the tool should measure whether it helps.
+Delegating the work can weaken the skills needed to check it, so a training tool cannot simply watch. At a few natural pauses it should ask for a prediction, a hypothesis or a check before showing the answer, and then show the person what actually happened. The supporting studies suggest that order keeps learning, while full delegation and handing errors straight back do not [Study, students, partly vendor]. Prompts should be rare, varied, matched to the person's level, and tied to checkable feedback. None of this has been tested as an intervention.
 
 ## Changes from the reviews, and what was rejected
 

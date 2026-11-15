@@ -1,438 +1,227 @@
-# Firsthand: product specification
+# Firsthand: product design
 
-Status: revised 7 November 2026. Nothing is built yet, except the existing skill in `skills/learning-while-building/`.
+Status: revised 15 November 2026, after five reviews. Nothing is built yet except the existing skill in `skills/learning-while-building/`. Firsthand is a working name, pending a trademark check.
 
-How to read this:
-
-- This file is the whole product in short form. Detail lives in `spec/`. Each section links to the spec file that holds the rest.
-- Claims about a product or harness carry [verified: source] or [unverified]. "[verified: research/x.md]" means the claim is verified, with its URL, in that report.
-- The research reports in `research/`, the concepts in `concepts/` and the red-team reviews in `redteam/` are inputs. This spec cites them.
-- Defaults are design choices. Each one says why it was chosen. Numbers come from a cited source, the current engine, or a founder decision.
-
-Spec files:
+This file is the front door. Detail lives in `spec/`:
 
 | File | Holds |
 | :- | :- |
-| `spec/learning.md` | The moves, drills, items, levels, reviews, grading, cold start, and keeping the agents accurate |
-| `spec/experience.md` | First run, every exchange, all copy, the pad, the map, waiting and failure states, accessibility |
-| `spec/surfaces.md` | Every coding surface, tiers, parity of outcome, install scope, conformance |
-| `spec/architecture.md` | Engine, record format, sealing, grading interface, cloud sessions, phone |
-| `spec/security.md` | Threats, sandboxing, supply chain, prompt injection, secrets, work computers |
-| `spec/shared-repos.md` | Rules for repos other people share, and the codebase guide |
+| `spec/learning.md` | Skills, the moment catalog, the engine's rules, feedback, levels, recall, accuracy rules |
+| `spec/experience.md` | Everything on screen: install, every question and result, the agent lines, the Room, the phone, accessibility |
+| `spec/architecture.md` | Engine, record format, signals, the check runner, the Room server, install, cloud import |
+| `spec/surfaces.md` | Every coding agent, tiers, parity of outcome, conformance |
+| `spec/security.md` | Running code safely, install, work computers, what leaves the machine |
+| `spec/build-1.md` | Build step 1, ready to code: move the existing skill's record out of the project |
+| `spec/build-2.md` | Build step 2, ready to code: the core loop in Claude Code |
+
+Inputs: `../skills/SKILLS.md` (the researched skills map, the foundation), `research/`, `concepts/`, `redteam/`, and `moments/` (earlier wording and worked examples only, superseded by `spec/learning.md`). `index.html` is a one-page visual summary of this file. `tour.html` is a step-by-step walkthrough of the screens in `prototypes/`.
 
 ---
 
 ## 1. What Firsthand is
 
-**The problem.** Developers who build with AI coding agents lose real engineering skill, or never form it. In a randomised study of people learning a new library, those who let AI write the code scored 50% on a quiz against 67% for those who coded by hand, with the largest gap on debugging (Shen and Tamkin 2026, https://arxiv.org/html/2601.20245v2; summary https://www.anthropic.com/research/AI-assistance-coding-skills). The AI users who kept their learning were the ones who asked conceptual questions or wrote code and then checked their understanding. The harm comes from AI replacing the learner's thinking, not from AI being present (Lehmann, Cornelius and Sting 2025, https://arxiv.org/abs/2409.09047).
+Firsthand is a free, open-source tool you install into the coding agent you already use: Claude Code, Codex, Cursor, Copilot, Gemini CLI and others. The agent writes the code. Firsthand trains the engineering judgment you still need, while you build. At the few points where the work needs a human decision (the agent says it is done, a test fails, a migration cannot be undone, a change has grown too large) it asks for one short call, then runs a real check on your project and shows what happened next to what you said: the change undone and the tests rerun, the fix undone, the migration rehearsed on a scratch database. Facts are never held behind a question, and a hazard is printed at once. By default it asks once a day at most, never makes the agent wait, and goes quiet on a skill once your calls prove reliable. A local web app, the Room, keeps your questions, results, notes, decisions and drills. The record is a git repo on your machine, outside any project, with no remote.
 
-**The answer.** Firsthand is an open-source tool anyone can install into the coding agent they already use: Claude Code, Codex, Cursor, Copilot, Gemini CLI, Devin, Amp, and anything that reads an instruction file and can run a shell command. You keep building at agent speed. At a few natural breaks, it asks you to do the part of the thinking that builds skill: predict what will happen, name the cause of a failing test, write the one line that carries a new idea, explain what changed, or review an agent's pull request before reading its summary. Days later it brings the idea back, in a new form, at most 3 times a day. Away from the build, it offers short drills made from your own history: real bugs to replay with the agent off, old code to trace, past diffs to check, and tasks in a repo you have never opened. A private map, in a git repo on your machine, shows what you can do without the agent and how recently you showed it.
+Why it is built this way: `SKILLS.md` reports that delegating work can weaken the understanding needed to check it, that committing to a prediction before seeing the answer keeps learning, and that prompts should be rare, varied, matched to the person and tied to checkable feedback. It also says no study has tested practice of this kind as an intervention. The design does not wait for one: every result is a true fact about your own project, which is useful either way.
 
-**Why this design.** It follows the research on how people learn, applied to building with an agent:
-
-| The product does | Because |
-| :- | :- |
-| Asks you to think first, at a few chosen points | High scorers in Shen and Tamkin asked conceptual questions or checked their understanding. Generating an answer beats reading one (d = 0.40, Bertsch et al. 2007, https://pubmed.ncbi.nlm.nih.gov/17645161/). Stating the step before seeing the AI's code aligned perceived and real ability best (Kazemitabaar et al. 2025, https://arxiv.org/abs/2410.08922) |
-| Brings ideas back days later, as free recall | Practice testing and spacing are the two "high utility" techniques (Dunlosky et al. 2013). Testing beats restudy more on delayed tests (g = 0.69, Rowland 2014). Daily spaced questions during a working life still showed an effect two years later (Kerfoot 2009, https://pubmed.ncbi.nlm.nih.gov/19375095/) |
-| Spends practice on debugging and checking agent output | Debugging showed the largest gap in Shen and Tamkin. Monitoring automation is not practice, and the unpractised cognitive part decays first (Bainbridge 1983; Casner et al. 2014; research/learning-science.md A.1 item 3) |
-| Asks in new forms, with the topic name hidden | Transfer fails mostly because nothing cues the principle. Comparing two cases that share it nearly tripled its use (Gentner, Loewenstein and Thompson 2003; research/learning-science.md D.4) |
-| Counts only delayed answers given without help | Immediate performance is not learning (Soderstrom and Bjork 2015, https://pubmed.ncbi.nlm.nih.gov/25910388/). People cannot feel which condition taught them more (Deslauriers et al. 2019) |
-| Stays silent on what you know | What helps a novice can hurt someone who already knows the topic (expertise reversal, Kalyuga 2007). A senior is a novice in a new domain, so it adapts per idea, not per person |
-| Has no streaks, points or badges | A 16-week study with leaderboards and badges found lower motivation and lower exam scores (Hanus and Fox 2015). Controlling rewards crowd out the reason professionals came (Ryan and Deci 2000) |
-| Offers drills on rare, high-stakes skills away from the build | Real work gives too few reps of rare failures. Pilots train them in simulators; SRE teams rehearse past outages (research/learning-science.md D.3) |
-
-The design rules L1 to L19 in `research/learning-science.md` Part A.3 are the full list. Each spec section cites the rules it uses.
-
-**Name.** Working name: **Firsthand** (command `firsthand`, short alias `fh`). It says what the product builds: what you can do yourself. Fallback: **Ownline**. Both are [unverified] for trademark and package registries. The name is a founder decision (section 13).
+It does not train prompting, context files, permissions or agent settings. Those change with each tool release.
 
 ---
 
-## 2. Who it is for, and the first hour
+## 2. The eleven skills
 
-### 2.1 Users
+From `SKILLS.md`, in its order. Each skill's evidence is limited to what its moments can check, and the map says so on every row.
 
-1. **Engineers in their first years who build with an agent every day.** They have the most to form and the least reason to notice it. In a vendor survey, 85% of juniors said AI improved their understanding, while 16% of seniors said juniors fully understand the AI code they submit (BairesDev Q2 2026, https://www.bairesdev.com/blog/dev-barometer-q2-2026-ai-career-reset/).
-2. **Experienced engineers moving into a new domain:** a new language, stack or kind of system. This is closest to Shen and Tamkin's setting. The product must never ask them about what they already know (section 5.7).
-
-Out of scope: hiring and any use of the record to judge people. The record is for the person who owns it.
-
-### 2.2 The first hour
-
-- **Install, about a minute.** `firsthand init` adds itself to the agent it was launched from, shows every file it will change, and asks four questions (section 6.1).
-- **First questions, a few minutes.** If the user added a repo, the first drill is a Trace on code in that repo from at least 7 days ago: predict what a real function returns for a real input, then see it run. Otherwise, three questions from the open question bank. Both happen in the pad, so they count under the normal rules.
-- **First session.** One or two moments in the build, on ideas new to the user. A first map at the end.
-- **First week.** The first reviews come back, in new forms. The first Monday brings the weekly line.
-
----
-
-## 3. Principles
-
-Each principle is a rule the product is built and tested against.
-
-1. **The build always wins.** No learning moment blocks the agent's next step, except a "your line" the user accepted, and even that is handed back in one word. The product never leaves a build, a commit or CI red. Interruptions raise stress even when people work faster (Mark et al., https://www.ics.uci.edu/~gmark/chi08-mark.pdf).
-2. **The user thinks first, at a few chosen points.** Predict, diagnose, write the key line, review before reading the summary, explain. L1, L4, L5, L18.
-3. **Spend practice where skill erodes.** Debugging and checking agent output come first. L4, L17.
-4. **Only delayed, unaided, new-instance performance counts.** A level rises on two right delayed answers on different items. L2.
-5. **Grade by running code first.** Tests decide wherever they can. Model grades move levels under the accuracy rules in section 12.
-6. **No pressure mechanics.** At most 3 due reviews a day by default, at most one reminder a day at the user's time, no streaks, points, badges or guilt. L14, founder decisions 3 and 7.
-7. **Silent on what you know, and silent when unsure.** L10.
-8. **One record across every agent, owned by the user, in local git, outside any project.** Founder decision 1.
-9. **Parity of outcome on every surface,** with what each surface can count shown plainly (section 7). Founder decision 6, reframed with evidence.
-10. **No new surface unless it does a job no agent surface can.** One is added: the pad, a terminal prompt the engine owns, because no agent chat can take an answer the agent cannot see.
-11. **Show how every grade was made.** Every result shows how it was graded and how long ago. Clear feedback on the task is what builds calibration (L12, L13).
-12. **Design for durable learning, not for how it feels.** Effortful practice feels worse and works better (Bjork and Bjork 2011; Deslauriers et al. 2019). The product does not soften moves to make them feel easier.
-13. **Accessible by default.** Plain text first, verdict word first, voice dictation for every answer, no timers.
-14. **The user's machine is not a sandbox.** Code the user did not write runs only in a container with no network, or not at all.
-15. **Repo text is data, never the product's voice.** Text written by contributors is shown quoted and attributed, and can never widen a setting.
-16. **Say exactly what leaves the machine, and to whom.**
+| # | Skill | Scored moments | Drill |
+| :-: | :- | :- | :- |
+| 1 | Verification | Revert test, Missing case, Brief | Proof audit |
+| 2 | Reading systems you did not write | Who is affected | Map it |
+| 3 | Debugging and diagnosis | Call it, Your experiment | Replay |
+| 4 | Security and risk judgment | Missing case (boundary form), Way back | Break it |
+| 5 | Framing the problem and the brief | Brief | Rebrief |
+| 6 | Delegating and supervising | Where to look | Supervise a past run |
+| 7 | Small, reversible changes | Split point, Way back | Split a past change |
+| 8 | Operating in production | Silent failure, Way back | Break it, Replay |
+| 9 | Design and data modelling | Invariant, Already there. Decide and date it is practised, not scored | Looking back |
+| 10 | Calibrating your own judgment | How sure, Time call | Looking back |
+| 11 | Product judgment | None. Nothing in a build can check whether a change was worth building, and the map says so | Looking back |
 
 ---
 
-## 4. The learning loop at a glance
+## 3. The moment catalog
 
-Full detail: `spec/learning.md`.
+Thirteen moments are asked in the build. Every one names what triggers it, what the person does, and the check that gives feedback. Triggers are tests on observable facts (hook events, the git diff, test results), never a model's reading. Full definitions: `spec/learning.md` section 4. Exact words: `spec/experience.md` section 5.
 
-| Layer | When | What happens |
-| :- | :- | :- |
-| In the build | At the agent's natural breaks | Predict, Call it, Your line, Explain back |
-| At review time | When the user reviews an agent's pull request | Review first |
-| Away from the build | Session start (offered, never a gate), the reminder, or when the user asks | Reviews (3 a day by default) and drills: Trace, Check, Replay, Compare, Fresh repo |
-| Over time | Every answer | The map: what you have shown without the agent, and how recently |
-
-Rules for every move:
-
-- **Confidence in the same reply as the answer:** sure, think so, guess, or don't know. Sure misses are the most useful event for learning, so they bring an idea back soonest (L12).
-- **Predictions are compared with what happened, never graded** (L6).
-- **"Just tell me" always works.** It records that the attempt had help.
-- **Every exchange carries a why-now and a one-word skip, and ends with the resume cue** `Back to: <task>. Next: <step>.`
-
----
-
-## 5. The learning loop
-
-### 5.1 The moves
-
-| Move | Trigger | User does | Graded by | Can move a level? |
-| :- | :- | :- | :- | :- |
-| **Predict** | Before a deterministic step (test run, migration, query plan), on a new idea | One line: what will happen | Compared with the outcome, gap shown at `path:line` | No. It builds code reading and calibration; prediction accuracy is its own line on the map |
-| **Call it** | A test fails, and the user's debugging is still forming or the agent has diagnosed most recent failures alone | A cause and the first check | The check and the cause, fed back at once | No, because the agent's visible work often shows the cause. It queues a Replay of the same bug, agent off, which can |
-| **Your line** | The agent is about to write the one line that carries an idea new to the user | Writes it, before reading the test | The project's tests | Not in the session. It queues a delayed review, test hidden, which can |
-| **Explain back** | After a step passes, once per task the user chose to learn from | Two or three sentences | Model feedback against points written from the code; the user self-marks | Not in the session. Delayed explain items in a new instance can |
-| **Review first** | The user opens an agent's PR to review, with their agent or `firsthand pr <url>` | Lists defects or says "looks clean", before seeing the agent's summary | Tests the user writes, CI, later fix commits | Yes, for defects confirmed by a test |
-
-**Review first** matters because coding is moving to background agents. Copilot cloud agent has no live user [verified: https://docs.github.com/en/copilot/concepts/agents/cloud-agent/about-cloud-agent]. The human is present at review time, and code review is already a main channel of knowledge transfer (Bacchelli and Bird 2013, research/learning-science.md D.3). The engine fetches the diff, hides the PR body and the agent's summary, and asks for findings. A finding is confirmed when the user writes a test that fails on the PR. That test is useful review work in its own right. Findings are private. The user may post one as an ordinary review comment in their own words.
-
-**At Deep, two more:** *Plan first*, where the user lists the steps and what done looks like before the agent plans (Lead-and-Reveal, Kazemitabaar et al. 2025), and *design calls*, where the user's choice between two designs records a predicted consequence that comes back when that code is next touched (research/learning-science.md D.3, Kahneman and Klein on feedback).
-
-### 5.2 Your line
-
-Founder decision 2 stands.
-
-- **Write first, then read the test.** The marker names the goal and the test, and says "try before reading the test". The marker states the goal and never describes the computation. The engine rejects markers with operators or formula words.
-- **The delayed item carries the learning.** On "line done", the engine queues a review for a later day: the same goal in a new instance where possible, with the test hidden. That review, graded by the hidden test, can move a level.
-- **In repos the user does not own,** the marker is a plain `TODO:` with the goal and the test, and is handed back before commit (section 10).
-- Hint and "write it" are always free. Under pressure, on quiet branches, or on a failing deploy, an open marker is handed back.
-- At Deep, your line grows from a line into a function into a design choice (L5).
-
-### 5.3 When the engine speaks
-
-The engine decides, in code. Inputs: the break, the idea tags, the user's levels, their debugging profile, pressure signals, quiet settings and the budget.
-
-- **Novelty** decides Predict, Your line and Explain back: they come only on ideas new to the user.
-- **Debugging profile** decides Call it: how many recent failures the agent diagnosed with no user hypothesis.
-- **Fast delegation is not a silencer.** When the user moves fast, the engine asks nothing in the moment and queues one later item from the episode.
-- **Pressure silences:** "urgent", "prod is down", a failing deploy, or a hotfix branch.
-- **Explicit quiet beats guessing:** "quiet for 2h", "quiet today", "quiet in this repo", `firsthand quiet`.
-
-### 5.4 The budget
-
-| Limit | Default | Why |
-| :- | :- | :- |
-| Due reviews a day | 3; the user can lower it or raise it | Founder decision 3 |
-| Reminders a day | At most 1, at a time the user picks. The install question has no pre-selected answer | Founder decision 7 |
-| Unprompted moments in the build a day | 3, shown and set by the user | Keeps the whole product to a handful of asks a day, matching the review cap |
-| Your line | At most one per task | Founder decision 2 |
-| New ideas entering the review queue | Only when a slot is free or the idea is in a growth area | With 3 slots and a 5-step interval ladder, unlimited entry would leave most ideas unreviewed |
-| Two skips in a session | End questions for that session, say so once | research/experience-design.md P3 |
-| Three ignored reminders in a row | Ask once: keep, move or stop. Stop if no answer | A reminder nobody opens is noise |
-
-### 5.5 Drills away from the build
-
-Opt-in, inside the daily cap when due, never in the same week as the source material. Rare and high-stakes skills need reps that real work does not supply (L16).
-
-| Drill | Built from | Runs in | Graded by | Builds |
-| :- | :- | :- | :- | :- |
-| **Trace** | The user's committed code, at least 7 days old | A scratch copy of committed files, agent config stripped | Running the code | Code reading |
-| **Check** | A past agent-written diff with a known later fix, or none | Text only | Test-confirmed defects. A finding no test confirms stays "unconfirmed" and never counts against the user | Checking agent output |
-| **Replay** | A fix commit whose test fails on the parent | A container with no network | The check named before the fix, then the commit's own test | Debugging |
-| **Compare** | The same idea met in two projects, topic name hidden | Text only | Model graded, under the accuracy rules (section 12) | Transfer |
-| **Fresh repo** | A real change in a public repo the user has never opened | A container with no network | The change's own tests, kept sealed until the user submits | Transfer and reading unfamiliar code |
-
-**Fresh repo** is the old Checkup, made local and turned into practice. Transfer is the hard part of learning, and it depends on meeting an idea in a new context (Barnett and Ceci 2002; research/learning-science.md D.4). Developers spend about 58% of their time understanding code (Xia et al. 2018, research/learning-science.md Part G). A task in an unfamiliar repo with the agent off practises both. The user starts it. The engine picks a task that uses an idea the user has practised, sets up the repo at the parent commit in a container, and hides the tests. The user works with any editor, agent off, then submits. The engine applies the sealed tests and shows the result, then the real commit for comparison. Tasks come from two places: an open task set written by contributors, and changes mined from public repos where a new test fails on the parent and passes on the commit (`spec/learning.md` section 3.5).
-
-### 5.6 Growth areas
-
-The user can name up to three ideas or skills to grow. They get extra drills beyond what is due and first claim on review slots. Autonomy over goals supports motivation (L15).
-
-### 5.7 Cold start
-
-A new record must not ask a senior about everything, and must not hide a junior's gaps. Commits with no agent trailer may still be agent-written, since inline completions and pasted chat code usually leave none.
-
-1. Ideas found in the user's own commits are asked about less often, never silenced on inference alone.
-2. "I know X" asks two quick questions: one direct, one in a new form with the topic hidden. Both right, and the idea goes quiet in every project.
-3. Silenced ideas get an occasional re-check in a review slot.
-4. A gentle first week: fewer moments, and your line only for ideas with no prior authorship found.
-
-### 5.8 The dial
-
-Off, Light, Standard (default), Deep, plus "just build" and "teach me this one". Light gives reviews and explain back. Standard runs all five moves within the budget. Deep adds Plan first, design calls, and your line that grows.
-
-### 5.9 Levels
-
-| Level | Earned by |
-| :- | :- |
-| **Not yet** | Default, or one step down after a delayed miss or "don't know" |
-| **Recalled** | Two right delayed answers on two different items, on different days |
-| **Applied** | Two right delayed answers on new instances: another function, file or project, topic name hidden |
-| **Held** | Applied, then right at a longer gap, plus one other kind of evidence: a Fresh repo task, a confirmed Review-first finding, field evidence, or another item family |
-
-**Met** is not a level. It lists ideas the user explained, wrote a line for, answered with help, or answered in the session. It sits under its own heading on the map.
-
-An answer moves a level only when it is delayed, in free recall, code or number form (choice caps at Recalled), not marked "guess", typed in the pad or captured verbatim by a hook, and graded by tests, a person, or a grader that passed the check. Every level shows how long ago it was checked. Past its next due date plus a margin, the map shows "not checked lately" instead.
-
-Six skills stay separate and are never combined into one score: code reading, debugging, design judgment, explaining a change, transfer, and calibration.
-
-### 5.10 Field evidence
-
-`firsthand field <commit or PR> "what I did"` logs real work done without the agent. Doing the thing for real is the strongest signal there is (research/learning-science.md Part G). It is one of the kinds of evidence that can complete Held.
-
-### 5.11 Coming back
-
-- **The weekly line.** In the first session of each week, one fact from the user's own record: "Last week you named the cause of 2 of 5 failing tests before the agent did. The week before, 0 of 4." Facts about the task and the user's own trend are the kind of feedback that helps (L13). No praise, no comparison with others. Off with one word.
-- **The reminder is a real choice.** At install: "A daily reminder? Type a time, or none."
-- **Fresh repo, when it has been a while.** The weekly line mentions once that a Fresh repo task is ready, if the user has done one before.
-
----
-
-## 6. The experience
-
-Full detail: `spec/experience.md`.
-
-### 6.1 First install
-
-```
-npx firsthand@<version> init     (or: uvx, brew)
-```
-
-`init` installs into the agent it was launched from only. It lists other agents it found and adds each one only after a separate yes. Before writing, it shows every file and the exact diff, keeps byte-exact backups, and `firsthand uninstall` restores them. Hooks and MCP entries call an absolute, pinned path to the installed engine.
-
-It says, in plain lines: where the record lives; what leaves the machine (nothing by default, but answers typed in the agent's chat are part of that chat); the size of the instruction text it adds to every session; and what this surface can count toward a level. Then four questions: Is this a work computer? How much learning (Standard)? A daily reminder (a time, or none)? Which repos may it read for drills (none by default)?
-
-### 6.2 One exchange
-
-```
-New idea: retries with a payment API. Why now: this test runs it. Say "skip" to skip.
-If the first two calls time out and the third succeeds, how many charges does the provider see?
-Answer, then: sure, think so, guess, or don't know.
-```
-
-After three exchanges the header fades to one clause. Prediction reveals have no verdict word. Graded answers lead with Correct, Partly or Not yet, then the missing piece at `path:line`, when it comes back, how it was graded, and the resume cue. When the pad is open, the chat shows one line, "Question in your pad (skip ok)".
-
-### 6.3 A normal week
-
-- **Session start.** One ignorable line: "2 reviews due, about 2 minutes. Say 'review' now, or later."
-- **In the build.** Maybe one prediction and one explain back on new ideas, one Call it if the profile says so. On known ideas, nothing.
-- **Reviewing an agent's PR.** "Look first? Note any defects, or say clean, before I show the summary. Or skip."
-- **Pressure.** Silence, and one offer to save it for later.
-- **Evening.** One reminder with no content, if the user chose a time.
-- **Monday.** The weekly line.
-- **After a gap.** At most 3 reviews, chosen by priority, no backlog count.
-- **When the user wants.** A drill, or a Fresh repo task.
-
-### 6.4 The pad
-
-The pad is a terminal prompt the engine owns: `firsthand pad`, in any terminal or an IDE's terminal panel.
-
-- **The agent cannot see it.** An answer typed in the pad never enters the agent's context, so the agent cannot answer for the user or leak the key.
-- **It counts.** An answer is "typed" when the engine opened the terminal itself and no agent is its parent process. Typed answers can move levels on every surface with a local terminal.
-- **It stays private.** Answers in the pad never enter the agent's chat logs.
-- **Drills run there.** Replay, Fresh repo and bank items are shown in the pad.
-
-It is plain text, works with screen readers and dictation, has no timers and no letter shortcuts (founder decision 5). When it is closed, the chat path works, and chat answers record as Met.
-
----
-
-## 7. Surfaces and parity of outcome
-
-Full detail: `spec/surfaces.md`.
-
-**Founder decision 6, reframed.** Decision 6 asks for feature parity on all coding surfaces. Parity of mechanism is impossible: Aider has no MCP and no hooks [verified: https://aider.chat/docs/config/options.html]; Copilot cloud agent supports MCP tools only and has no live user [verified: https://docs.github.com/en/copilot/how-tos/use-copilot-agents/cloud-agent/extend-cloud-agent-with-mcp]; Copilot in Visual Studio, JetBrains, Eclipse and Xcode has no hooks [verified: https://docs.github.com/en/copilot/reference/customization-cheat-sheet].
-
-**The commitment: parity of outcome.** Every learning outcome is reachable on every surface in plain text plus a CLI call, and every surface with a local terminal can count toward a level through the pad. Where the only channel is the agent's chat, answers count as Met, and the product says so at install, on the map and at session start.
-
-Tiers: T0 instruction file and shell; T1 MCP tools; T2 hooks; T3 native ask; T4 designed UI; T5 away from the keyboard; plus the pad. Each surface's tiers are in `spec/surfaces.md` section 3. Each adapter has a conformance test run on every release, and a public table shows which surfaces pass.
-
-One record follows the user everywhere. Open lines and due reviews show up in whichever agent they open next.
-
----
-
-## 8. Architecture
-
-Full detail: `spec/architecture.md`.
-
-### 8.1 Shape
-
-```
-any coding agent
-   |  instruction block, skill folder, MCP tools, hooks (absolute pinned path)
-   v
-firsthand engine (on the user's computer, signed release)
-   |-- CLI and pad   review | drill | fresh | pr | map | quiet | field | verify
-   |-- MCP server    stdio, tools only; agent tools can only narrow settings
-   |-- hook dispatch never returns allow or deny decisions
-   |-- miner         read-only scan of added repos
-   |-- runner        scratch copies from committed files; containers for code the user did not write
-   |-- grader        tests first; model feedback with named recipient
-   v
-record: ~/.firsthand/record   (git, append-only events, signed, optionally encrypted)
-   +-- optional: the user's own private git remote
-```
-
-No server is run by the product. The only network calls are ones the user causes: a model grader they turned on, cloning a public repo for a Fresh repo task, and their own git remote.
-
-### 8.2 The record
-
-- A per-user git repo outside any project tree. One JSON file per event, ULID names, union merge [verified: research/platform.md].
-- Derived state (schedule, map) is never committed.
-- Encrypted at rest with age on work computers, optional elsewhere.
-- Every free-text field is secret-scanned before it is written. Private keys never live in the record.
-- `forget <idea>` removes a whole idea and rewrites history.
-- `firsthand export --plain` writes a readable copy, so the record outlives the product.
-
-### 8.3 Sealing
-
-The key's hash is committed before the question is shown. The engine releases a key only after the answer is locked. Keys are written by a separate context where the surface has one, and a second blind context solves each model-written item; if it disagrees with the key, the item is discarded. A sure miss triggers a re-check of the key, and a wrong key refunds the miss. This keeps the agent from grading its own teaching, and keeps a key from bending to fit an answer.
-
-### 8.4 Grading
-
-Providers in order: executable; a person; a model in a separate context (subagent, headless agent CLI, or the user's API key); self-marked.
-
-- Tests decide wherever they can: Trace, Replay, your-line reviews, Review-first findings, Check confirmations, Fresh repo.
-- Open answers (explain back, Compare, the check in Replay) get model feedback with a quote for every point, graded twice in shuffled order. Whether those grades move levels is the one open question (section 12). Until it is answered, the user self-marks against the sealed points and the answer records Met.
-- Rubrics are written from the code and diff, by a context that has not read the agent's explanation, so repeating the agent's words earns nothing.
-- Each model grader names who receives what before first use. Work computers default to local grading only.
-- `firsthand cost` shows calls and tokens. No model call happens without consent.
-
-### 8.5 The idea catalog and question bank
-
-An open, versioned catalog of ideas with stable IDs, aliases and known confusions. The engine proposes a fixed candidate list per diff and the agent picks from it. When tags disagree, the engine stays silent.
-
-The open question bank holds item families written by people: a template, a parameter generator and a key function, per idea. The engine makes a fresh instance for each use. Bank items are mixed into reviews. They are written independently of the agent that taught the idea, so they check understanding rather than the agent's phrasing. Anyone can contribute families through pull requests.
-
-### 8.6 Cloud sessions and phone
-
-Cloud agent disks do not survive. A cloud session ends with a `firsthand import <blob>` line to paste at home, or pushes to the user's own private record remote if they attached one. Imported answers record as Met. Whether to add a carry branch is a founder decision (section 13).
-
-Phone: in the first stages, vendor phone apps, where answers are relayed and record as Met, plus a content-less calendar reminder. Later, a device link on the local network, paired with one confirmation tap (founder decision 4), rendering cards the engine owns so phone answers count.
-
-### 8.7 What leaves the machine
-
-| Path | What travels | Who receives it | Default |
+| Moment | Trigger | The person does | The check |
 | :- | :- | :- | :- |
-| Answers in the agent's chat | The question, answer, verdict | The agent's company, and an employer's logs on work plans [unverified per vendor] | Chat on personal computers; the pad on work computers |
-| Model grader | Answer, rubric, short code excerpt | The company and account the user names | Off until the user allows it; local only on work computers |
-| Fresh repo task | A clone request for a public repo | That repo's host | Only when the user starts one |
-| Private git remote | The record, encrypted if the record is | The user's host | Off |
+| **Revert test** | The agent finishes a change that adds or edits tests | Reads the new tests, picks the one that would still pass with the change undone, or none | The change is undone in a scratch copy, the tests are kept and run |
+| **Call it** | A prompt holds a pasted failure, or a turn ends with a test still failing | Picks where the cause is, before a fix exists | Where the fix landed, then the fix undone and the test rerun. Not scored if the fix is a sleep, a broad catch or a loosened test |
+| **Brief** | A multi-part task starts and the prompt names no check | One line: a check that fails now and will pass when done. It goes to the agent | That check is run with the change and with the change undone |
+| **Who is affected** | Done, and the diff changes something referenced outside it | Names one caller or user who sees a difference, or nobody | A reference search, and the old tests run on the new code |
+| **Missing case** | Done, with new tests for something that takes input | Names a case the tests miss. Taps whether the code handles it | The case is written as a test, shown back, and run |
+| **Where to look** | Done, on three or more source files | Picks the file where a fault would be, or nothing | Faults found before landing by something other than the person: a failing test, CI, a revert, another reviewer |
+| **Split point** | The diff is larger than most of the person's landed changes | Picks the files that could land first. Taps whether they pass alone | That part is applied alone at the base and the tests run |
+| **Your experiment** | The same test fails at two turn ends in a row | Names two causes, picks one runnable experiment, says what each cause predicts | The experiment is run: undo one file, run another test, or bisect |
+| **Already there** | The diff adds a new source file or shared function | Taps whether something existing already does this, and names it | A name search, the manifest and open pull requests |
+| **Decide and date it** | The agent asks the person to choose, on a schema, interface or dependency change | Records the choice, its cost, a warning sign and a look date | None at the time, and the card says so. On the date: facts from the repo |
+| **Way back** | The change holds a migration a revert does not undo | Picks what gets them back | The migration, the old tests and the down step are rehearsed on a scratch database |
+| **Invariant** | A migration adds a table, relationship or money or state column | States one rule every row must keep, and what enforces it | The rule is shown back as a query. The breaking write is tried directly and twice at once |
+| **Silent failure** | A pull request for code reached by a route or job | Picks what would show a failure first | A fault is injected in a scratch copy and the signals captured |
 
-Telemetry does not exist.
+Two more are not interruptions. **How sure** is one optional tap after a call is locked (Sure, Not sure). **Time call** is a row in the Room during a change: a band for the share of active time that will come after the agent first finishes, checked by the timeline when the change lands.
 
----
+Three kinds of fact arrive with no question. A **hazard line** prints in the agent at once when an irreversible command is about to run against a target that is not local. A **fact line** prints when a check finds something on a high-stakes change. A **note** in the Room carries everything else.
 
-## 9. Security and privacy
+What runs where: ten of the thirteen need only git and a test command. Way back and Invariant need support for the project's migration tool, built first for pytest with Alembic or Django. Silent failure needs a capture shim per language, Python first. At install a "What works here" note says which moments can run in this project.
 
-Full detail: `spec/security.md`. The product touches every agent a user runs, so it must not become the weak point.
-
-- **Untrusted code.** Replay and Fresh repo run only in a container with no network, from a pinned image. Without a container runtime they are not offered. Trace runs the user's own committed code in a scratch copy made from committed files only, never `.env` or untracked files, with agent and editor config stripped.
-- **Supply chain.** Signed releases with registry provenance; hooks and MCP entries call an absolute pinned path; `firsthand verify`; updates only through `firsthand upgrade`, which shows the config diff. Hooks never return allow or deny.
-- **Prompt injection.** Repo text is shown quoted and attributed, with commands and URLs stripped. Agent-callable tools can only narrow settings. Anything that widens (budget, grader, import, delete, remote) needs a confirmation typed in the pad.
-- **Work computers.** Install says plainly what an employer can and cannot see. Answers go to the pad, the record is encrypted, and grading stays local by default. An employer that controls the device can, in the end, read anything on it, and the copy says so.
-- **Secrets.** Every free-text field is scanned and redacted before write, and the user is told.
-
----
-
-## 10. Shared repos and the codebase guide
-
-Full detail: `spec/shared-repos.md`.
-
-- **No learning data in shared branches.** In a repo the user does not own, your-line markers are a plain `TODO:` with no product or user name, handed back before commit. Nothing about learning goes in commits, trailers or PR bodies. Review-first findings are private.
-- **The codebase guide.** Plain files in `.firsthand/guide/`, committed if the team wants: the ideas that matter in this codebase, where they live, how they break, and who is willing to help. Guide ideas become items on the map under "This codebase". Postmortems become rehearsal drills with the real resolution sealed. Guides are read only in repos the user marks as trusted.
+Eight drills in the Room train the same skills away from the build, on the person's own history: Proof audit, Map it, Replay, Rebrief, Supervise a past run, Split a past change, Break it, Looking back.
 
 ---
 
-## 11. Build order
+## 4. How feedback works
 
-The order puts real value in a developer's hands soonest, on one agent first, then widens. There are no phases to pass. Each step ships when it works.
-
-1. **Fix the existing skill.** It tells users to commit `.learning/` to the project repo (`skills/learning-while-building/SKILL.md` line 103), which puts misses in shared history. Change the default to a folder outside the repo, and tell current users how to remove old copies. Reserve the package names and check the name's trademark.
-2. **The core loop in Claude Code.** Engine, CLI, the pad, the record (with encryption), sealing, test grading, MCP tools and hooks. Predict, Call it, Your line, Explain back. Reviews with the cap, the map, the dial and quiet controls, cold start, the reminder, the weekly line. `firsthand import-lwb` for current skill users. This is where a developer first gets the whole loop. Claude Code first because it has every tier, including hooks and native ask [verified: research/surfaces.md 8.7].
-3. **Review first and Trace.** `firsthand pr` and the `pr_review` break. Trace on the user's own code. Both need no container and use the most common daily work.
-4. **Codex and Cursor adapters, and the floor for every agent.** Adapters generated from one manifest. Conformance tests run in CI through each agent's headless mode. Cloud sessions get the import line.
-5. **The container runner, Replay and Fresh repo.** Debugging with the agent off and work in unfamiliar code, where the research says practice matters most. Build the miner, run it on public repos per language, and seed the open task set.
-6. **The question bank, Check and Compare.** The first families per catalog idea, Check drills on past diffs, Compare across projects. Model feedback on open answers. The grader regression suite (section 12).
-7. **More surfaces and the guide.** Tested adapters for VS Code Copilot, Copilot CLI and Gemini CLI, then Devin, Amp, OpenCode, Kiro and Cline. The codebase guide and postmortem drills. Plan first and design calls at Deep.
-8. **The phone device link.** Pairing with one confirmation tap, cards rendered by the engine.
-
-Steps that check a fact belong inside the step that needs it: whether native ask content reaches the model on a host, whether a package manager can disable install scripts, which container runtimes work on which OS, hook latency per agent, grading cost per agent. Each is checked once while building that piece, and the result goes in the adapter manifest or the docs.
+1. **A call, then what happened.** The person answers before the result is shown. The result opens with four things: Matched or Did not match, what the person said, the one fact that matters, and `Back to: <task>. Next: <step>.`
+2. **The check is something that ran.** Each run has a control: the same tests on an unchanged scratch copy must behave as they do on the real tree, or nothing is asked.
+3. **A miss shows the cue.** One mechanical line on what would have shown it: "Its only assertion reads the status code, at tests/test_refunds.py:41."
+4. **Facts first.** A finding goes to the person whether they answer, skip or ignore the question, and to the agent as one line so the build benefits. The person's call and whether it matched never go to the agent.
+5. **A call is scored when** it was made before the result was shown, a real check produced the outcome, the engine chose the case, and the outcome arrived. It counts the same in the Room and in chat. "Don't know" is never a miss.
+6. **A model is used only where text must be read or written,** and then under the accuracy rules of `spec/learning.md` section 12: a separate context, keys that cite their source, a blind check of every key, two readings that must agree. Otherwise the call is unscored.
+7. **The build always wins.** One question a day by default, one per change, one-word skip, nothing on the first prompt of the day, nothing under pressure except a hazard line. Nothing blocks a tool call and the agent is never asked to wait.
+8. **Questions fade.** Three matched calls on a skill give the one-line form. A skill at Reliable, or marked "I do this already", goes quiet: its checks still run and post notes.
+9. **Levels are coarse.** Too few calls, Shown, Reliable. They never go down. The row leads with counts and with what always giving one answer would have scored.
+10. **Recall supports, it does not lead.** An idea is scheduled for review only after a miss, a "don't know" or an unsure match. It comes back at 7, 21, 60 and 180 days as a new case with a real key, at most three a day, with at most one reminder a day.
 
 ---
 
-## 12. Keeping the agents accurate
+## 5. The Room
 
-Model grading moves levels. There is no grader experiment. Instead the design makes wrong grades rare, visible and cheap:
+A local web app the engine serves at `127.0.0.1`. No account, nothing loaded from the network. Screens are specified in `spec/experience.md` section 7.
 
-1. **Keys come from the code, not from the model's belief.** A prediction's key is the output of actually running the code, sealed before the question is shown. Every point in an explain key cites a `file:line`, and the engine checks mechanically that the cited lines exist and say what the key quotes. A key that fails this check is thrown away and the question is not asked.
-2. **Every key is answered blind before it is used.** A second agent, given only the code and the question, answers it. If its answer does not match the key, the question is dropped. This catches ambiguous questions and wrong keys before a user ever sees them.
-3. **Rubric points are concrete claims, not quality judgments.** Each point is one fact the answer must contain ("the key is the order id"), so grading is a presence check, not an opinion. Length earns nothing.
-4. **The grader is isolated.** It runs in a fresh context that never saw the build conversation. It gets exactly four fields: the question, the sealed points, the code excerpt, and the answer marked as untrusted data.
-5. **No quote, no point.** Each awarded point must quote the answer. The engine checks that the quote is really in the answer.
-6. **Two passes must agree.** The answer is graded twice with the points in a different order. If the passes disagree, the grade is marked uncertain and does not move a level.
-7. **One wrong grade cannot move a level.** A level goes up only after two right delayed answers on different items, on different days. A wrong "right" costs one early promotion at most. A wrong "miss" only brings the idea back sooner.
-8. **The user sees the evidence and can dispute.** Every grade shows the quotes and the `file:line` behind each point. A dispute regrades with the user's reason. If the readings disagree, the level holds.
-9. **Grader changes are tested like code.** A set of answers graded by people lives in the repo as a regression suite. A new grader prompt or model version must pass it in CI before it ships.
+| Tab | Holds |
+| :- | :- |
+| **Inbox** | The open question, today's reviews, calls waiting on an outcome, notes, results |
+| **Journal** | Every call, decision and note, newest first, never rewritten |
+| **System** | The project's parts, with what happened in each: notes, calls, decisions, saved failures. Useful on day one |
+| **Skills** | Eleven rows with counts, levels, what the evidence covers and what it does not. No overall score |
+| **Drills** | The eight drills, each with a size and no timer |
 
----
+In the agent, a question is an inline card where the agent can show UI, else one line of text with the reply words and a Room link. Answers typed in the Room do not pass through the agent. A paired phone opens the same Room after one tap on a QR code page, on the same network only.
 
-## 13. Founder decisions
-
-### 13.1 The founder's seven decisions
-
-| # | Decision | Where it landed |
-| :- | :- | :- |
-| 1 | The record lives in a local git repo, no remote unless asked | Kept, outside any project tree |
-| 2 | "Your line" is on | Kept. Write first, then read the test; a delayed hidden-test review carries the learning |
-| 3 | At most 3 due reviews a day by default | Kept. The product limits how many new ideas enter the queue, not the reviews. The user may raise the cap; the product does not suggest it |
-| 4 | One confirmation tap on the phone, where no tap is impossible | Kept for the device link |
-| 5 | Keyboard letter shortcuts off by default | Kept. The pad has none |
-| 6 | Feature parity on all coding surfaces | Reframed as parity of outcome, on evidence (section 7). Needs the founder's yes (13.2) |
-| 7 | At most one reminder a day, at a time the user chooses | Kept. The install question has no pre-selected answer |
-
-### 13.2 Open decisions, with a recommendation each
-
-1. **The name.** Firsthand or Ownline. *Recommendation:* Firsthand, if the trademark and registry check in build step 1 finds no blocking conflict. It says what the tool builds.
-2. **Parity of outcome as the meaning of decision 6,** including that answers given only in an agent's chat record as Met, and the pad is how every terminal surface counts. *Recommendation:* accept. Without it, either the agent can see and answer every question, or some surfaces cannot be supported at all.
-3. **Cloud sessions: add a carry branch, or not.** A carry branch is an encrypted branch in a private repo the user owns that cloud sessions append to, which is an exception to decision 1. *Recommendation:* do not add it. The import line and the user's own private record remote cover cloud sessions, keep decision 1 clean, and avoid a branch that collaborators can see and that GitHub keeps readable after deletion [verified: https://trufflesecurity.com/blog/anyone-can-access-deleted-and-private-repo-data-github].
-4. **Licences.** *Recommendation:* the engine under Apache-2.0; the catalog, question bank and task set under CC BY 4.0, so anyone can use and extend them and contributions flow back.
-5. **Engine language.** *Recommendation:* Python, reusing `record.py` and `learning.py`, shipped with `uvx`, `pipx` and an npm shim. Revisit a static binary only if install trouble shows up on a platform.
-6. **The claude.ai artifact Room** from the earlier design. *Recommendation:* retire it. The pad and the text map do its job on every surface, and the device link covers the phone.
+There are no streaks, points, ranks or percentages on small counts. Keyboard letter shortcuts are off by default.
 
 ---
 
-## 14. What changed in this revision
+## 6. Architecture in brief
 
-From the earlier design (`design/learning-experience/`): any agent instead of Claude Code only; record outside project trees; separate-context sealing; item families; human-written bank items; Check drills on real diffs instead of injected bugs; diagnosis offered by debugging profile.
+One Python daemon per user, reusing the existing engine's record, schedule and Room server code. Hooks, MCP tools and the CLI are thin clients. Detail: `spec/architecture.md`.
 
-From the previous version of this document:
+```
+  coding agent (any)                            the person
+  +-----------------------------+               +------------------------+
+  | hooks     MCP tools   shell |               | browser      phone     |
+  +---+----------+----------+---+               +----+-----------+-------+
+      | events   | moment,  | firsthand ...          | 127.0.0.1 | same network,
+      | (spool)  | answer   |                        | session   | paired
+      v          v          v                        v           v
+  +-------------------------------------------------------------------------+
+  |  ENGINE DAEMON (one per user)                                           |
+  |                                                                         |
+  |  timeline <-- git watch          Room server (inbox, cards, journal,    |
+  |     |                            system, skills, drills)                |
+  |     v                                 ^             |                   |
+  |  moment engine -- picks one --> check runner        | call              |
+  |     |                                 |             v                   |
+  |     |  question text + link only      +--> key store --> score          |
+  |     v                                 |                    |            |
+  |  agent line / card              scratch copies             v            |
+  |  scheduler (reviews, reminder)  containers            the record        |
+  +-------------------------+------------+--------------------+-------------+
+                            |            |                    |
+                 reads only v            v                    v
+              project repo (never   ~/.firsthand/cache   ~/.firsthand/record
+              written by the engine) snapshots, deps,    local git repo, plain
+                                     scratch (0700)      JSON, no remote
+```
 
-- **Cut:** the business model, pricing, paid tiers and paid Sync; funding plans and buyers; scarce assets, moats and vendor-copy risk; launch claims and the claims ladder; the team admin contract, team reports, SSO, SCIM, courses and proctoring; the v0 phase and every gate; week estimates; 18 experiments (E0 to E17), the study, the study-only pool and within-person experiments; the Checkup service and the Checkup as a measurement; signed results and proof packs; telemetry plans.
-- **Restored or added, on research or first principles:** Fresh repo as a local transfer drill; Check drills without a label audit first, since only test-confirmed defects ever count; Replay without a yield gate, offered wherever a bug reproduces; Compare in the build order rather than last, since comparison is the best-supported route to transfer; model feedback on every open answer; Plan first and design calls at Deep; the phone device link without a gate; a first drill on the user's own code that counts under the normal rules.
-- **Kept:** the five moves, the dial and quiet controls, the pad, the local git record, sealed keys, grading by running code, tiers per agent, parity of outcome, the founder's seven decisions, and the security and privacy design, cut to what protects users.
+- **Signals.** Hooks where the agent has them, the agent's own reports where it does not, and git watch everywhere. A hook only appends one line to a spool file and exits, so no event is lost and no hook is slow. Hooks never return a permission decision.
+- **Task and base.** A task starts at the first prompt after the last finished turn, commit or branch switch. Its base is a snapshot of the tree at that prompt. Every card shows the base and can correct it.
+- **Checks.** Run on a scratch copy built from a snapshot, with a scrubbed environment. The engine never writes to the project. Old commits run in a container.
+- **Keys.** One rule in one function: nothing given to the agent carries a result before the person has answered. No signing, no hash chain, no key encryption: the record is the person's own.
+- **Same outcome on every agent.** The check needs only a shell and git, and an answer counts the same wherever it is typed. Richer agents change timing and convenience.
+- **Cloud sessions.** No engine runs there and there is no carry branch. `firsthand import <branch or PR>` reviews the fetched work at the next local session.
+- **Privacy.** No server, no telemetry. The install copy names everything that leaves the machine.
+
+---
+
+## 7. Founder decisions already made
+
+1. The record is a local git repo outside any project. No remote unless the person asks.
+2. At most 3 reviews a day. At most one reminder a day, at a chosen time.
+3. Keyboard letter shortcuts are off by default. One confirmation tap on the phone is fine.
+4. The same learning outcome on every coding agent surface.
+5. Apache-2.0 for code, CC BY 4.0 for content. A Python engine reusing the existing one.
+6. No carry branch for cloud sessions. An import step instead.
+7. The name Firsthand, pending a trademark check.
+
+---
+
+## 8. Build order
+
+Each step ships on its own and is chosen for the machinery it adds.
+
+| Step | Build | Adds | Spec |
+| :-: | :- | :- | :- |
+| 1 | **Fix the existing skill.** Its record moves to a git repo outside the project. It stops telling users to commit `.learning/`. Existing users get `move`, which says what removing the folder does and does not undo. Cloud sessions export and import | The record location every later step uses | `spec/build-1.md` |
+| 2a | **Revert test in Claude Code**, with How sure, the fact line and a minimal Room | Hooks and the spool, the timeline and base, snapshots, the scratch runner, the pytest adapter, the key rule, the record, the card and result | `spec/build-2.md` |
+| 2b | **Call it** | Failure triggers, red and green snapshots, undo-the-fix, symptom patterns, saved failures | `spec/build-2.md` |
+| 2c | **Brief** | A question at task start, work product sent to the agent, the done check | `spec/build-2.md` |
+| 3 | The history scan, the "What works here" note, the System tab, focus skills, fading and levels | The first ten minutes, and the rules that keep it rare | |
+| 4 | Who is affected, Where to look, Split point, Already there, Decide and date it | Reference search, old tests on new code, outside events through `gh`, partial apply, dated returns | |
+| 5 | Reviews and the reminder. Proof audit, Replay, Split a past change, Looking back | The recall loop, container runs on history | |
+| 6 | Codex and Cursor adapters, the MCP server, the inline card, `firsthand import` | The second and third agents. Conformance runs | |
+| 7 | Missing case, Your experiment, Rebrief, the question bank | The writer and reader under the accuracy rules | |
+| 8 | Way back, Invariant, the hazard line | Migration extractor, scratch database, target lookup | |
+| 9 | Silent failure, Break it, Map it, Supervise a past run | The capture shim, the fault injector | |
+| 10 | The phone. The remaining agents | Pairing | |
+
+The Revert test is first among the moments because its feedback is a fact from git and the test runner with no model, its trigger is the commonest break in a build with an agent, and it takes one tap.
+
+---
+
+## 9. Open founder decisions
+
+Only real ones. Each has a recommendation.
+
+| # | Decision | Recommendation |
+| :-: | :- | :- |
+| A | **Questions a day by default.** The caps of 3 reviews and 1 reminder a day are settled. The number of questions asked while building is not | 1 a day, which the person can raise to 3. The reviews found that with 3, the lines the tool printed in a day came to about double that |
+| B | **Chat replies count the same as Room answers.** The earlier approach scored only answers typed in the Room | Yes. The key is a run the agent cannot change, the record is the person's own, and Room-only scoring breaks the same outcome on agents without hooks. The Room still keeps an answer out of the chat |
+| C | **Findings go to the agent by default.** After the person answers or skips, a fact such as "this test passes without the change" is given to the agent as one line | Yes, with a switch in Settings. The build should benefit. The person's call stays private |
+| D | **Record encryption on work computers.** The first builds store plain files | Not in the first builds. Say plainly at install that whoever manages the computer can read the record. Add encryption together with the remote feature |
+| E | **The phone over plain HTTP on the local network.** A browser gives such a page no crypto and no offline mode, so cards could be read by someone attacking that network | Build it last, state the limit on the pairing screen, keep it off by default on work computers |
+| F | **Licence of this repo.** It is MIT today. The decision is Apache-2.0 for code | Switch when the `firsthand/` package is added in step 2. Add CC BY 4.0 for the idea catalog and question bank when they are first published |
+| G | **The name.** Firsthand needs a trademark check and the package names reserved on PyPI and npm before any install line is public | Run the check before step 2 ships. Keep Ownline as the fallback |
+
+---
+
+## 10. Review points rejected, and why
+
+Everything else in the five reviews was accepted and is in the spec files.
+
+- **Give check facts to the agent only on a tap** (staff): rejected. Another review showed this withholds useful facts from the build to protect a score. Only patches wait for a tap.
+- **Count each test in a multi-test Revert test as its own scored call** (staff): rejected. One pick is one call. It says nothing about the tests not picked.
+- **Demote a level after two failed re-checks** (learning science): rejected in favour of levels that never go down, with recent counts beside them. Demotion on ten calls is noise.
+- **A relearning review outside the three daily slots** (learning science): rejected. Three a day is a founder decision. It takes a slot only when one is free.
+- **Fading per moment** (learning science): rejected in favour of per skill. Placing a person on thirteen moments one by one is too slow to feel.
+- **Keep the Brief's sealed guess as a practised line** (learning science, staff): rejected. It was a prediction about the builder, read by a model. The Rebrief drill trains it against real corrections.
+- **Keep Predict the run in its high-stakes form** (senior, staff, designer): rejected. Predicting one concrete output is still a code trace. The system-level form lives in the Map it drill.
+- **Score Already there by whether the named thing is used in the merged diff** (staff): rejected. The person makes that choice a minute later, so it scores itself. It is scored against the search.
+- **Show the full test body on the Revert test card** (junior): partly rejected. The card shows each test's assertion lines, with the full test one fold away, so the card stays readable in one look.
+- **Count opening the Call it card as having started, so the agent waits** (junior): rejected. Nothing holds the build. The card closes when a fix begins and the failure is saved as a Replay.
+- **Default the work-computer setting silently** (senior): rejected in favour of one question where Enter means yes. It changes what the person is told about privacy, so they should see it.
+- **Recommend Light as the default for senior engineers at install** (senior): rejected as an install question. The default is Standard at one question a day, and the install copy names "Notes only" in one line.
+- **One daily cap on every line the tool prints** (designer): replaced. Questions are capped. Hazard lines and fact lines are not, because holding a hazard to keep a count is the worse failure. Everything else never prints in the agent.
+- **Three confidence bands once counts are large** (learning science): rejected. Two bands, Sure and Not sure, stay. Fewer words, and each band fills sooner.
+- **Offline review packs on the phone for HTTPS overlay networks** (designer): rejected. The phone is live only. One mode is simpler to build and to explain.
+- **Rewrite the four `moments/` files, removing cut moments and old rule sections** (staff, junior): rejected as not worth the work. Each has a banner saying it is superseded, and `spec/learning.md` section 13 maps the names.
+- **A first-week cap of one question a day** (earlier design, questioned by three reviews): removed. One a day is now the default for everyone.

@@ -1,0 +1,255 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Review</title>
+<meta name="description" content="Prototype of an idea coming back a week later as a new case from the project history, with the source hidden, checked by a run.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="anonymous">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wdth,wght@75..100,400..700&amp;family=JetBrains+Mono:wght@400;500&amp;display=swap">
+<link rel="stylesheet" href="../assets/room.css">
+<style>
+html{scroll-padding:72px 0 96px}
+body{position:relative;margin:0;background:var(--paper);color:var(--ink);font-family:var(--sans);font-size:16px;line-height:1.5;-webkit-font-smoothing:antialiased;min-height:100vh;overflow-wrap:break-word}
+body::after{content:"";position:absolute;inset:0;pointer-events:none;z-index:60;background-image:url(../assets/grain.png);background-size:240px 240px;opacity:var(--grain-op);mix-blend-mode:var(--grain-blend)}
+a{color:var(--ink);text-underline-offset:4px}
+button,input,select,textarea{font-family:inherit;color:inherit}
+h1,h2,h3,p,dl,dd,ol,ul,fieldset,pre{margin:0;padding:0}
+fieldset{border:0;min-width:0}
+ol,ul{list-style:none}
+/* prototype controls: outside the product, dashed so nobody reads them as product UI */
+.proto{display:flex;flex-wrap:wrap;align-items:center;gap:8px 12px;margin:10px auto 0;max-width:1020px;padding:8px 12px;border:1.5px dashed var(--control-border);border-radius:12px;font:500 12px/1.3 var(--mono);color:var(--text-3);width:calc(100% - 32px)}
+.proto label{display:flex;align-items:center;gap:8px}
+.proto select{font:500 12.5px var(--mono);min-height:44px;padding:0 10px;border:1.5px solid var(--control-border);border-radius:10px;background:var(--card);color:var(--ink);max-width:min(300px,56vw);cursor:pointer}
+.proto .sp{flex:1}
+.proto a{min-height:44px;display:inline-flex;align-items:center}
+/* Room shell */
+.top{position:sticky;top:0;z-index:30;background:var(--paper);border-bottom:1px solid var(--border)}
+.bar{max-width:1024px;margin:0 auto;height:56px;padding:0 32px;display:flex;align-items:center;gap:14px}
+.word{font-size:19px;font-weight:650;font-variation-settings:"wdth" 88;letter-spacing:-.01em;text-decoration:none}
+.proj{font:500 13px var(--mono);color:var(--text-3);min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.bar .sp{flex:1}
+.qbtn{min-height:44px;padding:0 12px;border:1.5px solid var(--control-border);border-radius:999px;background:transparent;font:500 13px var(--sans);cursor:pointer;white-space:nowrap}
+.qbtn[aria-pressed="true"]{background:var(--ink);color:var(--on-ink);border-color:var(--ink)}
+.tabs{max-width:1024px;margin:0 auto;padding:0 32px;display:flex;gap:24px}
+.tab{font:600 15px/1 var(--sans);min-height:44px;padding:0 4px;border-bottom:2px solid transparent;color:var(--text-3);display:flex;align-items:center;text-decoration:none}
+a.tab:hover{color:var(--ink)}
+.tab[aria-current="page"]{color:var(--ink);border-color:var(--accent)}
+.tab[aria-disabled="true"]{color:var(--text-dim);cursor:default}
+.tabbar{display:none}
+.quietbar{max-width:640px;margin:16px auto 0;padding:0 32px;font-size:15px}
+.quietbar p{padding:10px 14px;border:1.5px solid var(--ink);border-radius:12px;background:var(--card)}
+.main{max-width:704px;margin:0 auto;padding:24px 32px 96px}
+.main.wide{max-width:1024px}
+.crumb{display:inline-flex;align-items:center;min-height:44px;font-size:14px;color:var(--text-3);margin:-8px 0 4px}
+.ft{max-width:704px;margin:-64px auto 0;padding:0 32px 32px;font-size:13px;color:var(--text-3)}
+.ft.wide{max-width:1024px}
+/* buttons */
+.btn{font:600 16px/1.2 var(--sans);min-height:50px;padding:8px 26px;border-radius:999px;border:1.5px solid var(--ink);background:var(--ink);color:var(--on-ink);cursor:pointer;transition:background .2s,border-color .2s,color .2s,transform .15s;display:inline-flex;align-items:center;justify-content:center;gap:8px;text-decoration:none;text-align:center}
+@media (hover:hover){.btn:hover{background:var(--accent);border-color:var(--accent);color:#16161A}}
+.btn:active{transform:scale(.97)}
+.btn.ghost{background:transparent;color:var(--ink)}
+@media (hover:hover){.btn.ghost:hover{background:var(--ink);color:var(--on-ink);border-color:var(--ink)}}
+.btn.sm{min-height:44px;font-size:15px;padding:6px 18px}
+.btn[disabled]{opacity:.4;cursor:default;transform:none}
+.tbtn{min-height:44px;padding:0 2px;border:0;background:none;font:500 15px var(--sans);text-decoration:underline;text-underline-offset:4px;cursor:pointer;color:var(--ink);display:inline-flex;align-items:center}
+.acts{display:flex;flex-wrap:wrap;align-items:center;gap:4px 22px}
+/* card */
+.card{background:var(--card);border:1.5px solid var(--border);border-radius:18px;padding:24px;min-width:0}
+.card.open{border-left:3px solid var(--accent)}
+.card+.card,.card+.mark,.mark+.card,.term+.mark,.mark+.term,.card+.term{margin-top:16px}
+.eb{display:flex;justify-content:space-between;gap:12px;font-size:13px;font-weight:600;color:var(--accent-text)}
+.eb .sk{font:500 12px var(--mono);color:var(--text-3);white-space:nowrap}
+.ctx{font:500 12.5px/1.6 var(--mono);color:var(--text-3);margin-top:4px}
+.lead{margin-top:16px;font-size:16px;color:var(--text-2)}
+.ev{margin-top:10px;padding:12px 14px;background:var(--paper);border:1.5px solid var(--border);border-radius:14px;font:500 13px/1.7 var(--mono);overflow-x:auto}
+.ev li{display:grid;grid-template-columns:22px minmax(0,1fr);white-space:nowrap}
+.ev li+li{margin-top:8px}
+.ev .n{color:var(--text-3)}
+.ev .a{display:block;color:var(--text-2)}
+.ev .nt{color:var(--text-3);font-family:var(--sans);font-size:13px;white-space:normal}
+.q{margin-top:20px;font-size:22px;line-height:1.3;font-weight:600;letter-spacing:-.01em;text-wrap:pretty}
+legend.q{padding:0;float:left;width:100%}
+.picks{display:flex;flex-wrap:wrap;gap:8px;padding-top:14px;clear:both}
+.picks.col{flex-direction:column;align-items:stretch}
+.pill{position:relative;display:flex;cursor:pointer}
+.pill input{position:absolute;opacity:0;inset:0;width:100%;height:100%;margin:0;cursor:pointer}
+.pill span{display:flex;align-items:center;gap:10px;min-height:44px;min-width:52px;justify-content:center;padding:6px 16px;border:1.5px solid var(--control-border);border-radius:999px;font-weight:600;font-size:15px;transition:background .15s,color .15s}
+.picks.col .pill span{justify-content:flex-start;border-radius:14px;width:100%;flex-wrap:wrap;gap:2px 10px}
+.pill small{font:500 12.5px var(--mono);color:var(--text-3)}
+.pill .m{font:500 13.5px var(--mono)}
+.pill input:checked+span{background:var(--ink);color:var(--on-ink);border-color:var(--ink)}
+.pill input:checked+span small{color:var(--on-ink);opacity:.75}
+.pill input:focus-visible+span{outline:2px solid var(--accent);outline-offset:3px}
+.pill input:disabled+span{opacity:.5}
+.pill input:disabled:checked+span{opacity:1}
+.fld{display:block;margin-top:16px}
+.fld b{display:block;font-size:14px;font-weight:600;margin-bottom:6px}
+.fld input,.fld textarea{width:100%;min-height:48px;padding:10px 14px;border:1.5px solid var(--control-border);border-radius:12px;background:var(--card);font-size:16px}
+.lock{margin-top:16px;padding-top:14px;border-top:1px solid var(--rule);font-size:15px}
+.lock .st{display:flex;flex-wrap:wrap;align-items:center;gap:0 12px;font-weight:600}
+.sure{display:flex;flex-wrap:wrap;align-items:center;gap:8px 10px;margin-top:8px}
+.sure .lb{font-size:14px;color:var(--text-3);margin-right:4px}
+.sure .btn{margin-left:auto}
+.quiet{margin-top:14px}
+.foot{margin-top:10px;padding-top:12px;border-top:1px solid var(--rule);font-size:13px;color:var(--text-3)}
+/* result */
+.rh{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:8px 12px}
+.rt{font:500 14px var(--mono);letter-spacing:.06em}
+.chip{display:inline-flex;align-items:center;gap:6px;min-height:26px;padding:2px 11px;border-radius:999px;border:1.5px solid var(--ink);font:500 12.5px var(--mono);white-space:nowrap}
+.chip.miss{border-color:var(--accent-text);color:var(--accent-text)}
+.chip.dash{border-style:dashed}
+.chip svg{width:12px;height:12px;flex:none}
+.rw{margin-top:16px}
+.rw>div{display:grid;grid-template-columns:150px minmax(0,1fr);gap:2px 16px;padding:11px 0;border-top:1px solid var(--rule)}
+.rw dt{font-size:13px;font-weight:600;color:var(--text-3);padding-top:2px}
+.rw dd{font-size:16px}
+.rw dd .mono,.mono.s{font-size:13.5px}
+.cue{margin-top:18px}
+.cue .btn{width:100%}
+.cue p{margin-top:10px;font:500 13px/1.5 var(--mono);color:var(--text-2)}
+details.more{margin-top:16px;border-top:1px solid var(--rule)}
+details.more>summary{min-height:44px;display:flex;align-items:center;gap:8px;font-weight:600;font-size:15px;cursor:pointer;list-style:none}
+details.more>summary::-webkit-details-marker{display:none}
+details.more>summary::before{content:"";width:7px;height:7px;border-right:2px solid var(--ink);border-bottom:2px solid var(--ink);transform:rotate(-45deg);transition:transform .2s;margin:0 4px 0 2px}
+details.more[open]>summary::before{transform:rotate(45deg)}
+.mb{font-size:14.5px;color:var(--text-2);padding-bottom:4px}
+.mb p+p,.mb ul+p,.mb p+ul{margin-top:10px}
+.mb li{display:flex;flex-wrap:wrap;gap:0 12px;padding:6px 0;border-top:1px solid var(--rule)}
+.mb li .mono{font-size:13px;color:var(--ink)}
+/* agent chat and terminal */
+.term{background:var(--card);border:1.5px solid var(--ink);border-radius:14px;overflow:hidden;min-width:0}
+.term .tb{display:flex;gap:10px;align-items:center;padding:9px 14px;border-bottom:1px solid var(--border);font:500 12.5px var(--mono);color:var(--text-3)}
+.term .tb b{color:var(--ink);font-weight:500}
+.term .bd{padding:14px;font:400 13px/1.65 var(--mono);overflow-x:auto}
+.term pre{font:inherit;white-space:pre-wrap;overflow-wrap:anywhere}
+.term .d{color:var(--text-3)}
+.term .u{color:var(--text-2)}
+.term .fh{font-weight:500;border-left:3px solid var(--accent);padding-left:10px}
+.term pre+pre,.term pre+.keys,.term .keys+pre,.term pre+form,.term form+pre{margin-top:14px}
+.keys{display:flex;flex-wrap:wrap;align-items:center;gap:8px}
+.key{min-height:44px;min-width:44px;padding:0 14px;border:1.5px solid var(--control-border);border-radius:10px;background:var(--paper);font:500 13px var(--mono);cursor:pointer}
+@media (hover:hover){.key:hover{border-color:var(--ink)}}
+.mark{display:flex;align-items:center;gap:12px;font:500 12.5px var(--mono);color:var(--text-3);margin-bottom:16px}
+.mark::before,.mark::after{content:"";flex:1;border-top:1px dashed var(--control-border)}
+.in{animation:rise .5s var(--ease-out) both}
+@keyframes rise{from{opacity:0;transform:translateY(8px)}}
+h1.pg{font-size:28px;line-height:1.15;letter-spacing:-.02em;font-weight:650;font-variation-settings:"wdth" 88}
+.sub{color:var(--text-2);margin-top:6px;font-size:15px}
+@media (max-width:640px){
+.bar{padding:0 16px;gap:10px}
+.tabs{display:none}
+.main{padding:16px 16px 40px}
+body.hastabs .main{padding-bottom:104px}
+.ft{padding:0 16px 24px;margin-top:-16px}
+body.hastabs .ft{margin-top:-84px;padding-bottom:88px}
+.quietbar{padding:0 16px}
+.card{padding:18px 16px;border-radius:16px}
+.q{font-size:20px}
+.rw>div{grid-template-columns:minmax(0,1fr)}
+.sure .btn{margin-left:0;width:100%}
+.tabbar{display:flex;position:fixed;left:0;right:0;bottom:0;z-index:40;height:calc(64px + env(safe-area-inset-bottom));padding-bottom:env(safe-area-inset-bottom);background:var(--paper);border-top:1px solid var(--border)}
+.tabbar .tab{flex:1;justify-content:center;border-bottom:0;border-top:2px solid transparent;font-size:14px}
+.tabbar .tab[aria-current="page"]{border-top-color:var(--accent)}
+.term .bd{padding:12px;font-size:12.5px}
+}
+@media (prefers-reduced-motion:reduce){*{animation:none !important;transition:none !important}}
+</style>
+</head>
+<body>
+<div class="proto" role="group" aria-label="Prototype controls"><span>Prototype</span><label>State <select id="st"></select></label><label>Theme <select id="th"><option value="">Auto</option><option value="light">Light</option><option value="dark">Dark</option></select></label><span class="sp"></span><a href="index.html">All screens</a></div><header class="top"><div class="bar"><a class="word" href="inbox.html?state=day">Room</a><span class="proj">orbit-pay</span><span class="sp"></span><button type="button" class="qbtn" aria-pressed="false">Quiet: off</button></div></header><div class="quietbar" id="quietbar" hidden><p>Quiet for this session. Checks still run and post notes.</p></div><main class="main"><a class="crumb" href="inbox.html?state=day">Inbox</a>
+<form class="card open" id="card" data-v="ask locked" aria-labelledby="q">
+<p class="eb"><span>Review</span><span class="sk">skip ok</span></p>
+<p class="ctx">orbit-pay | a past change, source hidden</p>
+<p class="lead">On 21 Oct a change landed: "Verify webhook signatures". It added 3 tests.</p>
+<ol class="ev" tabindex="0" aria-label="The 3 tests and their assertion lines">
+<li><span class="n">1</span><span>test_bad_signature_rejected<span class="a">assert resp.status_code == 400</span></span></li>
+<li><span class="n">2</span><span>test_event_is_logged<span class="a">assert "charge.settled" in caplog.text</span></span></li>
+<li><span class="n">3</span><span>test_unsigned_event_not_posted<span class="a">assert ledger.postings(charge) == []</span></span></li>
+</ol>
+<fieldset><legend class="q" id="q">Which one would still pass with the change undone?</legend>
+<div class="picks">
+<label class="pill"><input type="radio" name="p" value="1"><span>1</span></label>
+<label class="pill"><input type="radio" name="p" value="2"><span>2</span></label>
+<label class="pill"><input type="radio" name="p" value="3"><span>3</span></label>
+<label class="pill"><input type="radio" name="p" value="none"><span>None</span></label>
+<label class="pill"><input type="radio" name="p" value="dk"><span>Don't know</span></label>
+</div></fieldset>
+<div class="lock" data-v="locked"><p class="st" role="status">Locked. <button type="button" class="tbtn" id="undo">Undo</button></p>
+<div class="sure"><button type="button" class="btn sm" id="reveal">Show the result</button></div></div>
+<div class="acts quiet" data-v="ask"><button type="button" class="tbtn" id="skip">Skip</button></div>
+<p class="foot">Checked by a run on that commit, made before this was shown.</p>
+</form>
+<p data-v="skipped" class="card" role="status">Skipped. It stays in Reviews. <button type="button" class="tbtn" id="unskip">Undo</button></p>
+
+<section class="card in" data-v="result" id="res" tabindex="-1">
+<div class="rh"><h1 class="rt">REVIEW</h1><span class="chip" id="chip"></span></div>
+<p class="ctx">orbit-pay | Verify webhook signatures, 21 Oct</p>
+<dl class="rw">
+<div><dt>You said</dt><dd id="said"></dd></div>
+<div><dt>What happened</dt><dd><span class="mono">test_event_is_logged</span> still passes with the change undone. The handler logged events before this change.</dd></div>
+<div id="cuerow"><dt>What would have shown it</dt><dd>Its assertion reads the log. Nothing in the commit message is about logging. Test 1 also reads a status code, but 400 is the new behaviour, so it fails without the change.</dd></div>
+<div><dt>The idea</dt><dd>A test that passes without the change is not evidence for the change.</dd></div>
+<div><dt>Where you met it</dt><dd>5 Nov, idempotent refunds, Revert test. Did not match then.</dd></div>
+<div><dt>Next</dt><dd id="next"></dd></div>
+</dl>
+<div class="cue"><a class="btn" href="inbox.html?state=day">Back to the Room</a></div>
+<details class="more"><summary>More</summary><div class="mb">
+<ul>
+<li><span class="mono">test_bad_signature_rejected</span><span>fails on its assertion (200, expected 400)</span></li>
+<li><span class="mono">test_event_is_logged</span><span>still passes</span></li>
+<li><span class="mono">test_unsigned_event_not_posted</span><span>fails on its assertion (1 posting, expected none)</span></li>
+</ul>
+<p>Checked by a run, in a container, no model. <button type="button" class="tbtn" style="min-height:0">Open the commands</button></p>
+<p>An answer counts toward the idea only when it comes at least 7 days after you last met it. This one does.</p>
+</div></details>
+</section>
+</main><footer class="ft">Served by this computer at 127.0.0.1.</footer>
+<p class="vh" aria-live="polite" id="live"></p>
+<script>
+(function(){'use strict';
+var D=document,R=D.documentElement,Q=new URLSearchParams(location.search);
+if(Q.get('tour'))R.classList.add('tour');
+if(Q.get('theme'))R.dataset.theme=Q.get('theme');
+function $(s){return D.querySelector(s)}
+function $$(s){return Array.prototype.slice.call(D.querySelectorAll(s))}
+function say(t){var l=$('#live');if(!l)return;l.textContent='';setTimeout(function(){l.textContent=t},40)}
+function show(v){$$('[data-v]').forEach(function(e){e.hidden=e.getAttribute('data-v').split(' ').indexOf(v)<0})}
+function boot(states,apply){
+ var st=$('#st');st.innerHTML=states.map(function(o){return '<option value="'+o[0]+'">'+o[1]+'</option>'}).join('');
+ var s=Q.get('state');if(!states.some(function(o){return o[0]===s}))s=states[0][0];
+ st.value=s;st.onchange=function(){apply(st.value);window.scrollTo(0,0)};
+ var th=$('#th');th.value=R.dataset.theme||'';th.onchange=function(){if(th.value)R.dataset.theme=th.value;else R.removeAttribute('data-theme')};
+ $$('a[href]').forEach(function(a){var h=a.getAttribute('href');if(!/^[a-z-]+[.]html/.test(h))return;var p=[];if(Q.get('tour'))p.push('tour=1');if(Q.get('theme'))p.push('theme='+Q.get('theme'));if(p.length)a.setAttribute('href',h+(h.indexOf('?')<0?'?':'&')+p.join('&'))});
+ var q=$('.qbtn');if(q)q.onclick=function(){var on=q.getAttribute('aria-pressed')!=='true';q.setAttribute('aria-pressed',on);q.textContent='Quiet: '+(on?'on':'off');var b=$('#quietbar');if(b)b.hidden=!on;say(on?'Quiet for this session.':'Quiet is off.')};
+ apply(s);
+}
+function setState(v){var st=$('#st');if(st)st.value=v}
+
+var TICK='<svg viewBox="0 0 12 12" aria-hidden="true"><path d="M2 6.5l2.6 2.6L10 3.4" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+var NAMES={1:'1, test_bad_signature_rejected',2:'2, test_event_is_logged',3:'3, test_unsigned_event_not_posted',none:'None',dk:"Don't know"};
+var pick=null;
+function radios(n){return $$('input[name="'+n+'"]')}
+function result(){
+ var ok=pick==='2',dk=pick==='dk',c=$('#chip');
+ c.className='chip'+(ok?'':dk?' dash':' miss');c.innerHTML=(ok?TICK+'Matched':dk?'Not scored':'Did not match');
+ $('#res').setAttribute('aria-label',(ok?'Matched':dk?'Not scored':'Did not match')+'. Review');
+ $('#said').textContent=NAMES[pick]+'.';$('#cuerow').hidden=ok;
+ $('#next').textContent=ok?'Comes back on 3 Dec, as a different case. After one more match it is not scheduled again.':'Comes back tomorrow as relearning, not counted, if a review slot is free. Then on 19 Nov.';
+}
+function apply(v){
+ if(v==='matched'){pick='2';v='result'}else if(v==='miss'){pick='1';v='result'}else if(v==='ask'){pick=null}else if(v==='locked'&&!pick)pick='2';
+ radios('p').forEach(function(r){r.checked=r.value===pick;r.disabled=v==='locked'&&!r.checked});
+ if(v==='result')result();show(v);
+}
+radios('p').forEach(function(r){r.onchange=function(){pick=r.value;apply('locked');setState('locked');say('Locked.')}});
+$('#undo').onclick=function(){apply('ask');setState('ask')};
+$('#reveal').onclick=function(){apply('result');window.scrollTo(0,0);say($('#chip').textContent+'. test_event_is_logged still passes with the change undone.')};
+$('#skip').onclick=function(){show('skipped');say('Skipped.')};
+$('#unskip').onclick=function(){apply('ask')};
+boot([['ask','Review: question'],['locked','Locked'],['matched','Result: Matched'],['miss','Result: Did not match']],apply);
+})();
+</script>
+</body>
+</html>

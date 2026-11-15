@@ -1,0 +1,248 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Brief</title>
+<meta name="description" content="Prototype of the Brief question in the agent chat: name one check that fails now and passes when the task is done, then the result from running it with the change undone.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="anonymous">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wdth,wght@75..100,400..700&amp;family=JetBrains+Mono:wght@400;500&amp;display=swap">
+<link rel="stylesheet" href="../assets/room.css">
+<style>
+html{scroll-padding:72px 0 96px}
+body{position:relative;margin:0;background:var(--paper);color:var(--ink);font-family:var(--sans);font-size:16px;line-height:1.5;-webkit-font-smoothing:antialiased;min-height:100vh;overflow-wrap:break-word}
+body::after{content:"";position:absolute;inset:0;pointer-events:none;z-index:60;background-image:url(../assets/grain.png);background-size:240px 240px;opacity:var(--grain-op);mix-blend-mode:var(--grain-blend)}
+a{color:var(--ink);text-underline-offset:4px}
+button,input,select,textarea{font-family:inherit;color:inherit}
+h1,h2,h3,p,dl,dd,ol,ul,fieldset,pre{margin:0;padding:0}
+fieldset{border:0;min-width:0}
+ol,ul{list-style:none}
+/* prototype controls: outside the product, dashed so nobody reads them as product UI */
+.proto{display:flex;flex-wrap:wrap;align-items:center;gap:8px 12px;margin:10px auto 0;max-width:1020px;padding:8px 12px;border:1.5px dashed var(--control-border);border-radius:12px;font:500 12px/1.3 var(--mono);color:var(--text-3);width:calc(100% - 32px)}
+.proto label{display:flex;align-items:center;gap:8px}
+.proto select{font:500 12.5px var(--mono);min-height:44px;padding:0 10px;border:1.5px solid var(--control-border);border-radius:10px;background:var(--card);color:var(--ink);max-width:min(300px,56vw);cursor:pointer}
+.proto .sp{flex:1}
+.proto a{min-height:44px;display:inline-flex;align-items:center}
+/* Room shell */
+.top{position:sticky;top:0;z-index:30;background:var(--paper);border-bottom:1px solid var(--border)}
+.bar{max-width:1024px;margin:0 auto;height:56px;padding:0 32px;display:flex;align-items:center;gap:14px}
+.word{font-size:19px;font-weight:650;font-variation-settings:"wdth" 88;letter-spacing:-.01em;text-decoration:none}
+.proj{font:500 13px var(--mono);color:var(--text-3);min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.bar .sp{flex:1}
+.qbtn{min-height:44px;padding:0 12px;border:1.5px solid var(--control-border);border-radius:999px;background:transparent;font:500 13px var(--sans);cursor:pointer;white-space:nowrap}
+.qbtn[aria-pressed="true"]{background:var(--ink);color:var(--on-ink);border-color:var(--ink)}
+.tabs{max-width:1024px;margin:0 auto;padding:0 32px;display:flex;gap:24px}
+.tab{font:600 15px/1 var(--sans);min-height:44px;padding:0 4px;border-bottom:2px solid transparent;color:var(--text-3);display:flex;align-items:center;text-decoration:none}
+a.tab:hover{color:var(--ink)}
+.tab[aria-current="page"]{color:var(--ink);border-color:var(--accent)}
+.tab[aria-disabled="true"]{color:var(--text-dim);cursor:default}
+.tabbar{display:none}
+.quietbar{max-width:640px;margin:16px auto 0;padding:0 32px;font-size:15px}
+.quietbar p{padding:10px 14px;border:1.5px solid var(--ink);border-radius:12px;background:var(--card)}
+.main{max-width:704px;margin:0 auto;padding:24px 32px 96px}
+.main.wide{max-width:1024px}
+.crumb{display:inline-flex;align-items:center;min-height:44px;font-size:14px;color:var(--text-3);margin:-8px 0 4px}
+.ft{max-width:704px;margin:-64px auto 0;padding:0 32px 32px;font-size:13px;color:var(--text-3)}
+.ft.wide{max-width:1024px}
+/* buttons */
+.btn{font:600 16px/1.2 var(--sans);min-height:50px;padding:8px 26px;border-radius:999px;border:1.5px solid var(--ink);background:var(--ink);color:var(--on-ink);cursor:pointer;transition:background .2s,border-color .2s,color .2s,transform .15s;display:inline-flex;align-items:center;justify-content:center;gap:8px;text-decoration:none;text-align:center}
+@media (hover:hover){.btn:hover{background:var(--accent);border-color:var(--accent);color:#16161A}}
+.btn:active{transform:scale(.97)}
+.btn.ghost{background:transparent;color:var(--ink)}
+@media (hover:hover){.btn.ghost:hover{background:var(--ink);color:var(--on-ink);border-color:var(--ink)}}
+.btn.sm{min-height:44px;font-size:15px;padding:6px 18px}
+.btn[disabled]{opacity:.4;cursor:default;transform:none}
+.tbtn{min-height:44px;padding:0 2px;border:0;background:none;font:500 15px var(--sans);text-decoration:underline;text-underline-offset:4px;cursor:pointer;color:var(--ink);display:inline-flex;align-items:center}
+.acts{display:flex;flex-wrap:wrap;align-items:center;gap:4px 22px}
+/* card */
+.card{background:var(--card);border:1.5px solid var(--border);border-radius:18px;padding:24px;min-width:0}
+.card.open{border-left:3px solid var(--accent)}
+.card+.card,.card+.mark,.mark+.card,.term+.mark,.mark+.term,.card+.term{margin-top:16px}
+.eb{display:flex;justify-content:space-between;gap:12px;font-size:13px;font-weight:600;color:var(--accent-text)}
+.eb .sk{font:500 12px var(--mono);color:var(--text-3);white-space:nowrap}
+.ctx{font:500 12.5px/1.6 var(--mono);color:var(--text-3);margin-top:4px}
+.lead{margin-top:16px;font-size:16px;color:var(--text-2)}
+.ev{margin-top:10px;padding:12px 14px;background:var(--paper);border:1.5px solid var(--border);border-radius:14px;font:500 13px/1.7 var(--mono);overflow-x:auto}
+.ev li{display:grid;grid-template-columns:22px minmax(0,1fr);white-space:nowrap}
+.ev li+li{margin-top:8px}
+.ev .n{color:var(--text-3)}
+.ev .a{display:block;color:var(--text-2)}
+.ev .nt{color:var(--text-3);font-family:var(--sans);font-size:13px;white-space:normal}
+.q{margin-top:20px;font-size:22px;line-height:1.3;font-weight:600;letter-spacing:-.01em;text-wrap:pretty}
+legend.q{padding:0;float:left;width:100%}
+.picks{display:flex;flex-wrap:wrap;gap:8px;padding-top:14px;clear:both}
+.picks.col{flex-direction:column;align-items:stretch}
+.pill{position:relative;display:flex;cursor:pointer}
+.pill input{position:absolute;opacity:0;inset:0;width:100%;height:100%;margin:0;cursor:pointer}
+.pill span{display:flex;align-items:center;gap:10px;min-height:44px;min-width:52px;justify-content:center;padding:6px 16px;border:1.5px solid var(--control-border);border-radius:999px;font-weight:600;font-size:15px;transition:background .15s,color .15s}
+.picks.col .pill span{justify-content:flex-start;border-radius:14px;width:100%;flex-wrap:wrap;gap:2px 10px}
+.pill small{font:500 12.5px var(--mono);color:var(--text-3)}
+.pill .m{font:500 13.5px var(--mono)}
+.pill input:checked+span{background:var(--ink);color:var(--on-ink);border-color:var(--ink)}
+.pill input:checked+span small{color:var(--on-ink);opacity:.75}
+.pill input:focus-visible+span{outline:2px solid var(--accent);outline-offset:3px}
+.pill input:disabled+span{opacity:.5}
+.pill input:disabled:checked+span{opacity:1}
+.fld{display:block;margin-top:16px}
+.fld b{display:block;font-size:14px;font-weight:600;margin-bottom:6px}
+.fld input,.fld textarea{width:100%;min-height:48px;padding:10px 14px;border:1.5px solid var(--control-border);border-radius:12px;background:var(--card);font-size:16px}
+.lock{margin-top:16px;padding-top:14px;border-top:1px solid var(--rule);font-size:15px}
+.lock .st{display:flex;flex-wrap:wrap;align-items:center;gap:0 12px;font-weight:600}
+.sure{display:flex;flex-wrap:wrap;align-items:center;gap:8px 10px;margin-top:8px}
+.sure .lb{font-size:14px;color:var(--text-3);margin-right:4px}
+.sure .btn{margin-left:auto}
+.quiet{margin-top:14px}
+.foot{margin-top:10px;padding-top:12px;border-top:1px solid var(--rule);font-size:13px;color:var(--text-3)}
+/* result */
+.rh{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:8px 12px}
+.rt{font:500 14px var(--mono);letter-spacing:.06em}
+.chip{display:inline-flex;align-items:center;gap:6px;min-height:26px;padding:2px 11px;border-radius:999px;border:1.5px solid var(--ink);font:500 12.5px var(--mono);white-space:nowrap}
+.chip.miss{border-color:var(--accent-text);color:var(--accent-text)}
+.chip.dash{border-style:dashed}
+.chip svg{width:12px;height:12px;flex:none}
+.rw{margin-top:16px}
+.rw>div{display:grid;grid-template-columns:150px minmax(0,1fr);gap:2px 16px;padding:11px 0;border-top:1px solid var(--rule)}
+.rw dt{font-size:13px;font-weight:600;color:var(--text-3);padding-top:2px}
+.rw dd{font-size:16px}
+.rw dd .mono,.mono.s{font-size:13.5px}
+.cue{margin-top:18px}
+.cue .btn{width:100%}
+.cue p{margin-top:10px;font:500 13px/1.5 var(--mono);color:var(--text-2)}
+details.more{margin-top:16px;border-top:1px solid var(--rule)}
+details.more>summary{min-height:44px;display:flex;align-items:center;gap:8px;font-weight:600;font-size:15px;cursor:pointer;list-style:none}
+details.more>summary::-webkit-details-marker{display:none}
+details.more>summary::before{content:"";width:7px;height:7px;border-right:2px solid var(--ink);border-bottom:2px solid var(--ink);transform:rotate(-45deg);transition:transform .2s;margin:0 4px 0 2px}
+details.more[open]>summary::before{transform:rotate(45deg)}
+.mb{font-size:14.5px;color:var(--text-2);padding-bottom:4px}
+.mb p+p,.mb ul+p,.mb p+ul{margin-top:10px}
+.mb li{display:flex;flex-wrap:wrap;gap:0 12px;padding:6px 0;border-top:1px solid var(--rule)}
+.mb li .mono{font-size:13px;color:var(--ink)}
+/* agent chat and terminal */
+.term{background:var(--card);border:1.5px solid var(--ink);border-radius:14px;overflow:hidden;min-width:0}
+.term .tb{display:flex;gap:10px;align-items:center;padding:9px 14px;border-bottom:1px solid var(--border);font:500 12.5px var(--mono);color:var(--text-3)}
+.term .tb b{color:var(--ink);font-weight:500}
+.term .bd{padding:14px;font:400 13px/1.65 var(--mono);overflow-x:auto}
+.term pre{font:inherit;white-space:pre-wrap;overflow-wrap:anywhere}
+.term .d{color:var(--text-3)}
+.term .u{color:var(--text-2)}
+.term .fh{font-weight:500;border-left:3px solid var(--accent);padding-left:10px}
+.term pre+pre,.term pre+.keys,.term .keys+pre,.term pre+form,.term form+pre{margin-top:14px}
+.keys{display:flex;flex-wrap:wrap;align-items:center;gap:8px}
+.key{min-height:44px;min-width:44px;padding:0 14px;border:1.5px solid var(--control-border);border-radius:10px;background:var(--paper);font:500 13px var(--mono);cursor:pointer}
+@media (hover:hover){.key:hover{border-color:var(--ink)}}
+.mark{display:flex;align-items:center;gap:12px;font:500 12.5px var(--mono);color:var(--text-3);margin-bottom:16px}
+.mark::before,.mark::after{content:"";flex:1;border-top:1px dashed var(--control-border)}
+.in{animation:rise .5s var(--ease-out) both}
+@keyframes rise{from{opacity:0;transform:translateY(8px)}}
+h1.pg{font-size:28px;line-height:1.15;letter-spacing:-.02em;font-weight:650;font-variation-settings:"wdth" 88}
+.sub{color:var(--text-2);margin-top:6px;font-size:15px}
+@media (max-width:640px){
+.bar{padding:0 16px;gap:10px}
+.tabs{display:none}
+.main{padding:16px 16px 40px}
+body.hastabs .main{padding-bottom:104px}
+.ft{padding:0 16px 24px;margin-top:-16px}
+body.hastabs .ft{margin-top:-84px;padding-bottom:88px}
+.quietbar{padding:0 16px}
+.card{padding:18px 16px;border-radius:16px}
+.q{font-size:20px}
+.rw>div{grid-template-columns:minmax(0,1fr)}
+.sure .btn{margin-left:0;width:100%}
+.tabbar{display:flex;position:fixed;left:0;right:0;bottom:0;z-index:40;height:calc(64px + env(safe-area-inset-bottom));padding-bottom:env(safe-area-inset-bottom);background:var(--paper);border-top:1px solid var(--border)}
+.tabbar .tab{flex:1;justify-content:center;border-bottom:0;border-top:2px solid transparent;font-size:14px}
+.tabbar .tab[aria-current="page"]{border-top-color:var(--accent)}
+.term .bd{padding:12px;font-size:12.5px}
+}
+@media (prefers-reduced-motion:reduce){*{animation:none !important;transition:none !important}}
+
+.term .me{color:var(--ink);font-weight:500}
+.term .me::before{content:"> ";color:var(--text-3)}
+.send{display:flex;gap:8px;align-items:stretch;flex-wrap:wrap}
+.send input{flex:1;min-width:200px;min-height:48px;padding:8px 12px;border:1.5px solid var(--control-border);border-radius:10px;background:var(--paper);font:400 16px var(--mono)}
+</style>
+</head>
+<body>
+<div class="proto" role="group" aria-label="Prototype controls"><span>Prototype</span><label>State <select id="st"></select></label><label>Theme <select id="th"><option value="">Auto</option><option value="light">Light</option><option value="dark">Dark</option></select></label><span class="sp"></span><a href="index.html">All screens</a></div><header class="top" data-v="result"><div class="bar"><a class="word" href="inbox.html?state=day">Room</a><span class="proj">orbit-pay</span><span class="sp"></span><button type="button" class="qbtn" aria-pressed="false">Quiet: off</button></div></header><div class="quietbar" id="quietbar" hidden><p>Quiet for this session. Checks still run and post notes.</p></div><main class="main">
+<div data-v="ask sent confirm text">
+<div class="term" role="region" aria-label="Your coding agent's chat">
+<div class="tb"><b>Claude Code</b><span>~/code/orbit-pay</span></div>
+<div class="bd">
+<pre class="me">Add idempotency to POST /charges. A retried request must not create a second charge. Keys come in the Idempotency-Key header.</pre>
+<pre class="fh">Firsthand (skip ok): starting a task. Name one check that fails now and will pass when this is done. Reply here.</pre>
+<form class="send" id="f" data-v="ask"><label class="vh" for="ans">Your reply</label><input id="ans" autocomplete="off" value="a retried POST /charges with the same key returns the first charge id"><button class="btn sm" type="submit">Send</button></form>
+<div data-v="sent confirm text" class="in">
+<pre class="me" id="echo"></pre>
+<pre id="got"></pre>
+</div>
+<div data-v="sent" id="laterbtn" class="keys" style="margin-top:14px"><span class="d">Claude Code is working.</span></div>
+<div data-v="confirm text" class="in" style="margin-top:14px">
+<p class="mark">10:05 Your agent finished</p>
+<pre class="fh">Firsthand: is this your check? test_retry_returns_first_charge<span data-v="text" class="u"> yes</span></pre>
+<div class="keys" data-v="confirm" style="margin-top:14px"><button type="button" class="key" id="yes">Yes</button><button type="button" class="key" id="no">No</button></div>
+<div data-v="text" class="in" style="margin-top:14px">
+<pre class="fh" id="res">Firsthand, done check. Matched.
+test_retry_returns_first_charge passes now. It fails on its assertion with the change undone. It can tell done from not done.
+More: <a href="brief.html?state=result">http://127.0.0.1:4127/r/7e9</a>
+Back to: idempotency for POST /charges. Next: read the summary.</pre>
+</div>
+</div>
+</div></div>
+</div>
+
+<div data-v="result">
+<a class="crumb" href="inbox.html?state=day">Inbox</a>
+<section class="card" aria-label="Matched. Done check">
+<div class="rh"><h1 class="rt">DONE CHECK</h1><span class="chip"><svg viewBox="0 0 12 12" aria-hidden="true"><path d="M2 6.5l2.6 2.6L10 3.4" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>Matched</span></div>
+<p class="ctx">Framing | orbit-pay | idempotency for POST /charges</p>
+<dl class="rw">
+<div><dt>Your check</dt><dd>"a retried POST /charges with the same key returns the first charge id"<br><span class="mono">test_retry_returns_first_charge</span></dd></div>
+<div><dt>What happened</dt><dd>Passes now. Fails on its assertion with the change undone. It can tell done from not done.</dd></div>
+</dl>
+<div class="cue"><a class="btn" href="brief.html?state=text">Back to the build</a><p>Back to: idempotency for POST /charges. Next: read the summary.</p></div>
+<details class="more" open><summary>More</summary><div class="mb">
+<p>After your agent finished, you sent 1 correction:</p>
+<p style="margin-top:4px;color:var(--ink)">"same key with a different body must be a 422"</p>
+<p>Your agent asked 1 question: "How long should a key stay valid?"</p>
+<p>Checked by a run, no model: the change undone, your test kept. <button type="button" class="tbtn" style="min-height:0">Open the commands</button></p>
+</div></details>
+</section>
+</div>
+</main><footer class="ft" data-v="result">Served by this computer at 127.0.0.1.</footer>
+<p class="vh" aria-live="polite" id="live"></p>
+<script>
+(function(){'use strict';
+var D=document,R=D.documentElement,Q=new URLSearchParams(location.search);
+if(Q.get('tour'))R.classList.add('tour');
+if(Q.get('theme'))R.dataset.theme=Q.get('theme');
+function $(s){return D.querySelector(s)}
+function $$(s){return Array.prototype.slice.call(D.querySelectorAll(s))}
+function say(t){var l=$('#live');if(!l)return;l.textContent='';setTimeout(function(){l.textContent=t},40)}
+function show(v){$$('[data-v]').forEach(function(e){e.hidden=e.getAttribute('data-v').split(' ').indexOf(v)<0})}
+function boot(states,apply){
+ var st=$('#st');st.innerHTML=states.map(function(o){return '<option value="'+o[0]+'">'+o[1]+'</option>'}).join('');
+ var s=Q.get('state');if(!states.some(function(o){return o[0]===s}))s=states[0][0];
+ st.value=s;st.onchange=function(){apply(st.value);window.scrollTo(0,0)};
+ var th=$('#th');th.value=R.dataset.theme||'';th.onchange=function(){if(th.value)R.dataset.theme=th.value;else R.removeAttribute('data-theme')};
+ $$('a[href]').forEach(function(a){var h=a.getAttribute('href');if(!/^[a-z-]+[.]html/.test(h))return;var p=[];if(Q.get('tour'))p.push('tour=1');if(Q.get('theme'))p.push('theme='+Q.get('theme'));if(p.length)a.setAttribute('href',h+(h.indexOf('?')<0?'?':'&')+p.join('&'))});
+ var q=$('.qbtn');if(q)q.onclick=function(){var on=q.getAttribute('aria-pressed')!=='true';q.setAttribute('aria-pressed',on);q.textContent='Quiet: '+(on?'on':'off');var b=$('#quietbar');if(b)b.hidden=!on;say(on?'Quiet for this session.':'Quiet is off.')};
+ apply(s);
+}
+function setState(v){var st=$('#st');if(st)st.value=v}
+
+var TASK='idempotency for POST /charges';
+function apply(v){show(v);setState(v);if(v!=='ask'&&v!=='result'&&!$('#echo').textContent)fill($('#ans').value)}
+function fill(t){
+ $('#echo').textContent=t;
+ if(/^skip$/i.test(t.trim())){$('#got').textContent='Skipped. Back to: '+TASK+'. Next: your agent has started.';$('#got').className='fh';return false}
+ $('#got').innerHTML='<span class="fh" style="display:block">Given to your agent: "Done when: '+t.replace(/[&<>]/g,'')+'. Write this check as a failing test first."\nBack to: '+TASK+'. Next: your agent has started.</span>';return true}
+$('#f').onsubmit=function(e){e.preventDefault();var t=$('#ans').value.trim();if(!t)return;var ok=fill(t);
+ if(!ok){show('sent');$('#laterbtn').hidden=true;say('Skipped.');return}
+ apply('confirm');say('Given to your agent. Later, your agent finished. Is this your check?')};
+$('#yes').onclick=function(){apply('text');say('Matched. Your check fails with the change undone.')};
+$('#no').onclick=function(){$('#res').textContent='Not scored. I could not find your check among the new tests.\nBack to: '+TASK+'. Next: read the summary.';apply('text');say('Not scored.')};
+boot([['ask','In the agent: the question'],['confirm','Agent finished: is this your check'],['text','In the agent: the result'],['result','In the Room: the result']],apply);
+})();
+</script>
+</body>
+</html>
