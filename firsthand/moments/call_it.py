@@ -190,16 +190,33 @@ def build_picks(
 ) -> tuple[dict[str, object], ...]:
     """Up to three files: named in the trace (innermost first) and changed in the task.
 
-    The list is sorted by path, so a position on the card says nothing.
+    The list is sorted by path, so a position on the card says nothing. Why a file
+    is listed is kept as `traced` and `changed` for scoring and for the result's
+    More. It is never shown before the answer is sealed: when the agent's own edit
+    broke the test, "changed in this task" would mark the answer.
     """
     traced = _traced(frames)
     touched = [p for p in sorted(changed) if not gitwatch.is_test_path(p)]
     picks = []
     for n, path in enumerate(sorted(_interleave(traced, touched, MAX_PICKS)), start=1):
-        notes = [NOTE_TRACE] if path in traced else []
-        notes += [NOTE_CHANGED] if path in touched else []
-        picks.append({"n": n, "path": path, "note": ", ".join(notes)})
+        picks.append(
+            {"n": n, "path": path, "traced": path in traced, "changed": path in touched}
+        )
     return tuple(picks)
+
+
+def pick_facts(pick: Mapping[str, object]) -> list[str]:
+    """Why a file was listed. A record from before 2b's fix holds a `note` string."""
+    if "traced" in pick or "changed" in pick:
+        facts = [NOTE_TRACE] if pick.get("traced") else []
+        return facts + ([NOTE_CHANGED] if pick.get("changed") else [])
+    note = str(pick.get("note") or "")
+    return [fact for fact in (NOTE_TRACE, NOTE_CHANGED) if fact in note]
+
+
+def worth_asking(picks: Sequence[Mapping[str, object]]) -> bool:
+    """One listed file is not a choice. Reads the pick list only, never a result."""
+    return len(picks) >= 2
 
 
 # ----------------------------------------------------------------- symptoms
@@ -302,8 +319,7 @@ def _matched(answer: str, k: Key) -> bool | None:
 def _fixed_answer_holds(k: Key) -> bool:
     fix = set(fix_paths(k))
     return any(
-        NOTE_CHANGED in str(p.get("note", "")) and str(p["path"]) in fix
-        for p in _picks(k)
+        NOTE_CHANGED in pick_facts(p) and str(p["path"]) in fix for p in _picks(k)
     )
 
 

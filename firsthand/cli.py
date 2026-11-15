@@ -374,7 +374,12 @@ def _question_text(view: Mapping[str, object]) -> list[str]:
             for a in item.get("asserts") or []
         )
     lines.append(str(view.get("prompt") or ""))
-    lines.append(f"Reply with one of: {_reply_words(view)}. Or skip.")
+    if view.get("multi"):
+        from firsthand.moments import revert_test
+
+        lines.append(revert_test.SET_HINT)
+    else:
+        lines.append(f"Reply with one of: {_reply_words(view)}. Or skip.")
     return [line for line in lines if line]
 
 

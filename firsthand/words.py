@@ -171,7 +171,7 @@ def lead(m: Moment) -> str:
 def prompt(m: Moment) -> str:
     if len(m.tests) == 1:
         return "Would it still pass with the change undone?"
-    return "Which one would still pass with the change undone?"
+    return "Which of them would still pass with the change undone?"
 
 
 def context_line(m: Moment, project_name: str, tz: tzinfo) -> str:
@@ -189,10 +189,9 @@ def _question_body(m: Moment) -> str:
             "Reply fails or passes."
         )
     listed = ", ".join(f"{t.n} {t.name}" for t in m.tests)
-    numbers = ", ".join(str(t.n) for t in m.tests)
     return (
         f"your agent finished and {verb} {n} tests. {prompt(m)} {listed}. "
-        f"Reply {numbers} or none."
+        "Reply the numbers, or none."
     )
 
 
@@ -228,11 +227,21 @@ def question_line(m: Moment, ctx: OutputContext) -> str:
 # -------------------------------------------------------------- the result
 
 
+def _revert():
+    from firsthand.moments import revert_test  # the answer form lives with the moment
+
+    return revert_test
+
+
+def _picks(m: Moment, k: Key) -> tuple[KeyItem, ...]:
+    """The tests a several-tests answer names, in card order."""
+    return _revert().picked_items(m.answer, k)
+
+
 def _picked(m: Moment, k: Key) -> KeyItem | None:
-    answer = m.answer or ""
-    if answer.isdigit() and 1 <= int(answer) <= len(k.tests):
-        return k.tests[int(answer) - 1]
-    return None
+    """The one test picked, when the answer names exactly one."""
+    picks = _picks(m, k)
+    return picks[0] if len(picks) == 1 else None
 
 
 def _passing(k: Key) -> list[KeyItem]:
@@ -248,10 +257,10 @@ def answer_text(m: Moment) -> str:
     answer = m.answer
     if answer is None:
         return "Skipped." if m.state == "skipped" else "No answer."
-    if answer.isdigit():
-        index = int(answer) - 1
-        name = m.tests[index].name if 0 <= index < len(m.tests) else answer
-        return f"{answer}, {name}."
+    numbers = _revert().picked_numbers(answer, len(m.tests))
+    if numbers:
+        names = [m.tests[x - 1].name for x in numbers]
+        return f"{_and([str(x) for x in numbers])}, {_and(names)}."
     return _ANSWER_LABELS.get(answer, f"{answer}.")
 
 
@@ -273,15 +282,22 @@ def _still_pass(items: Sequence[KeyItem]) -> str:
 
 
 def _several(m: Moment, k: Key) -> list[str]:
+    """Every test that still passes is named. With none, each picked test's result."""
     passing = _passing(k)
-    picked = _picked(m, k)
-    if picked is not None and picked.result == "still_passes":
+    picked = _picks(m, k)
+    if len(passing) == 1 and list(picked) == passing:
         return ["It still passes with the change undone.", WOULD_PASS]
     if passing:
         return [_still_pass(passing)]
-    if picked is not None:
-        tail = _MISS_REASON.get(picked.result, ".")
-        return [f"{_name(picked.id)} does not pass with the change undone{tail}"]
+    if picked:
+        # One line, so the journal's first line still names every pick.
+        return [
+            " ".join(
+                f"{_name(t.id)} does not pass with the change undone"
+                + _MISS_REASON.get(t.result, ".")
+                for t in picked
+            )
+        ]
     return ["None of them passes with the change undone."]
 
 
@@ -296,10 +312,7 @@ def _source_for(m: Moment, item: KeyItem) -> TestItem | None:
 
 
 def _cue_target(m: Moment, k: Key) -> KeyItem:
-    passing = _passing(k)
-    if passing:
-        return passing[0]
-    return _picked(m, k) or k.tests[0]
+    return _revert().cue_item(m.answer, k)
 
 
 def _assert_cue(path: str, item: KeyItem, source: TestItem | None) -> str:
@@ -316,7 +329,8 @@ def _assert_cue(path: str, item: KeyItem, source: TestItem | None) -> str:
 
 
 def cue_target(m: Moment, k: Key) -> KeyItem:
-    """The test the cue is about: the one that still passes, else the picked one."""
+    """The test the cue is about: a still-passing test not picked, else a picked
+    test that does not still pass."""
     return _cue_target(m, k)
 
 
@@ -388,6 +402,9 @@ def chip_label(result: str | None) -> str:
 
 def _chat_answer(m: Moment) -> str:
     answer = m.answer or "none"
+    numbers = _revert().picked_numbers(answer, len(m.tests)) if "," in answer else None
+    if numbers:
+        return _and([str(x) for x in numbers])
     return _CHAT_ANSWER.get(answer, answer)
 
 

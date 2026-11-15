@@ -90,10 +90,11 @@ class QuestionTest(support.TempHome):
     def test_several_tests(self) -> None:
         self.assertEqual(
             words.question_line(moment(), ctx()),
-            "Firsthand (skip ok): your agent finished and added 3 tests. Which one would "
-            "still pass with the change undone? 1 test_same_key_refunds_once, "
+            "Firsthand (skip ok): your agent finished and added 3 tests. Which of them "
+            "would still pass with the change undone? 1 test_same_key_refunds_once, "
             "2 test_refund_response_is_stable, 3 test_refund_amount_validated. "
-            "Reply 1, 2, 3 or none. With the tests shown: http://127.0.0.1:4127/q/r6t9kd",
+            "Reply the numbers, or none. With the tests shown: "
+            "http://127.0.0.1:4127/q/r6t9kd",
         )
 
     def test_one_test(self) -> None:
@@ -192,6 +193,54 @@ class ResultTest(support.TempHome):
                 )
             ],
         )
+
+    def test_a_set_answer(self) -> None:
+        two = key("still_passes", "fails_on_assertion", "still_passes")
+        m = moment(state="settled", answer="1,3", confidence="high")
+        self.assertEqual(
+            words.you_said(m),
+            "1 and 3, test_same_key_refunds_once and test_refund_amount_validated. Sure.",
+        )
+        self.assertEqual(
+            words.what_happened(m, two),
+            [
+                (
+                    "test_same_key_refunds_once and test_refund_amount_validated still "
+                    "pass with the change undone."
+                )
+            ],
+        )
+        lines = words.result_lines(m, two, ctx())
+        self.assertEqual(
+            lines[0], "Firsthand, revert test. Matched. You said 1 and 3. Sure."
+        )
+        self.assertNotIn("What would have shown it", " ".join(lines))
+        # One of two is a miss, and the cue is about the one left out.
+        one = moment(state="settled", answer="1")
+        lines = words.result_lines(one, two, ctx())
+        self.assertEqual(lines[0], "Firsthand, revert test. Did not match. You said 1.")
+        self.assertEqual(
+            lines[2],
+            "What would have shown it: Its only assertion is at tests/test_refunds.py:55.",
+        )
+        # A picked test that does not still pass gets the fail cue.
+        extra = moment(state="settled", answer="1,2,3")
+        self.assertEqual(
+            words.cue_text(extra, two), "It fails at tests/test_refunds.py:41."
+        )
+        none = key("fails_on_assertion", "fails_on_assertion", "cannot_run")
+        both = moment(answer="1,3")
+        self.assertEqual(
+            words.what_happened(both, none),
+            [
+                (
+                    "test_same_key_refunds_once does not pass with the change undone: "
+                    "it fails on its assertion. test_refund_amount_validated does not "
+                    "pass with the change undone: it cannot run without the new code."
+                )
+            ],
+        )
+        self.assertEqual(words.answer_text(moment(answer="none")), "None.")
 
     def test_more_rows_and_counts(self) -> None:
         self.assertEqual(

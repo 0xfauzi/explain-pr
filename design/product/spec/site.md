@@ -112,18 +112,22 @@ It added 3 tests. Read them first.
   3  test_refund_amount_validated
        assert exc.value.code == "amount_too_large"
 
-Which one would still pass with the change undone?
+Which of them would still pass with the change undone?
 
-  ( ) 1    ( ) 2    ( ) 3    ( ) None    ( ) Don't know
+  [ ] 1    [ ] 2    [ ] 3    [ ] None    [ ] Don't know
+
+  [ Lock ]
 
 Skip
 Checked by a run: the change undone, the tests kept.
 ```
 
-- Markup: `form.card.open` labelled by the legend, `p.eb`, `p.ctx`, `p.lead`, `ol.ev` (labelled "The 3 new tests and their assertion lines"; not a tab stop, since its lines wrap and it never scrolls), `fieldset` with `legend.q`, `div.picks` of five `button.pill.pk` with `aria-pressed` (section 13), `div.acts.quiet` with the `Skip` text button, `p.foot`.
+- Markup: `form.card.open` labelled by the legend, `p.eb`, `p.ctx`, `p.lead`, `ol.ev` (labelled "The 3 new tests and their assertion lines"; not a tab stop, since its lines wrap and it never scrolls), `fieldset` with `legend.q`, `div.picks` of five `button.pill.pk` with `aria-pressed` (section 13), `p.acts.send` with the `Lock` button (`.btn.sm`, disabled until something is chosen), `div.acts.quiet` with the `Skip` text button, `p.foot`.
 - Left out, because they do nothing on a web page: `Open a test`, `Wrong start`.
 
-**Locked state.** Selecting a pick locks it at once. The other picks are disabled. A row appears under the picks:
+**Choosing.** The numbers are toggles: several can be on. `None` and `Don't know` each clear the numbers and the other one; a number clears them. No pick locks. `Lock` locks what is chosen.
+
+**Locked state.** `Lock` locks the chosen picks. All picks are disabled and the chosen ones stay pressed; focus moves to `Undo`. A row appears under the picks:
 
 - Status: `Locked.` and a text button `Undo`
 - `How sure?` with two pills: `Sure`, `Not sure`. Optional.
@@ -139,6 +143,8 @@ Checked by a run: the change undone, the tests kept.
 | 2 | `Matched` with a tick | `2, test_refund_response_is_stable.` | `It still passes with the change undone. It would pass whether or not the change exists.` | Row hidden |
 | 1 | `Did not match` | `1, test_same_key_refunds_once.` | `test_refund_response_is_stable still passes with the change undone.` | `Its only assertion is at tests/test_refunds.py:41.` (the build's wording, `words._assert_cue`) |
 | 3 | `Did not match` | `3, test_refund_amount_validated.` | As for 1 | As for 1 |
+| 2 and 3 (any set holding 2 and more) | `Did not match` | `2 and 3, test_refund_response_is_stable and test_refund_amount_validated.` | As for 1 | About the first other pick: `It fails at tests/test_refunds.py:29.` for 1, `With the change undone it stops at tests/test_refunds.py:52 with an error, not on an assertion.` for 3 |
+| 1 and 3 | `Did not match` | `1 and 3, test_same_key_refunds_once and test_refund_amount_validated.` | As for 1 | As for 1 |
 | None | `Did not match` | `None.` | As for 1 | As for 1 |
 | Don't know | `Not scored` (dashed chip) | `Don't know.` | `test_refund_response_is_stable still passes with the change undone. It would pass whether or not the change exists.` | As for 1 |
 
@@ -187,7 +193,7 @@ Layout: `.sec`, then `.two`. Left: heading and three `.habit` rows with the oran
 
 (the agent works, then finishes)
 
-Firsthand (skip ok): your agent finished and added 3 tests. Which one would still pass with the change undone? 1 test_same_key_refunds_once, 2 test_refund_response_is_stable, 3 test_refund_amount_validated. Reply 1, 2, 3 or none. With the tests shown: http://127.0.0.1:4127/q/7f3
+Firsthand (skip ok): your agent finished and added 3 tests. Which of them would still pass with the change undone? 1 test_same_key_refunds_once, 2 test_refund_response_is_stable, 3 test_refund_amount_validated. Reply the numbers, or none. With the tests shown: http://127.0.0.1:4127/q/7f3
 
 > 2
 
@@ -364,9 +370,9 @@ The page keeps the existing motion and adds nothing new in kind.
 - **Contrast.** Body text `#45454D` and small text `#5F5F68` on `#F5F4F0` and on white are above 4.5 to 1. `#E8541E` is used only for fills, the card's left bar, the number circles (with ink text on top) and the focus ring, never for text. Orange text is `#C2410C`. The "Did not match" chip uses `#C2410C` for its text and border and also carries the words.
 - **Meaning never rests on colour.** Chips carry words. The two status columns are told apart by their titles, not by the border colour.
 - **Focus.** The existing rule stays: a 2px `#E8541E` outline at 3px offset on `:focus-visible`. For the How sure radio pills the outline is drawn on the visible label (`input:focus-visible + span`). The result section takes focus but draws no ring, since it is not a control.
-- **Semantics.** The card is a `form` labelled by its question. Picks are five `button type="button"` elements with `aria-pressed` in a `fieldset` with a `legend`, each its own tab stop: Enter or Space picks and locks, the chosen one gets `aria-pressed="true"` and the others are disabled. They are not radios, because arrow keys in a radio group check the next radio and would lock an answer at once. How sure is a radio group (`role="radiogroup"`) labelled by `How sure?`. The result is a `section` whose accessible name starts with the chip word: `Matched. Revert test`. The result rows are a `dl`. `More` is a `details` element. The terminal block is plain text in `pre`.
+- **Semantics.** The card is a `form` labelled by its question. Picks are five `button type="button"` elements with `aria-pressed` in a `fieldset` with a `legend`, each its own tab stop: Enter or Space toggles one, and only the `Lock` button locks. Once locked all are disabled and the chosen ones keep `aria-pressed="true"`. They are not radios, because arrow keys in a radio group check the next radio and would choose an answer the person did not pick. How sure is a radio group (`role="radiogroup"`) labelled by `How sure?`. The result is a `section` whose accessible name starts with the chip word: `Matched. Revert test`. The result rows are a `dl`. `More` is a `details` element. The terminal block is plain text in `pre`.
 - **Live region.** One `aria-live="polite"` paragraph for the page, one line per change: `Locked.`, `Undone.`, `Skipped.`. A result is not announced here: focus moves to the result section, whose name starts with the chip word.
-- **Focus moves.** `Show the result` moves focus to the result section (`tabindex="-1"`). `Try again` and both `Undo` buttons move focus to the first pick. `Skip` moves focus to the skipped card's `Undo`. Nothing else moves focus, and nothing scrolls the page except bringing the result into view (`block: 'nearest'`).
+- **Focus moves.** `Lock` moves focus to `Undo`. `Show the result` moves focus to the result section (`tabindex="-1"`). `Try again` and both `Undo` buttons move focus to the first pick. `Skip` moves focus to the skipped card's `Undo`. Nothing else moves focus, and nothing scrolls the page except bringing the result into view (`block: 'nearest'`).
 - **Keyboard.** Every control is a native radio, button, link or summary. No letter shortcuts.
 - **No timers.** Nothing on the page times out. The `Copied` label is the only timed change and loses no information.
 - **Reduced motion.** Under `prefers-reduced-motion: reduce`: `.rise`, `.reveal`, `.sv`, `.in` and the field cells do not animate, all transitions are off, and scrolling to the result is instant.

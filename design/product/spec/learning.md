@@ -120,7 +120,7 @@ Thirteen moments are asked in the build. How sure rides on the others. Time call
 
 | # | Moment | Decision point | Skills | The person does | The check | Tier |
 | :-: | :- | :- | :-: | :- | :- | :-: |
-| 1 | Revert test | The agent is done and added tests | 1 | Reads the new tests. Picks the one that would still pass with the change undone, or none | Run: the change undone, the tests kept | A |
+| 1 | Revert test | The agent is done and added tests | 1 | Reads the new tests. Picks every one that would still pass with the change undone, or none | Run: the change undone, the tests kept | A |
 | 2 | Call it | A failure, with the person present | 3 | Names where the cause is, before a fix exists | Run: where the fix landed, then the fix undone | A |
 | 3 | Brief | Starting a task with no done check | 5, 1 | Names one check that fails now and will pass when done | Run: the check with and without the change | A |
 | 4 | Who is affected | Done, with a changed interface or promise | 2 | Names one caller or user outside the diff, or nobody | Search, and old tests on new code | A |
@@ -142,11 +142,11 @@ Cut from the earlier catalog: Predict the run (a code trace) and the outcome lin
 
 - **Trigger.** A done signal on a task whose diff changes source files and adds or edits at least one test.
 - **The card.** Shows the names of up to four new or edited tests, each with its assertion lines, and one fold to open the full test. "Read the tests first." Code is on the card as evidence, never the diff of the change.
-- **The person does.** With one test: "Would it still pass with the change undone?" Fails, still passes, don't know. With several: "Which one would still pass with the change undone?" The test names, or none.
+- **The person does.** With one test: "Would it still pass with the change undone?" Fails, still passes, don't know. With several: "Which of them would still pass with the change undone?" The test numbers, any number of them, or none.
 - **Timing.** The runner starts as soon as a test file is added or edited and the agent's own test run passes, so the result is often ready at the done signal. The card is shown once the control run passes. If the key is not ready, the call is sealed first and the key arrives after. The engine holds both, so nothing leaks.
 - **The check.** Every non-test file in the diff is reverted to the base, the tests are kept, and each new or edited test is run. No model.
 - **Three outcomes, reported differently.** "Fails on its assertion" is proof. "Still passes" is no proof. "Cannot run" is weak proof: the test depends on new code, not on right behaviour.
-- **Scored call.** The pick is a test that still passes. Or "none", and none does. With one test, the pick equals the result.
+- **Scored call.** With several tests the pick is a set: a match only when it is exactly the tests that still pass, or "none" and none does. Picking one of two tests that still pass is a miss. With one test, the pick equals the result.
 
 ### 4.2 Call it
 
@@ -410,7 +410,7 @@ There is no stale re-ask in the build. A skill with no scored call for 60 days s
 
 | Moment | A match means | Fixed answer starts as | Model involved |
 | :- | :- | :- | :- |
-| Revert test | The pick still passes without the change, or "none" and none does | "None" | No |
+| Revert test | The picked tests are exactly those that still pass without the change, or "none" and none does | "None" | No |
 | Call it | The named component holds the causal fix | The file changed last | No, for the pick. A reader for the line form |
 | Brief | The check passes with the change and fails on its assertion without it | None. It is a made thing, not a pick | No |
 | Who is affected | The named place is found, or "nobody" and none | "Nobody" | No |

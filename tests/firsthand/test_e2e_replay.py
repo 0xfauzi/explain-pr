@@ -179,7 +179,7 @@ class FixtureTest(Replay):
         root, stop = self.run_fixture("mixed3")
         self.assertIn(
             "1 test_same_key_refunds_once, 2 test_refund_response_is_stable, "
-            "3 test_refund_total_adds_up. Reply 1, 2, 3 or none.",
+            "3 test_refund_total_adds_up. Reply the numbers, or none.",
             stop.visible,
         )
         r = self.say(root, "2 sure")
@@ -429,7 +429,7 @@ class EngineRulesTest(Replay):
         self.feed([fixtures.prompt(self.clock, root, "carry on")], deliver=False)
         self.assertEqual(self.of("moment.closed"), [])
         again = self.stop(root)
-        self.assertIn("Which one would still pass", again.visible)
+        self.assertIn("Which of them would still pass", again.visible)
 
     def test_two_skips_stop_the_session(self) -> None:
         root, _ = self.run_fixture("passes_anyway")

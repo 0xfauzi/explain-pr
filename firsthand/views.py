@@ -475,6 +475,7 @@ def question_view(v: ViewInput, m: Moment, say: Sequence[str] | None = None) -> 
         "trace": None,
         "prompt": words.prompt(m),
         "picks": _picks(m),
+        "multi": len(m.tests) >= 2,  # the picks are toggles, sent with Lock
         "footer": words.FOOTER,
         "line": v.lines.get(m.id),
         "can": _can(v, m),

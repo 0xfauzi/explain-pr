@@ -94,11 +94,11 @@ class CallItFixtures(CallReplay):
         self.assertEqual(offered["moment_kind"], "call_it")
         self.assertEqual(offered["break"], "failure_turn_end")
         self.assertEqual(
-            [(p["path"], p["note"]) for p in offered["picks"]],
+            [(p["path"], p["traced"], p["changed"]) for p in offered["picks"]],
             [
-                ("pricing.py", "named in the trace"),
-                ("rates.py", "changed in this task"),
-                ("service.py", "named in the trace"),
+                ("pricing.py", True, False),
+                ("rates.py", False, True),
+                ("service.py", True, False),
             ],
         )
         r = self.say(root, "2 sure")
@@ -133,6 +133,15 @@ class CallItFixtures(CallReplay):
             [
                 "The fix landed in rates.py.",
                 "With the fix undone, the test fails again.",
+            ],
+        )
+        # After the result, More says why each file was listed: evidence by now.
+        self.assertEqual(
+            [(row["name"], row["text"]) for row in result["more"]["rows"][1:]],
+            [
+                ("1  pricing.py", "named in the trace"),
+                ("2  rates.py", "changed in this task"),
+                ("3  service.py", "named in the trace"),
             ],
         )
         self.assertEqual(
@@ -334,6 +343,45 @@ class CallItRules(CallReplay):
         view = self.engine.question(m.id)
         self.assertEqual(view["result"]["chip_label"], "Matched")
         self.assertEqual(self.scored()["result"], "match")
+        self.assert_untouched(root)
+
+    def test_no_note_before_the_seal(self) -> None:
+        # "changed in this task" on the file the agent broke would mark the answer.
+        root, stop = self.red_turn("causal_fix")
+        m = self.moment()
+        notes = ("named in the trace", "changed in this task", "traced")
+        open_view = self.engine.question(m.id)
+        self.assertEqual(
+            [p["label"] for p in open_view["picks"]][:3],
+            ["1  pricing.py", "2  rates.py", "3  service.py"],
+        )
+        held = self.engine.lock(m.id, "2", channel="room", final=False)
+        self.assertEqual(held["state"], "held")
+        sealed = self.engine.show(m.id)
+        self.assertEqual(sealed["state"], "sealed")
+        shown = [stop.visible or "", str(self.engine.inbox())]
+        shown += [str(v) for v in (open_view, held, sealed)]
+        for text in shown:
+            for word in notes:
+                self.assertNotIn(word, text)
+        self.assert_untouched(root)
+
+    def test_one_file_asks_nothing(self) -> None:
+        root, stop = self.red_turn("one_file")
+        self.assertIsNone(stop.visible)
+        self.assertEqual(self.of("moment.offered"), [])
+        red = self.of("episode.red")
+        self.assertEqual([e["body"]["test"] for e in red], [TEST])
+        self.green_turn("one_file", root)
+        self.assertEqual(
+            [
+                e["type"]
+                for e in self.record.events()
+                if e["type"].startswith("episode")
+            ],
+            ["episode.red", "episode.green"],
+        )
+        self.assertEqual(self.of("call.scored"), [])
         self.assert_untouched(root)
 
     def test_no_result_before_the_lock(self) -> None:

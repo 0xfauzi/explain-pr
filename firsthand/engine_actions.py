@@ -247,8 +247,10 @@ class Actions:
             return Reply(text, None)  # type: ignore[arg-type]
         reply = module.parse_reply(text, n)
         if reply is None:
+            hint = getattr(module, "reply_hint", None)  # the Revert test's set form
             listed = ", ".join(module.reply_words(n))
-            raise EngineError(f"Reply with one of: {listed}. Or skip.", "invalid")
+            message = hint(n) if hint else f"Reply with one of: {listed}. Or skip."
+            raise EngineError(message, "invalid")
         return reply
 
     def lock(

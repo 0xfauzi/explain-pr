@@ -26,7 +26,10 @@ TestResult = Literal[
     "fails_on_assertion", "still_passes", "cannot_run", "does_not_pass"
 ]
 How = Literal["pytest", "exit_code"]
-Answer = Literal["1", "2", "3", "4", "none", "fails", "passes", "dont_know"]
+# An answer as stored: "fails", "passes" or "dont_know" for one test; for several
+# tests "none", one number ("2") or several ascending, joined by commas ("1,3");
+# Call it a pick number; the Brief "line". Each moment validates its own.
+Answer = str
 Confidence = Literal["high", "low"]
 Channel = Literal["room", "chat"]
 MomentState = Literal["open", "held", "sealed", "settled", "skipped", "closed"]

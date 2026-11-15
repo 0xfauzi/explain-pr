@@ -102,16 +102,30 @@ def question_line(m: Moment, ctx: OutputContext) -> str:
 
 
 def pick_rows(m: Moment) -> list[dict]:
-    rows = [
-        {"value": str(p["n"]), "label": f"{p['n']}  {p['path']}", "note": p["note"]}
+    """The card's picks. Why each file is listed is not shown: it can mark the
+    answer. `path` marks a file row, so the Room lays the picks out as a column."""
+    rows: list[dict] = [
+        {"value": str(p["n"]), "label": f"{p['n']}  {p['path']}", "path": p["path"]}
         for p in picks(m)
     ]
     last = len(rows) + 1
-    rows.append(
-        {"value": str(last), "label": f"{last}  {SOMEWHERE_ELSE}", "note": None}
-    )
-    rows.append({"value": "dont_know", "label": "Don't know", "note": None})
+    rows.append({"value": str(last), "label": f"{last}  {SOMEWHERE_ELSE}"})
+    rows.append({"value": "dont_know", "label": "Don't know"})
     return rows
+
+
+def pick_more_rows(m: Moment) -> list[dict]:
+    """After the result: each listed file with why it was listed. Evidence by now."""
+    from firsthand.moments import call_it
+
+    return [
+        {
+            "id": str(p["path"]),
+            "name": f"{p['n']}  {p['path']}",
+            "text": ", ".join(call_it.pick_facts(p)),
+        }
+        for p in picks(m)
+    ]
 
 
 def trace(m: Moment) -> dict:

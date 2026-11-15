@@ -1331,7 +1331,7 @@ Routes added to the list in `build-2.md` section 8 are marked [added]. The reaso
                "path": "tests/test_refunds.py", "line": 18, "status": "new",
                "asserts": [{"line": 23, "text": "assert len(ledger.refunds(charge)) == 1"}],
                "source": "def test_same_key_refunds_once(...):\n    ..."}],
- "prompt": "Which one would still pass with the change undone?",
+ "prompt": "Which of them would still pass with the change undone?",
  "picks": [{"value": "1", "label": "1"}, {"value": "2", "label": "2"}, {"value": "3", "label": "3"},
            {"value": "none", "label": "None"}, {"value": "dont_know", "label": "Don't know"}],
  "footer": "Checked by a run: the change undone, the tests kept.",
@@ -1733,8 +1733,8 @@ def context_line(m: Moment, project_name: str, tz: tzinfo) -> str
 | Piece | Several tests | One test |
 | :- | :- | :- |
 | `lead` | `It added <n> tests. Read them first.` (`It added or edited <n> tests. Read them first.` when any is edited) | `It added 1 test. Read it first.` (or `It edited 1 test. Read it first.`) |
-| `prompt` | `Which one would still pass with the change undone?` | `Would it still pass with the change undone?` |
-| Picks | `1` to `<n>`, `None`, `Don't know` | `Fails`, `Still passes`, `Don't know` (values `fails`, `passes`, `dont_know`) |
+| `prompt` | `Which of them would still pass with the change undone?` | `Would it still pass with the change undone?` |
+| Picks | `1` to `<n>` (toggles), `None`, `Don't know`, then Lock (section 16) | `Fails`, `Still passes`, `Don't know` (values `fails`, `passes`, `dont_know`) |
 | Footer | `Checked by a run: the change undone, the tests kept.` | The same |
 
 `context_line`: `Verification | <project> | <task> | change since <HH:MM>`.
@@ -1742,7 +1742,7 @@ def context_line(m: Moment, project_name: str, tz: tzinfo) -> str
 `question_line`, several tests:
 
 ```
-Firsthand (skip ok): your agent finished and added 3 tests. Which one would still pass with the change undone? 1 test_same_key_refunds_once, 2 test_refund_response_is_stable, 3 test_refund_amount_validated. Reply 1, 2, 3 or none. With the tests shown: http://127.0.0.1:4127/q/r6t9kd
+Firsthand (skip ok): your agent finished and added 3 tests. Which of them would still pass with the change undone? 1 test_same_key_refunds_once, 2 test_refund_response_is_stable, 3 test_refund_amount_validated. Reply the numbers, or none. With the tests shown: http://127.0.0.1:4127/q/r6t9kd
 ```
 
 One test [new]:
@@ -2081,10 +2081,10 @@ Step 2b adds Call it on the 2a loop, following section 11. Where this section an
 - `CloseHow` gains `fix-started`. `call.scored.unscored_reason` gains `symptom-patch`, `no-fix`, `fix-not-causal` and `never-green`.
 - `Record` accepts `episode.red` (`episode`, `task`, `trigger` (`prompt` or `test_run`), `test`, `tree`, `command`) and `episode.green` (`episode`, `task`, `test`, `red_tree`, `green_tree`, `command`). They are written whether or not a question is asked, so every failure is saved for the Replay drill. `episode.green` holds trees only: the fix paths and patterns are part of the key and reach the record only in `check.ran`, after the lock.
 - `check.ran` for Call it: `base_tree` is the red tree, `head_tree` the green tree, `results` holds the one test with its result after the fix is undone, and `extra` holds the key's extra.
-- `moment.offered` for Call it: `form: "pick"`, `skill: 3`, `break`, `tests: []`, plus `episode`, `test` and `picks` (`n`, `path`, `note`).
+- `moment.offered` for Call it: `form: "pick"`, `skill: 3`, `break`, `tests: []`, plus `episode`, `test` and `picks` (`n`, `path`, `traced`, `changed`; records from before section 16 hold a `note` string instead, and still read).
 - `timeline`: `needs_snapshot` is also true for a failing test run (the red snapshot), and a failing test run emits `test_failed` (`task`, `tree`, `failing`, `command`). No `went_green` effect: the engine reads green from `test_passed`.
 - `Session.episode` is kept in `run/state.json`.
-- Views: the question view gains `trace` (null for the Revert test) and each Call it pick gains `note`. The Inbox gains `waiting` (`id`, `ref`, `kind`, `text`, `href`). Skills has two rows: Verification and Debugging and diagnosis. Counts, the fixed answer and How sure are per moment kind.
+- Views: the question view gains `trace` (null for the Revert test) and each Call it file pick gains `path`. No view of an open, held or sealed question says why a file is listed; the result's `more.rows` does, after the test row. The Inbox gains `waiting` (`id`, `ref`, `kind`, `text`, `href`). Skills has two rows: Verification and Debugging and diagnosis. Counts, the fixed answer and How sure are per moment kind.
 
 ### 14.3 Behaviour
 
@@ -2092,17 +2092,17 @@ Step 2b adds Call it on the 2a loop, following section 11. Where this section an
 2. **Selection first.** The gates of 2a (dial, quiet, pressure, the daily limit, one per change, first prompt, two skips) are checked before the red run starts. If they fail, nothing runs and the episode is saved silently.
 3. **The red run is the control.** The test is run on the red snapshot in a scratch copy and must not pass, else `check.unavailable` (`does not match here`) and nothing is asked. Its junit failure text gives the trace frames and the message line the card shows.
 4. **The offer.** A `prompt` episode is offered as soon as the red run passes; its line goes out at the next stop if the card is still open and unseen. A `test_run` episode is offered at a turn end whose last test run failed, with the line on that stop. A turn that goes red and green asks nothing.
-5. **The picks.** Non-test files named in the trace (innermost first) and non-test files changed in the task before red, interleaved, at most three, then sorted by path so a position says nothing. Then "Somewhere else" and "Don't know". With no file, nothing is asked.
+5. **The picks.** Non-test files named in the trace (innermost first) and non-test files changed in the task before red, interleaved, at most three, then sorted by path so a position says nothing. Then "Somewhere else" and "Don't know". Why each file is listed is stored as `traced` and `changed` and never shown before the result: when the agent's own edit broke the test, "changed in this task" would mark the answer. With fewer than two files there is no choice, so nothing is asked; the episode is still recorded. The decision reads the pick list only, never a result.
 6. **The first edit closes the card.** An `after_tool` edit to a non-test file after red closes an open card as `fix-started`, seals a held Room pick, and cancels a red run that has not been decided.
 7. **Green** is the first passing test run after red whose command names the test, its file or folder, or no path at all. The fix files are the non-test files changed between the red and green snapshots. The fix run starts only for a held or sealed question: control on green (must pass), then the fix files put back as they were at red, then the test again.
-8. **Score.** Not scored when the symptom scan finds an added sleep, an added bare or broad `except`, an added skip or xfail, or a removed or changed assert in a test file; when no non-test file changed; or when the test still passes with the fix undone. Otherwise a match when the picked file is a fix file, or the pick is "Somewhere else" and no listed file is. The fixed answer is "the file changed in this task": `outcome_kind` is `common` when a pick marked "changed in this task" holds the fix.
+8. **Score.** Not scored when the symptom scan finds an added sleep, an added bare or broad `except`, an added skip or xfail, or a removed or changed assert in a test file; when no non-test file changed; or when the test still passes with the fix undone. Otherwise a match when the picked file is a fix file, or the pick is "Somewhere else" and no listed file is. The fixed answer is "the file changed in this task": `outcome_kind` is `common` when a pick with `changed` (or, in an old record, a `note` holding "changed in this task") holds the fix.
 9. **Never green.** A commit or branch switch with a sealed call still waiting writes `call.scored` unscored `never-green` and commits the question.
 10. **Nothing goes to the agent but the question and the pending line.** The result arrives after the fix, so it is a deferred result and lives in the Room only. No finding is sent: the agent made the fix itself.
 11. **Not built in 2b:** the line form (needs a reader), the Which change form (needs a bisect), the reproduction form, "Keep one of these as a review idea?", Wrong start and This result looks wrong on a Call it question (the Room hides both; the engine refuses them).
 
 ### 14.4 Copy added in 2b, for review
 
-Lines `experience.md` does not give: the one-line form with fewer than three files (`Reply 1 to <n>`) and its work-computer form (link first, ending `Reply 1 to 4.`), the pending line `Firsthand: locked. Shown when <test> passes again. The result will be at <url>`, the Waiting row `shown when <test> passes again`, the trace title `<test>: <first line of the failure message>`, the pick notes joined as `named in the trace, changed in this task`, `What happened` as `The fix landed in <files>.` plus `With the fix undone, the test fails again.` or `... still passes.`, the cue `The fix is in <path>, which the trace names at line <n>.` or `The fix is in <path>, a file the failing trace never names.`, the symptom verbs `adds a broad except`, `removes or changes an assertion` and `adds a skip` beside the given `adds a sleep`, `Not scored. The test passed again with no change outside the tests, so there is no fix to undo.`, `Not scored. With the fix undone, the test still passes, so where the fix landed proves nothing about your call.`, the chat head `Firsthand, call it. <chip>. You said <answer>.`, the More row `fails again with the fix undone` or `still passes with the fix undone`, the Skills row texts `Naming where the cause is before the fix exists.` and `Bugs with no failing test.` (from `learning.md` section 2), and the engine errors `Wrong start is not offered on this question.` and `A Call it result cannot be rechecked yet.`
+Lines `experience.md` does not give: the one-line form with fewer than three files (`Reply 1 to <n>`) and its work-computer form (link first, ending `Reply 1 to 4.`), the pending line `Firsthand: locked. Shown when <test> passes again. The result will be at <url>`, the Waiting row `shown when <test> passes again`, the trace title `<test>: <first line of the failure message>`, the result's More rows for the picks, `<n>  <path>` with `named in the trace`, `changed in this task` or both joined as `named in the trace, changed in this task` (never on the card), `What happened` as `The fix landed in <files>.` plus `With the fix undone, the test fails again.` or `... still passes.`, the cue `The fix is in <path>, which the trace names at line <n>.` or `The fix is in <path>, a file the failing trace never names.`, the symptom verbs `adds a broad except`, `removes or changes an assertion` and `adds a skip` beside the given `adds a sleep`, `Not scored. The test passed again with no change outside the tests, so there is no fix to undo.`, `Not scored. With the fix undone, the test still passes, so where the fix landed proves nothing about your call.`, the chat head `Firsthand, call it. <chip>. You said <answer>.`, the More row `fails again with the fix undone` or `still passes with the fix undone`, the Skills row texts `Naming where the cause is before the fix exists.` and `Bugs with no failing test.` (from `learning.md` section 2), and the engine errors `Wrong start is not offered on this question.` and `A Call it result cannot be rechecked yet.`
 
 ### 14.5 Known limits
 
@@ -2174,3 +2174,27 @@ Lines `experience.md` and `prototypes/brief.html` do not give: the confirm line'
 - **The line needs the `check:` marker in chat.** Without it a reply cannot be told from an answer to the agent's own question at the same turn end, which used to be sent as the done check. A person who types the check without the marker loses the question for this change.
 - **The confirm can arrive one stop late**, as in 13.5, when the control run has not passed within the stop's 300 ms.
 - **A live Brief keeps the daemon awake** until the done signal or the end of the change.
+
+---
+
+## 16. As built: two scoring fixes
+
+Where this section and sections 1 to 15 disagree, this section describes the code.
+
+### 16.1 Revert test with several tests: the answer is a set
+
+The question used to ask "Which one would still pass with the change undone?", as if at most one could. With two tests that still pass, either pick was a match.
+
+- **The rule.** With two or more tests the answer is a set of test numbers, possibly empty. It is a match only when it equals the set of tests whose result is `still_passes`; anything else is a miss. "Don't know" is never scored. The one-test form (fails, passes, don't know) is unchanged. `outcome_kind` is still `uncommon` when any test still passes, so "Always answering none" is still the fixed answer and its counts line is unchanged.
+- **The stored form.** `Answer` is now a plain `str`. A set is its numbers ascending, joined by commas (`"1,3"`); one number stays `"2"`; the empty set is `"none"`. `revert_test.picked_numbers` reads it back and refuses duplicates and numbers out of range. A record from before this change holds one number and reads as a set of one.
+- **Where answers enter.** Chat replies, the Room's `POST /api/q/<ref>/lock` and `firsthand answer` all go through `revert_test.parse_reply`, which accepts `1`, `1 3`, `1,3`, `1 and 3`, `1, 2 and 3`, `none` and `don't know`, each optionally followed by `sure` or `not sure`. A reply it refuses gets `Reply the numbers, none or don't know. Or skip.`
+- **Copy.** The prompt is `Which of them would still pass with the change undone?` and the chat line ends `Reply the numbers, or none.` `You said` names every pick: `1 and 3, test_a and test_c.` What happened names every test that still passes (`test_a and test_c still pass with the change undone.`), keeps `It still passes with the change undone. It would pass whether or not the change exists.` when the one test that still passes is exactly the pick, and with none passing gives each picked test's result in one line. The miss cue is about a still-passing test the person left out, else about a picked test that does not still pass (the fail cue).
+- **The Room.** The question view gains `multi` (true for the several-tests form, false elsewhere). With `multi` the numbers are toggle buttons with `aria-pressed`; None and Don't know are exclusive and clear them; a Lock button sends the answer. No toggle and no key press locks. The held, Undo, How sure and Show the result flow is unchanged, and the held and sealed card shows the chosen toggles pressed. `firsthand room --tty` prints the same reply hint.
+
+### 16.2 Call it: the picks say nothing before the result
+
+Each pick used to carry a note, "named in the trace" or "changed in this task". When the agent's own edit broke the test, the note marked the answer.
+
+- The picks store `traced` and `changed` (booleans) in `moment.offered`, `Moment.extra` and the key's extra. No card, chat line or API view of an open, held or sealed question shows them. Old records with a `note` string still read (`call_it.pick_facts`), for scoring the fixed answer.
+- After the result, `more.rows` lists each pick after the test row: `<n>  <path>` with its facts.
+- Nothing is asked when fewer than two files would be listed (`call_it.worth_asking`, which reads the pick list only). The episode is still recorded.

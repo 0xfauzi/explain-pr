@@ -130,6 +130,7 @@ footer .links{display:flex;gap:24px}
 .demo .tbtn{min-height:44px;padding:0 2px;border:0;background:none;font:500 15px var(--sans);text-decoration:underline;text-underline-offset:4px;cursor:pointer;color:var(--ink);display:inline-flex;align-items:center}
 .demo .tbtn:hover{color:var(--accent-text)}
 .demo .acts{display:flex;flex-wrap:wrap;align-items:center;gap:4px 22px}
+.demo .acts.send{margin-top:12px}
 .demo .card{background:var(--card);border:1.5px solid var(--border);border-radius:18px;padding:24px;min-width:0}
 .demo .card.open{border-left:3px solid var(--accent)}
 .demo .card+.card,.demo .card+.mark,.demo .mark+.card{margin-top:16px}

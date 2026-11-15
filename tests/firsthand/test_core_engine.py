@@ -113,7 +113,7 @@ class EngineTest(FakeLoop):
     def test_offer_line_at_the_done_stop(self) -> None:
         stop, _ = self.ask()
         self.assertIn(
-            "Which one would still pass with the change undone?", stop.visible
+            "Which of them would still pass with the change undone?", stop.visible
         )
         self.assertEqual(self.types_(), ["moment.offered"])
 
@@ -248,6 +248,7 @@ class ViewShapeTest(FakeLoop):
                 "trace",
                 "prompt",
                 "picks",
+                "multi",
                 "footer",
                 "line",
                 "can",

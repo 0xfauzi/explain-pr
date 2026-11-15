@@ -6,6 +6,7 @@ moments add modules with the same surface.
 
 from __future__ import annotations
 
+import re
 import shlex
 import subprocess
 import threading
@@ -39,6 +40,7 @@ SKILL = 1
 HEADLINE = "REVERT TEST"
 BREAKS = ("test_run", "done")
 MAX_TESTS = 4
+SET_HINT = "Reply the numbers, none or don't know. Or skip."
 
 _STEPS = ("scratch", "control", "undo", "undone")
 # Failures run() turns into "snapshot failed" instead of raising.
@@ -380,20 +382,45 @@ def key(
 # ------------------------------------------------------------ scoring
 
 
-def _picked(answer: Answer, k: Key) -> KeyItem | None:
-    if answer.isdigit() and 1 <= int(answer) <= len(k.tests):
-        return k.tests[int(answer) - 1]
-    return None
+def picked_numbers(answer: str | None, n_tests: int) -> tuple[int, ...] | None:
+    """The test numbers of a several-tests answer, ascending; () for "none".
+
+    None for an answer that is not a set of distinct numbers from 1 to n_tests.
+    A record from before sets holds one number, which reads as a set of one.
+    """
+    if answer == "none":
+        return ()
+    parts = (answer or "").split(",")
+    if not all(part.isdigit() for part in parts):
+        return None
+    numbers = [int(part) for part in parts]
+    if len(set(numbers)) != len(numbers):
+        return None
+    if any(not 1 <= x <= n_tests for x in numbers):
+        return None
+    return tuple(sorted(numbers))
+
+
+def answer_of(numbers: Sequence[int]) -> Answer:
+    """The stored form of a set: "none", "2" or "1,3"."""
+    return ",".join(str(x) for x in sorted(numbers)) or "none"
+
+
+def picked_items(answer: str | None, k: Key) -> tuple[KeyItem, ...]:
+    """The tests a several-tests answer names, in card order. () when it names none."""
+    numbers = picked_numbers(answer, len(k.tests)) if len(k.tests) >= 2 else None
+    return tuple(k.tests[x - 1] for x in numbers or ())
+
+
+def _passing_numbers(k: Key) -> tuple[int, ...]:
+    return tuple(i for i, t in enumerate(k.tests, 1) if t.result == "still_passes")
 
 
 def _matched(answer: Answer, k: Key) -> bool | None:
     """True or False for a scorable answer, None for one that cannot be scored."""
-    any_passes = any(t.result == "still_passes" for t in k.tests)
     if len(k.tests) >= 2:
-        if answer == "none":
-            return not any_passes
-        picked = _picked(answer, k)
-        return None if picked is None else picked.result == "still_passes"
+        numbers = picked_numbers(answer, len(k.tests))
+        return None if numbers is None else numbers == _passing_numbers(k)
     if len(k.tests) == 1:
         result = k.tests[0].result
         if answer == "fails":
@@ -466,13 +493,21 @@ def cue(
     if matched is None or matched:
         return None
     sources = {t.id: t for t in tests}
-    passing = [t for t in k.tests if t.result == "still_passes"]
-    target = passing[0] if passing else (_picked(answer, k) or k.tests[0])
+    target = cue_item(answer, k)
     if k.how == "exit_code":
         return f"It was checked by exit code only: {_path(target)}.", (target,)
-    if passing:
+    if target.result == "still_passes":
         return _assert_cue(target, sources.get(target.id)), (target,)
     return _fail_cue(target, sources.get(target.id)), (target,)
+
+
+def cue_item(answer: str | None, k: Key) -> KeyItem:
+    """The test a miss cue is about: a still-passing test the answer left out, else
+    a picked test that does not still pass, else the first test."""
+    picked = picked_items(answer, k)
+    missed = [t for t in k.tests if t.result == "still_passes" and t not in picked]
+    wrong = [t for t in picked if t.result != "still_passes"]
+    return (missed or wrong or [k.tests[0]])[0]
 
 
 def finding(k: Key) -> tuple[KeyItem, ...]:
@@ -482,15 +517,36 @@ def finding(k: Key) -> tuple[KeyItem, ...]:
 # ------------------------------------------------------------- replies
 
 
+_SET_REPLY = re.compile(r"\d+(?:(?:\s*,\s*(?:and\s+)?|\s+and\s+|\s+)\d+)*")
+
+
 def reply_words(n_tests: int) -> tuple[str, ...]:
+    """The single words a reply may be. With several tests a reply may also name
+    several numbers: "1 3", "1,3", "1 and 3", "1, 2 and 3"."""
     if n_tests >= 2:
         return (*(str(i) for i in range(1, n_tests + 1)), "none", "don't know")
     return ("fails", "passes", "don't know")
 
 
+def reply_hint(n_tests: int) -> str:
+    """The error for a reply that is not an answer."""
+    if n_tests >= 2:
+        return SET_HINT
+    return "Reply with one of: fails, passes, don't know. Or skip."
+
+
 def _normalise(text: str) -> str:
     text = " ".join(text.replace("’", "'").strip().lower().split())
     return text[:-1].rstrip() if text.endswith(".") else text
+
+
+def _set_answer(words: str, n_tests: int) -> Answer | None:
+    """ "1 and 3" -> "1,3". None unless every number is a test, each once."""
+    if n_tests < 2 or not _SET_REPLY.fullmatch(words):
+        return None
+    numbers = re.findall(r"\d+", words)
+    picked = picked_numbers(",".join(numbers), n_tests)
+    return None if not picked else answer_of(picked)
 
 
 def parse_reply(text: str, n_tests: int) -> Reply | None:
@@ -500,8 +556,9 @@ def parse_reply(text: str, n_tests: int) -> Reply | None:
         words, confidence = words[: -len(" not sure")], "low"
     elif words.endswith(" sure"):
         words, confidence = words[: -len(" sure")], "high"
-    if words not in reply_words(n_tests):
-        return None
     if words == "don't know":
         return Reply("dont_know", None)
-    return Reply(words, confidence)  # type: ignore[arg-type]
+    if words in reply_words(n_tests):
+        return Reply(words, confidence)
+    answer = _set_answer(words, n_tests)
+    return None if answer is None else Reply(answer, confidence)

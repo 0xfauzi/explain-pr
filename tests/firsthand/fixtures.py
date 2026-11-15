@@ -57,6 +57,13 @@ def test_refund_response_is_stable():
     assert isinstance(refunds(["a"]), list)
 """
 
+TEST_ALSO_PASSES = """from refunds import refunds
+
+
+def test_no_keys_no_refunds():
+    assert refunds([]) == []
+"""
+
 TEST_NEEDS_NEW = """from refunds import refund_total
 
 
@@ -140,6 +147,18 @@ FIXTURES: dict[str, Fixture] = {
             "tests/test_c.py": TEST_NEEDS_NEW,
         },
         expected=("fails_on_assertion", "still_passes", "cannot_run"),
+    ),
+    # Two of the three new tests pass with the change undone.
+    "two_pass": Fixture(
+        "two_pass",
+        _base(),
+        {
+            "refunds.py": FIXED_REFUNDS,
+            "tests/test_a.py": TEST_PROVES,
+            "tests/test_b.py": TEST_PASSES_ANYWAY,
+            "tests/test_c.py": TEST_ALSO_PASSES,
+        },
+        expected=("fails_on_assertion", "still_passes", "still_passes"),
     ),
     "edited_test": Fixture(
         "edited_test",
@@ -387,6 +406,22 @@ CALL_FIXTURES: dict[str, CallFixture] = {
         {"rates.py": RATES_BAD},
         None,
         ("pricing.py", "rates.py", "service.py"),
+    ),
+    # The trace names only the test file and the task changed one file: one file
+    # is not a choice, so nothing is asked.
+    "one_file": CallFixture(
+        "one_file",
+        {
+            "pyproject.toml": PYPROJECT,
+            "rates.py": RATES_OK,
+            "tests/test_total.py": (
+                "from rates import RATE\n\n\ndef test_total():\n"
+                "    assert RATE * 3 == 9\n"
+            ),
+        },
+        {"rates.py": RATES_BAD},
+        {"rates.py": RATES_OK},
+        ("rates.py",),
     ),
 }
 

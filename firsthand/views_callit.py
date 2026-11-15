@@ -1,7 +1,8 @@
 """Read models for Call it: its card, its result and its Waiting row.
 
 The shapes are those of build-2a-contract.md section 7.2, plus `trace` on the
-card and `note` on each pick. As in `views`, a result comes only from a
+card and `path` on each file pick. Why a file is listed is shown only in the
+result's More, after the answer is sealed. As in `views`, a result comes only from a
 `check.ran` event in the record, never from the key store.
 """
 
@@ -62,6 +63,7 @@ def question_view(v: views.ViewInput, m: Moment, say=None) -> dict:
         "trace": words_callit.trace(m),
         "prompt": words_callit.PROMPT,
         "picks": words_callit.pick_rows(m),
+        "multi": False,
         "footer": words_callit.FOOTER,
         "line": v.lines.get(m.id),
         "can": _can(v, m),
@@ -117,7 +119,8 @@ def _more(v: views.ViewInput, m: Moment, k) -> dict:
     return {
         "rows": [
             {"id": test, "name": words_callit.name(m), "text": words_callit.more_row(k)}
-        ],
+        ]
+        + words_callit.pick_more_rows(m),
         "checked": words.checked_line("pytest"),
         "commands": [s.command for s in k.steps],
         "counts": words_callit.counts_line(matched, scored, fixed) if scored else None,

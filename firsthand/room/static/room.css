@@ -82,6 +82,13 @@ legend.q{padding:0;float:left;width:100%}
 .pill small{font:500 12.5px var(--mono);color:var(--text-3)}
 .pill .m{font:500 13.5px var(--mono);white-space:pre}
 .pill input:checked+span small{color:var(--on-ink);opacity:.75}
+.pill.tg{appearance:none;background:none;border:0;padding:0;margin:0;font:inherit;color:inherit;border-radius:999px}
+.pill.tg[aria-pressed="true"] span{background:var(--ink);color:var(--on-ink);border-color:var(--ink)}
+.pill.tg:focus-visible{outline:none}
+.pill.tg:focus-visible span{outline:2px solid var(--accent);outline-offset:3px}
+.pill.tg[disabled]{cursor:default}
+.pill.tg[disabled] span{opacity:.5}
+.pill.tg[disabled][aria-pressed="true"] span{opacity:1}
 .ev.tr .t{display:block;white-space:normal}
 .ev.tr .a{display:block;white-space:pre}
 .fld{display:block;margin-top:16px}

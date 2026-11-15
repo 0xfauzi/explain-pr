@@ -153,7 +153,7 @@ One row per moment. "Reply" is what the one-line form accepts in chat. Sizes are
 
 | Moment | Reason line | Prompt | Answer | Size | Reply | Result headline |
 | :- | :- | :- | :- | :- | :- | :- |
-| Revert test | Your agent finished | Which one would still pass with the change undone? | The test names, None, Don't know | One tap | `1`, `2`, `none` | REVERT TEST |
+| Revert test | Your agent finished | Which of them would still pass with the change undone? | The test numbers (any number of them), None, Don't know, then Lock | A few taps | `1`, `1 3`, `none` | REVERT TEST |
 | Call it | A test is failing | Before any fix: where is the cause? | Three components, Somewhere else, Don't know. Or one line | One tap, or one line | `1` to `4`, or a line | CALL IT |
 | Brief | Starting a task | Name one check that fails now and will pass when this is done | One line | One line | A line | DONE CHECK |
 | Who is affected | Your agent finished | This changes `<symbol>`. Name one caller or user outside the change who sees something different | One line, or Nobody | One line | A line, `nobody` | WHO IS AFFECTED |
@@ -190,15 +190,17 @@ It added 3 tests. Read them first.
        assert exc.value.code == "amount_too_large"
   Open a test
 
-Which one would still pass with the change undone?
+Which of them would still pass with the change undone?
 
-  ( ) 1    ( ) 2    ( ) 3    ( ) None    ( ) Don't know
+  [ ] 1    [ ] 2    [ ] 3    [ ] None    [ ] Don't know
+
+  [ Lock ]
 
 Skip     Wrong start
 Checked by a run: the change undone, the tests kept.
 ```
 
-After a pick: "Locked. Undo" and one optional row: `How sure?  Sure   Not sure   Show the result`.
+The numbers are toggles: several can be on. None and Don't know each clear them. Lock sends the answer; a tap on a toggle never locks. After the lock: "Locked. Undo" and one optional row: `How sure?  Sure   Not sure   Show the result`. With one test the picks are Fails, Still passes and Don't know, and a tap locks.
 
 Result:
 
@@ -251,9 +253,9 @@ Debugging | orbit-pay | webhook: charge.settled
 test_settled_posts_to_ledger: expected 1 posting, found 0.
 
 Before any fix: where is the cause?
-  ( ) 1  webhooks/handler.py      named in the trace
-  ( ) 2  api/charges.py           changed in this task
-  ( ) 3  ledger/postings.py       named in the trace
+  ( ) 1  webhooks/handler.py
+  ( ) 2  api/charges.py
+  ( ) 3  ledger/postings.py
   ( ) 4  Somewhere else
   ( ) Don't know
 
@@ -261,6 +263,8 @@ Your agent keeps working. If it starts a fix before you answer, this closes
 and the failure is saved as a Replay. Its theory may already be on screen.
 Checked by a run, once the test passes again.
 ```
+
+The card does not say why each file is listed: when the agent's own edit broke the test, "changed in this task" would mark the answer. The result's More lists it, as evidence. With fewer than two files there is no choice, so nothing is asked.
 
 After the lock: "Locked. Shown when test_settled_posts_to_ledger passes again." The row sits under **Waiting**.
 
@@ -342,7 +346,7 @@ Where the agent can show a form, the question appears as a card in the conversat
 One line: `skip ok`, why now, the question, the reply words and the Room link. No tables, no boxes, no colour.
 
 ```
-Firsthand (skip ok): your agent finished and added 3 tests. Which one would still pass with the change undone? 1 test_same_key_refunds_once, 2 test_refund_response_is_stable, 3 test_refund_amount_validated. Reply 1, 2, 3 or none. With the tests shown: http://127.0.0.1:4127/q/7f3
+Firsthand (skip ok): your agent finished and added 3 tests. Which of them would still pass with the change undone? 1 test_same_key_refunds_once, 2 test_refund_response_is_stable, 3 test_refund_amount_validated. Reply the numbers, or none. With the tests shown: http://127.0.0.1:4127/q/7f3
 
 Firsthand (skip ok): test_settled_posts_to_ledger is failing. Before any fix, where is the cause? 1 webhooks/handler.py, 2 api/charges.py, 3 ledger/postings.py, 4 somewhere else. Reply 1 to 4, or: http://127.0.0.1:4127/q/7f5
 ```

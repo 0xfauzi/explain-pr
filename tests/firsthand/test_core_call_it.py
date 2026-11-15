@@ -14,10 +14,17 @@ from firsthand.moments import call_it as ci
 
 ROOT = "/home/sam/orbit-pay"
 PICKS = (
+    {"n": 1, "path": "api/charges.py", "traced": False, "changed": True},
+    {"n": 2, "path": "ledger/postings.py", "traced": True, "changed": False},
+    {"n": 3, "path": "webhooks/handler.py", "traced": True, "changed": False},
+)
+# The same picks as a record from before the notes left the card holds them.
+OLD_PICKS = (
     {"n": 1, "path": "api/charges.py", "note": "changed in this task"},
     {"n": 2, "path": "ledger/postings.py", "note": "named in the trace"},
     {"n": 3, "path": "webhooks/handler.py", "note": "named in the trace"},
 )
+NOTE_WORDS = ("named in the trace", "changed in this task", "traced")
 FRAMES = [
     {"path": "tests/test_hooks.py", "line": 12},
     {"path": "webhooks/handler.py", "line": 27},
@@ -142,22 +149,44 @@ class PicksTest(support.TempHome):
         )
         picks = ci.build_picks(frames, ["api/charges.py", "tests/test_h.py", "z.py"])
         self.assertEqual(
-            [(p["n"], p["path"], p["note"]) for p in picks],
+            [(p["n"], p["path"], p["traced"], p["changed"]) for p in picks],
             [
-                (1, "api/charges.py", "changed in this task"),
-                (2, "ledger/postings.py", "named in the trace"),
-                (3, "webhooks/handler.py", "named in the trace"),
+                (1, "api/charges.py", False, True),
+                (2, "ledger/postings.py", True, False),
+                (3, "webhooks/handler.py", True, False),
             ],
         )
+        self.assertTrue(all("note" not in p for p in picks))
+        self.assertTrue(ci.worth_asking(picks))
 
     def test_a_file_both_named_and_changed(self) -> None:
         picks = ci.build_picks((ci.Frame("a.py", 3),), ["a.py"])
+        self.assertEqual([(p["traced"], p["changed"]) for p in picks], [(True, True)])
         self.assertEqual(
-            [p["note"] for p in picks], ["named in the trace, changed in this task"]
+            ci.pick_facts(picks[0]), ["named in the trace", "changed in this task"]
         )
+        self.assertFalse(ci.worth_asking(picks), "one file is not a choice")
+
+    def test_old_records_with_a_note(self) -> None:
+        both = {
+            "n": 1,
+            "path": "a.py",
+            "note": "named in the trace, changed in this task",
+        }
+        self.assertEqual(
+            ci.pick_facts(both), ["named in the trace", "changed in this task"]
+        )
+        self.assertEqual(ci.pick_facts(OLD_PICKS[1]), ["named in the trace"])
+        old = key(fix=("api/charges.py",))
+        old = Key(**{**old.__dict__, "extra": {**old.extra, "picks": list(OLD_PICKS)}})
+        sc = ci.score("1", old)
+        self.assertEqual((sc.result, sc.outcome_kind), ("match", "common"))
+        self.assertEqual(ci.score("2", old).outcome_kind, "common")
 
     def test_no_files(self) -> None:
-        self.assertEqual(ci.build_picks((ci.Frame("tests/test_a.py", 3),), []), ())
+        picks = ci.build_picks((ci.Frame("tests/test_a.py", 3),), [])
+        self.assertEqual(picks, ())
+        self.assertFalse(ci.worth_asking(picks))
 
 
 class _Store:
@@ -304,6 +333,24 @@ class WordsTest(support.TempHome):
         self.assertTrue(
             words.question_line(m, ctx(room=None)).endswith(", or: run firsthand room")
         )
+
+    def test_no_pick_says_why_it_is_listed(self) -> None:
+        from firsthand import words_callit as wc
+
+        for picks in (PICKS, OLD_PICKS):
+            m = moment()
+            m.extra["picks"] = [dict(p) for p in picks]
+            shown = str(wc.pick_rows(m)) + words.question_line(m, ctx(work=True))
+            for word in NOTE_WORDS:
+                self.assertNotIn(word, shown)
+            self.assertEqual(
+                [(r["name"], r["text"]) for r in wc.pick_more_rows(m)],
+                [
+                    ("1  api/charges.py", "changed in this task"),
+                    ("2  ledger/postings.py", "named in the trace"),
+                    ("3  webhooks/handler.py", "named in the trace"),
+                ],
+            )
 
     def test_agent_output_is_the_door(self) -> None:
         m = moment()

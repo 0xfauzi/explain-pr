@@ -80,6 +80,7 @@ def question_view(v: views.ViewInput, m: Moment, say=None) -> dict:
         "form": "pick" if confirm else "line",
         "prompt": words_brief.confirm_prompt(m) if confirm else words_brief.PROMPT,
         "picks": CONFIRM_PICKS if confirm else [],
+        "multi": False,
         "footer": words_brief.CONFIRM_FOOTER if confirm else words_brief.FOOTER,
         "line": v.lines.get(m.id),
         "can": _can(m),

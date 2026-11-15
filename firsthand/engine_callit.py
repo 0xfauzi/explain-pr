@@ -302,8 +302,10 @@ class CallIt:
         reason = (
             ask.gates(self.gate_input(p, s, at)) if self.live(p) is None else "change"
         )
-        if not picks or task is None or reason is not None:
-            self.log(f"episode {ep['id']} not asked: {reason or 'no files to pick'}")
+        if not call_it.worth_asking(picks):
+            reason = reason or "fewer than two files to pick"
+        if reason is not None or task is None:
+            self.log(f"episode {ep['id']} not asked: {reason or 'no task'}")
             return
         self._call_offer(p, s, ep, picks, at)
 
@@ -360,7 +362,7 @@ class CallIt:
             "episode": ep["id"],
             "test": ep["test"],
             "picks": [
-                {"n": x["n"], "path": x["path"], "note": x["note"]} for x in picks
+                {k: x[k] for k in ("n", "path", "traced", "changed")} for x in picks
             ],
         }
         self.append(

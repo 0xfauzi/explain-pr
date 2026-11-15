@@ -56,14 +56,15 @@
 <li><span class="n">2</span><span>test_refund_response_is_stable<span class="a">assert resp.status_code == 200</span></span></li>
 <li><span class="n">3</span><span>test_refund_amount_validated<span class="a">assert exc.value.code == "amount_too_large"</span></span></li>
 </ol>
-<fieldset><legend class="q" id="q">Which one would still pass with the change undone?</legend>
-<div class="picks">
+<fieldset><legend class="q" id="q">Which of them would still pass with the change undone?</legend>
+<div class="picks" role="group" aria-labelledby="q">
 <button type="button" class="pill pk" data-p="1" aria-pressed="false" disabled>1</button>
 <button type="button" class="pill pk" data-p="2" aria-pressed="false" disabled>2</button>
 <button type="button" class="pill pk" data-p="3" aria-pressed="false" disabled>3</button>
 <button type="button" class="pill pk" data-p="none" aria-pressed="false" disabled>None</button>
 <button type="button" class="pill pk" data-p="dk" aria-pressed="false" disabled>Don't know</button>
-</div></fieldset>
+</div>
+<p class="acts send" data-v="ask"><button type="button" class="btn sm" id="lockbtn" disabled>Lock</button></p></fieldset>
 <div class="lock in" data-v="locked" id="lockrow" hidden><p class="st"><span>Locked.</span> <button type="button" class="tbtn" id="undo">Undo</button></p>
 <div class="sure" id="surerow"><span class="lb" id="sl">How sure?</span>
 <div class="sp" role="radiogroup" aria-labelledby="sl">
@@ -85,7 +86,7 @@
 <dl class="rw">
 <div><dt>You said</dt><dd id="said">2, test_refund_response_is_stable.</dd></div>
 <div><dt>What happened</dt><dd id="what">It still passes with the change undone. It would pass whether or not the change exists.</dd></div>
-<div id="cuerow" hidden><dt>What would have shown it</dt><dd>Its only assertion is at <span class="mono">tests/test_refunds.py:41</span>.</dd></div>
+<div id="cuerow" hidden><dt>What would have shown it</dt><dd id="cue">Its only assertion is at <span class="mono">tests/test_refunds.py:41</span>.</dd></div>
 </dl>
 <div class="cue"><button type="button" class="btn ghost sm needs-js" id="again">Try again</button><p>Back to: idempotent refunds. Next: read the summary.</p></div>
 <details class="more"><summary>More</summary><div class="mb">
@@ -122,7 +123,7 @@
 <div class="bd">
 <pre class="u">&gt; Make refunds idempotent on the idempotency key.</pre>
 <pre class="d">(the agent works, then finishes)</pre>
-<pre class="fh">Firsthand (skip ok): your agent finished and added 3 tests. Which one would still pass with the change undone? 1 test_same_key_refunds_once, 2 test_refund_response_is_stable, 3 test_refund_amount_validated. Reply 1, 2, 3 or none. With the tests shown: http://127.0.0.1:4127/q/7f3</pre>
+<pre class="fh">Firsthand (skip ok): your agent finished and added 3 tests. Which of them would still pass with the change undone? 1 test_same_key_refunds_once, 2 test_refund_response_is_stable, 3 test_refund_amount_validated. Reply the numbers, or none. With the tests shown: http://127.0.0.1:4127/q/7f3</pre>
 <pre class="u">&gt; 2</pre>
 <pre class="fh">Firsthand, revert test. Matched. You said 2.
 test_refund_response_is_stable still passes with the change undone. It would pass whether or not the change exists.

@@ -153,6 +153,96 @@ class ScoreTest(support.TempHome):
         self.assertEqual(rt.finding(_key("does_not_pass", how="exit_code")), ())
 
 
+class SetAnswerTest(support.TempHome):
+    """With several tests the answer is the set of tests that still pass."""
+
+    def test_two_still_pass(self) -> None:
+        k = _key("still_passes", "fails_on_assertion", "still_passes")
+        for answer in ("1", "3", "1,2", "1,2,3", "none", "2"):
+            self.assertEqual(rt.score(answer, k).result, "miss", answer)
+        hit = rt.score("1,3", k)
+        self.assertEqual(
+            (hit.result, hit.outcome_kind, hit.catch), ("match", "uncommon", True)
+        )
+        self.assertIsNone(rt.score("dont_know", k))
+
+    def test_the_empty_set(self) -> None:
+        common = _key("fails_on_assertion", "cannot_run", "does_not_pass")
+        none = rt.score("none", common)
+        self.assertEqual(
+            (none.result, none.outcome_kind, none.catch), ("match", "common", False)
+        )
+        self.assertEqual(rt.score("1,3", common).result, "miss")
+
+    def test_an_old_single_number_record_still_scores(self) -> None:
+        # Records from before sets hold one number: it reads as a set of one.
+        self.assertEqual(rt.picked_numbers("2", 3), (2,))
+        k = _key("fails_on_assertion", "still_passes", "cannot_run")
+        self.assertEqual(rt.score("2", k).result, "match")
+        self.assertEqual(
+            rt.score("2", _key("still_passes", "still_passes")).result, "miss"
+        )
+
+    def test_bad_sets_are_not_scored(self) -> None:
+        k = _key("still_passes", "fails_on_assertion", "still_passes")
+        for answer in ("1,1", "0", "4", "1,4", "1,,3", "", ",", "1 3", "x"):
+            self.assertIsNone(rt.picked_numbers(answer, 3), answer)
+            self.assertIsNone(rt.score(answer, k), answer)
+        self.assertEqual(rt.picked_numbers("3,1", 3), (1, 3))
+        self.assertEqual(rt.answer_of((3, 1)), "1,3")
+        self.assertEqual(rt.answer_of(()), "none")
+
+    def test_parse_every_form(self) -> None:
+        table = [
+            ("1", Reply("1", None)),
+            ("1 3", Reply("1,3", None)),
+            ("1,3", Reply("1,3", None)),
+            ("3, 1", Reply("1,3", None)),
+            ("1 and 3", Reply("1,3", None)),
+            ("1, 2 and 3", Reply("1,2,3", None)),
+            ("1, 2, and 3.", Reply("1,2,3", None)),
+            ("1 and 3 sure", Reply("1,3", "high")),
+            ("1,3 not sure", Reply("1,3", "low")),
+            ("none sure", Reply("none", "high")),
+            ("don't know", Reply("dont_know", None)),
+            ("1 1", None),
+            ("1 4", None),
+            ("0", None),
+            ("1 and", None),
+            ("and 1", None),
+            ("1 or 3", None),
+            ("1, none", None),
+            ("1 and 3 please", None),
+            ("1 3 fails", None),
+        ]
+        for text, want in table:
+            self.assertEqual(rt.parse_reply(text, 3), want, text)
+        self.assertIsNone(rt.parse_reply("1 2", 1), "the one-test form takes no set")
+        self.assertEqual(rt.parse_reply("fails sure", 1), Reply("fails", "high"))
+
+    def test_always_none_is_the_base_rate(self) -> None:
+        # "Always answering none" matches exactly the common outcomes.
+        for results in itertools.product(
+            ("still_passes", "fails_on_assertion", "cannot_run"), repeat=3
+        ):
+            k = _key(*results)
+            none = rt.score("none", k)
+            for answer in ("1", "2,3", "1,2,3", "none"):
+                sc = rt.score(answer, k)
+                self.assertEqual(sc.outcome_kind, none.outcome_kind)
+            self.assertEqual(none.result == "match", none.outcome_kind == "common")
+
+    def test_cue_is_about_a_test_left_out_else_a_wrong_pick(self) -> None:
+        k = _key("still_passes", "fails_on_assertion", "still_passes")
+        text, items = rt.cue("1", k)
+        self.assertEqual(items, (k.tests[2],))
+        self.assertEqual(text, "Its only assertion is at tests/test_a.py:13.")
+        text, items = rt.cue("1,2,3", k)
+        self.assertEqual(items, (k.tests[1],))
+        self.assertEqual(text, "It fails at tests/test_a.py:22.")
+        self.assertIsNone(rt.cue("1,3", k))
+
+
 def _item(n: int, asserts: tuple[int, ...], line: int = 5) -> TestItem:
     return TestItem(
         n=n,

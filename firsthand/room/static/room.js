@@ -16,7 +16,7 @@
     ['deep', 'Deep', 'As Standard. You may also write a line of code on some questions.']
   ];
 
-  var S = { token: null, inbox: null, view: null, route: null, lost: false, es: null };
+  var S = { token: null, inbox: null, view: null, route: null, lost: false, es: null, draft: null };
 
   /* ------------------------------------------------------------ small helpers */
 
@@ -328,17 +328,80 @@
   }
 
   function picks(v) {
+    if (v.multi) return togglePicks(v);
     var current = picked(v);
     var can = v.can || {};
-    var col = (v.picks || []).some(function (p) { return 'note' in p; });
+    var col = (v.picks || []).some(function (p) { return 'path' in p; });
     return h('fieldset', null, [
       h('legend', { class: 'q', id: 'q', text: v.prompt }),
       h('div', { class: col ? 'picks col' : 'picks' }, (v.picks || []).map(function (p) {
         var on = p.value === current;
         return pill('pick', p.value, p.label, on, !can.lock && !on, function (value, again) {
           if (!again && can.lock) act(v, 'lock', { answer: value }, 'Locked.');
-        }, col ? (p.note || null) : undefined);
+        }, col ? null : undefined);
       }))
+    ]);
+  }
+
+  /* Several tests: the numbers are toggles, None and Don't know are exclusive, and
+     only the Lock button sends. A toggle never locks, so no key press can. */
+
+  var EXCLUSIVE = { none: true, dont_know: true };
+
+  function chosenOf(answer) {
+    var on = {};
+    if (!answer) return on;
+    if (EXCLUSIVE[answer]) on[answer] = true;
+    else answer.split(',').forEach(function (n) { on[n] = true; });
+    return on;
+  }
+
+  function draftFor(v) {
+    if (!S.draft || S.draft.ref !== v.ref) S.draft = { ref: v.ref, on: {} };
+    return S.draft;
+  }
+
+  function draftAnswer(on) {
+    var keys = Object.keys(on).filter(function (k) { return on[k]; });
+    var only = keys.filter(function (k) { return EXCLUSIVE[k]; });
+    if (only.length) return only[0];
+    return keys.map(Number).sort(function (a, b) { return a - b; }).join(',');
+  }
+
+  function toggle(v, value) {
+    var d = draftFor(v);
+    var was = !!d.on[value];
+    if (EXCLUSIVE[value] || Object.keys(d.on).some(function (k) { return EXCLUSIVE[k] && d.on[k]; })) d.on = {};
+    d.on[value] = !was;
+    renderQuestion(v);
+    var again = D.querySelector('[data-pick="' + value + '"]');
+    if (again) again.focus();
+  }
+
+  function togglePicks(v) {
+    var can = v.can || {};
+    var current = picked(v);
+    var on = can.lock ? draftFor(v).on : chosenOf(current);
+    var answer = draftAnswer(on);
+    var kids = (v.picks || []).map(function (p) {
+      var pressed = !!on[p.value];
+      return h('button', {
+        type: 'button', class: 'pill tg' + (EXCLUSIVE[p.value] ? ' ex' : ''), 'data-pick': p.value,
+        'aria-pressed': pressed ? 'true' : 'false', disabled: !can.lock,
+        onclick: function () { if (can.lock) toggle(v, p.value); }
+      }, h('span', { text: p.label }));
+    });
+    var lock = can.lock ? h('p', { class: 'acts send' }, h('button', {
+      type: 'button', class: 'btn sm', text: 'Lock', disabled: !answer,
+      onclick: function () {
+        if (!answer) return;
+        act(v, 'lock', { answer: answer }, 'Locked.');
+      }
+    })) : null;
+    return h('fieldset', null, [
+      h('legend', { class: 'q', id: 'q', text: v.prompt }),
+      h('div', { class: 'picks', role: 'group', 'aria-labelledby': 'q' }, kids),
+      lock
     ]);
   }
 

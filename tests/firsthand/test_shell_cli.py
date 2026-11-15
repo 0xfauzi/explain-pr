@@ -263,26 +263,37 @@ class CommandsTest(CliCase):
             "evidence": [
                 {"n": 1, "name": "test_a", "path": "t.py", "line": 3, "asserts": []}
             ],
-            "prompt": "Which one would still pass with the change undone?",
+            "prompt": "Which of them would still pass with the change undone?",
             "picks": [
                 {"value": "1"},
                 {"value": "2"},
                 {"value": "none"},
                 {"value": "dont_know"},
             ],
+            "multi": True,
             "result": None,
         }
         self.fake.results["answer_room"] = {
             "say": ["Firsthand: locked. The check is still running."]
         }
-        self.swap(sys, "stdin", io.StringIO("2\n"))
+        self.swap(sys, "stdin", io.StringIO("1 and 2\n"))
         code, out, _ = self.run_cli("room", "--tty")
         self.assertEqual(code, 0)
-        self.assertIn("Reply with one of: 1, 2, none, don't know. Or skip.", out)
+        self.assertIn("Reply the numbers, none or don't know. Or skip.", out)
         self.assertIn("Firsthand: locked.", out)
         self.assertEqual(
-            self.fake.requests[-1][:2], ("answer_room", {"ref": "r6t9kd", "text": "2"})
+            self.fake.requests[-1][:2],
+            ("answer_room", {"ref": "r6t9kd", "text": "1 and 2"}),
         )
+        # A card of single picks (one test, Call it) still lists its words.
+        self.fake.results["question"] = {
+            **self.fake.results["question"],
+            "multi": False,
+            "picks": [{"value": "fails"}, {"value": "passes"}, {"value": "dont_know"}],
+        }
+        self.swap(sys, "stdin", io.StringIO("fails\n"))
+        _, out, _ = self.run_cli("room", "--tty")
+        self.assertIn("Reply with one of: fails, passes, don't know. Or skip.", out)
         self.swap(cli, "under_agent", lambda *a, **k: True)
         self.assertEqual(self.run_cli("room", "--tty")[0], 1)
 
