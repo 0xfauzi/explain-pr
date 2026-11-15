@@ -1,0 +1,22 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="referrer" content="no-referrer">
+<title>Room</title>
+<link rel="stylesheet" href="/static/room.css">
+<script src="/static/room.js" defer></script>
+</head>
+<body class="hastabs">
+<header class="top">
+<div class="bar"><a class="word" href="/">Room</a><span class="proj" id="proj"></span><span class="sp"></span><button type="button" class="qbtn" id="quiet" aria-pressed="false" hidden>Quiet: off</button><a class="tbtn" href="/settings" id="settings-link">Settings</a></div>
+<nav class="tabs" aria-label="Room"><a class="tab" href="/" data-tab="inbox">Inbox</a><a class="tab" href="/journal" data-tab="journal">Journal</a><a class="tab" href="/skills" data-tab="skills">Skills</a></nav>
+</header>
+<div class="quietbar" id="notice" hidden></div>
+<main class="main" id="main"></main>
+<footer class="ft">Served by this computer at 127.0.0.1.</footer>
+<nav class="tabbar" aria-label="Room, bottom"><a class="tab" href="/" data-tab="inbox">Inbox</a><a class="tab" href="/journal" data-tab="journal">Journal</a><a class="tab" href="/skills" data-tab="skills">Skills</a></nav>
+<p class="vh" aria-live="polite" id="live"></p>
+</body>
+</html>

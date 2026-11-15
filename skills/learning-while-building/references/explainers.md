@@ -63,7 +63,8 @@ List what the learner's chat answer missed or got wrong; each gap gets at least
 one interaction.
 
 **3. Write the page.** Copy `assets/explainer-template.html` to
-`.learning/explainers/<topic-id>.html`. Keep the `<style>` and the
+`<record>/explainers/<topic-id>.html`, where `<record>` is the directory
+`learning.py where` prints. Keep the `<style>` and the
 `<script id="ex-runtime">` block unchanged. Replace everything marked EXAMPLE,
 set `<body data-topic>` to the topic id, and follow the structure below.
 
@@ -286,8 +287,8 @@ behind the choice and the evidence against it; it never scolds or cheers.
 
 ## Storing and delivering the page
 
-1. Save it as `.learning/explainers/<topic-id>.html`, so it is committed with
-   the record.
+1. Save it as `<record>/explainers/<topic-id>.html`, where `<record>` is the
+   directory `learning.py where` prints.
 2. Get it in front of the learner in a form they can open where they are. A
    path inside a cloud container is not something a phone can open. In order of
    preference:

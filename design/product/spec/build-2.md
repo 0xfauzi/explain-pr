@@ -8,7 +8,7 @@ Part of `../PRODUCT.md` section 8. It follows `build-1.md`. This step builds the
 
 `SKILLS.md` names these as the moments with the clearest feedback. The fourth it names, predict before running, was cut as an asked moment (`learning.md` section 13). 2a is specified in full. 2b and 2c are given as what they add.
 
-Hook field names marked [confirm] are from memory of the Claude Code hooks reference and are checked against it before coding.
+The hook contract in sections 3 and 4 was checked against the Claude Code hooks reference and skills page (`code.claude.com/docs/en/hooks`, `hooks-guide` and `skills`, read on 2026-11-15, Claude Code 2.1.325). One thing was read from the reference and not yet seen in a live session: how the `Stop` line is drawn in the terminal (section 10, item 1 checks it).
 
 ---
 
@@ -45,17 +45,25 @@ A Python package `firsthand/` at the repo root, with a `[project]` table added t
 ```json
 {
   "hooks": {
-    "SessionStart":       [{"hooks": [{"type": "command", "command": "/abs/firsthand hook claude-code SessionStart"}]}],
-    "UserPromptSubmit":   [{"hooks": [{"type": "command", "command": "/abs/firsthand hook claude-code UserPromptSubmit"}]}],
-    "PreToolUse":         [{"matcher": "*", "hooks": [{"type": "command", "command": "/abs/firsthand hook claude-code PreToolUse"}]}],
-    "PostToolUse":        [{"matcher": "*", "hooks": [{"type": "command", "command": "/abs/firsthand hook claude-code PostToolUse"}]}],
-    "PostToolUseFailure": [{"matcher": "*", "hooks": [{"type": "command", "command": "/abs/firsthand hook claude-code PostToolUseFailure"}]}],
-    "Stop":               [{"hooks": [{"type": "command", "command": "/abs/firsthand hook claude-code Stop"}]}]
+    "SessionStart":       [{"hooks": [{"type": "command", "timeout": 5, "command": "/abs/firsthand hook claude-code SessionStart"}]}],
+    "UserPromptSubmit":   [{"hooks": [{"type": "command", "timeout": 5, "command": "/abs/firsthand hook claude-code UserPromptSubmit"}]}],
+    "PreToolUse":         [{"matcher": "*", "hooks": [{"type": "command", "timeout": 5, "command": "/abs/firsthand hook claude-code PreToolUse"}]}],
+    "PostToolUse":        [{"matcher": "*", "hooks": [{"type": "command", "timeout": 5, "command": "/abs/firsthand hook claude-code PostToolUse"}]}],
+    "PostToolUseFailure": [{"matcher": "*", "hooks": [{"type": "command", "timeout": 5, "command": "/abs/firsthand hook claude-code PostToolUseFailure"}]}],
+    "Stop":               [{"hooks": [{"type": "command", "timeout": 5, "command": "/abs/firsthand hook claude-code Stop"}]}]
   }
 }
 ```
 
-5. Write the skill folder `~/.claude/skills/firsthand/SKILL.md`: print a Firsthand line unchanged, treat "skip" as final, never answer for the person, never read `~/.firsthand`.
+   Notes on this shape:
+
+   - All six event names exist. Each event holds a list of matcher groups, and each group holds a `hooks` list of handlers.
+   - `matcher` is optional. `"*"`, `""` or no matcher all mean every occurrence. On the three tool events it filters by tool name. `UserPromptSubmit` and `Stop` have no matcher support and always fire. On `SessionStart` a matcher would filter by how the session started (`startup`, `resume`, `clear`, `compact`, `fork`), so none is set.
+   - `timeout` is in seconds. The default for a command hook is 600, lowered to 30 on `UserPromptSubmit`. A hook that is not `async` holds the agent until it exits, so 5 is set as a ceiling. A hook cancelled at its timeout has its output discarded and blocks nothing. `async: true` is not used: an async hook's `systemMessage` is not shown to the person.
+   - With no `args` field the command string runs through `sh -c`, so `init` shell-quotes the absolute path.
+   - `onFailure` is never set. Left unset, a hook that fails or cannot start is a non-blocking error.
+
+5. Write the personal skill `~/.claude/skills/firsthand/SKILL.md`. The file is YAML frontmatter between `---` lines, then markdown. No frontmatter field is required: `name` defaults to the folder name, and `description` is what Claude Code uses to decide when to load the skill, so it is set (it is cut at 1,536 characters in the skill listing). `user-invocable: false` hides it from the `/` menu. The body says: print a Firsthand line unchanged, treat "skip" as final, never answer for the person, never read `~/.firsthand`. Claude Code watches `~/.claude/skills/`, so the skill loads without a restart. It is not read by cloud sessions.
 6. Ask `Is this a work computer? [Y/n]` and store `config/work_computer.json`.
 7. Find the test command: `[tool.pytest.ini_options]` or a `pytest.ini`, `tox.ini` or `conftest.py` gives `pytest -q`. Otherwise ask once. Store it in `projects/<project-id>.json`.
 8. Print the install copy of `experience.md` section 3.1.
@@ -66,7 +74,19 @@ The history scan and the "What works here" note are added after 2a works end to 
 
 **Mapping.** `SessionStart` to `session_start`, `UserPromptSubmit` to `prompt_submit`, `PreToolUse` to `before_tool`, `PostToolUse` to `after_tool`, `PostToolUseFailure` to `tool_failed`, `Stop` to `turn_end`.
 
-**Fields read from the hook's stdin** [confirm]: `session_id`, `cwd`, `hook_event_name`; `prompt` on UserPromptSubmit; `tool_name`, `tool_input.command` for Bash, `tool_input.file_path` for Edit and Write, and the exit code and output of a Bash call from `tool_response` on PostToolUse. `transcript_path` is never read or stored.
+`PostToolUse` fires only when a tool succeeds. A Bash command that exits non-zero fires `PostToolUseFailure` instead, so a failing test run arrives as `tool_failed` and a passing one as `after_tool`. `Stop` fires when the main agent finishes responding, not on a user interrupt and not on an API error. `UserPromptSubmit` also fires for prompts the person did not type (a scheduled task, a background subagent reporting back).
+
+**Fields read from the hook's stdin** (one JSON object):
+
+- Every event: `session_id`, `cwd`, `hook_event_name`. `agent_id` when present, which marks a call made inside a subagent.
+- `SessionStart`: `source`.
+- `UserPromptSubmit`: `prompt`.
+- `PreToolUse`, `PostToolUse`, `PostToolUseFailure`: `tool_name`, `tool_use_id`, `tool_input.command` for Bash, `tool_input.file_path` for Edit and Write (always absolute).
+- `PostToolUse` for Bash: `tool_response.stdout` and `tool_response.stderr`. `tool_response` is an object with `stdout`, `stderr`, `interrupted` and `isImage`. It has no exit code field: the event itself means the command exited 0, so `exit` is written as 0.
+- `PostToolUseFailure`: `error`, a string. For Bash its first line is `Exit code N` and the rest is the command's stdout and stderr interleaved. Long output is cut in the middle by Claude Code. `exit` is parsed from the first line, and is null when that line is missing (the shell could not start). `is_interrupt` when present.
+- `Stop`: nothing more. `last_assistant_message` is not read.
+
+`transcript_path` is never read or stored.
 
 **Spool line**, appended to `~/.firsthand/run/spool.jsonl` (0600):
 
@@ -75,15 +95,20 @@ The history scan and the "What works here" note are added after 2a works end to 
  "event": "after_tool", "tool": "shell", "command": "pytest -q", "exit": 0, "failing": [], "paths": []}
 ```
 
-- `tool` is `edit` for Edit, Write and MultiEdit, `shell` for Bash, `ask` for AskUserQuestion, `plan` for plan-mode tools, else `other`.
-- For a shell call whose command starts with the project's test command, the dispatcher parses failing test ids from the output (lines matching `^FAILED (\S+)`) and drops the output.
+A failing run of the same command is `"event": "tool_failed"` with `"exit": 1` and the failing ids.
+
+- `tool` is `edit` for Edit, Write and MultiEdit, `shell` for Bash, `ask` for AskUserQuestion, `plan` for ExitPlanMode and EnterPlanMode, else `other`. (The current reference lists Edit, Write, AskUserQuestion and ExitPlanMode. MultiEdit and EnterPlanMode are kept for older versions and cost nothing if they never arrive.)
+- For a shell call whose command starts with the project's test command, the dispatcher parses failing test ids (lines matching `^FAILED (\S+)`) from `error` on `tool_failed`, or from `tool_response.stdout` on `after_tool`, and drops the output. Because Claude Code may cut a long `error` in the middle, the list can be incomplete. That is safe here: the exit code still says the run failed, and the revert check runs the tests itself.
 - The prompt text is included on `prompt_submit` after the secret scan.
 
-**Hook output.** The dispatcher prints nothing, except:
+**Hook output.** The dispatcher always exits 0. It prints nothing on stdout or stderr, except:
 
-- On `Stop`, when the daemon has a question or fact line ready for this session: `{"systemMessage": "<the line>"}` [confirm the field shows to the person and does not continue the turn]. The dispatcher waits for the daemon at most 300 ms. A line that is not ready is delivered at the next `Stop`, or through the Room.
-- On `UserPromptSubmit`, when the prompt is exactly a reply word of the open question (`1` to `4`, `none`, `fails`, `passes`, `don't know`, `skip`): the result lines on stdout, prefixed with `Print these Firsthand lines unchanged, then continue:` so they enter the agent's context [confirm that stdout is added as context for this event].
-- Never `decision`, `permissionDecision`, `continue: false` or a non-zero exit code.
+- On `Stop`, when the daemon has a question or fact line ready for this session: one JSON object and nothing else on stdout, `{"systemMessage": "<the line>"}`. `systemMessage` is shown to the person and is not sent to the model. It does not continue the turn: at `Stop` only `decision: "block"`, exit code 2 and `hookSpecificOutput.additionalContext` do that, and none is ever used. Claude Code presents it as a warning message from the hook, so the line carries its own "Firsthand:" prefix and stays one line. The cap is 10,000 characters. The dispatcher waits for the daemon at most 300 ms. A line that is not ready is delivered at the next `Stop`, or through the Room.
+- On `UserPromptSubmit`, when the prompt is exactly a reply word of the open question (`1` to `4`, `none`, `fails`, `passes`, `don't know`, `skip`): the result lines as plain text on stdout, after the prefix line `Firsthand result for the reply above. The firsthand skill prints these lines unchanged:`. Plain-text stdout on this event is added to the model's context next to the prompt, with no visible transcript entry and without blocking the prompt. `hookSpecificOutput.additionalContext` does the same and is not needed. The text must not start with `{`, or it is read as JSON. The prefix is a statement, not a command, because the reference warns that injected text written as an instruction can be treated as a prompt injection. The cap is 10,000 characters.
+- Text meant for the agent only (the finding of section 7, the Brief question of 2c) goes out the same way on the next `UserPromptSubmit` of the session. It is never sent on `Stop`: context added at `Stop` makes the agent take another turn.
+- Never `decision`, `permissionDecision`, `continue: false`, `hookSpecificOutput` on `Stop`, exit code 2 or any other non-zero exit code. Stdout on `SessionStart` is also added to the model's context, so nothing is printed there.
+
+**Hook speed.** Every hook here runs synchronously, so the agent waits for the dispatcher to exit: before a tool call on `PreToolUse`, before the model sees the prompt on `UserPromptSubmit`, before the turn closes on `Stop`. The dispatcher therefore does only the spool append and, on `Stop` and `UserPromptSubmit`, the 300 ms wait. When it starts the daemon it detaches it (new session) and points the daemon's stdin, stdout and stderr at `/dev/null` or a log file. If the daemon kept the hook's stdout or stderr open, Claude Code would wait up to 10 seconds for the hook to finish.
 
 ## 5. Timeline and the done signal
 
@@ -128,7 +153,7 @@ The generic adapter, for a non-pytest test command, runs the command once per ch
 - **Close:** the next `prompt_submit` that is not a reply word closes the question unanswered.
 - **Score:** with several tests, a match if the picked test's result is `still_passes`, or the pick is `none` and no test is. With one test, a match if `fails` meets `fails_on_assertion` or `cannot_run`, or `passes` meets `still_passes`. Outcome kind is `uncommon` when any test still passes. `don't know` writes `call.sealed` and no `call.scored`.
 - **How sure:** in the Room, one optional row after the lock. In chat, the reply may carry it: `2 sure`, `none not sure`.
-- **Finding to the agent:** when any test still passes or cannot run, one line is queued for the next hook output of the session: `Firsthand finding: <test id> passes with the change undone.`
+- **Finding to the agent:** when any test still passes or cannot run, one line is queued for the next `UserPromptSubmit` output of the session (section 4): `Firsthand finding: <test id> passes with the change undone.`
 - **Fact line:** when a test still passes and any changed file matches a high-stakes glob, the line is printed at the next `Stop` whether or not a question is open, and an open question closes as `shown-first`.
 - **Notes only** and **quiet:** the check still runs and writes `note.posted`.
 
@@ -180,6 +205,6 @@ Each test replays a recorded sequence of spool lines against a daemon with a tem
 
 **2b. Call it** adds: the trigger (a `prompt_submit` matching a traceback or `FAILED` pattern, or a `turn_end` whose last test run failed on a test that exists at the base and is unedited); snapshots at the red and green runs; the pick card built from files named in the failing output and files changed in the task; closing the card at the first `after_tool` edit to a non-test file; the fix location (files changed between the red and green snapshots); the symptom-pattern scan (added `sleep`, added bare or broad `except`, removed or loosened `assert`, added `skip`); the undo-the-fix run; `episode.red` and `episode.green` events; the Waiting group in the Inbox. Fixtures: a causal fix, a fix in an unnamed file, a sleep patch, a test that never goes green.
 
-**2c. Brief** adds: the trigger at `prompt_submit` plus the first edits (two or more path categories, no test id, test path or test command in the prompt, not the first prompt of the day); the one-line question delivered as added context on the next hook output; passing the done line to the agent; finding the first test added in the task; the "Is this your check?" confirm; the Revert test's check run on that one test; correction prompts and ask-tool questions listed on the result. Fixtures: a check that tells done from not done, one that passes anyway, a task where no test was written.
+**2c. Brief** adds: the trigger at `prompt_submit` plus the first edits (two or more path categories, no test id, test path or test command in the prompt, not the first prompt of the day); the one-line question delivered as added context on the next `UserPromptSubmit` output (section 4); passing the done line to the agent; finding the first test added in the task; the "Is this your check?" confirm; the Revert test's check run on that one test; correction prompts and ask-tool questions listed on the result. Fixtures: a check that tells done from not done, one that passes anyway, a task where no test was written.
 
 After 2c the order continues in `../PRODUCT.md` section 8.

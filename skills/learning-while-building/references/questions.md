@@ -58,7 +58,7 @@ fixed, so that recalling the earlier answer is not enough:
 - a design extension (add a feature without violating the invariant)
 
 Before asking, check the case against earlier questions on the topic (they are in
-`.learning/attempts.jsonl`). If the answer to the new question appears in an
+the record directory's `attempts/` folder; `learning.py where` prints it). If the answer to the new question appears in an
 earlier rubric, it is retrieval, not transfer. Record it with the right kind.
 
 ## Writing the question

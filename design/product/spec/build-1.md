@@ -22,7 +22,7 @@ Part of `../PRODUCT.md` section 8. This step changes only the existing skill in 
 ```
 
 - **Home.** `$LEARNING_HOME`, else `~/.learning-while-building`. Created with mode 0700.
-- **Project key.** `<slug>-<8 hex>`. The slug is the git top-level folder name, lower case, with every run of characters outside `a-z0-9` replaced by `-`. The hex is the first 8 characters of the SHA-256 of the root commit hash (`git rev-list --max-parents=0 HEAD`, last line). Clones and worktrees of one repo share a key. Outside a git repo, or with no commits, the hash is of the resolved absolute path.
+- **Project key.** `<slug>-<8 hex>`. The slug is the git top-level folder name, lower case, with every run of characters outside `a-z0-9` replaced by `-`. The hex is the first 8 characters of the SHA-256 of the root commit hash (`git rev-list --max-parents=0 HEAD`, last line). Clones and worktrees of one repo share a key. Outside a git repo, or with no commits, the hash is of the resolved absolute path. A record started before the repo's first commit keeps its path-keyed folder: while the commit key's folder holds no record and the path key's folder does, the path key's folder is used.
 - **Resolution order** for the record directory, in `record.data_dir()`:
   1. `--dir`
   2. `$LEARNING_DIR`

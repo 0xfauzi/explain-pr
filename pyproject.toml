@@ -1,11 +1,35 @@
-# This file exists only to hold tool settings. The repo ships skills, not a
-# package, but vulture exits 2 without a [tool.vulture] section naming its paths,
-# and the shared pre-commit config is byte-identical across repos, so the settings
-# have to live where those tools read them.
+# Packaging for the firsthand package, plus tool settings. The repo also ships the
+# skills under skills/, which are not part of the package. vulture exits 2 without
+# a [tool.vulture] section naming its paths, and the shared pre-commit config is
+# byte-identical across repos, so the tool settings live here where those tools
+# read them.
+
+[build-system]
+# setuptools is a build-time requirement only. The package has no runtime
+# dependencies: it uses the standard library alone.
+requires = ["setuptools>=69"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "firsthand"
+version = "0.1.0"
+description = "Trains engineering judgment while a coding agent builds."
+requires-python = ">=3.11"
+dependencies = []
+
+[project.scripts]
+firsthand = "firsthand.cli:main"
+
+[tool.setuptools.packages.find]
+include = ["firsthand*"]
+
+[tool.setuptools.package-data]
+"firsthand.room" = ["page.html", "static/*"]
+"firsthand.adapters" = ["*.md"]
 
 [tool.vulture]
 min_confidence = 80
-paths = ["skills"]
+paths = ["skills", "firsthand"]
 
 [tool.codespell]
 skip = "*.lock,*/package-lock.json,.git"

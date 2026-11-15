@@ -30,8 +30,12 @@ from pathlib import Path
 from record import (
     CONFIDENCES,
     KINDS,
+    LEGACY_NOTICE,
     OUTCOMES,
+    RULE_LEGACY,
     RecordError,
+    after_write,
+    commit_home,
     data_dir,
     find_attempt,
     load_attempts,
@@ -39,6 +43,7 @@ from record import (
     new_attempt_id,
     now_stamp,
     require_topic,
+    resolve_dir,
     save_attempt,
 )
 
@@ -117,6 +122,7 @@ def cmd_post(args: argparse.Namespace) -> None:
     print(
         "The learner can answer in chat, with `learning.py answer`, or on the room page."
     )
+    after_write(args.dir, f"post {attempt['id']}")
 
 
 def cmd_inbox(args: argparse.Namespace) -> None:
@@ -255,6 +261,7 @@ def cmd_answer(args: argparse.Namespace) -> None:
     print(
         "Saved and locked. Your next session grades it; read the feedback with `learning.py questions`."
     )
+    after_write(args.dir, f"answer {attempt['id']}")
 
 
 # ---------------------------------------------------------------- page data
@@ -341,6 +348,7 @@ def route_post(root: Path, path: str, body: dict) -> tuple[int, object]:
             save_restatement(root, attempt, str(body.get("text", "")))
     except RecordError as exc:
         return 400, {"error": str(exc)}
+    commit_home(root, f"{path.removeprefix('/api/')} {attempt['id']}")
     return 200, {"ok": True}
 
 
@@ -391,8 +399,10 @@ def make_handler(root: Path) -> type:
 
 
 def cmd_serve(args: argparse.Namespace) -> None:
-    root = data_dir(args.dir)
+    root, rule = resolve_dir(args.dir)
     load_record(root)
+    if rule == RULE_LEGACY:
+        print(LEGACY_NOTICE)
     if not ROOM_PAGE.exists():
         raise RecordError(
             f"Missing {ROOM_PAGE}; the skill's assets folder is incomplete."
@@ -491,6 +501,7 @@ def cmd_room_pull(args: argparse.Namespace) -> None:
         f"From the page: {counts['answered']} new answer(s), {counts['graded']} graded there."
     )
     print("Grade anything still waiting with `inbox`.")
+    after_write(args.dir, "room-pull")
 
 
 # ---------------------------------------------------------------- cli

@@ -2,6 +2,59 @@
 
 All notable changes to this plugin. Versions follow the plugin manifest.
 
+## Unreleased: Firsthand preview
+
+`firsthand/` is a separate tool from the skill, not yet published. See the
+README section "Firsthand preview".
+
+### Added
+- Revert test (build step 2a): when Claude Code finishes a change with new or
+  edited tests, one question asks which test would still pass with the change
+  undone, checked by undoing the change in a scratch copy and running the tests.
+  With How sure, the fact line for high-stakes paths and the Room.
+- Call it (build step 2b): on a pasted failure, or a turn that ends with an
+  existing test failing, one question asks where the cause is before a fix
+  exists. Checked by where the fix landed and by undoing the fix. Symptom
+  patches (a sleep, a broad `except`, a skip, a loosened assertion) are not
+  scored. A Waiting group in the Room's Inbox.
+- Brief (build step 2c): at the start of a task that touches two or more kinds
+  of file and names no test, one question asks for a check that fails now and
+  will pass when the task is done. The line goes to the agent. At the done
+  signal the first test added is shown back ("Is this your check?") and run
+  with the change and with the change undone. The result lists correction
+  prompts sent after the agent finished and questions the agent asked.
+- `firsthand status`, `journal` and `skills` show all three. Skills has rows for
+  Verification, Debugging and diagnosis, and Framing the problem and the brief.
+
+## 0.6.0 (2026-11-15)
+
+### Changed
+- The record no longer lives in the project. Earlier versions kept it in
+  `.learning/` and said to commit it, but that folder holds every answer the
+  learner got wrong, and in a shared repository anyone with access, or with a
+  clone or fork, can read it. The record is now a local git repo at
+  `~/.learning-while-building/` (or `$LEARNING_HOME`), one folder per project,
+  with no remote. Each write is committed there. Nothing is written to the
+  project and nothing tells you to commit.
+- The record directory is chosen in this order: `--dir`, `$LEARNING_DIR`, an
+  existing `./.learning` record while the home has none for the project, then
+  the home folder for the project.
+
+### Added
+- `move`: run from the project root to copy an existing `./.learning` record to
+  the home record. It checks the copy, changes nothing in the project, and
+  prints how to remove the old folder and what that does not undo, read from
+  the project's git history and remotes. Until the record is moved, every
+  writing command ends with a line saying it is inside the project.
+- `export` and `import-bundle`: a cloud session prints its record as one JSON
+  document, and the learner merges it into the record on their own machine.
+  `init` in a cloud session says to do this.
+- `where`: prints the record directory in use and which rule chose it.
+
+### Removed
+- The branch note after writes, and the instruction to commit and push the
+  record.
+
 ## 0.5.0 (2026-11-06)
 
 ### Added

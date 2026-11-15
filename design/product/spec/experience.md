@@ -279,10 +279,10 @@ Endings, at the first green run or before:
 In the agent, at the start of a multi-part task whose prompt names no check:
 
 ```
-Firsthand (skip ok): starting a task. Name one check that fails now and will pass when this is done. Reply here.
+Firsthand (skip ok): starting a task. Name one check that fails now and will pass when this is done. Reply here starting with "check:".
 ```
 
-Sam replies: `a retried POST /charges with the same key returns the first charge id`. The agent receives: "Done when: a retried POST /charges with the same key returns the first charge id. Write this check as a failing test first."
+Sam replies: `check: a retried POST /charges with the same key returns the first charge id`. A reply that does not start with `check:` is a message to the agent, not the check: the line is printed at a turn end, where the agent also asks its own questions. On a work computer the Room link comes first, as in section 6.2. The agent receives: "Done when: a retried POST /charges with the same key returns the first charge id. Write this check as a failing test first."
 
 Result, at the done signal, after "Is this your check? test_retry_returns_first_charge. Yes / No":
 

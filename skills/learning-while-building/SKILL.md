@@ -100,19 +100,32 @@ On first use in a repository, run:
 
 Run all commands from the repository root. Before running `init`, show the
 learner the default dimensions (run `init --help` to print them) and ask which to keep, drop or add. Pass their list with
-`--dimensions a,b,c`. Then tell the learner to commit `.learning/`, because a
-cloud session's container is reclaimed and uncommitted files go with it. If they
-want the record out of the project repository, pass `--dir` to point elsewhere.
+`--dimensions a,b,c`.
+
+The record lives outside the project, in a local git repo at
+`~/.learning-while-building/` (or `$LEARNING_HOME`), one folder per project,
+with no remote. Every write is saved there by the script. Nothing is written to
+the project and there is nothing to commit in it. `learning.py where` prints the
+record directory in use and why it was chosen. `--dir` points elsewhere if the
+learner asks.
+
+If the project has a `.learning/` folder from an earlier version, commands still
+read it and end with a line saying so. Offer once to run `learning.py move`,
+which copies it to the home record and changes nothing in the project. Show the
+learner the text `move` prints, unchanged. It says how to remove the old folder
+and what that does not undo. Run none of the project commands it lists unless
+the learner asks.
 
 If any command says the record uses the old single-file format, run `migrate`
-once and commit the result.
+once.
 
-**Records across sessions.** The record is files in the repository, so a session
-sees only what is on its branch. When a write prints a branch note, tell the
-learner that other sessions will not see it until that branch is pushed and
-merged. Never say another session can already see it. Topics and attempts are
-one file each, so separate sessions merge cleanly. If `learning.py` reports merge
-conflict markers, follow the resolution it prints.
+**Cloud sessions.** A cloud session's container is thrown away when the session
+ends, and its record goes with it. `init` says so when it runs in one. Before
+the session ends, run `learning.py export`, show the learner the whole output
+in a code block, and say: `Paste this into "learning.py import-bundle -" on your
+own machine.` `import-bundle` keeps topics and attempts already recorded at
+home and adds the rest. A cloud session starts with an empty record, so no
+reviews are due there.
 
 ## Choose the mode
 
@@ -160,7 +173,8 @@ now, and the summary must say so.
 
 Run, do not read. Prefix each command with
 `python3 <skill>/scripts/learning.py`. All commands take `--dir`
-(default `.learning`). Every write
+(default: the project's folder in `~/.learning-while-building/`; `where` prints
+it). Every write
 goes through the script; never edit the data files by hand.
 
 | Command | Use |
@@ -181,6 +195,10 @@ goes through the script; never edit the data files by hand.
 | `questions`, `answer` | For the learner: what is waiting and recent feedback; answer from a terminal |
 | `serve`, `room-push`, `room-pull` | The learning room page; see `room.md` |
 | `migrate` | Convert a record from the old single-file format, once |
+| `where` | Print the record directory and which rule chose it |
+| `move` | Move a `./.learning` record out of the project into the home record; prints what to do next |
+| `export` | Print the record as one JSON document, for a cloud session to carry home |
+| `import-bundle FILE` | Merge an exported document into the record (`-` reads stdin) |
 
 Kinds: `attempt`, `explain-back`, `retrieval`, `transfer`, `diagnosis`,
 `repair`, `field`. Outcomes: `correct`, `partial`, `wrong`, `skipped`. The script

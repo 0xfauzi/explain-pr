@@ -3,10 +3,10 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>learning-while-building</title>
-<meta name="description" content="A skill for Claude Code and other coding agents. The agent does most of the work. At some points, it stops and you do the thinking. It records what you can do without the agent.">
-<meta property="og:title" content="learning-while-building">
-<meta property="og:description" content="Build your project with AI. Become a better engineer while you do it.">
+<title>Firsthand (preview)</title>
+<meta name="description" content="A free, open-source tool for your coding agent. When the agent finishes a change, Firsthand asks you one short question, then runs a real check on your project and shows the result next to your answer.">
+<meta property="og:title" content="Firsthand (preview)">
+<meta property="og:description" content="A free, open-source tool for your coding agent. When the agent finishes a change, Firsthand asks you one short question, then runs a real check on your project and shows the result next to your answer.">
 <meta property="og:type" content="website">
 <script>document.documentElement.className += ' js';</script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -16,245 +16,217 @@
 </head>
 <body>
 <div class="tex page">
+<main>
 
 <div class="stage">
 <div class="field" id="field" aria-hidden="true"></div>
 
 <header class="wrap top">
-<a href="#top" class="brand">learning-while-building</a>
+<a href="#top" class="brand">Firsthand</a>
 <nav class="navl" aria-label="Sections">
-<a href="#why">Why</a>
 <a href="#how">How it works</a>
-<a href="#try">Try it</a>
-<a href="#record">Your record</a>
+<a href="#status">What works today</a>
+<a href="#install">Install</a>
 <a href="https://github.com/0xfauzi/explain-pr" class="gh">GitHub</a>
 </nav>
 </header>
 
 <!-- HERO -->
-<section id="top" class="wrap hero" style="padding-top: 64px; padding-bottom: 40px;">
+<section id="top" class="wrap hero">
 <div>
-<h1 class="h1 rise">Build your project with AI. Become a better engineer while you do it.</h1>
-<p class="p rise lead">This is a skill for Claude Code and other coding agents. The agent does most of the work. At some points, it stops and you do the thinking. It records what you can do without the agent.</p>
-<div class="rise install">
+<h1 class="h1 rise">Your agent says it is done. You make one call. Firsthand runs the check.</h1>
+<p class="p lead rise d1">A free, open-source tool for your coding agent. When the agent finishes a change, Firsthand asks you one short question about it. Then it undoes the change in a scratch copy, runs your tests, and shows the result next to your answer.</p>
+<p class="small status rise d2">Preview. It works today in Claude Code, on Python projects that use pytest. More agents and more questions are designed and not built yet. Firsthand is a working name.</p>
+<div class="ctas rise d3">
+<a href="#install" class="btn">Install the preview</a>
+<a href="#status" class="btn ghost">What works today</a>
+</div>
+</div>
+
+<div class="rise d4 democol">
+<div class="demo" id="try">
+<p class="mark">Try it: the question, with example data</p>
+
+<form class="card open" id="card" data-v="ask locked" aria-labelledby="q">
+<p class="eb"><span>Your agent finished</span><span class="sk">skip ok</span></p>
+<p class="ctx">Verification | orbit-pay | idempotent refunds | change since 09:12</p>
+<p class="lead">It added 3 tests. Read them first.</p>
+<ol class="ev" aria-label="The 3 new tests and their assertion lines">
+<li><span class="n">1</span><span>test_same_key_refunds_once<span class="a">assert len(ledger.refunds(charge)) == 1</span></span></li>
+<li><span class="n">2</span><span>test_refund_response_is_stable<span class="a">assert resp.status_code == 200</span></span></li>
+<li><span class="n">3</span><span>test_refund_amount_validated<span class="a">assert exc.value.code == "amount_too_large"</span></span></li>
+</ol>
+<fieldset><legend class="q" id="q">Which one would still pass with the change undone?</legend>
+<div class="picks">
+<button type="button" class="pill pk" data-p="1" aria-pressed="false" disabled>1</button>
+<button type="button" class="pill pk" data-p="2" aria-pressed="false" disabled>2</button>
+<button type="button" class="pill pk" data-p="3" aria-pressed="false" disabled>3</button>
+<button type="button" class="pill pk" data-p="none" aria-pressed="false" disabled>None</button>
+<button type="button" class="pill pk" data-p="dk" aria-pressed="false" disabled>Don't know</button>
+</div></fieldset>
+<div class="lock in" data-v="locked" id="lockrow" hidden><p class="st"><span>Locked.</span> <button type="button" class="tbtn" id="undo">Undo</button></p>
+<div class="sure" id="surerow"><span class="lb" id="sl">How sure?</span>
+<div class="sp" role="radiogroup" aria-labelledby="sl">
+<label class="pill"><input type="radio" name="sure" value="Sure"><span>Sure</span></label>
+<label class="pill"><input type="radio" name="sure" value="Not sure"><span>Not sure</span></label>
+</div>
+<button type="button" class="btn sm" id="reveal">Show the result</button></div></div>
+<div class="acts quiet needs-js" data-v="ask"><button type="button" class="tbtn" id="skip">Skip</button></div>
+<p class="foot">Checked by a run: the change undone, the tests kept.</p>
+</form>
+
+<p data-v="skipped" class="card" hidden>Skipped. <button type="button" class="tbtn" id="unskip">Undo</button><br><span class="mono s">Back to: idempotent refunds. Next: read the summary.</span></p>
+
+<p class="mark nojs">The result, for the answer 2</p>
+<section class="card in" data-v="result" id="res" tabindex="-1" aria-label="Matched. Revert test">
+<div class="rh"><h2 class="rt">REVERT TEST</h2><span class="chip" id="chip"><svg viewBox="0 0 12 12" aria-hidden="true"><path d="M2 6.5l2.6 2.6L10 3.4" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>Matched</span></div>
+<p class="ctx">Verification | orbit-pay | idempotent refunds</p>
+<p class="dkr" id="dkr" hidden>"Don't know" is not counted as a miss.</p>
+<dl class="rw">
+<div><dt>You said</dt><dd id="said">2, test_refund_response_is_stable.</dd></div>
+<div><dt>What happened</dt><dd id="what">It still passes with the change undone. It would pass whether or not the change exists.</dd></div>
+<div id="cuerow" hidden><dt>What would have shown it</dt><dd>Its only assertion is at <span class="mono">tests/test_refunds.py:41</span>.</dd></div>
+</dl>
+<div class="cue"><button type="button" class="btn ghost sm needs-js" id="again">Try again</button><p>Back to: idempotent refunds. Next: read the summary.</p></div>
+<details class="more"><summary>More</summary><div class="mb">
+<ul>
+<li><span class="mono">test_same_key_refunds_once</span><span>fails on its assertion</span></li>
+<li><span class="mono">test_refund_response_is_stable</span><span>still passes</span></li>
+<li><span class="mono">test_refund_amount_validated</span><span>cannot run without the new code, which is weak proof</span></li>
+</ul>
+<p>Checked by a run, no model.</p>
+<p>Sent to your agent: "tests/test_refunds.py::test_refund_response_is_stable passes with the change undone. tests/test_refunds.py::test_refund_amount_validated cannot run with the change undone."</p>
+</div></details>
+</section>
+</div>
+<p class="small note">This page runs nothing. On your machine the tests are from your own project and the result is from a real run.</p>
+</div>
+</section>
+</div>
+
+<!-- HOW -->
+<section id="how" class="sec">
+<div class="wrap two">
+<div>
+<h2 class="h2 sv">How it works</h2>
+<div class="steps">
+<div class="habit sv"><span class="num" aria-hidden="true">1</span><div><h3 class="ht">Your agent finishes a change.</h3><p>Firsthand reads the events your agent reports and the git diff. If the change added or edited tests, it prepares one question. It never blocks a tool call and the agent never waits for you.</p></div></div>
+<div class="habit sv"><span class="num" aria-hidden="true">2</span><div><h3 class="ht">You make one call.</h3><p>One line appears in the agent's chat. Reply there, answer in the Room (a page served by your own computer), or say "skip". By default it asks at most once a day, and not on the first prompt of the day.</p></div></div>
+<div class="habit sv"><span class="num" aria-hidden="true">3</span><div><h3 class="ht">A real check runs.</h3><p>Firsthand copies the project to a scratch folder, undoes the change, keeps the tests and runs them. The result shows what you said and what happened. Nothing is written to your project.</p></div></div>
+</div>
+<p class="small after">What the check found also goes to your agent as one line, because it is about the agent's own work. A switch in Settings turns that line off. An answer given in the Room does not pass through the agent. A reply typed in the chat is part of the chat: the agent sees it and prints the result there.</p>
+</div>
+<div class="termcol">
+<div class="term sv">
+<div class="tb"><b>Claude Code</b><span>orbit-pay</span></div>
+<div class="bd">
+<pre class="u">&gt; Make refunds idempotent on the idempotency key.</pre>
+<pre class="d">(the agent works, then finishes)</pre>
+<pre class="fh">Firsthand (skip ok): your agent finished and added 3 tests. Which one would still pass with the change undone? 1 test_same_key_refunds_once, 2 test_refund_response_is_stable, 3 test_refund_amount_validated. Reply 1, 2, 3 or none. With the tests shown: http://127.0.0.1:4127/q/7f3</pre>
+<pre class="u">&gt; 2</pre>
+<pre class="fh">Firsthand, revert test. Matched. You said 2.
+test_refund_response_is_stable still passes with the change undone. It would pass whether or not the change exists.
+More: http://127.0.0.1:4127/r/7f3
+Back to: idempotent refunds. Next: read the summary.</pre>
+</div>
+</div>
+<p class="small cap">The same question as one line in Claude Code. Example data.</p>
+</div>
+</div>
+</section>
+
+<!-- STATUS -->
+<section id="status" class="sec">
+<div class="wrap">
+<h2 class="h2 sv">What works today, and what does not yet</h2>
+<p class="p">Firsthand is being built in steps. This is the state of the repository now.</p>
+<div class="cols status-cols">
+<div class="sv col-built">
+<h3 class="ctitle">Works today</h3>
+<p class="small sub">In Claude Code, on Python projects that use pytest.</p>
+<ul>
+<li><b>Revert test.</b> When the agent finishes a change with tests, you pick the new test that would still pass with the change undone. Checked by undoing the change and running the tests.</li>
+<li><b>Call it.</b> When a test is failing, you pick where the cause is, before a fix exists. Checked by where the fix landed, and by undoing the fix and running the test again.</li>
+<li><b>Brief.</b> At the start of a larger task, you name one check that fails now and will pass when the task is done. Checked by running it with the change and with the change undone.</li>
+<li><b>The Room.</b> A page served at <code class="mono">127.0.0.1</code> with the open question, results, a journal of every call, and settings.</li>
+<li><b>The record.</b> A git repo at <code class="mono">~/.firsthand/record</code>: on your machine, outside your projects, with no remote.</li>
+</ul>
+</div>
+<div class="sv col-designed">
+<h3 class="ctitle">Designed, not built</h3>
+<p class="small sub">Specified in the repository. None of this runs yet.</p>
+<ul>
+<li><b>Ten more questions.</b> Examples: who is affected by a change, whether a migration can be undone, what would show a failure first.</li>
+<li><b>Other agents:</b> Codex, Cursor, Copilot, Gemini CLI and others.</li>
+<li><b>Other languages and test runners.</b></li>
+<li><b>Drills</b> on your own history, and reviews that bring an idea back some days later.</li>
+<li><b>Questions that fade</b> as your calls on a skill prove reliable.</li>
+<li><b>The Room on your phone.</b></li>
+</ul>
+</div>
+</div>
+<p class="p ink">The full design is in the repository: <a href="https://github.com/0xfauzi/explain-pr/blob/main/design/product/PRODUCT.md">design/product/PRODUCT.md</a></p>
+</div>
+</section>
+
+<!-- INSTALL -->
+<section id="install" class="sec">
+<div class="wrap two">
+<div>
+<h2 class="h2 sv">Install the preview</h2>
+<p class="p">Firsthand is not on PyPI yet, so the preview installs from the git repository. Run this in a terminal, at the root of a Python project that uses pytest and has at least one git commit.</p>
 <div class="cmd">
+<pre class="mono" data-cmd="install">uvx --from git+https://github.com/0xfauzi/explain-pr firsthand init</pre>
+<button type="button" class="btn cpy needs-js" data-copy="Copy">Copy</button>
+</div>
+<p class="small req">You need Linux or macOS, Python 3.11 or later, git, uv and Claude Code. When Firsthand is published, the command will be <code class="mono">uvx firsthand init</code>.</p>
+</div>
+<div>
+<h3 class="ctitle">What the command does</h3>
+<ul class="list">
+<li>It lists the files it will change in <code class="mono">~/.claude</code> and asks before it writes anything.</li>
+<li>It asks whether this is a work computer and which command runs your tests.</li>
+<li>It adds six hooks to <code class="mono">~/.claude/settings.json</code> and one skill folder at <code class="mono">~/.claude/skills/firsthand/</code>. It backs up each file first.</li>
+<li>The hooks only report what happened. They never allow, deny or block anything your agent does.</li>
+<li>It copies its own code to <code class="mono">~/.firsthand/engine</code>. The hooks run that copy.</li>
+<li>It creates your record at <code class="mono">~/.firsthand/record</code>. These are plain files: anyone who can read your home folder can read them.</li>
+<li>There is no account and no telemetry. Nothing leaves your machine except the lines added to your agent's chat. The only server is the local page at <code class="mono">127.0.0.1</code>.</li>
+</ul>
+<p class="p">The first question comes when your agent next finishes a change that adds or edits tests. Say "skip" to pass on a question.</p>
+<p class="small rm">To remove it, run this. It restores the backed-up files. Your record and the engine copy stay in <code class="mono">~/.firsthand</code>; delete that folder to remove them.</p>
+<div class="cmd sm">
+<pre class="mono">uvx --from git+https://github.com/0xfauzi/explain-pr firsthand uninstall</pre>
+<button type="button" class="btn cpy needs-js" data-copy="Copy">Copy</button>
+</div>
+</div>
+</div>
+</section>
+
+<!-- SKILL -->
+<section id="skill" class="sec">
+<div class="wrap two">
+<div><h2 class="h2 sv">The earlier skill is still here</h2></div>
+<div>
+<p class="p first">This repository also holds learning-while-building, version 0.6.0. It is an Agent Skill for Claude Code and other agents that read Agent Skills. On tasks you choose, it asks you a question before the agent builds, asks you to explain the code after, and asks again some days later.</p>
+<p class="p">It installs separately and does not need Firsthand. From 0.6.0 its record is kept in <code class="mono">~/.learning-while-building</code>, outside your project. If an earlier version left a <code class="mono">.learning</code> folder in your repository, <a href="https://github.com/0xfauzi/explain-pr#readme">the README</a> says how to move it.</p>
+<div class="cmd gap">
 <pre class="mono">/plugin marketplace add 0xfauzi/explain-pr
 /plugin install learning-while-building@learning-while-building</pre>
 <button type="button" class="btn cpy needs-js" data-copy="Copy">Copy</button>
 </div>
-<p class="small">Other agents that can read Agent Skills can use the skills folder directly. You need Python 3.10 or later and git. It is free, with an MIT licence.</p>
-</div>
-</div>
-
-<div class="panel rise">
-<div class="phead">
-<div>
-<div class="ptitle">What you can do without the agent</div>
-<div class="small" style="margin-top: 2px;">Example: one project</div>
-</div>
-<div class="toggle needs-js" role="group" aria-label="Time in the project">
-<button type="button" class="tg" id="wk" aria-pressed="false">Week 1</button>
-<button type="button" class="tg on" id="mo" aria-pressed="true">Month 3</button>
-</div>
-</div>
-<div class="dims" id="dims">
-<div class="row"><span class="nm">Architecture and design</span><div class="segs" aria-hidden="true"><span class="seg lit f1"></span><span class="seg lit f2"></span><span class="seg"></span></div><span class="mono lv">without help</span></div>
-<div class="row"><span class="nm">Domain model</span><div class="segs" aria-hidden="true"><span class="seg lit f1"></span><span class="seg lit f2"></span><span class="seg lit f3"></span></div><span class="mono lv ink3">new situation</span></div>
-<div class="row"><span class="nm">Correctness and testing</span><div class="segs" aria-hidden="true"><span class="seg lit f1"></span><span class="seg lit f2"></span><span class="seg"></span></div><span class="mono lv">without help</span></div>
-<div class="row"><span class="nm">Debugging and diagnosis</span><div class="segs" aria-hidden="true"><span class="seg lit f1"></span><span class="seg lit f2"></span><span class="seg"></span></div><span class="mono lv">without help</span></div>
-<div class="row"><span class="nm">Performance</span><div class="segs" aria-hidden="true"><span class="seg lit f1"></span><span class="seg"></span><span class="seg"></span></div><span class="mono lv">with help</span></div>
-<div class="row"><span class="nm">Reliability and operations</span><div class="segs" aria-hidden="true"><span class="seg lit f1"></span><span class="seg lit f2"></span><span class="seg"></span></div><span class="mono lv">without help</span></div>
-<div class="row"><span class="nm">Security</span><div class="segs" aria-hidden="true"><span class="seg"></span><span class="seg"></span><span class="seg"></span></div><span class="mono lv ink0">not yet</span></div>
-<div class="row"><span class="nm">Data and storage</span><div class="segs" aria-hidden="true"><span class="seg lit f1"></span><span class="seg lit f2"></span><span class="seg lit f3"></span></div><span class="mono lv ink3">new situation</span></div>
-<div class="row"><span class="nm">Concurrency</span><div class="segs" aria-hidden="true"><span class="seg lit f1"></span><span class="seg lit f2"></span><span class="seg lit f3"></span></div><span class="mono lv ink3">new situation</span></div>
-<div class="row"><span class="nm">Reading code</span><div class="segs" aria-hidden="true"><span class="seg lit f1"></span><span class="seg lit f2"></span><span class="seg"></span></div><span class="mono lv">without help</span></div>
-</div>
-<div class="pfoot">
-<div class="legend">
-<span><i style="background: #F6C9AF;"></i>with help</span>
-<span><i style="background: #EE8B5B;"></i>without help</span>
-<span><i style="background: #C2410C;"></i>in a new situation</span>
-</div>
-<span class="count"><span id="alone">8</span> of 10 areas without help</span>
-</div>
-</div>
-</section>
-</div>
-
-<!-- WHY -->
-<section id="why" class="sec">
-<div class="wrap">
-<h2 class="h2 sv" style="max-width: 860px;">When you use AI the usual way, you can learn less.</h2>
-<div class="two" style="margin-top: 48px;">
-<div>
-<p class="p" style="margin-top: 0;">A study at Anthropic examined 52 developers. Each developer learned a new Python library. Half of them used an AI assistant. The other half did not. Then all of them did the same test without help.</p>
-<p class="p">The developers with the assistant got lower scores. The largest difference was in debugging. You need debugging most when the agent makes an error.</p>
-<p class="small" style="margin-top: 20px;">Source: <a href="https://www.anthropic.com/research/AI-assistance-coding-skills">Shen and Tamkin, 2026</a>. The test was immediately after a short task. It does not show the effect over months.</p>
-</div>
-<div class="stats">
-<div><div class="bignum">67%</div><div class="meter"><span style="width: 67%; background: #16161A;"></span></div><p class="small">without an AI assistant</p></div>
-<div><div class="bignum hot">50%</div><div class="meter"><span style="width: 50%; background: #C2410C;"></span></div><p class="small">with an AI assistant</p></div>
-</div>
-</div>
-
-<div style="margin-top: 120px;">
-<h2 class="h2 sv" style="max-width: 860px;">The important factor was how they used the AI.</h2>
-<p class="p">Some developers with the assistant got good scores. The study found that they used it in a different way.</p>
-<div class="cols" style="margin-top: 40px;">
-<div class="sv" style="border-top: 3px solid #16161A; padding-top: 20px;">
-<div class="ctitle">They kept their understanding</div>
-<ul>
-<li>They asked how the code works.</li>
-<li>They let the AI write code. Then they asked questions about that code.</li>
-<li>They asked for explanations with the code. Then they read them.</li>
-</ul>
-</div>
-<div class="sv" style="border-top: 3px solid #C2410C; padding-top: 20px;">
-<div class="ctitle" style="color: #C2410C;">They learned the least</div>
-<ul>
-<li>They gave all of the task to the AI.</li>
-<li>They asked questions at first. Then they gave all of the task to the AI.</li>
-<li>They let the AI do the debugging. Their score was 24%.</li>
-</ul>
-</div>
-</div>
-<p class="p" style="max-width: 760px; margin-top: 40px; color: #16161A;">It is difficult to work like the first group every day. This skill puts those habits into the agent. Then you use them every time, without effort.</p>
-</div>
-</div>
-</section>
-
-<!-- HOW -->
-<section id="how" class="sec">
-<div class="wrap">
-<h2 class="h2 sv" style="max-width: 860px;">How it works</h2>
-<p class="p">You select the tasks that you want to learn from. Usually, these are the parts of the project that you know least. The agent builds all other tasks as usual.</p>
-<div style="margin-top: 40px; max-width: 900px; border-bottom: 1px solid #DAD8D0;">
-<div class="habit sv"><span class="num">1</span><div><div class="ht">Before the agent builds, it asks you a question.</div><p>For example: How do you design this? What must not change? Where can it fail? The agent writes the correct answer before it asks. It does not explain until you give your answer.</p></div></div>
-<div class="habit sv"><span class="num">2</span><div><div class="ht">When the code works, you explain it.</div><p>Use your own words. Do this before the agent gives a summary. The agent tells you which parts are correct and which parts are missing. It also tells you which line to read.</p></div></div>
-<div class="habit sv"><span class="num">3</span><div><div class="ht">When something is broken, you find the problem first.</div><p>Ask for a debugging drill. The agent puts a bug into a safe copy of the code. You find the bug. You can ask for hints, one at a time.</p></div></div>
-<div class="habit sv"><span class="num">4</span><div><div class="ht">Some days later, the agent asks again.</div><p>First, you recall the answer. Later questions use the same idea in a new situation. If your answer is correct without help, the next question comes later: after 3 days, then 7, 21, 60 and 180. If your answer is wrong, the question comes back the next day.</p></div></div>
-</div>
-<p class="small" style="margin-top: 18px; max-width: 720px;">The agent does not ask frequently. For a selected task, it asks one question before and one short question after. You can always say "skip" or "just do it".</p>
-</div>
-</section>
-
-<!-- TRY -->
-<section id="try" class="sec">
-<div class="wrap">
-<div class="mono eyebrow">try a question</div>
-<h2 class="h2" style="margin-top: 10px; max-width: 860px;">The agent asks about the design and about the code.</h2>
-<div class="tabs needs-js" role="tablist" aria-label="Question level">
-<button type="button" role="tab" class="tab on" id="tab-comp" aria-controls="q-comp" aria-selected="true" data-ex="comp">Component level</button>
-<button type="button" role="tab" class="tab" id="tab-code" aria-controls="q-code" aria-selected="false" data-ex="code" tabindex="-1">Code level</button>
-</div>
-
-<div class="two qpanel" id="q-comp" data-ex="comp">
-<div>
-<p class="qctx">Before you add confirmation emails to the checkout.</p>
-<div class="flow" role="img" aria-label="Four parts: database, API, queue and email worker. The API saves the order in the database. Then it puts a message on the queue. The worker reads the message and sends the email.">
-<div class="boxes">
-<div class="box">Database</div>
-<div class="box api">API</div>
-<div class="box">Queue</div>
-<div class="box">Email worker</div>
-</div>
-<div class="track">
-<div class="line"></div>
-<span class="tick" style="left: 12.5%;"></span><span class="tick" style="left: 37.5%;"></span><span class="tick" style="left: 62.5%;"></span><span class="tick" style="left: 87.5%;"></span>
-<div class="dot"></div>
-<div class="cut" hidden><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#C2410C" stroke-width="2.6" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"></path></svg></div>
-</div>
-<div class="steps"><span class="step" style="grid-column: 2 / span 2;">1 save order</span><span class="step" style="grid-column: 4 / span 2;">2 send message</span><span class="step" style="grid-column: 6 / span 2;">3 send email</span></div>
-</div>
-<p class="small flownote">The orange dot shows the normal path of one order.</p>
-</div>
-<div class="qside">
-<p class="qq">The API saves the order. Then it puts a message on the queue. The API stops after the save and before the message. What does the customer see?</p>
-<div class="opts">
-<div class="opt"><span class="k">A</span><span>No order and no email</span></div>
-<div class="opt"><span class="k">B</span><span>An order, but no confirmation email</span></div>
-<div class="opt"><span class="k">C</span><span>An order and two emails</span></div>
-</div>
-</div>
-</div>
-
-<div class="two qpanel" id="q-code" data-ex="code">
-<div>
-<p class="qctx">Before you add retries to a payment worker.</p>
-<pre class="mono code">def backoff(attempt):
-    return 0.5 * 2 ** attempt
-
-def charge(order):
-    for attempt in range(3):
-        try:
-            return gateway.charge(
-                order.card,
-                order.amount,
-                timeout=0.8,
-            )
-        except gateway.Timeout:
-            sleep(backoff(attempt))
-    raise ChargeFailed(order.id)</pre>
-</div>
-<div class="qside">
-<p class="qq">Each attempt stops after 0.8 seconds. How long does the customer wait before the charge fails?</p>
-<div class="opts">
-<div class="opt"><span class="k">A</span><span>About 2.4 seconds</span></div>
-<div class="opt"><span class="k">B</span><span>About 5.9 seconds</span></div>
-<div class="opt"><span class="k">C</span><span>It tries again until it works</span></div>
-</div>
-</div>
-</div>
-
-<template id="tpl-controls">
-<p class="sure-l">How sure are you?</p>
-<div class="confs">
-<button type="button" class="sure" data-conf="low">Not sure</button><button type="button" class="sure" data-conf="mid">Almost sure</button><button type="button" class="sure" data-conf="high">Sure</button><button type="button" class="sure" data-conf="dk">I do not know</button>
-</div>
-<div class="lockrow">
-<button type="button" class="btn" data-act="lock">Lock my answer</button>
-<span class="small status" role="status"></span>
-</div>
-<div class="reveal result" hidden>
-<div class="verdict" tabindex="-1"></div>
-<p class="why"></p>
-<p class="belief" hidden>You were sure, but your answer was wrong. The agent marks this question to come back. People correct this type of error most easily when they see the reason.</p>
-<div class="delta">
-<div class="small">Your record:</div>
-<div class="row">
-<span class="nm"></span>
-<div class="segs" aria-hidden="true"><span class="seg"></span><span class="seg"></span><span class="seg"></span></div>
-<span class="mono lv"></span>
-</div>
-<div class="small dnote"></div>
-</div>
-<button type="button" class="btn ghost" data-act="reset">Try again</button>
-</div>
-</template>
-</div>
-</section>
-
-<!-- RECORD -->
-<section id="record" class="sec">
-<div class="wrap two">
-<div>
-<h2 class="h2 sv">You can see your progress.</h2>
-</div>
-<div>
-<p class="p" style="margin-top: 0;">The skill records each answer. It keeps the record as plain files in your repository. The record has areas, for example design, data, concurrency, debugging and security. You select the areas at the start.</p>
-<p class="p">For each idea, the record shows your best answer and your latest answer. If your answer was good in March and wrong last week, the record shows that idea as weak. Work that you do without the agent also counts, if a commit or a test shows it.</p>
-<p class="p">To see the record, ask the agent: "What am I weak at?"</p>
+<p class="small req">Run these inside Claude Code. You need Python 3.10 or later and git.</p>
 </div>
 </div>
 </section>
 
 <!-- LIMITS -->
-<section class="sec">
+<section id="limits" class="sec">
 <div class="wrap two">
-<div><h2 class="h2 sv">What it cannot prove</h2></div>
+<div><h2 class="h2 sv">What it does not show</h2></div>
 <div>
-<p class="p" style="margin-top: 0;">The agent grades your answers. It compares each answer with an answer that it wrote before it asked you. Thus, the record is good evidence, but it is not proof.</p>
-<p class="p">Each habit comes from research: predict before you see the answer, explain in your own words, and answer again after some days. But most of these studies used students and short tasks. No study has measured the effect on engineers over months on a real project. Your record will show the effect for you.</p>
+<p class="p first">A result is a fact about one change: this test passes with the change undone, or it does not. It is not a score of you as an engineer, and the page that lists your calls shows counts, not a grade.</p>
+<p class="p"><a href="https://www.anthropic.com/research/AI-assistance-coding-skills">One study reports</a> that handing work to an AI assistant can weaken the understanding needed to check that work. <a href="https://github.com/0xfauzi/explain-pr/blob/main/design/product/research/learning-science.md">Other research on learning</a> reports that committing to an answer before you see the result helps. No study has tested questions of this kind during real work with a coding agent. The design does not depend on one: each result is true about your own project and is useful either way.</p>
+<p class="p">The check is only as good as your tests can be run. If the new tests do not pass in a scratch copy exactly as they do in your project, Firsthand asks nothing.</p>
 </div>
 </div>
 </section>
@@ -264,23 +236,23 @@ def charge(order):
 <div class="field low" id="field2" aria-hidden="true"></div>
 <section>
 <div class="wrap">
-<h2 class="h1 sv">Try it on your next task.</h2>
-<p class="p sv">Install the skill. Then select a task in a part of the project that you do not know well. Tell the agent:</p>
-<pre class="mono sv prompt"><span>&gt;</span> Add confirmation emails to the checkout. Make this a learning task.</pre>
-<p class="small sv" style="margin-top: 14px;">The agent asks you one question. Then it starts to build.</p>
+<h2 class="h1 sv">Free and open source.</h2>
+<p class="p sv">There is nothing to buy and no account. The code, the design and the research notes are in one repository. Firsthand is a working name and may change.</p>
 <div class="ctas">
-<button type="button" class="btn needs-js" data-copy="Copy the install commands">Copy the install commands</button>
+<button type="button" class="btn needs-js" data-copy="Copy the install command" data-copy-from="install">Copy the install command</button>
 <a href="https://github.com/0xfauzi/explain-pr" class="btn ghost">See it on GitHub</a>
 </div>
 <footer>
-<span>learning-while-building · MIT licence</span>
-<span class="links"><a href="https://github.com/0xfauzi/explain-pr">Source</a><a href="https://github.com/0xfauzi/explain-pr/blob/main/CHANGELOG.md">Changelog</a></span>
+<span>Firsthand (preview). MIT licence.</span>
+<span class="links"><a href="https://github.com/0xfauzi/explain-pr">Source</a><a href="https://github.com/0xfauzi/explain-pr/blob/main/design/product/PRODUCT.md">Design</a><a href="https://github.com/0xfauzi/explain-pr/blob/main/CHANGELOG.md">Changelog</a></span>
 </footer>
 </div>
 </section>
 </div>
 
+</main>
 </div>
+<p class="vh" aria-live="polite" id="live"></p>
 <script src="assets/site.js"></script>
 </body>
 </html>
