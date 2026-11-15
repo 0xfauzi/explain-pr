@@ -1,7 +1,7 @@
 # learning-while-building
 
 [![tests](https://github.com/0xfauzi/explain-pr/actions/workflows/tests.yml/badge.svg)](https://github.com/0xfauzi/explain-pr/actions/workflows/tests.yml)
-[![license: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+[![license: Apache-2.0](https://img.shields.io/badge/license-Apache--2.0-blue.svg)](LICENSE)
 
 An Agent Skill for building a real project with an AI agent while getting
 better as an engineer, rather than only faster.
@@ -171,4 +171,4 @@ See [CONTRIBUTING.md](CONTRIBUTING.md). Changes are listed in
 
 ## Licence
 
-MIT. See [LICENSE](LICENSE).
+Apache-2.0. See [LICENSE](LICENSE) and [NOTICE](NOTICE).

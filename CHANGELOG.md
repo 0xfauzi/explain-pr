@@ -4,6 +4,8 @@ All notable changes to this plugin. Versions follow the plugin manifest.
 
 ## Unreleased: Firsthand preview
 
+- Licence changed from MIT to Apache-2.0. Versions already published under MIT stay under MIT.
+
 `firsthand/` is a separate tool from the skill, not yet published. See the
 README section "Firsthand preview".
 
