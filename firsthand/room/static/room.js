@@ -68,8 +68,22 @@
     ]);
   }
 
-  /* The browser tab names the page: "Journal - Room". */
-  function setTitle(text) { D.title = text ? text + ' - Room' : 'Room'; }
+  /* The browser tab names the page and says when a question is open:
+     "Firsthand", "Journal · Firsthand", "1 open · Firsthand". */
+  function openCount() { return S.inbox ? (S.inbox.now || []).length : 0; }
+
+  function setTitle(text) {
+    if (text !== undefined) S.title = text || null;
+    var n = openCount();
+    D.title = [n ? n + ' open' : null, S.title, 'Firsthand'].filter(Boolean).join(' \u00b7 ');
+  }
+
+  /* The tab icon: the verdict mark, in highlighter yellow while a question is open. */
+  function setIcon() {
+    var icon = $('icon');
+    var href = openCount() ? '/static/icon-open.svg' : '/static/icon.svg';
+    if (icon && icon.getAttribute('href') !== href) icon.setAttribute('href', href);
+  }
 
   function say(text) {
     var live = $('live');
@@ -341,6 +355,8 @@
     var n = (inbox.now || []).length;
     $('count').textContent = n ? String(n) : '';
     $('count').hidden = !n;
+    setTitle();
+    setIcon();
     $('asked').textContent = inbox.closing || '';
     drawNotice();
   }

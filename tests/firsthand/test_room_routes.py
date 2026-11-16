@@ -290,6 +290,20 @@ class RoomRoutesTest(support.TempHome):
             self.assertEqual(self.get(path).status, 404, path)
         self.assertEqual(self.get("/static/room-views.js").status, 200)
 
+    def test_tab_icons_are_svg_from_the_table(self) -> None:
+        for name in ("icon.svg", "icon-open.svg"):
+            resp = self.get(f"/static/{name}")
+            self.assertEqual(resp.status, 200, name)
+            self.assertEqual(resp.headers["Content-Type"], "image/svg+xml")
+            self.assertTrue(resp.body.startswith(b"<svg "), name)
+            self.assertNotIn(b"<script", resp.body)
+            for header, value in room.SECURITY_HEADERS.items():
+                self.assertEqual(resp.headers[header], value, header)
+        self.assertIn(
+            "img-src 'self';", room.SECURITY_HEADERS["Content-Security-Policy"]
+        )
+        self.assertEqual(self.get("/static/icon.png").status, 404)
+
     def test_csp_allows_only_own_fonts(self) -> None:
         csp = room.SECURITY_HEADERS["Content-Security-Policy"]
         self.assertIn("font-src 'self'", csp)

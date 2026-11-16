@@ -83,7 +83,12 @@ class RoomPageTest(support.TempHome):
         assets = [u for u in self.parsed.urls if u.startswith("/static/")]
         self.assertEqual(
             sorted(assets),
-            ["/static/room-views.js", "/static/room.css", "/static/room.js"],
+            [
+                "/static/icon.svg",
+                "/static/room-views.js",
+                "/static/room.css",
+                "/static/room.js",
+            ],
         )
         for url in self.parsed.urls:
             self.assertTrue(url.startswith("/") and not url.startswith("//"), url)
@@ -113,7 +118,8 @@ class RoomPageTest(support.TempHome):
         self.assertIn("Served by this computer at 127.0.0.1.", self.parsed.text)
         for label in ("The Room", "Inbox", "Journal", "Skills", "Settings"):
             self.assertIn(label, self.parsed.text)
-        self.assertIn("<title>Room</title>", self.page)
+        self.assertIn("<title>Firsthand</title>", self.page)
+        self.assertIn('<link rel="icon" id="icon" href="/static/icon.svg"', self.page)
         self.assertIn('class="fh-wordmark"', self.page)
         self.assertIn('<body class="fh">', self.page)
 

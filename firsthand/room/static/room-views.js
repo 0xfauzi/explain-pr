@@ -232,7 +232,7 @@
     S.view = null;
     S.viewJson = null;
     S.page = 'inbox';
-    F.title('Inbox');
+    F.title(null);
     var now = (v.now || [])[0];
     add(main, [h('h1', { class: 'fh-vh', text: 'Inbox' }), sec('Now')]);
     if (now) {
@@ -259,7 +259,7 @@
         ledger(results.map(function (r) { return entryRow(r, F.marginTime(r.at)); }))
       ]);
     }
-    if (!now) add(main, today(v));
+    add(main, today(v));
     F.fitFacts(main);
   }
 
@@ -536,7 +536,10 @@
     return h('section', { class: 'fh-sheet', 'aria-labelledby': 'q' }, [
       h('div', { class: 'fh-sheet__bar' }, [h('span', { text: v.kind_label }), h('span', { text: right })]),
       h('div', { class: 'fh-sheet__body' }, form),
-      v.footer ? h('div', { class: 'fh-sheet__foot' }, h('span', { text: v.footer })) : null
+      v.footer ? h('div', { class: 'fh-sheet__foot' }, [
+        h('span', { text: v.footer }),
+        v.kind === 'revert_test' ? h('span', { text: 'Nothing is written to your project.' }) : null
+      ]) : null
     ]);
   }
 
@@ -920,7 +923,7 @@
     var calls = r.calls || [];
     // "since 16 Nov" stays whole: the line breaks before "since", never inside the date.
     var since = calls.length ? [plural(r.total, 'call', 'calls') + ' ', h('span', { class: 'fh-nobr', text: 'since ' + r.since })] : 'no calls yet';
-    return h('li', { class: 'fh-row', 'aria-label': r.name + ': ' + r.level_line + ', ' + r.newest }, [
+    return h('li', { class: 'fh-row fh-row--skill', 'aria-label': r.name + ': ' + r.level_line + ', ' + r.newest }, [
       margin('Skill ' + r.n, since),
       h('div', null, [
         h('div', { class: 'fh-row__head' }, [h('h3', { class: 'fh-row__title', text: r.name }), level(r)]),
@@ -1000,6 +1003,28 @@
     return [Object.keys(changes)[0], String(changes[Object.keys(changes)[0]])];
   }
 
+  /* The engine names a setting by its field ("test_command must be a non-empty
+     string."): the Room says it in words. Any other message is already plain. */
+  var PLAIN = {
+    test_command: 'The test command cannot be empty.',
+    high_stakes_add: 'Write a path to add, such as refunds/**.',
+    high_stakes_remove: 'That path cannot be removed.',
+    dial: 'The dial is Off, Notes only, Standard or Deep.',
+    daily_limit: 'Questions while building is 1, 2 or 3 a day.',
+    quiet: 'Quiet for this project is on or off.',
+    quiet_today: 'Quiet today is on or off.',
+    findings_to_agent: 'Send findings to my agent is on or off.'
+  };
+
+  function plainError(message, changes) {
+    var text = String(message || '');
+    var key = Object.keys(changes || {})[0];
+    if (key && PLAIN[key] && text.indexOf(key + ' ') === 0) return PLAIN[key];
+    if (/^(Unknown (project )?setting|Not a project id)/.test(text)) return F.INTERNAL;
+    if (/^No settings for project /.test(text)) return 'This project has no settings yet. Run Firsthand in that project first.';
+    return text;
+  }
+
   function save(changes, project, confirm, row, key) {
     S.focus = key || null;
     return F.api('POST', '/api/settings', { changes: changes, project: project, confirm: !!confirm }).then(function (nv) {
@@ -1019,7 +1044,7 @@
           say(err.message);
         } else {
           S.confirm = null;
-          F.setErr(err, row);
+          F.setErr({ message: plainError(err.message, changes) }, row);
           renderSettings(nv);
         }
       });
@@ -1053,10 +1078,40 @@
     return out;
   }
 
-  function radio(name, value, text, checked, onpick) {
-    var input = h('input', { type: 'radio', name: name, value: value, checked: checked, 'data-k': name + '-' + value });
-    input.addEventListener('change', function () { if (input.checked) onpick(value); });
-    return h('label', null, [input, h('span', { text: text })]);
+  /* A radio group in Settings. An arrow key moves the selection only: the browser
+     focuses and checks the next radio and sends it a click in the same task, and the
+     saved radio is checked again, so the focus ring marks the move and nothing is
+     saved. Space on the focused radio, Enter (the group is a form) or a click saves it.
+     The script has no key handlers. */
+  function radioGroup(props, name, items, saved, onpick) {
+    var pointer = false;
+    var moved = null;
+    var inputs = items.map(function (it) {
+      return h('input', { type: 'radio', name: name, value: it[0], checked: saved === it[0], 'data-k': name + '-' + it[0] });
+    });
+    function pick(value) { if (value !== saved) onpick(value); }
+    inputs.forEach(function (input) {
+      input.addEventListener('focus', function () {
+        moved = input;
+        setTimeout(function () { if (moved === input) moved = null; }, 0);
+      });
+      input.addEventListener('click', function () {
+        var by = pointer;
+        pointer = false;
+        if (by || moved !== input) { pick(input.value); return; }
+        inputs.forEach(function (x) { x.checked = x.value === saved; });
+      });
+    });
+    // A press anywhere on the cell: the span is drawn over the radio.
+    var group = h('form', props, inputs.map(function (input, i) {
+      return h('label', { onpointerdown: function () { pointer = true; } }, [input, h('span', { text: items[i][1] })]);
+    }).concat([h('button', { type: 'submit', class: 'fh-vh', tabindex: '-1', 'aria-hidden': 'true', text: 'Save' })]));
+    group.addEventListener('submit', function (e) {
+      e.preventDefault();
+      var on = inputs.filter(function (x) { return x === D.activeElement; })[0] || inputs.filter(function (x) { return x.checked; })[0];
+      if (on) pick(on.value);
+    });
+    return group;
   }
 
   function check(key, text, checked, onchange) {
@@ -1068,15 +1123,14 @@
   function howMuch(v) {
     var pid = v.project ? v.project.id : null;
     var quiet = v.quiet || {};
-    var dial = h('fieldset', { class: 'fh-seg' }, [h('legend', { class: 'fh-vh', text: 'The dial' })].concat(DIAL.map(function (d) {
-      return radio('dial', d[0], d[1], v.dial === d[0], function (value) { save({ dial: value }, null, false, 'dial', 'dial-' + value); });
-    })));
+    var dial = radioGroup({ class: 'fh-seg', role: 'radiogroup', 'aria-label': 'The dial' }, 'dial', DIAL, v.dial, function (value) {
+      save({ dial: value }, null, false, 'dial', 'dial-' + value);
+    });
     var dialFacts = facts(DIAL.map(function (d, i) { return fact(d[1], d[2], { key: v.dial === d[0], i: i }); }));
-    var limit = h('span', { class: 'fh-seg fh-seg--num', role: 'radiogroup', 'aria-label': 'Questions while building, a day' }, [1, 2, 3].map(function (n) {
-      return radio('limit', String(n), String(n), v.daily_limit === n, function (value) {
+    var limit = radioGroup({ class: 'fh-seg fh-seg--num', role: 'radiogroup', 'aria-label': 'Questions while building, a day' }, 'limit',
+      [['1', '1'], ['2', '2'], ['3', '3']], String(v.daily_limit), function (value) {
         save({ daily_limit: Number(value) }, null, false, 'limit', 'limit-' + value);
       });
-    }));
     return [
       sec('How much'),
       ledger([].concat(
@@ -1095,8 +1149,8 @@
     ];
   }
 
-  function fieldRow(id, labelText, value, buttonText, onsave) {
-    var input = h('input', { class: 'fh-input', id: id, type: 'text', spellcheck: 'false', 'data-k': id });
+  function fieldRow(id, labelText, value, buttonText, onsave, placeholder) {
+    var input = h('input', { class: 'fh-input', id: id, type: 'text', spellcheck: 'false', 'data-k': id, placeholder: placeholder || null });
     input.value = value || '';
     // A form, so Enter in the field saves as the button does.
     return h('form', { class: 'fh-field', onsubmit: function (e) { e.preventDefault(); onsave(input); } }, [
@@ -1107,7 +1161,12 @@
 
   function thisProject(p) {
     var cmd = fieldRow('cmd', 'Test command', p.test_command, 'Change', function (input) {
-      save({ test_command: input.value }, p.id, false, 'cmd', 'cmd-save');
+      // An empty command is refused here, before any confirm step is asked for.
+      if (input.value.trim()) { save({ test_command: input.value }, p.id, false, 'cmd', 'cmd-save'); return; }
+      S.confirm = null;
+      F.setErr({ message: PLAIN.test_command }, 'cmd');
+      S.focus = 'cmd';
+      renderSettings(S.settings);
     });
     add(cmd, h('p', { class: 'fh-field__hint', text: 'Checks stop after ' + limitText(p.check_time_limit_s) + '.' }));
     var globs = (p.high_stakes || []).map(function (g) {
@@ -1118,7 +1177,7 @@
       var g = input.value.trim();
       if (g) save({ high_stakes_add: g }, p.id, false, 'globs', 'glob');
       else input.focus();
-    });
+    }, 'refunds/**');
     return [
       sec('This project', null, ' · ' + p.name),
       ledger([].concat(

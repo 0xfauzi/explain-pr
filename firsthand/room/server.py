@@ -108,6 +108,8 @@ STATIC = {
     "room.css": "text/css; charset=utf-8",
     "room.js": "text/javascript; charset=utf-8",
     "room-views.js": "text/javascript; charset=utf-8",
+    "icon.svg": "image/svg+xml",
+    "icon-open.svg": "image/svg+xml",
     **{f"fonts/{name}.woff2": "font/woff2" for name in FONTS},
     **{f"fonts/{name}.txt": "text/plain; charset=utf-8" for name in LICENCES},
 }

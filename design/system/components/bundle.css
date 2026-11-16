@@ -156,7 +156,7 @@
 .fh-track .you.on{background:var(--call);border-color:var(--call)}
 .fh-track .you.miss{border-color:var(--miss);background:linear-gradient(to top right,transparent calc(50% - .9px),var(--miss) calc(50% - .9px),var(--miss) calc(50% + .9px),transparent calc(50% + .9px))}
 .fh-track .easy.on{background:var(--ink-3);border-color:var(--ink-3)}
-.fh-track .easy{border-color:var(--rule)}
+.fh-track .easy{border-color:var(--rule-strong)}
 .fh-track .catch{height:14px;text-align:center;color:var(--call);font-size:10px;line-height:14px}
 .fh-track .date{grid-row:4;padding-top:5px;border-top:1px solid var(--rule);margin-top:3px;white-space:nowrap}
 .fh-track .date + .date{border-left:0}
@@ -600,3 +600,23 @@ html{scrollbar-color:var(--rule-strong) var(--paper);-webkit-tap-highlight-color
 .fh-rec li[data-play] .fh-m{animation:fh-stamp var(--dur-stamp) var(--ease-stamp) calc(var(--dur-line) + var(--dur-stamp)) both}
 /* The phone folio is two lines: the name, then the four links on one row */
 @media (max-width:600px){.fh-wide{display:none}.fh-folio .fh-nav{display:flex;flex-wrap:nowrap;justify-content:space-between;gap:0;font-size:11.5px}.fh-folio .fh-nav a{min-width:0}}
+
+/* ---------- The Room: finishing ---------- */
+@media (max-width:600px){.fh-row--skill .fh-row__head{flex-direction:column;align-items:flex-start;gap:var(--space-1)}}
+/* Settings: a margin name sits on the middle line of its 48px control */
+@media (min-width:761px){.fh-row[data-row] > .fh-row__margin{padding-top:15px}.fh-row[data-row="record"] > .fh-row__margin{padding-top:5px}}
+/* The verdict in a result head sits on the label line, not on the mark's foot */
+@media (min-width:601px){.fh-head > .fh-verdict{align-self:flex-start;margin-top:-3px}}
+/* The Today list follows its section line at the same gap as a ledger */
+.fh-sec + .fh-status{margin-top:0}
+
+/* Print: a result as a clean logbook entry. Light tokens, no controls, no motion. */
+@media print{
+:root,:root:not([data-theme="light"]){--paper:#F4F4F0;--paper-raised:#FCFCFA;--paper-sunk:#E9E9E3;--rule:#D0D0C8;--rule-strong:#72726A;--ink:#14151A;--ink-2:#3F4048;--ink-3:#5E5F68;--on-ink:#F4F4F0;--call:#1F3BD1;--on-call:#FFFFFF;--mark:#F6DB45;--on-mark:#14151A;--miss:#A8321A;--miss-tint:#F7E3DC;color-scheme:light}
+.fh-tabs,.fh-btn,.fh-toggle,.fh-pagefoot,#notice,.fh-select__go,.fh-more:not([open]):not(.fh-more--in){display:none!important}
+.fh *,.fh *::before,.fh *::after{animation:none!important;transition:none!important}
+.fh-page{max-width:none;padding:0}
+.fh-main{margin-top:var(--space-6)}
+.fh-head{break-after:avoid}
+.fh-spread,.fh-finding,.fh-row,.fh-sheet{break-inside:avoid}
+}
