@@ -22,7 +22,7 @@ The running example is orbit-pay, a payments service. The person is Sam. All cou
 ## 2. Copy rules
 
 - Plain words, short lines, one idea per line. No exclamation marks, no praise, no mascot.
-- **Five nouns** for the person: **question** (asked while building), **review** (an idea coming back), **note** (a fact with no question), **drill**, **decision**. The words "moment", "sealed" and "fixed answer" never appear on screen. The fixed answer is always the full sentence: "Always answering 'none' would have scored 4 of 8."
+- **Five nouns** for the person: **question** (asked while building), **review** (an idea coming back), **note** (a fact with no question), **drill**, **decision**. The words "moment", "sealed" and "fixed answer" never appear on screen. The fixed answer is always the full sentence: "If you always answer 'none', you score 4 of 8."
 - A result reports what happened. The words are **Matched** and **Did not match**, never right or wrong. Other chips: **Not scored**, **Practised**.
 - Reviews graded by a reader use **Correct**, **Not quite**, **No**. Reviews checked by a run use Matched and Did not match.
 - Evidence is a command that was run or a `path:line`.
@@ -118,7 +118,7 @@ Checked by a run, in a container, on each commit. Open the commands
 
 The Room opens on the Inbox. Nothing is faked.
 
-- Before the notes land: "Nothing here yet. Notes about this project arrive in a few minutes. Your first question comes when your agent next finishes a change with tests."
+- Before the notes land: "The Room is empty. Notes about a project come in a few minutes. Your first question comes when your agent next finishes a change with tests."
 - Under the history note, one offer: **Try one now**. It opens a Proof audit drill on one of the twelve commits. It is a drill, so it uses no slot.
 - The Skills tab shows eleven rows reading "Too few calls. 0 of 2." One line on top: "Already do some of these? Select 'I do this already' on a skill. It goes quiet at once and only posts notes."
 - The System tab already shows the project's parts with the history facts pinned to them.
@@ -155,7 +155,7 @@ One row per moment. "Reply" is what the one-line form accepts in chat. Sizes are
 | :- | :- | :- | :- | :- | :- | :- |
 | Revert test | Your agent finished | Which of them would still pass with the change undone? | The test numbers (any number of them), None, Don't know, then Lock | A few taps | `1`, `1 3`, `none` | REVERT TEST |
 | Call it | A test is failing | Before any fix: where is the cause? | Three components, Somewhere else, Don't know. Or one line | One tap, or one line | `1` to `4`, or a line | CALL IT |
-| Brief | Starting a task | Name one check that fails now and will pass when this is done | One line | One line | A line | DONE CHECK |
+| Brief | Starting a task | Name one check that fails now and passes when this is done | One line | One line | A line | BRIEF |
 | Who is affected | Your agent finished | This changes `<symbol>`. Name one caller or user outside the change who sees something different | One line, or Nobody | One line | A line, `nobody` | WHO IS AFFECTED |
 | Missing case | Your agent finished | Name one case these tests miss, and what should happen. Does the code handle it today? | One line, then Handles it, Does not, Don't know | One line and one tap | A line, then `yes`, `no` | MISSING CASE |
 | Where to look | Your agent finished | If something is wrong in this change, where? | The changed files, Nothing is wrong | One tap | `1` to `n`, `nothing` | WHERE TO LOOK |
@@ -221,11 +221,11 @@ Under **More**:
 ```
   test_same_key_refunds_once       fails on its assertion (2 refunds, expected 1)
   test_refund_response_is_stable   still passes
-  test_refund_amount_validated     cannot run without the new code, which is weak proof
+  test_refund_amount_validated     cannot run with the change undone: weak proof
 Checked by a run, no model. Open the commands
-Your calls of this kind: 5 of 7 matched. Always answering "none" would have scored 4 of 7.
+Your answers of this kind: 5 of 7 matched. If you always answer "none", you score 4 of 7.
 Sure: 6 of 8 matched. Not sure: 3 of 6.
-Sent to your agent: "test_refund_response_is_stable passes without the change."
+Sent to your agent: "test_refund_response_is_stable passes with the change undone."
 This result looks wrong
 ```
 
@@ -259,9 +259,9 @@ Before any fix: where is the cause?
   ( ) 4  Somewhere else
   ( ) Don't know
 
-Your agent keeps working. If it starts a fix before you answer, this closes
-and the failure is saved as a Replay. Its theory may already be on screen.
-Checked by a run, once the test passes again.
+Your agent keeps working. Its chat can already name a cause. If your agent
+starts a fix before you answer, this question closes. Your record keeps the
+failure. A run checks your answer when the test passes again.
 ```
 
 The card does not say why each file is listed: when the agent's own edit broke the test, "changed in this task" would mark the answer. The result's More lists it, as evidence. With fewer than two files there is no choice, so nothing is asked.
@@ -272,10 +272,10 @@ Endings, at the first green run or before:
 
 | Case | Copy |
 | :- | :- |
-| Matched | "You said 1, webhooks/handler.py. The fix landed in webhooks/handler.py and api/charges.py. With the fix undone, the test fails again." |
-| The agent started a fix first | "Your agent got there first. Nothing was scored. Saved as a Replay, to try with the agent off." |
-| Did not match | "What would have shown it: the fix is in api/charges.py, which the trace names at line 4." |
-| Symptom patch | "Not scored. The fix adds a sleep at webhooks/handler.py:31. That can turn the test green without touching the cause, so where it landed proves nothing about your call." |
+| Matched | "You said 1, webhooks/handler.py. The fix is in webhooks/handler.py and api/charges.py. With the fix undone, the test fails again." |
+| The agent started a fix first | "Your agent started the fix first. Firsthand scored nothing. Saved as a Replay, to try with the agent off." |
+| Did not match | "What would have shown it: The trace names api/charges.py at line 4." |
+| Symptom patch | "Not scored. The fix adds a sleep at webhooks/handler.py:31. That can make the test pass and keep the cause. The fix file proves nothing about your answer." |
 | Never green | "Not scored. The change ended before the test passed." |
 
 ### 5.3 Brief
@@ -283,7 +283,7 @@ Endings, at the first green run or before:
 In the agent, at the start of a multi-part task whose prompt names no check:
 
 ```
-Firsthand (skip ok): starting a task. Name one check that fails now and will pass when this is done. Reply here starting with "check:".
+Firsthand (skip ok): starting a task. Name one check that fails now and passes when this is done. Reply here starting with "check:".
 ```
 
 Sam replies: `check: a retried POST /charges with the same key returns the first charge id`. A reply that does not start with `check:` is a message to the agent, not the check: the line is printed at a turn end, where the agent also asks its own questions. On a work computer the Room link comes first, as in section 6.2. The agent receives: "Done when: a retried POST /charges with the same key returns the first charge id. Write this check as a failing test first."
@@ -291,7 +291,7 @@ Sam replies: `check: a retried POST /charges with the same key returns the first
 Result, at the done signal, after "Is this your check? test_retry_returns_first_charge. Yes / No":
 
 ```
-DONE CHECK                                                          Matched
+BRIEF                                                               Matched
 Your check      test_retry_returns_first_charge
 What happened   Passes now. Fails on its assertion with the change undone.
                 It can tell done from not done.
@@ -360,7 +360,7 @@ Firsthand (skip ok): test_settled_posts_to_ledger is failing. Before any fix, wh
 Chip, what the person said, the one fact, the resume cue.
 
 ```
-Firsthand, revert test. Matched. You said 2.
+Firsthand, Revert test. Matched. You said 2.
 test_refund_response_is_stable still passes with the change undone. It would pass whether or not the change exists.
 More: http://127.0.0.1:4127/r/7f3
 Back to: idempotent refunds. Next: read the summary.
@@ -374,13 +374,13 @@ When the call was made in the Room, the chat gets only the finding and no "You s
 | :- | :- |
 | Skip | `Skipped. Back to: <task>. Next: <step>.` |
 | Second skip in a session | `Skipped. No more questions this session. Back to: <task>. Next: <step>.` |
-| "quiet" | `Quiet for this session. Checks still run and post notes. "quiet today" and "quiet here" also work.` |
-| A fact line, high-stakes finding | `Firsthand: test_refund_response_is_stable passes without the change. refunds/ is marked high stakes.` |
+| "quiet" | `Quiet for this session. Runs still post notes. You can also say "quiet today" or "quiet here".` |
+| A fact line, high-stakes finding | `Firsthand: test_refund_response_is_stable passes with the change undone. refunds/ is marked high stakes.` |
 | A hazard line | Section 5.4 |
 | The person asks for one | `firsthand ask` gives the best available question now. It is listed as Practised |
 | Review a pull request | `firsthand pr 482` opens Where to look in its pull request form |
 | A branch from a cloud session | `firsthand import feature/refund-keys` |
-| Off | `Firsthand is off. Nothing is asked, run or recorded. Your record is kept. "firsthand on" to return.` |
+| Off | `Firsthand is off. It asks, runs and records nothing. It keeps your record. Say "firsthand on" to turn it on.` |
 
 Never printed in the agent: review announcements, level changes, weekly lines, deferred results, notes, and anything on the first prompt of the day. When Firsthand is printing a line anyway and something waits in the Room, it adds a few words: "Also in your Room: 1 result, 2 reviews."
 
@@ -405,7 +405,7 @@ The Room is a local web app served by the engine on the person's computer. It ne
 - **Footer**, small: "Served by this computer at 127.0.0.1." and a link to About.
 - **Scope**, on Journal and Skills: "This project" or "All projects".
 
-States: "The Room cannot reach Firsthand on this computer. Start it with: firsthand room". "Firsthand is off. Your record is kept. Turn on". "Quiet for this session. Checks still run and post notes. Undo".
+States: "The Room cannot reach Firsthand on this computer. Start it with: firsthand room". "Firsthand is off. Your record is kept. Turn on". "Quiet for this session. Runs still post notes. Undo".
 
 ### 7.2 Inbox
 
@@ -440,7 +440,7 @@ One small line closes the Inbox: "Asked today: 1 of 1. Reviews: 2 of 3."
 | :- | :- |
 | Empty, later | "Nothing is waiting. The next review is on 21 Nov." |
 | More reviews than slots | "1 more moves to tomorrow." |
-| Question closed unanswered | "You moved on, so nothing was scored. The result is in Results." |
+| Question closed unanswered | "You did not answer. Firsthand scored nothing. The result is in Results." |
 | Skip in the Room | "Skipped. Undo" |
 | A note | Opens to the fact and its evidence. **Give this to my agent** and **Dismiss** |
 | After pressure | "Quiet during the hotfix on 14 Nov." |
@@ -469,10 +469,10 @@ Behaviour:
 | State | Exact copy |
 | :- | :- |
 | Locked, outcome pending | "Locked. Shown when <event>." |
-| Check still running | "Locked. The check is still running." |
-| Closed by the next prompt | "You moved on, so nothing was scored." with the result open |
-| Shown first | "This was printed in your agent as a fact, so the question is closed." |
-| Check dropped | "The check could not finish, so there is nothing to show. Nothing was scored." |
+| Check still running | "Locked. The run has not finished." |
+| Closed by the next prompt | "You did not answer. Firsthand scored nothing." with the result open |
+| Shown first | "Your agent's chat showed this fact first. The question is closed." |
+| Check dropped | "The run did not finish. There is no result. Firsthand scored nothing." |
 
 ### 7.4 Result
 
@@ -487,7 +487,7 @@ Opens with four things: the chip, **You said**, **What happened** (the one fact)
 | **Not scored** | No outcome, a symptom patch, a fact shown first, or two readings that disagree. The reason is on the next line | Dashed border |
 | **Practised** | A call the person started, or one with no check | Dashed border |
 
-- **This result looks wrong** opens one field. One recheck. "Rechecked. The result stands, and here is why." or "Rechecked. The check was wrong. This call is removed from your record."
+- **This result looks wrong** opens one field. One recheck. "Rechecked. The result is the same." or "Rechecked. The run was wrong. Firsthand removed this answer from your record."
 - An action that helps the build is offered where the check produced one: "Your case got through. **Give it to my agent as a failing test**."
 - On a miss in Call it, Invariant, Silent failure or Missing case: "Keep one of these as a review idea?" with the mechanism list as picks.
 
@@ -545,7 +545,7 @@ Eleven rows in the order of `SKILLS.md`. Never one score. Each row: number and n
 1  Verification                    Reliable since 13 Nov        newest call 2 days ago
 
    Your last 9 scored calls       7 matched
-   Always answering "none"        would have scored 5 of 9
+   If you always answer "none"    you score 5 of 9
    Asked 14. Answered 10. Don't know 1. Skipped 3.
    Evidence covers                Telling a test that proves a change from one that would
                                   pass anyway. Naming a case the tests miss.
@@ -587,7 +587,7 @@ A drill run is a focused view: a step line ("Step 2 of 4"), one question at a ti
 
 ```
 PROOF AUDIT                                                   3 of 4 matched
-Always answering "proves the change" would have scored 2 of 4.
+If you always answer "proves the change", you score 2 of 4.
 Passed: you matched on a test that proves its change and on one that does not.
 The scratch copy is deleted.
 [ Back to the Room ]
@@ -601,7 +601,7 @@ A drill that cannot run says what is missing: "Needs Docker or Podman. None foun
 
 | Group | Control | Copy |
 | :- | :- | :- |
-| How much | The dial | **Off** "Nothing is asked, run or recorded." **Notes only** "No questions. Checks run and post notes." **Standard** "Questions within the daily limit." **Deep** "As Standard. You may also write a line of code on some questions." |
+| How much | The dial | **Off** "Firsthand asks, runs and records nothing." **Notes only** "No questions. Runs still post notes." **Standard** "Questions within the daily limit." **Deep** "As Standard. You may also write a line of code on some questions." |
 | How much | Daily limits | "Questions while building: 1 a day (up to 3)." "Reviews: 3 a day." |
 | How much | Quiet | "This session", "Today", "This project". Each says how to undo |
 | How much | Findings | "Send findings to my agent: On" |
@@ -756,7 +756,7 @@ A release ships only when every item passes in the Room, on the phone, and in th
 
 | State | Exact copy |
 | :- | :- |
-| Check over its time limit | "The check took longer than 2 minutes, so I dropped it. Nothing was scored." |
+| Check over its time limit | "The run took longer than 2 minutes. Firsthand stopped it. Firsthand scored nothing." |
 | Scratch run differs from your tree | Never shown. Nothing is asked |
 | No model allowed | "The text part cannot be read here. The run results are shown." |
 | Secret found in an answer | "Your answer had something that looked like a token. I saved it as [redacted]." |

@@ -1,3 +1,5 @@
+> Out of date. The site is docs/index.html and its rules are in design/system/README.md.
+
 # Spec: the public site
 
 Part of `../PRODUCT.md`. This file specifies the update to `docs/index.html`, `docs/assets/site.css` and `docs/assets/site.js`. It is a design: the copy here is final, and the builder changes it only where a check in section 12 says the build differs.

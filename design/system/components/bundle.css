@@ -28,9 +28,11 @@
 
 /* Button */
 .fh-btn{display:inline-flex;align-items:center;justify-content:center;gap:var(--space-3);min-height:var(--space-12);padding:0 22px;border:1.5px solid var(--ink);border-radius:var(--radius-sm);background:var(--ink);color:var(--on-ink);font:600 15px/23px var(--font-ui);letter-spacing:.002em;cursor:pointer;text-decoration:none;transition:background .12s,border-color .12s,color .12s}
-.fh-btn:hover{background:var(--call);border-color:var(--call);color:var(--on-call)}
+/* A filled button stays in ink on hover: blue is the person's answer, not the interface */
+.fh-btn:hover{background:var(--ink-2);border-color:var(--ink-2);color:var(--on-ink)}
 .fh-btn:active{transform:translateY(1px)}
 .fh-btn[disabled]{background:transparent;border-color:var(--rule);color:var(--ink-3);cursor:default;transform:none}
+.fh-btn[disabled]:hover{background:transparent;border-color:var(--rule);color:var(--ink-3)}
 .fh-btn--second{background:transparent;color:var(--ink);border-color:var(--rule-strong)}
 .fh-btn--second:hover{background:transparent;border-color:var(--ink);color:var(--ink)}
 .fh-btn--quiet{min-width:0;padding:0 2px;border-color:transparent;background:none;color:var(--ink-2);font-weight:400;text-decoration:underline;text-decoration-color:var(--rule-strong);text-underline-offset:4px;text-decoration-thickness:1px}
@@ -113,7 +115,7 @@
 .fh-evidence .n{padding:var(--space-3) 0;text-align:center;color:var(--ink-3);border-right:1px solid var(--rule)}
 .fh-evidence .t{padding:var(--space-3);min-width:0}
 .fh-evidence .hd{display:flex;align-items:baseline;gap:0}
-.fh-evidence b{font-weight:500;color:var(--ink);overflow-wrap:anywhere}
+.fh-evidence b{font-weight:500;color:var(--ink);min-width:0;overflow-wrap:break-word}
 .fh-evidence .ld{flex:1 1 16px;min-width:16px;margin:0 var(--space-2);border-bottom:1.5px dotted var(--rule-strong);transform:translateY(-4px);opacity:.6}
 .fh-evidence small{flex:none;font-size:12px;color:var(--ink-3)}
 .fh-evidence code{display:block;font:inherit;color:var(--ink-2);white-space:pre-wrap;overflow-wrap:anywhere}
@@ -223,7 +225,7 @@
 .fh-cmd code{flex:1;min-width:0;padding:13px var(--space-4);font:400 12.5px/20px var(--font-fact);color:var(--ink);overflow-wrap:anywhere}
 .fh-cmd code::before{content:"$ ";color:var(--ink-3)}
 .fh-cmd button{flex:none;padding:0 var(--space-4);border:0;border-left:1.5px solid var(--ink);background:var(--ink);color:var(--on-ink);font:600 15px/23px var(--font-ui);cursor:pointer;transition:background var(--dur-state)}
-.fh-cmd button:hover{background:var(--call);color:var(--on-call)}
+.fh-cmd button:hover{background:var(--ink-2);color:var(--on-ink)}
 .fh-status{margin:var(--space-6) 0 0;padding:0;list-style:none;font:400 12px/18px var(--font-fact);color:var(--ink-3)}
 .fh-status li{display:flex;align-items:baseline;padding:6px 0;border-top:1px solid var(--rule)}
 .fh-status li:last-child{border-bottom:1px solid var(--rule)}
@@ -808,7 +810,6 @@ button.fh-map__part[disabled]:not([aria-pressed="true"]) .t{border-color:var(--r
 .fh-facts li.is-long .v{flex:1 1 100%;text-align:left}
 .fh-head:has(+ .fh-spread[data-play]) .fh-verdict{animation:fh-in var(--dur-stamp) var(--ease-stamp) var(--dur-line) both}
 .fh-pick[aria-pressed="true"] + .fh-pick[aria-pressed="true"]{border-left-color:var(--on-call)}
-.fh-btn[disabled]:hover{background:transparent;border-color:var(--rule);color:var(--ink-3)}
 .fh-acts .fh-btn--quiet:first-child,.fh-sheet__act .fh-btn--quiet:first-child{margin-left:-3.5px}
 .fh-set .fh-err{max-width:560px}
 .fh-inline__unit{display:inline-flex;flex-wrap:nowrap;align-items:center;gap:var(--space-3);white-space:nowrap}

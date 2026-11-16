@@ -1,4 +1,4 @@
-What a sheet shows between Lock and the result. The call is on the page, in the person's hand, with its time. Nothing about the run is on the page yet.
+What a sheet shows between Lock and the result. The answer is on the page, in the person's hand, with its time. Nothing about the run is on the page yet.
 
 - The cells stay where they were, disabled, with the chosen ones filled.
 - `fh-held` opens under them with a dashed rule, like the stub of a ticket. It holds "Your answer" and the time it was locked, then the answer as `fh-answer`: italic, `call`.

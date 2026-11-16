@@ -1,4 +1,4 @@
-The controls of the Settings page. They are filled `ink`, never `call`: a setting is not an answer, and blue stays the color of a call.
+The controls of the Settings page. They are filled `ink`, never `call`: a setting is not an answer, and blue stays the color of an answer.
 
 - `fh-seg` is one of several: native radio inputs inside flush 48px cells that share borders, like answer cells. The chosen cell is filled `ink`. Use `fh-seg--num` for numbers, set in `fact`.
 - Under the dial, list what each position does as `fh-facts` with leaders, and mark the current one `is-key`.

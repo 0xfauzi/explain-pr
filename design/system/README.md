@@ -1,4 +1,4 @@
-Firsthand is a logbook. A person writes a call before a result exists, a run prints what happened, and the two sit side by side on one spread. Every rule below follows from that.
+Firsthand is a logbook. A person writes an answer before a result exists, a run prints what happened, and the two sit side by side on one spread. Every rule below follows from that.
 
 ## Content fundamentals
 
@@ -8,7 +8,7 @@ Firsthand is a logbook. A person writes a call before a result exists, a run pri
 - Keep the product's fixed words exact: Revert test, Call it, Brief, the Room, Matched, Did not match, Not scored, Skip, Lock, Show the result.
 - Buttons say what happens: "Lock", "Show the result", "Back to the Inbox". Never "OK" or "Continue".
 - Numbers are counts with their base: "3 of 4", "Asked today: 0 of 1". Never a percentage or a score.
-- Every entry has a number and two times: when the answer was locked and when the run was recorded. Show both. They are the proof that the call came first.
+- Every entry has a number and two times: when the answer was locked and when the run was recorded. Show both. They are the proof that the answer came first.
 
 ## Words
 
@@ -29,7 +29,7 @@ This is the core of the system. Every screen keeps the two apart.
 
 - **The person writes in `voice` (Newsreader).** The question put to them and the name they gave a task are roman. **Their own answer is always `voice-answer`: italic, in `call` blue,** like ballpoint on the page. Nothing else on any screen is blue italic.
 - **The run prints in `fact` (IBM Plex Mono).** Anything a machine produced or that can be pasted into a terminal: test names, paths, commands, times, counts, entry numbers. Use tabular figures and no ligatures.
-- **`ui` (IBM Plex Sans) is the interface:** buttons, tabs, explanations. It never carries the call or the result.
+- **`ui` (IBM Plex Sans) is the interface:** buttons, tabs, explanations. It never carries the answer or the result.
 - Never set a test name in `voice` or a person's answer in `fact`.
 
 ## Color
@@ -40,7 +40,7 @@ This is the core of the system. Every screen keeps the two apart.
 - `mark-bright` is the same yellow at full strength in both themes. Use it only for the inbox count, the bar and prompt sign in a terminal, and the cover.
 - A terminal block is its own surface: `screen` with `on-screen` text, dark in both themes.
 - `miss` is only for the Did not match mark and its words.
-- There is no green and no success color. Matched is the person's own blue: the call held.
+- There is no green and no success color. Matched is the person's own blue: the answer held.
 - `paper-raised` is the body of the question sheet. `paper-sunk` is evidence. Do not raise or sink anything else.
 - The dark theme is blue-black with warm white text. Do not tint it green or brown, and do not put a saturated fill behind text there.
 
@@ -70,11 +70,11 @@ Always show the words with the mark.
 
 ## Motion
 
-Motion shows one thing: the order of events. The call is already on the page; the run arrives after it. Nothing moves for decoration, nothing loops, and nothing moves twice.
+Motion shows one thing: the order of events. The answer is already on the page; the run arrives after it. Nothing moves for decoration, nothing loops, and nothing moves twice.
 
 - **The highlighter stroke.** When a question sheet appears, the highlighter passes behind the question once, left to right, in `dur-stroke` with `ease-pen`. It is the only thing on the sheet that moves.
 - **A press.** A cell or button answers in `dur-press`: the fill arrives and the control settles 1px. No ripple, no bounce.
-- **The result prints.** When a result is shown, your call is already there. Then, in this order: the perforation draws from the top (`dur-line`), the verdict mark lands on it (`dur-stamp`, `ease-stamp`), the run's lines print one after another from the left, `stagger` apart, each leader drawing out to its outcome, and last the finding sentence appears. The whole sequence takes about one second.
+- **The result prints.** When a result is shown, your answer is already there. Then, in this order: the perforation draws from the top (`dur-line`), the verdict mark lands on it (`dur-stamp`, `ease-stamp`), the run's lines print one after another from the left, `stagger` apart, each leader drawing out to its outcome, and last the finding sentence appears. The whole sequence takes about one second.
 - **Tallies fill.** On the Skills page, the cells of a track fill in order, `stagger` apart, the first time the row is seen.
 - **The cursor.** A terminal block's cursor blinks. It is the only repeating motion, and only on the site.
 - Hover and focus change color in `dur-state`. Tabs do not slide.

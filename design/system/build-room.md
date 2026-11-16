@@ -255,7 +255,7 @@ Each row gains:
 
 ## 4. Inbox (`/`)
 
-References: `ScreenInboxAll`, `ScreenInboxEmpty`, `Rows`. Data: `GET /api/inbox`.
+References: `ScreenInbox`, `ScreenInboxAll`, `ScreenInboxEmpty`, `Rows`. Data: `GET /api/inbox`.
 
 Structure inside `main`, in this order. A section with nothing in it is not drawn, except Now.
 
@@ -266,7 +266,7 @@ Structure inside `main`, in this order. A section with nothing in it is not draw
 3. **Waiting.** `fh-sec` label "Waiting", count on the right in `fh-sec__n`. A ledger of waiting rows (`Rows`): margin `No.` and "locked HH:MM"; `div.fh-row__kind` (API) `kind`; `h3.fh-row__title > a` task to `href`; `dl.fh-row__lines` with YOU `dd.you` `said` and RUN `dd.run` (API) `text`. No verdict. All rows are shown: the old "3 more" disclosure is gone.
 4. **Notes.** `fh-sec` label "Notes", right `<shown> of <shown + older_notes>` when `older_notes > 0`. A ledger of note rows: `li.fh-row.fh-row--note`; margin `b` "Note" then (API) `time`; `div.fh-row__kind` the task when there is one; `h3.fh-row__title` (API) `title`; `ul.fh-facts` with one `li` per evidence item: `span.k` the test name (the part after the last `::`), `span.ld`, `span.v` `path:line`; `p.fh-row__foot` (API) `checked`. Notes are always open: the old `details` is gone. When `older_notes > 0`, after the ledger: `p.fh-acts > a.fh-btn.fh-btn--quiet` "Older notes" to `/journal`.
 5. **Results.** `fh-sec` label "Results", right `<n> not opened`. A ledger of entry rows as in the Journal (section 8), built from `results[]`.
-6. **Today**, only when Now is blank: `fh-sec` label "Today", then `ul.fh-status` with three `li`, each a label, `span.ld` and `b`: "Asked today" and `<today> of <limit>`; "The dial" and Off, Notes only, Standard or Deep; "Quiet" and off, this session, today or this project.
+6. **Today**, always last: `fh-sec` label "Today", then `ul.fh-status` with three `li`, each a label, `span.ld` and `b`: "Asked today" and `<today> of <limit>`; "The dial" and Off, Notes only, Standard or Deep; "Quiet" and off, this session, today or this project.
 
 Behaviour: redrawn on an `inbox` or `settings` notice from the event stream, as today. Nothing on this page animates.
 
@@ -274,7 +274,7 @@ Phone: the ledger rows move their margin above the row (already in the styleshee
 
 ## 5. The question sheet (`/q/<ref>`, state `open`)
 
-References: `Question`, `ScreenInbox` (several tests), `ScreenOneTest`, `ScreenCallIt`, `ScreenBrief`, `ScreenBriefConfirm`, `PicksColumn`, `Field`, `Disclosure`. Data: `GET /api/q/<ref>`.
+References: `Question`, `ScreenOneTest`, `ScreenCallIt`, `ScreenBrief`, `ScreenBriefConfirm`, `PicksColumn`, `Field`, `Disclosure`. Data: `GET /api/q/<ref>`.
 
 `main` holds `h1.fh-vh` with `kind_label`, then one `section.fh-sheet[aria-labelledby=q]`. The order inside the sheet is fixed:
 
