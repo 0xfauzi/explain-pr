@@ -2,13 +2,26 @@ Firsthand is a logbook. A person writes a call before a result exists, a run pri
 
 ## Content fundamentals
 
-- Write in the second person, present tense, sentence case. "Your call", "The run", "Your agent finished". No title case, no exclamation marks, no emoji.
+- Write in the second person, present tense, sentence case. "Your answer", "The run", "Your agent finished". No title case, no exclamation marks, no emoji.
 - A result is a fact about one change, never a judgement of the person. Write "Did not match", never "Wrong". Write "Don't know is not counted as a miss".
 - Name the mechanism plainly: "Checked by a run, no model." "Served by this computer at 127.0.0.1."
 - Keep the product's fixed words exact: Revert test, Call it, Brief, the Room, Matched, Did not match, Not scored, Skip, Lock, Show the result.
 - Buttons say what happens: "Lock", "Show the result", "Back to the build". Never "OK" or "Continue".
 - Numbers are counts with their base: "3 of 4", "Asked today: 0 of 1". Never a percentage or a score.
 - Every entry has a number and two times: when the call was locked and when the run finished. Show both. They are the proof that the call came first.
+
+## Words
+
+Write in plain English, close to ASD-STE100 (Simplified Technical English). The reader is in the middle of work.
+
+- One idea in a sentence. 20 words at most in an instruction, 25 in a description.
+- Active voice, present tense. "Firsthand runs your tests", not "your tests are run".
+- One word for one thing. It is always "answer", "run", "result", "fix", "change", "test". Do not swap in "call", "response", "check-in" or "verdict" for variety.
+- Use the short common verb: use, make, show, run, keep, tell. Not leverage, surface, ensure, enable.
+- Say what happens and who does it. No slogans, no sentences in threes for rhythm, no "not X, but Y" turns.
+- Write the condition first: "If you do not want to answer, say skip."
+- No idioms and no figures of speech. A sentence must mean the same thing when translated word by word.
+- Give the example, not the adjective. "A test fails with the fix undone", not "a rigorous check".
 
 ## Two hands on one page
 
@@ -37,7 +50,7 @@ This is the core of the system. Every screen keeps the two apart.
 - **Margin column.** On screens 760px and wider, every row has a margin column of `margin-col` on the left holding its entry number, time or label in `fact-sm` or `label`. Below 760px the margin note moves above the row.
 - **Rows, not cards.** A journal entry, a skill and a note are rows between `rule` lines. Only the open question is a bordered sheet.
 - **Leaders.** A fact and its outcome are joined by a dotted leader in `rule-strong`, with the outcome flush right: `test_name ...... still passes`.
-- **The spread.** A result puts "Your call" on the left and "The run" on the right, divided by a vertical perforation (a dashed `rule-strong` line). The verdict mark sits on the perforation. Each side is headed by its time. Below 600px the sides stack and the perforation runs across.
+- **The spread.** A result puts "Your answer" on the left and "The run" on the right, divided by a vertical perforation (a dashed `rule-strong` line). The verdict mark sits on the perforation. Each side is headed by its time. Below 600px the sides stack and the perforation runs across.
 - The system is square. Use `radius-sm` everywhere. No pills, circles, shadows, gradients or rounded cards.
 - Controls are 48px tall. Answer cells are 48px squares that sit flush and share borders, like boxes on a form.
 - A key that does the same thing is shown as a keycap inside the control: `Lock` with its Enter cap.

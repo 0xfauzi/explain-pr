@@ -1,0 +1,35 @@
+<!-- @dsCard group="Questions" height=1180 -->
+<!doctype html>
+<html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:ital,wght@0,300;0,400;0,500;1,400&family=IBM+Plex+Sans:wght@400;500;600&family=Newsreader:ital,opsz,wght@0,6..72,400..600;1,6..72,400..600&display=swap">
+<style>body{margin:0;padding:28px 32px;background:var(--paper)}@media(max-width:600px){body{padding:20px 16px}}</style></head>
+<body><div class="fh" style="max-width:560px">
+<div class="fh-label" style="margin-bottom:16px">Across: the test and two files, as boxes and arrows. Each file is an answer</div>
+<div class="fh-pathbox"><div class="fh-path fh-path--flow" role="group" aria-label="Where is the cause?">
+<div class="fh-path__stop is-start"><span class="st"></span><span class="t"><span class="nm"><small class="dir">the test</small><b>test_gold_total</b><small>starts here</small></span></span></div>
+<button type="button" class="fh-path__stop " data-p="order" aria-pressed="false"><span class="st"></span><span class="t"><span class="nm"><small class="dir">checkout/</small><b>order.py</b><small>line 42</small></span></span></button>
+<button type="button" class="fh-path__stop is-end" data-p="totals" aria-pressed="false"><span class="st"><svg viewBox="0 0 14 14" aria-hidden="true"><rect x="1" y="1" width="12" height="12"/><path d="M4.5 4.5l5 5M9.5 4.5l-5 5"/></svg></span><span class="t"><span class="nm"><small class="dir">pricing/</small><b>totals.py</b><small>line 27</small></span></span></button>
+<p class="fh-path__note">The failure shows here: <b>KeyError: 'gold'</b></p>
+<button type="button" class="fh-path__stop is-off" data-p="rates" aria-pressed="false"><span class="st"></span><span class="t"><span class="nm"><small class="dir">pricing/</small><b>rates.py</b></span></span></button>
+<p class="fh-path__off">Not on the path of the failure.</p>
+<div class="fh-picks fh-path__words"><button type="button" class="fh-pick fh-pick--word" data-p="else" aria-pressed="false">Somewhere else</button><button type="button" class="fh-pick fh-pick--word" data-p="dk" aria-pressed="false">Don't know</button></div>
+</div></div>
+<div class="fh-label" style="margin:40px 0 16px">Down the page: for a narrow column, or more than three boxes</div>
+<div style="max-width:340px"><div class="fh-pathbox"><div class="fh-path" role="group" aria-label="Where is the cause?">
+<div class="fh-path__stop is-start"><span class="st"></span><span class="t"><span class="nm"><small class="dir">the test</small><b>test_gold_total</b><small>starts here</small></span></span></div>
+<button type="button" class="fh-path__stop " data-p="order" aria-pressed="false"><span class="st"></span><span class="t"><span class="nm"><small class="dir">checkout/</small><b>order.py</b><small>line 42</small></span></span></button>
+<button type="button" class="fh-path__stop is-end" data-p="totals" aria-pressed="false"><span class="st"><svg viewBox="0 0 14 14" aria-hidden="true"><rect x="1" y="1" width="12" height="12"/><path d="M4.5 4.5l5 5M9.5 4.5l-5 5"/></svg></span><span class="t"><span class="nm"><small class="dir">pricing/</small><b>totals.py</b><small>line 27</small></span></span></button>
+<p class="fh-path__note">The failure shows here: <b>KeyError: 'gold'</b></p>
+<button type="button" class="fh-path__stop is-off" data-p="rates" aria-pressed="false"><span class="st"></span><span class="t"><span class="nm"><small class="dir">pricing/</small><b>rates.py</b></span></span></button>
+<p class="fh-path__off">Not on the path of the failure.</p>
+<div class="fh-picks fh-path__words"><button type="button" class="fh-pick fh-pick--word" data-p="else" aria-pressed="false">Somewhere else</button><button type="button" class="fh-pick fh-pick--word" data-p="dk" aria-pressed="false">Don't know</button></div>
+</div></div></div>
+<div class="fh-label" style="margin:40px 0 16px">With the result: the answer and the fix are marked on the same picture</div>
+<div class="fh-pathbox"><div class="fh-path fh-path--flow fh-path--result" data-said="totals">
+<div class="fh-path__stop is-start"><span class="st"></span><span class="t"><span class="nm"><small class="dir">the test</small><b>test_gold_total</b><small>starts here</small></span></span></div>
+<div class="fh-path__stop " data-r="order"><span class="st"></span><span class="t"><span class="nm"><small class="dir">checkout/</small><b>order.py</b><small>line 42</small></span><span class="flag flag--said">your answer</span></span></div>
+<div class="fh-path__stop is-end" data-r="totals"><span class="st"><svg viewBox="0 0 14 14" aria-hidden="true"><rect x="1" y="1" width="12" height="12"/><path d="M4.5 4.5l5 5M9.5 4.5l-5 5"/></svg></span><span class="t"><span class="nm"><small class="dir">pricing/</small><b>totals.py</b><small>line 27</small></span><span class="flag flag--said">your answer</span></span></div>
+<p class="fh-path__note">The failure shows here: <b>KeyError: 'gold'</b></p>
+<div class="fh-path__stop is-off" data-r="rates"><span class="st"></span><span class="t"><span class="nm"><small class="dir">pricing/</small><b>rates.py</b></span><span class="flag flag--said">your answer</span><span class="flag flag--fix">the fix landed here</span></span></div>
+<p class="fh-path__off">Not on the path of the failure.</p>
+</div></div>
+</div><script>document.querySelectorAll("button.fh-path__stop,.fh-path .fh-pick").forEach(function(b){b.addEventListener("click",function(){var g=b.closest(".fh-path");g.querySelectorAll("[aria-pressed]").forEach(function(o){o.setAttribute("aria-pressed","false")});b.setAttribute("aria-pressed","true")})})</script></body></html>

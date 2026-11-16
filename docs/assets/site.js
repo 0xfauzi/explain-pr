@@ -52,23 +52,24 @@
   var sheet = $("sheet");
   if (!page || !sheet) return;
 
-  var picks = [].slice.call($("picks").children);
+  var picks = [].slice.call($("path").querySelectorAll("[data-p]"));
   var sures = [].slice.call($("sure").children);
-  var NAMES = {
-    1: "test_same_key_refunds_once",
-    2: "test_refund_response_is_stable",
-    3: "test_refund_amount_validated"
+  // In the example the fix landed in pricing/rates.py.
+  var SAID = {
+    order: "checkout/order.py.",
+    totals: "pricing/totals.py.",
+    rates: "pricing/rates.py.",
+    "else": "Somewhere else.",
+    dk: "Don't know."
   };
-  // In the example only test 2 still passes. Each cue is [before, path, after].
   var MORE = {
-    match: "It would pass whether or not the change exists.",
-    only: ["Its only assertion is at ", "tests/test_refunds.py:41", "."],
-    1: ["Test 1 fails at ", "tests/test_refunds.py:29", " with the change undone."],
-    3: ["With the change undone test 3 stops at ", "tests/test_refunds.py:52", " with an error, not on an assertion."]
+    match: "Your answer and the fix are the same file.",
+    miss: "The fix is in pricing/rates.py, a file that the failing trace does not name.",
+    none: "\"Don't know\" is not counted as a miss."
   };
   var BARS = { match: "M8 11h12M8 17h12", miss: "M8 11h12M8 17h12M17.5 6.5l-7 15", none: "M8 11h12M8 17h12" };
   var WORDS = { match: "Matched", miss: "Did not match", none: "Not scored" };
-  var chosen = [], sure = null;
+  var chosen = null, sure = null;
 
   function state() { return page.getAttribute("data-demo"); }
 
@@ -84,65 +85,38 @@
     setTimeout(function () { live.textContent = text; }, 40);
   }
 
-  function isWord(p) { return p === "none" || p === "dk"; }
-  function nums() { return chosen.filter(function (p) { return !isWord(p); }); }
-
   function draw() {
     var open = state() === "ask";
     picks.forEach(function (b) {
-      b.setAttribute("aria-pressed", chosen.indexOf(b.getAttribute("data-p")) < 0 ? "false" : "true");
+      b.setAttribute("aria-pressed", b.getAttribute("data-p") === chosen ? "true" : "false");
       b.disabled = !open;
     });
     sures.forEach(function (b) {
       b.setAttribute("aria-pressed", b.getAttribute("data-s") === sure ? "true" : "false");
     });
-    $("lock").disabled = !chosen.length;
-  }
-
-  function toggle(p) {
-    if (state() !== "ask") return;
-    var was = chosen.indexOf(p) >= 0;
-    // None and Don't know each clear everything else; a number clears them.
-    var clear = isWord(p) || (chosen.length && isWord(chosen[0]));
-    chosen = clear ? [] : chosen.filter(function (n) { return n !== p; });
-    if (!was) chosen.push(p);
-    chosen.sort();
-    draw();
-  }
-
-  function join(a) {
-    return a.length < 2 ? a.join("") : a.slice(0, -1).join(", ") + " and " + a[a.length - 1];
   }
 
   function write() {
-    var n = nums();
-    var said = chosen[0] === "dk" ? "Don't know." : chosen[0] === "none" ? "None." : join(n) + ".";
-    if (sure && chosen[0] !== "dk") said += " " + sure + ".";
-    $("rec-said").textContent = said;
-    ["held", "answer", "waitcall"].forEach(function (id) {
-      var line = $(id);
-      line.textContent = said;
-      if (!n.length) return;
-      var names = document.createElement("small");
-      names.textContent = n.map(function (x) { return NAMES[x]; }).join(", ");
-      line.appendChild(names);
-    });
+    var said = SAID[chosen];
+    if (sure && chosen !== "dk") said += " " + sure + ".";
+    ["held", "answer", "waitcall", "rec-said"].forEach(function (id) { $(id).textContent = said; });
   }
 
-  function lock() {
-    if (state() !== "ask" || !chosen.length) return;
+  // A tap on a part locks the answer. Undo opens it again.
+  function lock(p) {
+    if (state() !== "ask") return;
+    chosen = p;
     sure = null;
     go("locked");
     draw();
     write();
-    $("surerow").hidden = chosen[0] === "dk";
+    $("surerow").hidden = chosen === "dk";
     $("show").focus();
     say("Locked.");
   }
 
   function verdict() {
-    if (chosen[0] === "dk") return "none";
-    return chosen.join() === "2" ? "match" : "miss";
+    return chosen === "dk" ? "none" : chosen === "rates" ? "match" : "miss";
   }
 
   function mark(svg, v) {
@@ -158,27 +132,16 @@
   function fill() {
     var v = verdict();
     write();
-    // The verdict words, the margin label, the entry's name and both marks change together.
+    // The verdict words, the margin label, the entry's name and the marks change together.
     mark($("stamp"), v);
     mark($("rec-mark"), v);
     mark($("verdict").querySelector("svg"), v);
     $("verdict").className = "fh-verdict fh-verdict--" + v;
     $("verdict").lastChild.nodeValue = WORDS[v];
-    $("entry").setAttribute("aria-label", WORDS[v] + ". Revert test, No. 0042");
+    $("entry").setAttribute("aria-label", WORDS[v] + ". Call it, No. 0042");
     $("f-label").textContent = WORDS[v];
-    var more = $("f-more");
-    more.textContent = "";
-    if (v === "match") { more.textContent = MORE.match; return; }
-    // If 2 is not picked, the sentence is about test 2; else about the lowest other pick.
-    var other = nums().filter(function (x) { return x !== "2"; })[0];
-    var cue = nums().indexOf("2") < 0 ? MORE.only : MORE[other];
-    var lead = v === "none" ? "\"Don't know\" is not counted as a miss. " : "";
-    more.appendChild(document.createTextNode(lead + cue[0]));
-    var path = document.createElement("span");
-    path.className = "fh-fact";
-    path.textContent = cue[1];
-    more.appendChild(path);
-    more.appendChild(document.createTextNode(cue[2]));
+    $("f-more").textContent = MORE[v];
+    $("rpath").setAttribute("data-said", chosen);
   }
 
   function show() {
@@ -196,17 +159,18 @@
     $("result").scrollIntoView({ block: "start" });
   }
 
-  function reset(keep) {
-    if (!keep) chosen = [];
+  function reset() {
+    var back = chosen;
+    chosen = null;
     sure = null;
     go("ask");
     draw();
-    var first = picks.filter(function (b) { return b.getAttribute("aria-pressed") === "true"; })[0] || picks[0];
+    var first = picks.filter(function (b) { return b.getAttribute("data-p") === back; })[0] || picks[0];
     first.focus();
   }
 
   picks.forEach(function (b) {
-    b.addEventListener("click", function () { toggle(b.getAttribute("data-p")); });
+    b.addEventListener("click", function () { lock(b.getAttribute("data-p")); });
   });
   sures.forEach(function (b) {
     b.addEventListener("click", function () {
@@ -216,30 +180,17 @@
       write();
     });
   });
-  $("lock").addEventListener("click", lock);
   $("show").addEventListener("click", show);
-  $("undo").addEventListener("click", function () { reset(true); say("Undone."); });
-  $("unskip").addEventListener("click", function () { reset(true); say("Undone."); });
+  $("undo").addEventListener("click", function () { reset(); say("Undone."); });
+  $("unskip").addEventListener("click", function () { reset(); say("Undone."); });
   $("skip").addEventListener("click", function () {
-    chosen = [];
+    chosen = null;
     go("skipped");
     draw();
     $("unskip").focus();
     say("Skipped.");
   });
-  $("again").addEventListener("click", function () { reset(false); });
+  $("again").addEventListener("click", function () { reset(); });
 
-  sheet.addEventListener("keydown", function (e) {
-    if (state() !== "ask" || e.ctrlKey || e.metaKey || e.altKey) return;
-    var k = e.key;
-    var p = k === "1" || k === "2" || k === "3" ? k : (k === "n" || k === "N") ? "none" : k === "?" ? "dk" : null;
-    if (p) { e.preventDefault(); toggle(p); return; }
-    // Enter locks from the sheet or a cell once a cell is on. Lock, Skip and links keep their own Enter.
-    if (k !== "Enter" || e.repeat || !chosen.length) return;
-    var t = e.target;
-    if (t === sheet || t.classList.contains("fh-pick")) { e.preventDefault(); lock(); }
-  });
-
-  chosen = [];
   draw();
 })();

@@ -456,3 +456,90 @@ html{scrollbar-color:var(--rule-strong) var(--paper);-webkit-tap-highlight-color
 .fh-rec li[data-play] .fh-m{animation:fh-stamp var(--dur-stamp) var(--ease-stamp) calc(var(--dur-line) + var(--dur-stamp)) both}
 /* The phone folio is two lines: the name, then the four links on one row */
 @media (max-width:600px){.fh-wide{display:none}.fh-folio .fh-nav{display:flex;flex-wrap:nowrap;justify-content:space-between;gap:0;font-size:11.5px}.fh-folio .fh-nav a{min-width:0}}
+
+/* ---------- Path: the route of a failure, drawn. A stop on it can be the answer ---------- */
+.fh-path{margin:var(--space-6) 0 0;font:400 13.5px/20px var(--font-fact);font-variant-ligatures:none;font-feature-settings:"zero"}
+.fh-pathbox{container-type:inline-size;min-width:0}
+.fh-path__stop{display:grid;grid-template-columns:44px minmax(0,1fr);width:100%;margin:0;padding:0;border:0;background:none;color:var(--ink);font:inherit;text-align:left}
+button.fh-path__stop{cursor:pointer}
+.fh-path__stop .st{position:relative;min-height:60px}
+/* down the page: a line with a square at each stop and an arrow head into it */
+.fh-path__stop .st::before{content:"";position:absolute;left:13px;top:0;bottom:0;width:2px;background:var(--ink)}
+.fh-path__stop.is-start .st::before{top:50%}
+.fh-path__stop.is-end .st::before{bottom:50%}
+.fh-path__stop.is-off .st::before{display:none}
+.fh-path__stop .st::after{content:"";position:absolute;left:6px;top:50%;width:16px;height:16px;margin-top:-8px;box-sizing:border-box;border:2px solid var(--ink);background:var(--paper-raised);transition:background var(--dur-state),border-color var(--dur-state)}
+.fh-path__stop.is-start .st::after{background:var(--ink)}
+.fh-path__stop.is-off .st::after{border:1.5px dashed var(--rule-strong)}
+.fh-path__stop.is-end .st::after{display:none}
+.fh-path__stop .st svg{position:absolute;left:6px;top:50%;width:16px;height:16px;margin-top:-8px;z-index:1}
+.fh-path__stop .st svg rect{fill:var(--miss-tint);stroke:var(--miss);stroke-width:1.75}
+.fh-path__stop .st svg path{stroke:var(--miss);stroke-width:1.5;fill:none}
+.fh-path__stop .t{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:var(--space-1) var(--space-3);min-width:0;padding:9px var(--space-4);border:1.5px solid transparent;border-radius:var(--radius-sm);transition:background var(--dur-state),border-color var(--dur-state),color var(--dur-state)}
+.fh-path__stop .nm{min-width:0}
+.fh-path__stop b{font-weight:500;overflow-wrap:anywhere}
+.fh-path__stop small{font:400 12px/18px var(--font-fact);color:var(--ink-3)}
+.fh-path__stop .dir{color:var(--ink-3);font-size:13.5px;line-height:20px}
+.fh-path__stop b + small{display:block}
+.fh-path__stop.is-start .dir{display:block;font:500 10.5px/16px var(--font-fact);letter-spacing:.11em;text-transform:uppercase}
+button.fh-path__stop .t{border-color:var(--rule-strong);margin-bottom:-1.5px}
+button.fh-path__stop:hover:not([disabled]) .t{border-color:var(--call);position:relative}
+button.fh-path__stop:active:not([disabled]) .t{transform:translateY(1px)}
+button.fh-path__stop[aria-pressed="true"] .t{background:var(--call);border-color:var(--call);color:var(--on-call);position:relative}
+button.fh-path__stop[aria-pressed="true"] small{color:var(--on-call)}
+button.fh-path__stop[aria-pressed="true"] .st::after{background:var(--call);border:2px solid var(--call)}
+button.fh-path__stop[disabled]{cursor:default}
+button.fh-path__stop[disabled]:not([aria-pressed="true"]) .t{border-color:var(--rule);color:var(--ink-2)}
+.fh-path__stop:focus-visible{outline:none}
+.fh-path__stop:focus-visible .t{outline:2px solid var(--call);outline-offset:2px;position:relative}
+.fh-path__note{margin:var(--space-1) 0 0 44px;font:400 12px/18px var(--font-fact);color:var(--miss)}
+.fh-path__note b{font-weight:500}
+.fh-path__off{margin:var(--space-1) 0 0 44px;font:400 12px/18px var(--font-fact);color:var(--ink-3)}
+.fh-path__stop.is-off{margin-top:var(--space-4)}
+.fh-path__words{margin:var(--space-4) 0 0 44px}
+.fh-path .flag{display:none;flex:none;white-space:nowrap}
+.fh-path .flag--said{font:italic 400 17px/22px var(--font-voice);color:var(--call)}
+.fh-path .flag--fix{font:500 10.5px/16px var(--font-fact);letter-spacing:.11em;text-transform:uppercase;color:var(--ink);padding:2px 6px;border:1.5px solid var(--ink);border-radius:var(--radius-sm)}
+.fh-path--result{margin:0}
+.fh-path--result .flag--fix{display:inline-block}
+.fh-path--result[data-said="order"] [data-r="order"] .flag--said,.fh-path--result[data-said="totals"] [data-r="totals"] .flag--said,.fh-path--result[data-said="rates"] [data-r="rates"] .flag--said{display:inline}
+.fh-path--result .fh-path__stop:not(.is-start) .t{border-color:var(--rule)}
+.fh-path--result[data-said="order"] [data-r="order"] .t,.fh-path--result[data-said="totals"] [data-r="totals"] .t,.fh-path--result[data-said="rates"] [data-r="rates"] .t{border-color:var(--call)}
+.fh-path--result [data-r="rates"] .t{border-style:solid}
+[data-play] ~ .fh-finding .fh-path .flag{animation:fh-in var(--dur-line) var(--ease-out) calc(var(--dur-line) * 2 + var(--dur-stamp) + var(--stagger) * 5) both}
+/* across the page, where three stops fit: boxes joined by arrows */
+@container (min-width:470px){
+.fh-path--flow{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));column-gap:40px;align-items:stretch}
+.fh-path--flow .fh-path__stop{display:block;position:relative;grid-row:1}
+.fh-path--flow .fh-path__stop .st{position:absolute;min-height:0;left:-40px;top:50%;width:40px;height:0}
+.fh-path--flow .fh-path__stop .st::before{left:3px;right:9px;top:-1px;bottom:auto;width:auto;height:2px}
+.fh-path--flow .fh-path__stop .st::after{left:auto;right:3px;top:-5px;width:0;height:0;margin:0;border:5px solid transparent;border-left:7px solid var(--ink);border-right:0;background:none}
+.fh-path--flow .fh-path__stop.is-start .st,.fh-path--flow .fh-path__stop.is-off .st{display:none}
+.fh-path--flow .fh-path__stop.is-end .st::after{display:block}
+.fh-path--flow .fh-path__stop .st svg{left:auto;right:-40px;top:auto;margin:0;transform:translate(8px,-50%);display:none}
+.fh-path--flow .fh-path__stop .t{height:100%;min-height:92px;box-sizing:border-box;flex-direction:column;align-items:flex-start;justify-content:flex-start;flex-wrap:nowrap;padding:12px 14px;margin:0;border-color:var(--rule-strong)}
+.fh-path--flow .fh-path__stop .dir{display:block}
+.fh-path--flow .fh-path__stop b{display:block;font-size:15px;line-height:22px}
+.fh-path--flow .fh-path__stop.is-start .t{background:var(--paper-sunk);border-color:transparent}
+.fh-path--flow .fh-path__stop.is-start .t{padding-left:12px;padding-right:8px}
+.fh-path--flow .fh-path__stop.is-start b{font-size:13px;overflow-wrap:normal;word-break:normal}
+.fh-path--flow .fh-path__stop.is-end .t{border-color:var(--miss)}
+.fh-path--flow button.fh-path__stop.is-end:hover:not([disabled]) .t{border-color:var(--call)}
+.fh-path--flow button.fh-path__stop.is-end[aria-pressed="true"] .t{border-color:var(--call)}
+.fh-path--flow .fh-path__note{grid-row:2;grid-column:2 / 4;justify-self:end;margin:6px 0 0;text-align:right}
+.fh-path--flow .fh-path__stop.is-off{grid-row:3;grid-column:1;margin-top:var(--space-6)}
+.fh-path--flow .fh-path__stop.is-off .t{border-style:dashed;min-height:68px}
+.fh-path--flow button.fh-path__stop.is-off[aria-pressed="true"] .t{border-style:solid}
+.fh-path--flow .fh-path__off{grid-row:3;grid-column:2 / 4;align-self:center;margin:var(--space-6) 0 0}
+.fh-path--flow .fh-path__words{grid-row:4;grid-column:1 / -1;margin-left:0}
+.fh-path--flow .flag{margin-top:auto;padding-top:var(--space-2)}
+.fh-path--flow .flag--fix{margin-top:auto}
+.fh-path--flow .flag--said + .flag--fix{margin-top:var(--space-1)}
+.fh-path--flow.fh-path--result .fh-path__stop .t{min-height:104px}
+}
+.fh-q + .fh-path{margin-top:var(--space-6)}
+.fh-finding .fh-pathbox{max-width:720px}
+/* A part with no lead: its first paragraph sits as close to the title as a lead does */
+#skill .fh-part__head{padding-bottom:var(--space-3)}
+/* The answered stop is in the person's blue, also where the failure shows */
+.fh-path.fh-path--result[data-said="totals"] [data-r="totals"].is-end .t{border-color:var(--call)}

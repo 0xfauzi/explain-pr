@@ -324,7 +324,7 @@ The sheet of section 5 stays, with these changes:
 - Every cell is `disabled`. The cells named by `held.answer` keep `aria-pressed="true"`.
 - `h2.fh-q` gets `data-still`, so the highlighter does not pass again.
 - `fh-keys` and the old action line are gone. In their place `div.fh-held`:
-  1. `div.fh-spread__head`: `span.fh-label > b` "Your call"; `time` "locked HH:MM:SS" from `held.at`.
+  1. `div.fh-spread__head`: `span.fh-label > b` "Your answer"; `time` "locked HH:MM:SS" from `held.at`.
   2. `p.fh-answer`: `held.said`, a full stop, then " Sure." or " Not sure." when `held.confidence` is set; then `small` with `held.names` joined by ", " when not empty.
   3. `div.fh-held__sure`: `span.fh-label#sure` "How sure?"; `div.fh-picks[role=group][aria-labelledby=sure]` with two `fh-pick--word` cells "Sure" and "Not sure". A press posts `confidence` with `high` or `low`; pressing the one that is on posts `null`. The answer line above is redrawn from the returned view, so the word appears in the person's hand.
   4. `div.fh-sheet__act`: `button.fh-btn` "Show the result" (posts `show`); `button.fh-btn.fh-btn--quiet` "Undo" when `can.undo` (posts `undo`; live region "Undone.").
@@ -351,7 +351,7 @@ Which layout, from the view:
 
 1. `div.fh-head`: left a `div` holding `div.fh-label` `No. 0042 · <kind_label> · <skill>` and `h1.fh-head__title` the task (`where.task`); right `verdict(chip, chip_label)`.
 2. `div.fh-spread#res[tabindex=-1]` with `aria-label` = `chip_label`, a full stop, then the first `what_happened` sentence:
-   - `div.fh-spread__side.fh-spread__call`: `div.fh-spread__head` (`span.fh-label > b` "Your call", or (API) `said_label` "Your check" for the Brief; `time` "locked HH:MM:SS" from `call.locked_at`); `p.fh-answer` built as in section 6 from `call` (the Brief's line takes `fh-answer--line`); for the Brief with `call.confirm`: a second `div.fh-spread__head` (`span.fh-label > b` "Is this your check?", `time` "locked HH:MM:SS" from `confirm.at`) and a second `p.fh-answer.fh-answer--line` "Yes." or "No.". When there was no answer (`call` is null): `p.fh-answer` with (API) `you_said` ("Skipped.", "No answer.") and no time.
+   - `div.fh-spread__side.fh-spread__call`: `div.fh-spread__head` (`span.fh-label > b` "Your answer", or (API) `said_label` "Your check" for the Brief; `time` "locked HH:MM:SS" from `call.locked_at`); `p.fh-answer` built as in section 6 from `call` (the Brief's line takes `fh-answer--line`); for the Brief with `call.confirm`: a second `div.fh-spread__head` (`span.fh-label > b` "Is this your check?", `time` "locked HH:MM:SS" from `confirm.at`) and a second `p.fh-answer.fh-answer--line` "Yes." or "No.". When there was no answer (`call` is null): `p.fh-answer` with (API) `you_said` ("Skipped.", "No answer.") and no time.
    - The mark: `mark(kind)` as a direct child of the spread, between the sides.
    - `div.fh-spread__side.fh-spread__run`: `div.fh-spread__head` (`span.fh-label`: `b` "The run" then ` · <run_label>`; `time` "recorded HH:MM:SS" from `ran_at`); `ul.fh-facts` with one `li` per `result.facts`: `span.k`, `span.ld`, `span.v`, class `is-key` when `key`, and `--i` set to its index.
 3. The finding: `div.fh-finding`: `span.fh-label` (API) `chip_label`; a `div` holding `p.fh-finding__text` = `mixed(what_happened[0], names)`, then one `p` for each further `what_happened` sentence, then one `p` with (API) `reason` when set.

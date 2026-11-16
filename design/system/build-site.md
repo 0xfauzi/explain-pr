@@ -1,5 +1,8 @@
 # Build spec: the public site
 
+> Out of date in part. The example on the site is now Call it, drawn with the Path component, and the copy follows the "Words" section of the README. Where this file and `docs/index.html` differ, `docs/index.html` is correct. The components ScreenSite and SiteDemo are removed: ScreenSiteFull is the whole page.
+
+
 This file tells the builder how to rebuild `docs/index.html`, `docs/assets/site.css` and `docs/assets/site.js` in the Firsthand design system. It replaces the visual parts of `design/product/spec/site.md`. The claims and facts in that file still hold. Where the two differ on layout, class names, motion or behaviour, this file wins.
 
 Read `design/system/README.md` first. Then open the reference and keep it open while you build.
@@ -149,7 +152,7 @@ Checked by a run: the change undone, the tests kept.    Nothing is written to yo
 ### 5.2 Part 01, the result (`section.fh-part#result`)
 
 - Margin: `01` / `The result`
-- Title: `Your call, then the run, on one spread.`
+- Title: `Your answer, then the run, on one spread.`
 - Lead: `A result is one spread. What you said is on one side, with the time you locked it. What the run found is on the other, with the time it finished.`
 - Then two blocks, one for the states before a result and one for the result (section 6.2).
 
@@ -295,7 +298,7 @@ The key rule holds on this page as in the product: **no part of the run is in vi
 | State | Bar, right | Cells | Under the cells |
 | :- | :- | :- | :- |
 | `ask` | `No. 0042 · skip ok` | Enabled. None on at first. | The key legend. `Lock` with its Enter keycap (disabled until a cell is on) and `Skip` (quiet). |
-| `locked` | `No. 0042 · locked 14:02:11` | Disabled, chosen ones filled. | `div.fh-held`: `Your call` and `locked 14:02:11`, the answer in `p.fh-answer#held`, `How sure?` with two word cells `Sure` and `Not sure`, then `Show the result` with its Enter keycap and `Undo` (quiet). |
+| `locked` | `No. 0042 · locked 14:02:11` | Disabled, chosen ones filled. | `div.fh-held`: `Your answer` and `locked 14:02:11`, the answer in `p.fh-answer#held`, `How sure?` with two word cells `Sure` and `Not sure`, then `Show the result` with its Enter keycap and `Undo` (quiet). |
 | `result` | as `locked` | as `locked` | `div.fh-held` with the head and the answer only, then `p.fh-sheet__state`: `The result is printed below.` |
 | `skipped` | `No. 0042 · skipped` | Disabled, none on. | `p.fh-sheet__state`: `<b>Skipped.</b> Back to: idempotent refunds. Next: read the summary.` and `Undo` (quiet). |
 | `nojs` | `No. 0042 · skip ok` | Disabled, cell 2 on (as written in the HTML). | `p.fh-sheet__state`: `This page takes an answer only with JavaScript on. <b>The result for the answer 2 is shown below.</b>` |
@@ -313,13 +316,13 @@ Before a result (`data-v="ask locked skipped"`):
 
 - `div.fh-entry`: label `No. 0042 · Revert test · idempotent refunds`, and on the right the label `Not shown yet`.
 - `div.fh-spread.fh-spread--wait` (no perforation, no mark):
-  - left, `Your call`. In `ask` and `skipped`: the time reads `not locked`, then `div.fh-blank` (an empty dotted line) and a note. `ask`: `Answer the question above. Your call is written here when you lock it.` `skipped`: `Skipped. Nothing is written here.` In `locked`: the time reads `locked 14:02:11` and the answer is written in `p.fh-answer#waitcall`, exactly as in the sheet.
+  - left, `Your answer`. In `ask` and `skipped`: the time reads `not locked`, then `div.fh-blank` (an empty dotted line) and a note. `ask`: `Answer the question above. Your answer appears here when you lock it.` `skipped`: `Skipped. Nothing is written here.` In `locked`: the time reads `locked 14:02:11` and the answer is written in `p.fh-answer#waitcall`, exactly as in the sheet.
   - right, `The run · change undone`, the time reads `not shown`, then `p.fh-wait`: `Nothing here is shown before your call is locked.`
 
 The result (`data-v="result nojs"`):
 
 - `div.fh-entry#entry[tabindex=-1]` with the same label and, on the right, the verdict: mark and words (`span.fh-verdict#verdict`). Its `aria-label` is the verdict, then `Revert test, No. 0042`: `Matched. Revert test, No. 0042`.
-- `div.fh-spread#spread`: left `Your call`, `locked 14:02:11`, `p.fh-answer#answer`. The verdict mark `svg#stamp` on the perforation. Right `The run · change undone`, `finished 14:02:19`, and `ul.fh-facts`, the same for every answer:
+- `div.fh-spread#spread`: left `Your answer`, `locked 14:02:11`, `p.fh-answer#answer`. The verdict mark `svg#stamp` on the perforation. Right `The run · change undone`, `finished 14:02:19`, and `ul.fh-facts`, the same for every answer:
 
 ```
   test_same_key_refunds_once ......... fails on its assertion      (--i:0)
@@ -362,7 +365,7 @@ The sequence is the one in the bundle's Motion block. Do not write new keyframes
 
 | Order | What | Token |
 | :- | :- | :- |
-| 0 | Your call is already on the left. It does not move. | |
+| 0 | Your answer is already on the left. It does not move. | |
 | 1 | The perforation draws from the top (across, below 600px). | `dur-line`, `ease-out` |
 | 2 | The verdict mark lands on it, and the verdict in words fades in at the head of the entry. | `dur-stamp`, `ease-stamp`, after `dur-line` |
 | 3 | The run's head appears, then its three lines print from the left, `stagger` apart, each leader drawing out to its outcome. | `dur-line`, `ease-out` |
