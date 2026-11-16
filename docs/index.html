@@ -4,6 +4,9 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Firsthand (preview)</title>
+<link rel="icon" href="assets/mark.svg" type="image/svg+xml">
+<meta name="theme-color" content="#F4F4F0" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0D0F15" media="(prefers-color-scheme: dark)">
 <meta name="description" content="A free, open-source tool for your coding agent. When the agent finishes a change, Firsthand asks you one short question, then runs a real check on your project and shows the result next to your answer.">
 <meta property="og:title" content="Firsthand (preview)">
 <meta property="og:description" content="A free, open-source tool for your coding agent. When the agent finishes a change, Firsthand asks you one short question, then runs a real check on your project and shows the result next to your answer.">
@@ -17,7 +20,7 @@
 <body class="fh">
 <div class="fh-site" id="top" data-demo="nojs"><script>document.currentScript.parentNode.setAttribute("data-demo","ask")</script>
 
-<header class="fh-folio"><a class="fh-wordmark" href="#top"><i>First</i>hand</a><nav class="fh-nav" aria-label="Sections"><a href="#how">How it works</a><a href="#status">What works today</a><a href="#install">Install</a><a href="https://github.com/0xfauzi/explain-pr">Source</a></nav><span class="fh-folio__right">Preview &middot; free and open source</span></header>
+<header class="fh-folio"><a class="fh-wordmark" href="#top"><i>First</i>hand</a><nav class="fh-nav" aria-label="Sections"><a href="#how">How it works</a><a href="#status">What works today</a><a href="#install">Install</a><a href="https://github.com/0xfauzi/explain-pr">Source</a></nav><span class="fh-folio__right">Preview<span class="fh-wide"> &middot; free and open source</span></span></header>
 
 <main>
 <section class="fh-hero">
@@ -28,6 +31,16 @@
 <div class="fh-cmd fh-cmd--stack"><code data-cmd="install">uvx --from <span class="fh-nb">git+https://github.com/0xfauzi/explain-pr</span> firsthand init</code><button type="button" data-copy>Copy</button></div>
 <p class="fh-cap">Installs from the git repository. Not on PyPI yet. <a class="fh-link fh-nb" href="#install">What the command does</a></p>
 <ul class="fh-status"><li><span>Works today in</span><span class="ld"></span><b>Claude Code, pytest</b></li><li><span>Asks at most</span><span class="ld"></span><b>once a day</b></li><li><span>Your record stays</span><span class="ld"></span><b>on your machine</b></li><li><span>Checked by</span><span class="ld"></span><b>a run, no model</b></li></ul>
+<div class="fh-rec">
+<p class="fh-rec__cap"><span class="fh-label">From a record</span><span class="fh-label">Example</span></p>
+<ol aria-label="Four entries of an example record. The last is the question on this page.">
+<li><span class="no">0039</span><span class="kind">Brief</span><i>&ldquo;one refund per key&rdquo;</i><svg class="fh-m fh-m--match" viewBox="0 0 28 28" aria-hidden="true"><rect class="sq" x="0" y="0" width="28" height="28"/><path class="bar" d="M8 11h12M8 17h12"/></svg></li>
+<li><span class="no">0040</span><span class="kind">Revert test</span><i>None.</i><svg class="fh-m fh-m--miss" viewBox="0 0 28 28" aria-hidden="true"><rect class="sq" x="0.75" y="0.75" width="26.5" height="26.5"/><path class="bar" d="M8 11h12M8 17h12M17.5 6.5l-7 15"/></svg></li>
+<li><span class="no">0041</span><span class="kind">Call it</span><i>rates.py.</i><svg class="fh-m fh-m--match" viewBox="0 0 28 28" aria-hidden="true"><rect class="sq" x="0" y="0" width="28" height="28"/><path class="bar" d="M8 11h12M8 17h12"/></svg></li>
+<li class="is-open" id="rec"><span class="no">0042</span><span class="kind">Revert test</span><span class="fh-rec__blank" data-v="ask skipped"><span class="fh-vh">Open. Not answered yet.</span></span><i id="rec-said" data-v="locked result nojs">2.</i><svg class="fh-m fh-m--slot" data-v="ask locked skipped" viewBox="0 0 28 28" aria-hidden="true"><rect class="sq" x=".75" y=".75" width="26.5" height="26.5"/></svg><span data-v="result nojs"><svg class="fh-m fh-m--match" id="rec-mark" viewBox="0 0 28 28" aria-hidden="true"><rect class="sq" x="0" y="0" width="28" height="28"/><path class="bar" d="M8 11h12M8 17h12"/></svg></span></li>
+</ol>
+<p class="fh-cap" data-v="ask skipped">Entry 0042 is the question on this page. It is open.</p><p class="fh-cap" data-v="locked">Entry 0042 is locked. The mark is drawn when the result is shown.</p><p class="fh-cap" data-v="result nojs">Every call is kept like this, in plain files on your machine.</p>
+</div>
 </div>
 <div><section class="fh-sheet" id="sheet" tabindex="-1" aria-labelledby="q">
 <div class="fh-sheet__bar"><span>Revert test</span><span data-v="ask nojs">No. 0042 &middot; skip ok</span><span data-v="locked result">No. 0042 &middot; locked 14:02:11</span><span data-v="skipped">No. 0042 &middot; skipped</span></div>
@@ -65,11 +78,13 @@
 
 <div data-v="ask locked skipped">
 <div class="fh-entry"><span class="fh-label">No. 0042 &middot; Revert test &middot; idempotent refunds</span><span class="fh-label">Not shown yet</span></div>
-<div class="fh-spread fh-spread--wait">
+<div class="fh-spread fh-spread--sealed">
 <div class="fh-spread__side fh-spread__call"><div class="fh-spread__head"><span class="fh-label"><b>Your call</b></span><time data-v="ask skipped">not locked</time><time data-v="locked">locked 14:02:11</time></div>
 <div class="fh-blank" data-v="ask skipped"></div><p class="fh-answer" id="waitcall" data-v="locked">2.</p><small class="fh-blank__note" data-v="ask">Answer the question above. Your call is written here when you lock it.</small><small class="fh-blank__note" data-v="skipped">Skipped. Nothing is written here.</small></div>
-<div class="fh-spread__side fh-spread__run"><div class="fh-spread__head"><span class="fh-label"><b>The run</b> &middot; change undone</span><time>not shown</time></div>
-<p class="fh-wait">Nothing here is shown before your call is locked.</p></div>
+<svg class="fh-m fh-m--slot" viewBox="0 0 28 28" aria-hidden="true"><rect class="sq" x=".75" y=".75" width="26.5" height="26.5"/></svg>
+<div class="fh-spread__side fh-spread__run"><div class="fh-spread__head"><span class="fh-label"><b>The run</b> &middot; change undone</span><time>covered</time></div>
+<ul class="fh-facts" aria-label="The three tests. What happened to each is covered."><li><span class="k">test_same_key_refunds_once</span><span class="ld"></span><span class="v fh-seal"><span class="fh-vh">covered</span></span></li><li><span class="k">test_refund_response_is_stable</span><span class="ld"></span><span class="v fh-seal"><span class="fh-vh">covered</span></span></li><li><span class="k">test_refund_amount_validated</span><span class="ld"></span><span class="v fh-seal"><span class="fh-vh">covered</span></span></li></ul>
+<p class="fh-wait" data-v="ask skipped">Covered until your call is locked.</p><p class="fh-wait" data-v="locked">Your call is locked. <b>Show the result</b> uncovers these lines.</p></div>
 </div>
 </div>
 
@@ -83,7 +98,7 @@
 <ul class="fh-facts"><li style="--i:0"><span class="k">test_same_key_refunds_once</span><span class="ld"></span><span class="v">fails on its assertion</span></li><li class="is-key" style="--i:1"><span class="k">test_refund_response_is_stable</span><span class="ld"></span><span class="v">still passes</span></li><li style="--i:2"><span class="k">test_refund_amount_validated</span><span class="ld"></span><span class="v">cannot run</span></li></ul></div>
 </div>
 <div class="fh-finding"><span class="fh-label" id="f-label">Matched</span><div><p class="fh-finding__text">Test 2 still passes with the change undone.</p><p id="f-more">It would pass whether or not the change exists.</p></div></div>
-<div class="fh-finding fh-finding--text"><span class="fh-label">Sent to your agent</span><div><p class="fh-finding__sent">tests/test_refunds.py::<wbr>test_refund_response_is_stable passes with the change undone. tests/test_refunds.py::<wbr>test_refund_amount_validated cannot run with the change undone.</p></div></div>
+<div class="fh-finding fh-finding--text"><span class="fh-label">Sent to your agent</span><div><p class="fh-finding__sent"><span class="fh-id">tests/test_refunds.py::test_refund_response_is_stable</span> passes with the change undone. <span class="fh-id">tests/test_refunds.py::test_refund_amount_validated</span> cannot run with the change undone.</p></div></div>
 <div class="fh-acts"><button type="button" class="fh-btn fh-btn--second" id="again" data-v="result">Try another answer</button><span class="fh-label" data-v="nojs">The result for the answer 2</span><span class="fh-acts__note">Checked by a run, no model. On this page it is example data.</span></div>
 </div>
 </section>

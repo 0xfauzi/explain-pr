@@ -118,6 +118,7 @@
     var n = nums();
     var said = chosen[0] === "dk" ? "Don't know." : chosen[0] === "none" ? "None." : join(n) + ".";
     if (sure && chosen[0] !== "dk") said += " " + sure + ".";
+    $("rec-said").textContent = said;
     ["held", "answer", "waitcall"].forEach(function (id) {
       var line = $(id);
       line.textContent = said;
@@ -159,6 +160,7 @@
     write();
     // The verdict words, the margin label, the entry's name and both marks change together.
     mark($("stamp"), v);
+    mark($("rec-mark"), v);
     mark($("verdict").querySelector("svg"), v);
     $("verdict").className = "fh-verdict fh-verdict--" + v;
     $("verdict").lastChild.nodeValue = WORDS[v];
@@ -185,7 +187,7 @@
     go("result");
     draw();
     // Play the print once: drop the attribute, force a reflow, set it again.
-    [$("spread"), $("entry")].forEach(function (el) {
+    [$("spread"), $("entry"), $("rec")].forEach(function (el) {
       el.removeAttribute("data-play");
       void el.offsetWidth;
       el.setAttribute("data-play", "");

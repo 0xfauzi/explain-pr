@@ -568,3 +568,35 @@
 /* A URL or a short link is never broken across lines */
 .fh-nb{white-space:nowrap}
 @media (max-width:600px){.fh-cmd code{font-size:11.5px}}
+
+/* ---------- Finishing ---------- */
+::selection{background:var(--mark-bright);color:#14151A}
+html{scrollbar-color:var(--rule-strong) var(--paper);-webkit-tap-highlight-color:transparent}
+@media (prefers-reduced-motion:no-preference){html{scroll-behavior:smooth}}
+/* A test id stays whole where the line is long enough to hold it */
+.fh-id{white-space:nowrap}
+@media (max-width:600px){.fh-id{white-space:normal;overflow-wrap:anywhere}}
+/* The terminal is square like everything else */
+.fh-term{border-radius:var(--radius-sm)}
+/* The empty place of a mark that is not drawn yet */
+.fh-m--slot .sq{fill:var(--paper);stroke:var(--rule-strong);stroke-width:1.5;stroke-dasharray:3 3}
+/* A covered line of the run: every cover is the same width, so its length says nothing */
+.fh-seal{flex:none;align-self:center;width:132px;height:12px;background:var(--ink);border-radius:1px}
+.fh-spread--sealed .fh-facts .k{color:var(--ink-2)}
+.fh-spread--sealed .fh-wait{margin-top:var(--space-4);padding-left:14px;font-size:12px;line-height:18px}
+@media (max-width:600px){.fh-facts .fh-seal{flex:none;margin-top:6px}}
+/* A strip of a record: number, kind, the call in the person's hand, the mark */
+.fh-rec{margin-top:var(--space-12)}
+.fh-rec__cap{display:flex;justify-content:space-between;margin:0;padding-bottom:var(--space-2);border-bottom:1px solid var(--ink)}
+.fh-rec ol{margin:0;padding:0;list-style:none}
+.fh-rec li{display:grid;grid-template-columns:40px 88px minmax(0,1fr) 20px;align-items:center;gap:0 var(--space-2);min-height:44px;border-bottom:1px solid var(--rule);font:400 12px/18px var(--font-fact);color:var(--ink-3);font-variant-numeric:tabular-nums;font-feature-settings:"zero"}
+.fh-rec .kind{color:var(--ink-2)}
+.fh-rec i{font:italic 400 18px/24px var(--font-voice);letter-spacing:-.005em;color:var(--call);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.fh-rec .fh-m{width:20px;height:20px}
+.fh-rec li > span:last-child{display:flex}
+.fh-rec .is-open .no{color:var(--ink);font-weight:500}
+.fh-rec__blank{height:22px;margin-right:var(--space-6);border-bottom:1.5px dotted var(--rule-strong)}
+.fh-rec li[data-play] i{animation:fh-in var(--dur-line) var(--ease-out) both}
+.fh-rec li[data-play] .fh-m{animation:fh-stamp var(--dur-stamp) var(--ease-stamp) calc(var(--dur-line) + var(--dur-stamp)) both}
+/* The phone folio is two lines: the name, then the four links on one row */
+@media (max-width:600px){.fh-wide{display:none}.fh-folio .fh-nav{display:flex;flex-wrap:nowrap;justify-content:space-between;gap:0;font-size:11.5px}.fh-folio .fh-nav a{min-width:0}}
