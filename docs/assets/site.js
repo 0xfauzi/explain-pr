@@ -52,19 +52,23 @@
   var sheet = $("sheet");
   if (!page || !sheet) return;
 
-  var picks = [].slice.call($("path").querySelectorAll("[data-p]"));
+  var picks = [].slice.call($("map").querySelectorAll("[data-p]"));
   var sures = [].slice.call($("sure").children);
-  // In the example the fix is in pricing/rates.py.
+  // In the example, two parts use the refund amount: Emails and Finance export.
   var SAID = {
-    order: "checkout/order.py.",
-    totals: "pricing/totals.py.",
-    rates: "pricing/rates.py.",
-    "else": "Somewhere else.",
+    checkout: "Checkout.",
+    emails: "Emails.",
+    "export": "Finance export.",
+    mobile: "Mobile API.",
+    support: "Support console.",
+    nobody: "Nobody.",
     dk: "Don't know."
   };
+  var USES = { emails: true, "export": true };
   var MORE = {
-    match: "Your answer and the fix are the same file.",
-    miss: "The trace does not name pricing/rates.py.",
+    match: "Your answer is one of the two parts.",
+    miss: "The search found no use of the refund amount in your answer.",
+    nobody: "The search found two parts that use the refund amount.",
     none: "Firsthand does not count \"Don't know\" as a miss."
   };
   var BARS = { match: "M8 11h12M8 17h12", miss: "M8 11h12M8 17h12M17.5 6.5l-7 15", none: "M8 11h12M8 17h12" };
@@ -116,7 +120,7 @@
   }
 
   function verdict() {
-    return chosen === "dk" ? "none" : chosen === "rates" ? "match" : "miss";
+    return chosen === "dk" ? "none" : USES[chosen] ? "match" : "miss";
   }
 
   function mark(svg, v) {
@@ -138,10 +142,12 @@
     mark($("verdict").querySelector("svg"), v);
     $("verdict").className = "fh-verdict fh-verdict--" + v;
     $("verdict").lastChild.nodeValue = WORDS[v];
-    $("entry").setAttribute("aria-label", WORDS[v] + ". Call it, No. 0042");
+    $("entry").setAttribute("aria-label", WORDS[v] + ". Who is affected, No. 0042");
     $("f-label").textContent = WORDS[v];
-    $("f-more").textContent = MORE[v];
-    $("rpath").setAttribute("data-said", chosen);
+    $("f-more").textContent = chosen === "nobody" ? MORE.nobody : MORE[v];
+    [].forEach.call($("rmap").querySelectorAll("[data-r]"), function (row) {
+      row.classList.toggle("is-said", row.getAttribute("data-r") === chosen);
+    });
   }
 
   function show() {

@@ -551,3 +551,63 @@ button.fh-path__stop[disabled]:not([aria-pressed="true"]) .t{border-color:var(--
 #skill .fh-part__head{padding-bottom:var(--space-3)}
 /* The answered stop is in the person's blue, also where the failure shows */
 .fh-path.fh-path--result[data-said="totals"] [data-r="totals"].is-end .t{border-color:var(--call)}
+
+/* ---------- Map: one changed part and the parts outside the change. A part can be the answer ---------- */
+.fh-mapbox{container-type:inline-size;min-width:0;margin-top:var(--space-6)}
+.fh-map{font:400 13.5px/20px var(--font-ui)}
+.fh-map__src{padding:14px var(--space-4);background:var(--ink);color:var(--on-ink);border-radius:var(--radius-sm)}
+.fh-map__src .tag{display:block;font:500 10.5px/16px var(--font-fact);letter-spacing:.11em;text-transform:uppercase;opacity:.72}
+.fh-map__src b{display:block;margin-top:2px;font:500 22px/28px var(--font-voice);letter-spacing:-.01em}
+.fh-map__src small{display:block;margin-top:var(--space-2);font:400 13.5px/20px var(--font-ui);opacity:.86}
+.fh-map__part{display:grid;grid-template-columns:28px minmax(0,1fr);width:100%;margin:0;padding:0;border:0;background:none;color:var(--ink);font:inherit;text-align:left}
+button.fh-map__part{cursor:pointer}
+.fh-map__part .w{position:relative;min-height:56px}
+.fh-map__part .t{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:var(--space-1) var(--space-3);min-width:0;padding:9px var(--space-4);border:1.5px solid var(--rule-strong);border-radius:var(--radius-sm);margin-bottom:-1.5px;transition:background var(--dur-state),border-color var(--dur-state),color var(--dur-state)}
+.fh-map__part .nm{min-width:0}
+.fh-map__part b{display:block;font:500 15px/22px var(--font-ui)}
+.fh-map__part small{display:block;font:400 12.5px/18px var(--font-ui);color:var(--ink-3)}
+button.fh-map__part:hover:not([disabled]) .t{border-color:var(--call);position:relative}
+button.fh-map__part:active:not([disabled]) .t{transform:translateY(1px)}
+button.fh-map__part[aria-pressed="true"] .t{background:var(--call);border-color:var(--call);color:var(--on-call);position:relative}
+button.fh-map__part[aria-pressed="true"] small{color:var(--on-call)}
+button.fh-map__part[disabled]{cursor:default}
+button.fh-map__part[disabled]:not([aria-pressed="true"]) .t{border-color:var(--rule);color:var(--ink-2)}
+.fh-map__part:focus-visible{outline:none}
+.fh-map__part:focus-visible .t{outline:2px solid var(--call);outline-offset:2px;position:relative}
+.fh-map__parts{margin-top:var(--space-3)}
+.fh-map__words{margin:var(--space-4) 0 0 28px}
+/* The result draws the lines: a line to each part that uses the changed part */
+.fh-map--result .fh-map__part .t{border-color:var(--rule)}
+.fh-map--result .fh-map__part.is-ref .t{border-color:var(--rule-strong)}
+.fh-map--result .fh-map__part.is-fail .t{border-color:var(--miss)}
+.fh-map--result .fh-map__part.is-fail small{color:var(--miss)}
+.fh-map--result .fh-map__part.is-fail small .fh-fact{color:inherit}
+.fh-map--result .fh-map__part.is-said .t{border-color:var(--call);position:relative}
+.fh-map--result .fh-map__part:not(.is-ref) b{color:var(--ink-3);font-weight:400}
+.fh-map .flag{display:none;flex:none;white-space:nowrap;font:italic 400 17px/22px var(--font-voice);color:var(--call)}
+.fh-map--result .is-said .flag{display:inline}
+.fh-map--result .is-through .w::before,.fh-map--result .is-ref .w::before{content:"";position:absolute;left:11px;top:0;bottom:0;width:2px;background:var(--ink)}
+.fh-map--result .is-ref:not(.is-through) .w::before{bottom:50%}
+.fh-map--result .is-ref .w::after{content:"";position:absolute;left:11px;right:0;top:50%;margin-top:-1px;border-top:2px solid var(--ink)}
+.fh-map--result .is-ref:not(.is-fail) .w::after{border-top-style:dashed}
+.fh-map--result .fh-map__parts{margin-top:0}
+.fh-map--result .fh-map__src{border-radius:var(--radius-sm) var(--radius-sm) var(--radius-sm) 0}
+[data-play] ~ .fh-finding .fh-map .w::after{transform-origin:left;animation:fh-lead var(--dur-stroke) var(--ease-pen) calc(var(--dur-line) * 2 + var(--dur-stamp) + var(--stagger) * 4) both}
+[data-play] ~ .fh-finding .fh-map .flag{animation:fh-in var(--dur-line) var(--ease-out) calc(var(--dur-line) * 2 + var(--dur-stamp) + var(--stagger) * 9) both}
+.fh-finding__limit{margin:var(--space-2) 0 0;font:400 12px/18px var(--font-fact);color:var(--ink-3)}
+.fh-finding .fh-mapbox{margin-top:0;max-width:720px}
+/* across the page: the changed part on the left, the other parts in a column on the right */
+@container (min-width:470px){
+.fh-map{display:grid;grid-template-columns:minmax(0,4fr) minmax(0,7fr);align-items:stretch}
+.fh-map__src{grid-row:1;grid-column:1;display:flex;flex-direction:column;justify-content:center}
+.fh-map__parts{grid-row:1;grid-column:2;margin-top:0}
+.fh-map__words{grid-row:2;grid-column:2;margin-left:44px}
+.fh-map__part{grid-template-columns:44px minmax(0,1fr)}
+.fh-map__part + .fh-map__part{margin-top:var(--space-2)}
+.fh-map__part .t{margin-bottom:0}
+.fh-map--result .fh-map__src{border-radius:var(--radius-sm)}
+.fh-map--result .is-through:not(.is-ref) .w::before{display:none}
+.fh-map--result .is-ref .w::before,.fh-map--result .is-ref:not(.is-through) .w::before{left:auto;right:0;top:50%;bottom:auto;width:0;height:0;margin-top:-5px;background:none;border:5px solid transparent;border-left:7px solid var(--ink);border-right:0}
+.fh-map--result .is-ref .w::after{left:0;right:7px}
+}
+.fh-rec li{grid-template-columns:40px 112px minmax(0,1fr) 20px}
