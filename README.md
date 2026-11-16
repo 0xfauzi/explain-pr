@@ -13,7 +13,7 @@ back on a spaced schedule, with new cases rather than repeats, and a record on
 your machine, outside your repository, keeps what you showed you could do
 without help.
 
-**Site and full rationale:** https://0xfauzi.github.io/explain-pr/
+**Site:** https://0xfauzi.github.io/explain-pr/
 
 ## Quick start
 
@@ -78,7 +78,8 @@ debug lost the most
 ([Shen and Tamkin, 2026](https://www.anthropic.com/research/AI-assistance-coding-skills)).
 The skill is built around the patterns that kept learning intact, plus
 well-replicated findings on retrieval practice, spacing, prediction before
-instruction and feedback. The site lists each rule with its source.
+instruction and feedback. The research behind each rule, with its sources, is in
+[design/learning-experience/research/learning-science.md](design/learning-experience/research/learning-science.md).
 
 Most of those studies used students or junior developers on short tasks. Treat
 the design as a hypothesis to test on yourself; the record is built to let you
@@ -102,14 +103,14 @@ do that.
 - The review intervals (1, then 3, 7, 21, 60 and 180 days) are starting values;
   `map` shows how well they fit you.
 - Cost was measured once per practice mode, with a simulated learner. Batching
-  cut model requests from 21 to 11; see the site for the numbers.
+  cut model requests from 21 to 11.
 
 ## Firsthand preview
 
 `firsthand/` is an early preview of Firsthand, a separate tool from the skill
 above. It is not published on PyPI, and the name is a working name.
 It needs Python 3.11 or later, git, a POSIX system (Linux or macOS) and Claude
-Code. Design: `design/product/PRODUCT.md`.
+Code, and uv for the one-line install. Design: `design/product/PRODUCT.md`.
 
 What works in this preview (build steps 2a, 2b and 2c): three kinds of question
 in Claude Code on a pytest project. Each is checked by a real test run in a
@@ -141,8 +142,15 @@ Not in this preview: the other moments, reviews, drills, the phone, other
 coding agents, and test runners other than pytest (the Revert test checks other
 test commands by exit code only; Call it and the Brief need pytest).
 
-Install from a clone. Run `init` from inside the project you want watched: a
-git repo with at least one commit.
+Install from the git repository with uv. Run it from inside the project you
+want watched: a git repo with at least one commit.
+
+```sh
+cd ~/your-project
+uvx --from git+https://github.com/0xfauzi/explain-pr firsthand init
+```
+
+Without uv, install from a clone:
 
 ```sh
 git clone https://github.com/0xfauzi/explain-pr ~/src/explain-pr
@@ -153,7 +161,7 @@ PYTHONPATH=~/src/explain-pr python3 -m firsthand init
 `init` shows the two files it will write (`~/.claude/settings.json` gets six
 hooks, and `~/.claude/skills/firsthand/SKILL.md`), backs them up, and copies the
 engine to `~/.firsthand/engine/`, so the clone can be moved or deleted
-afterwards. This install puts nothing on your PATH: the command is
+afterwards. Neither install puts anything on your PATH: the command is
 `~/.firsthand/engine/0.1.0/bin/firsthand`, and `init` prints it at the end. Add
 that folder to your PATH to type `firsthand`, or run `pip install
 ~/src/explain-pr`, which also gives a `firsthand` command.

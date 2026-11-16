@@ -25,8 +25,8 @@
 <div class="fh-hero__cols">
 <div>
 <p class="fh-hero__lead">When your coding agent finishes a change, Firsthand asks you one short question about it. Then it undoes the change in a scratch copy, runs your tests, and sets the result beside your answer.</p>
-<div class="fh-cmd fh-cmd--stack"><code data-cmd="install">uvx --from git+https://github.com/<wbr>0xfauzi/explain-pr firsthand init</code><button type="button" data-copy>Copy</button></div>
-<p class="fh-cap">Installs from the git repository. Not on PyPI yet. <a class="fh-link" href="#install">What the command does</a></p>
+<div class="fh-cmd fh-cmd--stack"><code data-cmd="install">uvx --from <span class="fh-nb">git+https://github.com/0xfauzi/explain-pr</span> firsthand init</code><button type="button" data-copy>Copy</button></div>
+<p class="fh-cap">Installs from the git repository. Not on PyPI yet. <a class="fh-link fh-nb" href="#install">What the command does</a></p>
 <ul class="fh-status"><li><span>Works today in</span><span class="ld"></span><b>Claude Code, pytest</b></li><li><span>Asks at most</span><span class="ld"></span><b>once a day</b></li><li><span>Your record stays</span><span class="ld"></span><b>on your machine</b></li><li><span>Checked by</span><span class="ld"></span><b>a run, no model</b></li></ul>
 </div>
 <div><section class="fh-sheet" id="sheet" tabindex="-1" aria-labelledby="q">
@@ -83,7 +83,7 @@
 <ul class="fh-facts"><li style="--i:0"><span class="k">test_same_key_refunds_once</span><span class="ld"></span><span class="v">fails on its assertion</span></li><li class="is-key" style="--i:1"><span class="k">test_refund_response_is_stable</span><span class="ld"></span><span class="v">still passes</span></li><li style="--i:2"><span class="k">test_refund_amount_validated</span><span class="ld"></span><span class="v">cannot run</span></li></ul></div>
 </div>
 <div class="fh-finding"><span class="fh-label" id="f-label">Matched</span><div><p class="fh-finding__text">Test 2 still passes with the change undone.</p><p id="f-more">It would pass whether or not the change exists.</p></div></div>
-<div class="fh-finding fh-finding--text"><span class="fh-label">Sent to your agent</span><div><p class="fh-finding__sent">tests/test_refunds.py::test_refund_response_is_stable passes with the change undone. tests/test_refunds.py::test_refund_amount_validated cannot run with the change undone.</p></div></div>
+<div class="fh-finding fh-finding--text"><span class="fh-label">Sent to your agent</span><div><p class="fh-finding__sent">tests/test_refunds.py::<wbr>test_refund_response_is_stable passes with the change undone. tests/test_refunds.py::<wbr>test_refund_amount_validated cannot run with the change undone.</p></div></div>
 <div class="fh-acts"><button type="button" class="fh-btn fh-btn--second" id="again" data-v="result">Try another answer</button><span class="fh-label" data-v="nojs">The result for the answer 2</span><span class="fh-acts__note">Checked by a run, no model. On this page it is example data.</span></div>
 </div>
 </section>
@@ -122,20 +122,20 @@ Back to: idempotent refunds. Next: read the summary.</p>
 <div class="fh-twocol">
 <div class="fh-state"><h3 class="fh-label fh-state__head"><b>Works today</b><span>runs now</span></h3><p class="fh-state__sub">In Claude Code, on Python projects that use pytest.</p>
 <ul>
-<li><div class="hd"><span class="nm">Revert test</span><span class="ld"></span><span class="st">works</span></div><p>When the agent finishes a change with tests, you pick the new test that would still pass with the change undone. Checked by undoing the change and running the tests.</p></li>
-<li><div class="hd"><span class="nm">Call it</span><span class="ld"></span><span class="st">works</span></div><p>When a test is failing, you pick where the cause is, before a fix exists. Checked by where the fix landed, and by undoing the fix and running the test again.</p></li>
-<li><div class="hd"><span class="nm">Brief</span><span class="ld"></span><span class="st">works</span></div><p>At the start of a larger task, you name one check that fails now and will pass when the task is done. Checked by running it with the change and with the change undone.</p></li>
-<li><div class="hd"><span class="nm">The Room</span><span class="ld"></span><span class="st">works</span></div><p>A page served at <code>127.0.0.1</code> with the open question, results, a journal of every call, and settings.</p></li>
-<li><div class="hd"><span class="nm">The record</span><span class="ld"></span><span class="st">works</span></div><p>A git repo at <code>~/.firsthand/record</code>: on your machine, outside your projects, with no remote.</p></li>
+<li><div class="hd"><span class="nm">Revert test</span><span class="to"><span class="ld"></span><span class="st">works</span></span></div><p>When the agent finishes a change with tests, you pick the new test that would still pass with the change undone. Checked by undoing the change and running the tests.</p></li>
+<li><div class="hd"><span class="nm">Call it</span><span class="to"><span class="ld"></span><span class="st">works</span></span></div><p>When a test is failing, you pick where the cause is, before a fix exists. Checked by where the fix landed, and by undoing the fix and running the test again.</p></li>
+<li><div class="hd"><span class="nm">Brief</span><span class="to"><span class="ld"></span><span class="st">works</span></span></div><p>At the start of a larger task, you name one check that fails now and will pass when the task is done. Checked by running it with the change and with the change undone.</p></li>
+<li><div class="hd"><span class="nm">The Room</span><span class="to"><span class="ld"></span><span class="st">works</span></span></div><p>A page served at <code>127.0.0.1</code> with the open question, results, a journal of every call, and settings.</p></li>
+<li><div class="hd"><span class="nm">The record</span><span class="to"><span class="ld"></span><span class="st">works</span></span></div><p>A git repo at <code>~/.firsthand/record</code>: on your machine, outside your projects, with no remote.</p></li>
 </ul></div>
 <div class="fh-state fh-state--designed"><h3 class="fh-label fh-state__head"><b>Designed, not built</b><span>does not run</span></h3><p class="fh-state__sub">Specified in the repository. None of this runs yet.</p>
 <ul>
-<li><div class="hd"><span class="nm">Ten more questions</span><span class="ld"></span><span class="st">not built</span></div><p>Examples: who is affected by a change, whether a migration can be undone, what would show a failure first.</p></li>
-<li><div class="hd"><span class="nm">Other agents</span><span class="ld"></span><span class="st">not built</span></div><p>Codex, Cursor, Copilot, Gemini CLI and others.</p></li>
-<li><div class="hd"><span class="nm">Other languages and test runners</span><span class="ld"></span><span class="st">not built</span></div></li>
-<li><div class="hd"><span class="nm">Drills and reviews</span><span class="ld"></span><span class="st">not built</span></div><p>Drills on your own history, and reviews that bring an idea back some days later.</p></li>
-<li><div class="hd"><span class="nm">Questions that fade</span><span class="ld"></span><span class="st">not built</span></div><p>They fade as your calls on a skill prove reliable.</p></li>
-<li><div class="hd"><span class="nm">The Room on your phone</span><span class="ld"></span><span class="st">not built</span></div></li>
+<li><div class="hd"><span class="nm">Ten more questions</span><span class="to"><span class="ld"></span><span class="st">not built</span></span></div><p>Examples: who is affected by a change, whether a migration can be undone, what would show a failure first.</p></li>
+<li><div class="hd"><span class="nm">Other agents</span><span class="to"><span class="ld"></span><span class="st">not built</span></span></div><p>Codex, Cursor, Copilot, Gemini CLI and others.</p></li>
+<li><div class="hd"><span class="nm">Other languages and test runners</span><span class="to"><span class="ld"></span><span class="st">not built</span></span></div></li>
+<li><div class="hd"><span class="nm">Drills and reviews</span><span class="to"><span class="ld"></span><span class="st">not built</span></span></div><p>Drills on your own history, and reviews that bring an idea back some days later.</p></li>
+<li><div class="hd"><span class="nm">Questions that fade</span><span class="to"><span class="ld"></span><span class="st">not built</span></span></div><p>They fade as your calls on a skill prove reliable.</p></li>
+<li><div class="hd"><span class="nm">The Room on your phone</span><span class="to"><span class="ld"></span><span class="st">not built</span></span></div></li>
 </ul></div>
 </div>
 <p class="fh-cap fh-cap--gap">The full design is in the repository: <a class="fh-link" href="https://github.com/0xfauzi/explain-pr/blob/main/design/product/PRODUCT.md">design/product/PRODUCT.md</a></p>
@@ -145,7 +145,7 @@ Back to: idempotent refunds. Next: read the summary.</p>
 <section class="fh-part" id="install" aria-labelledby="h-install">
 <div class="fh-part__head"><p class="fh-part__no"><b>05</b>Preview</p><div><h2 class="fh-part__title" id="h-install">Install the preview</h2><p class="fh-part__lead">Firsthand is not on PyPI yet, so the preview installs from the git repository. Run this in a terminal, at the root of a Python project that uses pytest and has at least one git commit.</p></div></div>
 <div class="fh-ledger">
-<div class="fh-row"><div class="fh-row__margin"><span class="fh-label">Run this</span></div><div><p class="fh-cmd__cap"><span>Terminal, at the root of your project</span><span>installs from git</span></p><div class="fh-cmd"><code>uvx --from git+https://github.com/<wbr>0xfauzi/explain-pr firsthand init</code><button type="button" data-copy>Copy</button></div></div></div>
+<div class="fh-row"><div class="fh-row__margin"><span class="fh-label">Run this</span></div><div class="fh-cmd__wrap"><p class="fh-cmd__cap"><span>Terminal, at the root of your project</span><span>installs from git</span></p><div class="fh-cmd"><code>uvx --from <span class="fh-nb">git+https://github.com/0xfauzi/explain-pr</span> firsthand init</code><button type="button" data-copy>Copy</button></div></div></div>
 <div class="fh-row"><div class="fh-row__margin"><span class="fh-label">It needs</span></div><ul class="fh-status fh-status--wide"><li><span>System</span><span class="ld"></span><b>Linux or macOS</b></li><li><span>Python</span><span class="ld"></span><b>3.11 or later</b></li><li><span>Also</span><span class="ld"></span><b>git, uv, Claude Code</b></li><li><span>Once on PyPI</span><span class="ld"></span><b>uvx firsthand init</b></li></ul></div>
 <div class="fh-row"><div class="fh-row__margin"><span class="fh-label">What the command does</span></div><div><ol class="fh-does">
 <li><span>It lists the files it will change in <code>~/.claude</code> and asks before it writes anything.</span></li>
@@ -157,7 +157,7 @@ Back to: idempotent refunds. Next: read the summary.</p>
 <li><span>There is no account and no telemetry. Nothing leaves your machine except the lines added to your agent's chat. The only server is the local page at <code>127.0.0.1</code>.</span></li>
 </ol></div></div>
 <div class="fh-row"><div class="fh-row__margin"><span class="fh-label">The first question</span></div><p class="fh-text">The first question comes when your agent next finishes a change that adds or edits tests. Say "skip" to pass on a question.</p></div>
-<div class="fh-row"><div class="fh-row__margin"><span class="fh-label">To remove it</span></div><div><p class="fh-text">Run this. It restores the backed-up files. Your record and the engine copy stay in <code>~/.firsthand</code>; delete that folder to remove them.</p><div class="fh-cmd"><code>uvx --from git+https://github.com/<wbr>0xfauzi/explain-pr firsthand uninstall</code><button type="button" data-copy>Copy</button></div></div></div>
+<div class="fh-row"><div class="fh-row__margin"><span class="fh-label">To remove it</span></div><div class="fh-cmd__wrap"><p class="fh-text">Run this. It restores the backed-up files. Your record and the engine copy stay in <code>~/.firsthand</code>; delete that folder to remove them.</p><div class="fh-cmd"><code>uvx --from <span class="fh-nb">git+https://github.com/0xfauzi/explain-pr</span> firsthand uninstall</code><button type="button" data-copy>Copy</button></div></div></div>
 </div>
 </section>
 

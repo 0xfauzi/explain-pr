@@ -548,12 +548,18 @@ def _tasks(v: ViewInput) -> dict[str, str]:
     return tasks
 
 
+def note_title(body: dict) -> str:
+    """A note's fact as a title: no full stop, each test by its short name."""
+    title = body.get("fact", "").rstrip(".")
+    for ev in body.get("evidence", ()):
+        title = title.replace(ev["test"], ev["test"].rsplit("::", 1)[-1])
+    return title
+
+
 def _note_item(v: ViewInput, note: dict, tasks: Mapping[str, str]) -> dict:
     body = note["body"]
     fact = body.get("fact", "")
-    title = fact.rstrip(".")
-    for ev in body.get("evidence", ()):
-        title = title.replace(ev["test"], ev["test"].rsplit("::", 1)[-1])
+    title = note_title(body)
     return {
         "id": note["id"],
         "at": note["at"],

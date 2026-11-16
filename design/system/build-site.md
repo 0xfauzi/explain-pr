@@ -94,7 +94,7 @@ No inline `style` attribute in `index.html`, except `style="--i:0"` (and 1, 2) o
 - **The hero** is the only place with its own columns: 5 to 7, 48px gap, one column below 860px.
 - **Rules.** The double rule closes the folio and appears nowhere else on the page. A part opens with one 1px `ink` rule. Rows inside a part are separated by 1px `rule` lines. The status ledger's two columns open with a 2px `ink` rule (works) and a 1.5px dashed `rule-strong` rule (designed). The colophon opens with one 1px `ink` rule.
 - **Vertical rhythm.** 64px from the folio to the headline. 48px from the headline to the hero columns. 96px above each part's rule (64px below 760px). 16px from the rule to the part head, 32px under the head. 24px above and below the content of a row. 96px above the colophon.
-- **Type.** Headline `voice-xl` (72/72, 44/46 below 860px). Part titles `voice-lg` (36/44, 28/36 below 760px). Row and item titles `voice-md`. Reading text `voice-sm` in `ink-2`, at most 34em wide. Explanations inside rows `ui-md` in `ink-2`, at most 40em. Everything a machine made or that can be pasted is `fact`.
+- **Type.** Headline `voice-xl` (72/72, 44/46 below 860px). Part titles `voice-lg` (36/44, 28/36 below 760px). Row and item titles `voice-md`. Reading text `voice-sm` in `ink-2`, at most 612px wide. Explanations inside rows `ui-md` in `ink-2`, at most 612px. The page has two measures only: 612px for text, 690px for a block (a command with its caption, the list of what the command does, a requirement ledger). A block ends at 690px wherever it sits, so no two blocks in a column end at different edges. Everything a machine made or that can be pasted is `fact`.
 - **No decoration.** No background image, pattern, grain, gradient, shadow, icon or illustration. The only pictorial elements are the three verdict marks.
 
 ## 5. Structure and copy
@@ -432,19 +432,19 @@ uvx --from git+https://github.com/0xfauzi/explain-pr firsthand uninstall
 
 ## 9. Phone layout (390 wide)
 
-- **Folio.** The links wrap under the wordmark and the status moves to its own line on the right, as in the reference.
+- **Folio.** The wordmark and the status share the first line. The four links sit under them in two columns, each link a 44px tall target, so no link is left alone on a line.
 - **First screen.** One column in this order: headline (44/46), lead, command (stacked: Copy is a bar under it), caption, four facts, sheet, caption.
 - **Sheet.** 16px padding. Each evidence row puts the path under the test name with no leader. The question is 28/37. The five cells stay on one row. How sure sits under its label if it does not fit beside it.
 - **Spread.** The sides stack: your call, then the perforation running across with the mark on it at the left, then the run. Each fact puts its outcome under its name, with no leader.
 - **Parts.** The number and note sit on one line above the title (28/36). `fh-part__body` loses its left margin. Each row's margin label moves above the row.
 - **Steps.** `Step 1` and the note on one line, then the title, the text, and the two facts under it.
 - **Status ledger.** One column, `Works today` first.
-- **Commands.** Every command is stacked. The Copy bar is 44px tall.
+- **Commands.** Every command is stacked. The Copy bar is 48px tall, like every control.
 - **Notes.** The address moves under its name.
 - **Colophon.** Name and licence, the links, the typefaces, each on its own line.
 - Every control is at least 44px tall. The page never scrolls sideways at 390 or at 320. Check `document.documentElement.scrollWidth <= innerWidth` at both.
 
-At 960 the page is the reference render. At 1280 the page is the same grid at its full 1120px: the hero columns and the status columns are wider, the reading text keeps its 34em measure, and nothing else changes.
+At 960 the page is the reference render. At 1280 the page is the same grid at its full 1120px: the hero columns and the status columns are wider, the reading text keeps its 612px measure, and nothing else changes.
 
 ## 10. Checks before you say it is done
 

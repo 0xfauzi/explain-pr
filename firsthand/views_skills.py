@@ -92,6 +92,15 @@ _SKILL_ROWS = (
 )
 
 
+def _no_level(v: ViewInput, scored: Sequence[tuple[dict, Moment | None]]) -> dict:
+    return {
+        "level": "none",
+        "level_line": NO_LEVEL,
+        "days": min(2, len(_match_days(v, scored))),
+        "shown_since": None,
+    }
+
+
 def _calls(v: ViewInput, scored: Sequence[tuple[dict, Moment | None]], easy: bool):
     """One cell per scored call, oldest first: the set `_counts` counts."""
     events = sorted((e for e, _ in scored), key=lambda e: (e["at"], e["id"]))
@@ -105,6 +114,11 @@ def _calls(v: ViewInput, scored: Sequence[tuple[dict, Moment | None]], easy: boo
         }
         for e in events
     ]
+
+
+def _track(v: ViewInput, scored: Sequence[tuple[dict, Moment | None]], easy: bool):
+    calls = _calls(v, scored, easy)
+    return {"calls": calls, "since": calls[0]["day"] if calls else None}
 
 
 def _skill_row(v: ViewInput, spec: tuple) -> dict:
@@ -125,17 +139,7 @@ def _skill_row(v: ViewInput, spec: tuple) -> dict:
     )
     # A made thing (the Brief) has no fixed answer, so no call of it can be a catch
     # and "Shown" could never be reached: say so instead of a count that cannot move.
-    level = (
-        _level(v, scored)
-        if fixed_answer
-        else {
-            "level": "none",
-            "level_line": NO_LEVEL,
-            "days": min(2, len(_match_days(v, scored))),
-            "shown_since": None,
-        }
-    )
-    calls = _calls(v, scored, bool(fixed_answer))
+    level = _level(v, scored) if fixed_answer else _no_level(v, scored)
     return {
         "n": n,
         "name": name,
@@ -158,8 +162,7 @@ def _skill_row(v: ViewInput, spec: tuple) -> dict:
         "total": total,
         "fixed_count": fixed,
         "fixed_answer": fixed_answer,
-        "calls": calls,
-        "since": calls[0]["day"] if calls else None,
+        **_track(v, scored, bool(fixed_answer)),
     }
 
 

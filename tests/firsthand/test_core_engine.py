@@ -211,7 +211,8 @@ class EngineTest(FakeLoop):
 
 
 class ViewShapeTest(FakeLoop):
-    """Each view has exactly the keys of build-2a-contract.md section 7.2."""
+    """Each view has exactly the keys of build-2a-contract.md section 7.2, plus the
+    Room's fields of design/system/build-room.md section 3."""
 
     def test_keys(self) -> None:
         _, ref = self.ask()
@@ -230,6 +231,8 @@ class ViewShapeTest(FakeLoop):
                 "results",
                 "closing",
                 "empty",
+                "next_no",
+                "asked",
             },
         )
         q = self.engine.question(ref)
@@ -257,6 +260,12 @@ class ViewShapeTest(FakeLoop):
                 "status_line",
                 "say",
                 "result",
+                "no",
+                "kind_label",
+                "skill",
+                "where",
+                "prompt_text",
+                "prompt_name",
             },
         )
         self.assertEqual(
@@ -271,6 +280,12 @@ class ViewShapeTest(FakeLoop):
                 "cue",
                 "back",
                 "more",
+                "ran_at",
+                "run_label",
+                "facts",
+                "names",
+                "counts",
+                "fresh",
             },
         )
         self.assertEqual(
@@ -292,6 +307,14 @@ class ViewShapeTest(FakeLoop):
                 "covers",
                 "no_evidence",
                 "checked",
+                "matched",
+                "total",
+                "fixed_count",
+                "fixed_answer",
+                "calls",
+                "since",
+                "days",
+                "shown_since",
             },
         )
         self.assertEqual(

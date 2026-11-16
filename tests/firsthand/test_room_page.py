@@ -1,5 +1,5 @@
-"""The Room page loads nothing from outside, builds no markup from text, and keeps
-the design tokens identical to the design system's."""
+"""The Room page loads nothing from outside but its own fonts, builds no markup from
+text, and keeps the design tokens identical to the design system's."""
 
 from __future__ import annotations
 
@@ -14,15 +14,14 @@ import firsthand.room
 
 ROOM = Path(firsthand.room.__file__).resolve().parent
 REPO = ROOM.parent.parent
-TOKENS_SOURCE = REPO / "design" / "learning-experience" / "assets" / "room.css"
+TOKENS_SOURCE = REPO / "design" / "system" / "tokens.css"
 REMOTE = re.compile(r"(?i)(https?:)?//[a-z0-9.-]+\.[a-z]{2,}|\burl\(")
-
-
-def token_block(text: str) -> str:
-    lines = text.splitlines()
-    start = next(i for i, line in enumerate(lines) if line.startswith(":root{"))
-    end = next(i for i, line in enumerate(lines) if line.startswith(".lvw"))
-    return "\n".join(lines[start : end + 1])
+SVG_NS = "'http://www.w3.org/2000/svg'"
+FONT_FACE = re.compile(
+    r"^@font-face\{font-family:[A-Za-z ]+;font-style:(normal|italic);"
+    r"font-weight:[0-9 ]+;font-display:swap;"
+    r'src:url\(fonts/[a-z0-9-]+\.woff2\) format\("woff2"\)\}$'
+)
 
 
 class PageParser(HTMLParser):
@@ -73,13 +72,19 @@ class RoomPageTest(support.TempHome):
         super().setUp()
         self.page = (ROOM / "page.html").read_text(encoding="utf-8")
         self.css = (ROOM / "static" / "room.css").read_text(encoding="utf-8")
-        self.js = (ROOM / "static" / "room.js").read_text(encoding="utf-8")
+        self.js = "\n".join(
+            (ROOM / "static" / name).read_text(encoding="utf-8")
+            for name in ("room.js", "room-views.js")
+        )
         self.parsed = PageParser()
         self.parsed.feed(self.page)
 
     def test_page_references_only_static_urls(self) -> None:
         assets = [u for u in self.parsed.urls if u.startswith("/static/")]
-        self.assertEqual(sorted(assets), ["/static/room.css", "/static/room.js"])
+        self.assertEqual(
+            sorted(assets),
+            ["/static/room-views.js", "/static/room.css", "/static/room.js"],
+        )
         for url in self.parsed.urls:
             self.assertTrue(url.startswith("/") and not url.startswith("//"), url)
         self.assertIsNone(REMOTE.search(self.page))
@@ -91,55 +96,80 @@ class RoomPageTest(support.TempHome):
         self.assertEqual(self.parsed.handlers, 0)
 
     def test_page_shell(self) -> None:
-        for needed in ("main", "live", "notice", "quiet", "proj"):
+        for needed in (
+            "main",
+            "live",
+            "notice",
+            "quiet",
+            "proj",
+            "folio",
+            "tabs",
+            "count",
+            "asked",
+        ):
             self.assertIn(needed, self.parsed.ids)
         self.assertEqual(self.parsed.live_regions, 1)
         self.assertIn('aria-live="polite"', self.page)
         self.assertIn("Served by this computer at 127.0.0.1.", self.parsed.text)
-        for label in ("Room", "Inbox", "Journal", "Skills", "Settings"):
+        for label in ("The Room", "Inbox", "Journal", "Skills", "Settings"):
             self.assertIn(label, self.parsed.text)
+        self.assertIn("<title>Room</title>", self.page)
+        self.assertIn('class="fh-wordmark"', self.page)
+        self.assertIn('<body class="fh">', self.page)
+
+    def test_page_and_script_write_no_style(self) -> None:
+        self.assertNotIn("style=", self.page)
+        self.assertNotIn("setAttribute('style'", self.js)
+        self.assertNotIn('setAttribute("style"', self.js)
+        self.assertNotIn(".style.cssText", self.js)
 
     def test_css_and_js_hold_no_remote_url(self) -> None:
-        self.assertIsNone(REMOTE.search(self.css))
-        self.assertIsNone(REMOTE.search(self.js))
+        faces = [line for line in self.css.splitlines() if "@font-face" in line]
+        self.assertEqual(len(faces), 9)
+        for line in faces:
+            self.assertRegex(line, FONT_FACE)
+            name = re.search(r"url\((fonts/[^)]+)\)", line)[1]  # type: ignore[index]
+            self.assertTrue((ROOM / "static" / name).is_file(), name)
+        rest = "\n".join(
+            line for line in self.css.splitlines() if "@font-face" not in line
+        )
+        self.assertIsNone(REMOTE.search(rest))
+        # The one URL in the script is the SVG namespace the verdict marks are made
+        # in: a name, never fetched.
+        self.assertEqual(self.js.count(SVG_NS), 1)
+        self.assertIsNone(REMOTE.search(self.js.replace(SVG_NS, "")))
         self.assertNotIn("@import", self.css)
-        self.assertNotIn("@font-face", self.css)
 
     def test_token_block_equals_the_design_system(self) -> None:
         source = TOKENS_SOURCE.read_text(encoding="utf-8")
-        self.assertEqual(token_block(self.css), token_block(source))
+        start = self.css.index("/* Firsthand tokens.")
+        self.assertEqual(self.css[start : start + len(source)], source)
 
     def test_component_rules_are_present(self) -> None:
         for selector in (
-            ".top{",
-            ".bar{",
-            ".tabs{",
-            ".tab{",
-            ".main{",
-            ".card{",
-            ".eb{",
-            ".ctx{",
-            ".lead{",
-            ".ev{",
-            ".q{",
-            ".picks{",
-            ".pill{",
-            ".lock{",
-            ".sure{",
-            ".foot{",
-            ".rh{",
-            ".rt{",
-            ".chip{",
-            ".rw{",
-            ".cue{",
-            "details.more{",
-            ".grp{",
-            ".it{",
-            "details.note{",
-            ".close{",
-            ".btn{",
-            ".tbtn{",
-            "@media (max-width:640px)",
+            ".fh-folio{",
+            ".fh-tabs{",
+            ".fh-sheet{",
+            ".fh-q{",
+            ".fh-picks{",
+            ".fh-pick{",
+            ".fh-held{",
+            ".fh-spread{",
+            ".fh-answer{",
+            ".fh-facts{",
+            ".fh-finding{",
+            ".fh-m{",
+            ".fh-verdict{",
+            ".fh-ledger{",
+            ".fh-row{",
+            ".fh-track{",
+            ".fh-more{",
+            ".fh-notice{",
+            ".fh-confirm{",
+            ".fh-err{",
+            ".fh-input{",
+            ".fh-seg{",
+            ".fh-check{",
             "@media (prefers-reduced-motion:reduce)",
         ):
             self.assertIn(selector, self.css)
@@ -169,6 +199,10 @@ class RoomPageTest(support.TempHome):
             "Wrong start",
             "Send findings to my agent",
             "A git repo on this computer. Plain files. No remote.",
+            "Lock",
+            "Send to my agent",
+            "Recheck",
+            "Turn on any number of tests, then Lock.",
         ):
             self.assertIn(line, self.js)
 

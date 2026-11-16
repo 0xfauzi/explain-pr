@@ -145,7 +145,7 @@ button,input,select,textarea{font:inherit;color:inherit}
 .fh-btn[disabled]{background:transparent;border-color:var(--rule);color:var(--ink-3);cursor:default;transform:none}
 .fh-btn--second{background:transparent;color:var(--ink);border-color:var(--rule-strong)}
 .fh-btn--second:hover{background:transparent;border-color:var(--ink);color:var(--ink)}
-.fh-btn--quiet{padding:0 2px;border-color:transparent;background:none;color:var(--ink-2);font-weight:400;text-decoration:underline;text-decoration-color:var(--rule-strong);text-underline-offset:4px;text-decoration-thickness:1px}
+.fh-btn--quiet{min-width:0;padding:0 2px;border-color:transparent;background:none;color:var(--ink-2);font-weight:400;text-decoration:underline;text-decoration-color:var(--rule-strong);text-underline-offset:4px;text-decoration-thickness:1px}
 .fh-btn--quiet:hover{background:none;border-color:transparent;color:var(--call);text-decoration-color:var(--call)}
 
 /* Answer cells */
@@ -223,13 +223,13 @@ button,input,select,textarea{font:inherit;color:inherit}
 .fh-evidence li{display:grid;grid-template-columns:44px minmax(0,1fr);position:relative}
 .fh-evidence li+li{border-top:1px solid var(--rule)}
 .fh-evidence .n{padding:var(--space-3) 0;text-align:center;color:var(--ink-3);border-right:1px solid var(--rule)}
-.fh-evidence .t{padding:var(--space-3) var(--space-4);min-width:0}
+.fh-evidence .t{padding:var(--space-3);min-width:0}
 .fh-evidence .hd{display:flex;align-items:baseline;gap:0}
 .fh-evidence b{font-weight:500;color:var(--ink);overflow-wrap:anywhere}
 .fh-evidence .ld{flex:1 1 16px;min-width:16px;margin:0 var(--space-2);border-bottom:1.5px dotted var(--rule-strong);transform:translateY(-4px);opacity:.6}
 .fh-evidence small{flex:none;font-size:12px;color:var(--ink-3)}
 .fh-evidence code{display:block;font:inherit;color:var(--ink-2);white-space:pre-wrap;overflow-wrap:anywhere}
-.fh-q{margin:var(--space-8) 0 var(--space-6);font:500 36px/46px var(--font-voice);letter-spacing:-.018em;max-width:20em}
+.fh-q{margin:var(--space-8) 0 var(--space-6);font:500 36px/46px var(--font-voice);letter-spacing:-.018em;max-width:20em;text-wrap:balance}
 .fh-q mark{color:var(--on-mark);padding:0 6px;margin:0 -6px;background:linear-gradient(to bottom,transparent 20%,var(--mark) 20%,var(--mark) 92%,transparent 92%);-webkit-box-decoration-break:clone;box-decoration-break:clone}
 .fh-sheet__act{display:flex;flex-wrap:wrap;align-items:center;gap:var(--space-2) var(--space-6);margin-top:var(--space-6)}
 .fh-sheet__foot{display:flex;flex-wrap:wrap;justify-content:space-between;gap:var(--space-1) var(--space-6);padding:var(--space-3) var(--space-8);border-top:1px solid var(--rule);font:400 12px/18px var(--font-fact);color:var(--ink-3)}
@@ -299,7 +299,7 @@ button,input,select,textarea{font:inherit;color:inherit}
 .fh-spread[data-play] .fh-spread__run .fh-spread__head{animation:fh-in var(--dur-line) var(--ease-out) calc(var(--dur-line) + var(--dur-stamp)) both}
 .fh-spread[data-play] .fh-facts li{animation:fh-print var(--dur-line) var(--ease-out) both;animation-delay:calc(var(--dur-line) + var(--dur-stamp) + var(--stagger) * (var(--i) + 1))}
 .fh-spread[data-play] .fh-facts .ld{transform-origin:left;animation:fh-lead var(--dur-line) var(--ease-out) both;animation-delay:calc(var(--dur-line) + var(--dur-stamp) + var(--stagger) * (var(--i) + 2))}
-.fh-spread[data-play] + .fh-finding{animation:fh-in var(--dur-line) var(--ease-out) calc(var(--dur-line) * 2 + var(--dur-stamp) + var(--stagger) * 5) both}
+.fh-spread[data-play] + .fh-finding{animation:fh-in var(--dur-line) var(--ease-out) calc(var(--dur-line) + var(--dur-stamp) + var(--stagger) * 4) both}
 @keyframes fh-print{from{clip-path:inset(0 100% 0 0);opacity:.4}to{clip-path:inset(0 0 0 -14px);opacity:1}}
 @keyframes fh-lead{from{transform:translateY(-4px) scaleX(0)}to{transform:translateY(-4px) scaleX(1)}}
 @keyframes fh-in{from{opacity:0}}
@@ -314,11 +314,10 @@ button,input,select,textarea{font:inherit;color:inherit}
 .fh-status b{font-weight:500;color:var(--ink)}
 @media (max-width:600px){.fh-facts .ld{display:none}.fh-facts .k{flex:1 1 100%}.fh-facts .v{flex:1 1 100%;text-align:left;font-size:12.5px}}
 .fh-evidence{container-type:inline-size}
-@container (max-width:540px){.fh-evidence .hd{flex-wrap:wrap}.fh-evidence .ld{display:none}.fh-evidence small{flex-basis:100%;order:3}}
+@container (max-width:480px){.fh-evidence .hd{flex-wrap:wrap}.fh-evidence .ld{display:none}.fh-evidence small{flex-basis:100%;order:3}}
 
 /* From Site demo */
-.fh-spread--wait .fh-wait{padding-left:14px}
-.fh-spread[data-play] ~ .fh-finding,.fh-spread[data-play] ~ .fh-acts{animation:fh-in var(--dur-line) var(--ease-out) calc(var(--dur-line) * 2 + var(--dur-stamp) + var(--stagger) * 5) both}
+.fh-spread[data-play] ~ .fh-finding,.fh-spread[data-play] ~ .fh-acts{animation:fh-in var(--dur-line) var(--ease-out) calc(var(--dur-line) + var(--dur-stamp) + var(--stagger) * 4) both}
 
 /* ------------------------------------------------------------------ */
 /* The Room. Everything below was added for the Room's own screens.   */
@@ -440,7 +439,7 @@ button,input,select,textarea{font:inherit;color:inherit}
 
 /* Picks in a column: Call it. A numbered gutter, then the path. */
 .fh-picks--col{flex-direction:column;flex-wrap:nowrap;max-width:560px}
-.fh-picks--col .fh-pick{display:grid;grid-template-columns:44px minmax(0,1fr);align-items:stretch;width:auto;height:auto;min-height:var(--space-12);padding:0;text-align:left;font:400 14px/20px var(--font-fact);font-variant-ligatures:none}
+.fh-picks--col .fh-pick{display:grid;grid-template-columns:44px minmax(0,1fr);align-items:stretch;width:auto;height:auto;min-height:calc(var(--space-12) + 1.5px);padding:0;text-align:left;font:400 14px/20px var(--font-fact);font-variant-ligatures:none}
 .fh-picks--col .fh-pick .n{display:flex;align-items:center;justify-content:center;border-right:1.5px solid var(--rule-strong);font-size:17px;transition:border-color var(--dur-state)}
 .fh-picks--col .fh-pick .t{display:flex;align-items:center;padding:12px var(--space-4);min-width:0;overflow-wrap:anywhere}
 .fh-picks--col .fh-pick:hover .n{border-color:var(--call)}
@@ -546,3 +545,59 @@ button,input,select,textarea{font:inherit;color:inherit}
 /* Motion the Room adds. Presses only: nothing here plays on its own. */
 .fh-seg input:active + span,.fh-check input:active{transition-duration:var(--dur-press)}
 .fh-spread[data-play] ~ .fh-more{animation:fh-in var(--dur-line) var(--ease-out) calc(var(--dur-line) * 2 + var(--dur-stamp) + var(--stagger) * 5) both}
+
+/* Room build: what the previews set inline, as classes (the CSP forbids inline styles) */
+.fh-finding__text .fh-fact{font-size:16px}
+.fh-skill__why{margin-top:var(--space-3);max-width:44em}
+.fh-row--blank .fh-cmds{margin-top:var(--space-3);max-width:34em}
+.fh-row--blank .fh-acts{margin-top:var(--space-4)}
+/* Focus targets that are not controls: the spread a result moves focus to, and the command list */
+.fh-spread[tabindex="-1"]:focus,.fh-cmds[tabindex="-1"]:focus{outline:none}
+
+/* Review fixes. Section names are h2 headings drawn as labels; rows stay h3. */
+.fh-sec__h{margin:0;font:inherit;letter-spacing:inherit}
+/* A unit that must not break inside: "change since 09:12", a date in the margin */
+.fh-nobr{white-space:nowrap}
+/* A leader always ends at an outcome: when the outcome cannot share the line it goes
+   under the name, flush left, and the leader is not drawn (room.js fitFacts) */
+.fh-facts li.is-long .ld{display:none}
+.fh-facts li.is-long .v{flex:1 1 100%;text-align:left}
+/* The verdict in the head waits for the stamp: perforation, mark, lines, finding */
+.fh-head:has(+ .fh-spread[data-play]) .fh-verdict{animation:fh-in var(--dur-stamp) var(--ease-stamp) var(--dur-line) both}
+/* The open question sets in even lines: no single word under the highlighter */
+.fh-q{text-wrap:balance}
+/* Two pressed neighbours stay two boxes: the shared border is drawn in on-call */
+.fh-pick[aria-pressed="true"] + .fh-pick[aria-pressed="true"]{border-left-color:var(--on-call)}
+/* A filled button stays in ink on hover: call is the person's hand, not the interface */
+.fh-btn:hover{background:var(--ink-2);border-color:var(--ink-2);color:var(--on-ink)}
+.fh-btn--second:hover{background:transparent;border-color:var(--ink);color:var(--ink)}
+.fh-btn--quiet:hover{background:none;border-color:transparent;color:var(--call)}
+.fh-btn[disabled]:hover{background:transparent;border-color:var(--rule);color:var(--ink-3)}
+/* A quiet button that leads its line starts on the line's left edge */
+.fh-acts .fh-btn--quiet:first-child,.fh-sheet__act .fh-btn--quiet:first-child{margin-left:-3.5px}
+/* An error in Settings ends where its field ends */
+.fh-set .fh-err{max-width:560px}
+/* The day's limit cells and their unit wrap as one */
+.fh-inline__unit{display:inline-flex;flex-wrap:nowrap;align-items:center;gap:var(--space-3);white-space:nowrap}
+/* A one-label track prints the whole day and lets it run past its column */
+.fh-track .date--out{overflow:visible;white-space:nowrap}
+/* A closed Brief keeps the person's line, as a row above the finding, with its time */
+.fh-finding__time{margin:var(--space-1) 0 0;font:400 12px/18px var(--font-fact);color:var(--ink-3);font-variant-numeric:tabular-nums}
+.fh-finding .fh-answer--line + .fh-finding__time{margin-top:var(--space-2)}
+@media (max-width:600px){
+/* The verdict goes under the title on a phone, whatever the label line's length */
+.fh-head{flex-direction:column;align-items:flex-start;gap:var(--space-2)}
+/* A path list on a phone: the path takes the line, no stub leader beside Remove */
+.fh-list .ld{display:none}
+.fh-list .k{flex:1}
+/* Touch targets of 44px without changing what is drawn: the hit area grows, the ink does not */
+.fh-select{position:relative;z-index:1;height:44px;margin:-13px 0;border-bottom:0;background:linear-gradient(45deg,transparent 50%,var(--ink-2) 50%) right 6px top 19px/5px 5px no-repeat,linear-gradient(-45deg,transparent 50%,var(--ink-2) 50%) right 1px top 19px/5px 5px no-repeat,linear-gradient(var(--rule-strong),var(--rule-strong)) left 0 top 33px/100% 1px no-repeat}
+.fh-wordmark,.fh-row__title a,.fh-tabs a,.fh-more--in > summary{position:relative}
+.fh-wordmark::after,.fh-row__title a::after,.fh-tabs a::after{content:"";position:absolute;inset:-8px -6px}
+.fh-row__title a::after{inset:-12px 0}
+.fh-tabs a::after{inset:0 -6px}
+.fh-more.fh-more--in > summary::after,.fh-more.fh-more--in[open] > summary::after{content:"";position:absolute;inset:-11px -8px -11px -8px;border:0;background:none}
+.fh-btn--quiet{min-width:44px;justify-content:flex-start}
+}
+/* The project picked from the keyboard waits for its Open link */
+.fh-select__go{min-height:0;font-size:12px;line-height:18px}

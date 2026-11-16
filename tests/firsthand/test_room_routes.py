@@ -8,6 +8,7 @@ from urllib.parse import urlsplit
 
 import support
 
+from firsthand.room import server as room
 from firsthand.room.server import RoomServer, handle
 
 
@@ -264,6 +265,36 @@ class RoomRoutesTest(support.TempHome):
         self.assertEqual(js.headers["Content-Type"], "text/javascript; charset=utf-8")
         page = self.get("/q/r6t9kd")
         self.assertIn(b"/static/room.js", page.body)
+
+    def test_fonts_and_licences_are_served_from_the_table(self) -> None:
+        fonts = [k for k in room.STATIC if k.endswith(".woff2")]
+        self.assertEqual(len(fonts), 9)
+        for name in fonts:
+            resp = self.get(f"/static/{name}")
+            self.assertEqual(resp.status, 200, name)
+            self.assertEqual(resp.headers["Content-Type"], "font/woff2")
+            self.assertEqual(resp.body[:4], b"wOF2", name)
+            for header, value in room.SECURITY_HEADERS.items():
+                self.assertEqual(resp.headers[header], value, header)
+        for name in ("OFL-Newsreader", "OFL-IBM-Plex-Mono", "OFL-IBM-Plex-Sans"):
+            resp = self.get(f"/static/fonts/{name}.txt")
+            self.assertEqual(resp.status, 200)
+            self.assertEqual(resp.headers["Content-Type"], "text/plain; charset=utf-8")
+            self.assertIn(b"SIL OPEN FONT LICENSE", resp.body.upper())
+        for path in (
+            "/static/fonts/nope.woff2",
+            "/static/fonts/../room.js",
+            "/static/fonts/",
+            "/static/newsreader-latin-opsz-normal.woff2",
+        ):
+            self.assertEqual(self.get(path).status, 404, path)
+        self.assertEqual(self.get("/static/room-views.js").status, 200)
+
+    def test_csp_allows_only_own_fonts(self) -> None:
+        csp = room.SECURITY_HEADERS["Content-Security-Policy"]
+        self.assertIn("font-src 'self'", csp)
+        self.assertIn("style-src 'self';", csp)
+        self.assertNotIn("unsafe", csp)
 
     def test_event_stream_route(self) -> None:
         resp = self.get("/api/events")

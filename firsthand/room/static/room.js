@@ -61,9 +61,15 @@
 
   function label(text, rest) { return h('span', { class: 'fh-label' }, [h('b', { text: text }), rest || null]); }
 
+  /* A section line. Its name is a real h2, drawn as a label, so the page has an outline. */
   function sec(text, right, rest) {
-    return h('div', { class: 'fh-sec' }, [label(text, rest), right ? h('span', { class: 'fh-sec__n', text: right }) : null]);
+    return h('div', { class: 'fh-sec' }, [
+      h('h2', { class: 'fh-sec__h' }, label(text, rest)), right ? h('span', { class: 'fh-sec__n', text: right }) : null
+    ]);
   }
+
+  /* The browser tab names the page: "Journal - Room". */
+  function setTitle(text) { D.title = text ? text + ' - Room' : 'Room'; }
 
   function say(text) {
     var live = $('live');
@@ -72,9 +78,11 @@
     setTimeout(function () { live.textContent = text; }, 40);
   }
 
+  /* The project of this page: the address names it, or on a question or result page
+     the question's own project (S.place), never the inbox default. */
   function projectParam() {
     var p = new URLSearchParams(location.search).get('project');
-    return p || null;
+    return p || S.place || null;
   }
 
   function withProject(path) {
@@ -226,6 +234,27 @@
     });
   }
 
+  /* ------------------------------------------------------------ run facts */
+
+  /* A fact whose outcome cannot share its line drops the leader and sets the outcome
+     under the name, flush left: a leader always ends at an outcome. Measured, so it
+     holds at every width and after a resize. */
+  function fitFacts(scope) {
+    Array.prototype.forEach.call((scope || D).querySelectorAll('.fh-facts li'), function (li) {
+      var k = li.querySelector('.k');
+      var v = li.querySelector('.v');
+      if (!k || !v) return;
+      li.classList.remove('is-long');
+      if (v.offsetTop > k.offsetTop + 2) li.classList.add('is-long');
+    });
+  }
+
+  var fitTimer = null;
+  window.addEventListener('resize', function () {
+    clearTimeout(fitTimer);
+    fitTimer = setTimeout(function () { fitFacts(); }, 80);
+  });
+
   /* ------------------------------------------------------------ the frame */
 
   function route() {
@@ -253,6 +282,7 @@
     S.view = null;
     S.viewJson = null;
     S.page = 'blank';
+    setTitle(heading || margin);
     add(main, [
       h('h1', { class: 'fh-vh', text: heading || 'The Room' }),
       h('ol', { class: 'fh-ledger' }, h('li', { class: 'fh-row fh-row--blank' }, [
@@ -297,12 +327,7 @@
     clear(proj);
     var list = inbox.projects || [];
     if (list.length > 1 && inbox.project) {
-      var sel = h('select', { class: 'fh-select', 'aria-label': 'Project', onchange: function () {
-        location.search = '?project=' + encodeURIComponent(sel.value);
-      } }, list.map(function (p) {
-        return h('option', { value: p.id, text: p.name });
-      }));
-      sel.value = inbox.project.id;
+      var sel = projectSelect(list, inbox.project.id);
       add(proj, [' / ', sel]);
     } else if (inbox.project) {
       proj.textContent = ' / ' + inbox.project.name;
@@ -320,21 +345,63 @@
     drawNotice();
   }
 
+  /* Going to another project. A pointer pick goes at once. A pick made from the keyboard
+     (an arrow key on the closed select moves it at once) only shows an Open link after the
+     select, so no key press leaves the page by itself. The script has no key handlers. */
+  function projectSelect(list, current) {
+    var pointer = false;
+    var go = h('a', { class: 'fh-btn fh-btn--quiet fh-select__go', hidden: true, text: 'Open' });
+    var sel = h('select', { class: 'fh-select', 'aria-label': 'Project' }, list.map(function (p) {
+      return h('option', { value: p.id, text: p.name });
+    }));
+    function target() {
+      return (S.route.name === 'question' ? '/' : location.pathname) + '?project=' + encodeURIComponent(sel.value);
+    }
+    sel.value = current;
+    sel.addEventListener('pointerdown', function () { pointer = true; });
+    sel.addEventListener('change', function () {
+      var by = pointer;
+      pointer = false;
+      if (by && sel.value !== current) { location.href = target(); return; }
+      go.hidden = sel.value === current;
+      go.setAttribute('href', target());
+      go.setAttribute('aria-label', 'Open ' + sel.options[sel.selectedIndex].text);
+    });
+    sel.addEventListener('blur', function () { pointer = false; });
+    var box = D.createDocumentFragment();
+    add(box, [sel, ' ', go]);
+    return box;
+  }
+
+  /* The folio states the place: on a question or result page, the question's project. */
+  function placeFor(where) {
+    var id = where && where.project_id;
+    if (!id || S.place === id || new URLSearchParams(location.search).get('project')) return;
+    S.place = id;
+    markTabs(S.route.tab);
+    loadShell().catch(function () {});
+  }
+
   function quietOff(quiet) {
     var project = S.inbox && S.inbox.project ? S.inbox.project.id : null;
     if (quiet === 'here') return { changes: { quiet: false }, project: project };
     return { changes: { quiet_today: false }, project: null };
   }
 
-  function toggleQuiet() {
+  function noticeText(text) { return String(text || '').replace(/\s*(Undo|Turn on)$/, ''); }
+
+  function toggleQuiet(e) {
     var quiet = S.inbox && S.inbox.state ? S.inbox.state.quiet : null;
     if (quiet === 'session') return;
+    var fromNotice = !!(e && e.currentTarget && e.currentTarget.id !== 'quiet');
     var body = quiet ? quietOff(quiet) : { changes: { quiet_today: true }, project: null };
     api('POST', '/api/settings', { changes: body.changes, project: body.project, confirm: false })
       .then(function () { return loadShell(); })
       .then(function () {
         var n = S.inbox && S.inbox.state ? S.inbox.state.notice : null;
-        say(quiet ? 'Quiet is off.' : n);
+        say(quiet ? 'Quiet is off.' : noticeText(n));
+        // The notice that held Undo is gone: focus goes to the toggle, which now says the state.
+        if (fromNotice) $('quiet').focus();
         refresh();
       })
       .catch(function (err) { say(err.message); });
@@ -354,10 +421,10 @@
       el = notice('alert', 'Not reachable', ['The Room cannot reach Firsthand on this computer. Start it with: ',
         h('span', { class: 'fh-fact', text: 'firsthand room' })]);
     } else if (state.dial === 'off' && text) {
-      el = notice('status', 'Off', text.replace(/\s*Turn on$/, ''),
+      el = notice('status', 'Off', noticeText(text),
         h('a', { class: 'fh-btn fh-btn--quiet', href: withProject('/settings'), text: 'Turn on' }));
     } else if (state.quiet && text) {
-      el = notice('status', 'Quiet', text.replace(/\s*Undo$/, ''), state.quiet === 'session' ? null
+      el = notice('status', 'Quiet', noticeText(text), state.quiet === 'session' ? null
         : h('button', { type: 'button', class: 'fh-btn fh-btn--quiet', text: 'Undo', onclick: toggleQuiet }));
     }
     box.hidden = !el || S.noSession;
@@ -366,6 +433,7 @@
 
   function loadShell() {
     return api('GET', withProject('/api/inbox')).then(function (inbox) {
+      if (S.place && inbox.project && inbox.project.id !== S.place) return inbox;
       shell(inbox);
       return inbox;
     });
@@ -499,7 +567,7 @@
   window.FH = {
     S: S, $: $, h: h, add: add, clear: clear, prop: prop, label: label, sec: sec, say: say,
     withProject: withProject, mixed: mixed, counts: counts, mark: mark, kindOf: kindOf,
-    verdict: verdict, no: no, hms: hms, hm: hm, marginTime: marginTime, api: api,
+    verdict: verdict, no: no, title: setTitle, fitFacts: fitFacts, placeFor: placeFor, noticeText: noticeText, hms: hms, hm: hm, marginTime: marginTime, api: api,
     loadShell: loadShell, refresh: refresh, errLine: errLine, setErr: setErr,
     restoreFocus: restoreFocus, blankPage: blankPage, loadError: loadError, INTERNAL: INTERNAL,
     start: function () {

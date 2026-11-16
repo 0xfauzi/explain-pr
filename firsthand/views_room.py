@@ -103,6 +103,7 @@ def question_fields(v: views.ViewInput, m: Moment, view: dict) -> dict:
             "skill": views.SKILL_WORDS[m.kind],
             "where": {
                 "project": views.project_name(v, m.project_id),
+                "project_id": m.project_id,
                 "task": m.task_name,
                 "since": words.clock_time(m.base_at, v.tz)
                 if m.kind == views.REVERT
@@ -289,6 +290,7 @@ def journal_note_fields(v: views.ViewInput, note: dict, entry: dict) -> dict:
         {
             "no": None,
             "time": f"{words.short_date(at, v.tz)} {words.clock_time(at, v.tz)}",
+            "title": views.note_title(note["body"]),
             "evidence": list(note["body"].get("evidence", ())),
         }
     )
