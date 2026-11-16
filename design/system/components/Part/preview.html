@@ -1,0 +1,18 @@
+<!-- @dsCard group="Site" height=300 -->
+<!doctype html>
+<html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:ital,wght@0,300;0,400;0,500;1,400&family=IBM+Plex+Sans:wght@400;500;600&family=Newsreader:ital,opsz,wght@0,6..72,400..600;1,6..72,400..600&display=swap">
+<style>body{margin:0;padding:28px 32px;background:var(--paper)}@media(max-width:600px){body{padding:20px 16px}}.fh > .fh-part:first-child{margin-top:0}.fh > .fh-colophon{margin-top:0}.eg{margin:36px 0 12px}.eg:first-child{margin-top:0}</style></head>
+<body><div class="fh">
+<section class="fh-part" id="status" aria-labelledby="h-status">
+<div class="fh-part__head"><p class="fh-part__no"><b>04</b>State of the build</p><div><h2 class="fh-part__title" id="h-status">What works today, and what does not yet</h2><p class="fh-part__lead">Firsthand is being built in steps. This is the state of the repository now.</p></div></div>
+</section>
+<section class="fh-part" id="skill" aria-labelledby="h-skill">
+<div class="fh-part__head"><p class="fh-part__no"><b>06</b>Version 0.6.0</p><h2 class="fh-part__title" id="h-skill">The earlier skill is still here</h2></div>
+<div class="fh-part__body">
+<p class="fh-prose">This repository also holds learning-while-building, version 0.6.0. It is an Agent Skill for Claude Code and other agents that read Agent Skills. On tasks you choose, it asks you a question before the agent builds, asks you to explain the code after, and asks again some days later.</p>
+<p class="fh-prose">It installs separately and does not need Firsthand. From 0.6.0 its record is kept in <code>~/.learning-while-building</code>, outside your project. If an earlier version left a <code>.learning</code> folder in your repository, <a class="fh-link" href="https://github.com/0xfauzi/explain-pr#readme">the README</a> says how to move it.</p>
+<div class="fh-cmd__wrap"><p class="fh-cmd__cap"><span>Inside Claude Code</span><span>needs Python 3.10 or later and git</span></p><div class="fh-cmd fh-cmd--chat"><code>/plugin marketplace add 0xfauzi/explain-pr
+/plugin install learning-while-building@learning-while-building</code><button type="button" data-copy>Copy</button></div></div>
+</div>
+</section>
+</div></body></html>

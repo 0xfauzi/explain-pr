@@ -54,7 +54,8 @@ SECURITY_HEADERS = {
     "Referrer-Policy": "no-referrer",
     "Content-Security-Policy": (
         "default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self'; "
-        "connect-src 'self'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'"
+        "font-src 'self'; connect-src 'self'; base-uri 'none'; form-action 'none'; "
+        "frame-ancestors 'none'"
     ),
 }
 
@@ -89,9 +90,26 @@ def ticket_used_text() -> str:
 
 INTERNAL = "Something went wrong inside Firsthand. Nothing was changed."
 
+FONTS = (
+    "newsreader-latin-opsz-normal",
+    "newsreader-latin-opsz-italic",
+    "ibm-plex-mono-latin-300-normal",
+    "ibm-plex-mono-latin-400-normal",
+    "ibm-plex-mono-latin-400-italic",
+    "ibm-plex-mono-latin-500-normal",
+    "ibm-plex-sans-latin-400-normal",
+    "ibm-plex-sans-latin-500-normal",
+    "ibm-plex-sans-latin-600-normal",
+)
+LICENCES = ("OFL-Newsreader", "OFL-IBM-Plex-Mono", "OFL-IBM-Plex-Sans")
+
+# An exact table: a request path is looked up, never joined onto a folder.
 STATIC = {
     "room.css": "text/css; charset=utf-8",
     "room.js": "text/javascript; charset=utf-8",
+    "room-views.js": "text/javascript; charset=utf-8",
+    **{f"fonts/{name}.woff2": "font/woff2" for name in FONTS},
+    **{f"fonts/{name}.txt": "text/plain; charset=utf-8" for name in LICENCES},
 }
 
 REF = r"[A-Za-z0-9_-]{1,64}"

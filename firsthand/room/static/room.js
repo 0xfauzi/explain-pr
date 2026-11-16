@@ -1,22 +1,26 @@
-/* The Room page. It renders only the JSON the Firsthand engine returns (the Room
-   HTTP API) and decides nothing about results: a result is drawn when the API
-   gives one. Every string from the API is set with textContent. No markup is
-   ever built from text. Nothing is loaded from anywhere but this server. */
+/* The Room page, part one: helpers, the API, the frame of every page, routing and
+   live updates. The screens are in room-views.js. It renders only the JSON the
+   Firsthand engine returns and decides nothing about results: a result is drawn
+   when the API gives one. Every string from the API is set with textContent. No
+   markup is ever built from text. Nothing is loaded from anywhere but this server. */
 (function () {
   'use strict';
 
   var D = document;
+  var NS = 'http://www.w3.org/2000/svg';
   var NO_SESSION = 'This page needs a session. Run: firsthand room';
   var LOST = 'The Room cannot reach Firsthand on this computer. Start it with: firsthand room';
   var INTERNAL = 'Something went wrong inside Firsthand. Nothing was changed.';
-  var DIAL = [
-    ['off', 'Off', 'Nothing is asked, run or recorded.'],
-    ['notes', 'Notes only', 'No questions. Checks run and post notes.'],
-    ['standard', 'Standard', 'Questions within the daily limit.'],
-    ['deep', 'Deep', 'As Standard. You may also write a line of code on some questions.']
-  ];
+  var DAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+  var MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 
-  var S = { token: null, inbox: null, view: null, route: null, lost: false, es: null, draft: null };
+  /* drawn: refs whose sheet has been drawn (the highlighter passes once).
+     played: refs whose result has printed. tallies: skills whose track has filled. */
+  var S = {
+    token: null, inbox: null, view: null, viewJson: null, route: null, lost: false, es: null,
+    draft: null, err: null, focus: null, settings: null, confirm: null, page: null,
+    drawn: {}, played: {}, tallies: {}
+  };
 
   /* ------------------------------------------------------------ small helpers */
 
@@ -41,15 +45,25 @@
   }
 
   function add(el, kids) {
-    if (kids === null || kids === undefined) return;
+    if (kids === null || kids === undefined) return el;
     if (!Array.isArray(kids)) kids = [kids];
     kids.forEach(function (c) {
       if (c === null || c === undefined || c === false) return;
       el.appendChild(typeof c === 'string' ? D.createTextNode(c) : c);
     });
+    return el;
   }
 
   function clear(el) { while (el.firstChild) el.removeChild(el.firstChild); }
+
+  /* A custom property or a grid place, through the CSSOM: never a style attribute. */
+  function prop(el, name, value) { el.style.setProperty(name, String(value)); return el; }
+
+  function label(text, rest) { return h('span', { class: 'fh-label' }, [h('b', { text: text }), rest || null]); }
+
+  function sec(text, right, rest) {
+    return h('div', { class: 'fh-sec' }, [label(text, rest), right ? h('span', { class: 'fh-sec__n', text: right }) : null]);
+  }
 
   function say(text) {
     var live = $('live');
@@ -69,21 +83,117 @@
     return path + (path.indexOf('?') < 0 ? '?' : '&') + 'project=' + encodeURIComponent(p);
   }
 
-  function chip(code, label) {
-    var cls = 'chip';
-    if (code === 'matched') cls += ' ok';
-    else if (code === 'did_not_match') cls += ' miss';
-    else cls += ' dash';
-    return h('span', { class: cls, text: label });
+  /* ------------------------------------------------------------ two hands */
+
+  /* Every occurrence of a name from `names` is set in the fact face, longest first. */
+  function mixed(text, names) {
+    var frag = D.createDocumentFragment();
+    var list = (names || []).filter(function (n) { return n; }).slice().sort(function (a, b) { return b.length - a.length; });
+    var i = 0;
+    var start = 0;
+    text = text || '';
+    while (i < text.length) {
+      var hit = null;
+      for (var j = 0; j < list.length; j++) {
+        if (text.substr(i, list[j].length) === list[j]) { hit = list[j]; break; }
+      }
+      if (!hit) { i += 1; continue; }
+      if (i > start) frag.appendChild(D.createTextNode(text.slice(start, i)));
+      frag.appendChild(h('span', { class: 'fh-fact', text: hit }));
+      i += hit.length;
+      start = i;
+    }
+    if (start < text.length) frag.appendChild(D.createTextNode(text.slice(start)));
+    return frag;
   }
 
-  function rows(pairs) {
-    var dl = h('dl', { class: 'rw' });
-    pairs.forEach(function (p) {
-      if (p[1] === null || p[1] === undefined || p[1] === '') return;
-      dl.appendChild(h('div', null, [h('dt', { text: p[0] }), h('dd', null, p[1])]));
-    });
-    return dl;
+  /* Every "n of m" in the fact face. */
+  function counts(text) {
+    var frag = D.createDocumentFragment();
+    var re = /\d+ of \d+/g;
+    var last = 0;
+    var m;
+    text = text || '';
+    while ((m = re.exec(text)) !== null) {
+      if (m.index > last) frag.appendChild(D.createTextNode(text.slice(last, m.index)));
+      frag.appendChild(h('span', { class: 'fh-fact', text: m[0] }));
+      last = m.index + m[0].length;
+    }
+    if (last < text.length) frag.appendChild(D.createTextNode(text.slice(last)));
+    return frag;
+  }
+
+  /* ------------------------------------------------------------ verdict marks */
+
+  var MARKS = {
+    match: { rect: [0, 0, 28, 28], bars: 'M8 11h12M8 17h12' },
+    miss: { rect: [0.75, 0.75, 26.5, 26.5], bars: 'M8 11h12M8 17h12M17.5 6.5l-7 15' },
+    none: { rect: [0.75, 0.75, 26.5, 26.5], bars: 'M8 11h12M8 17h12' }
+  };
+  var KINDS = { matched: 'match', did_not_match: 'miss', not_scored: 'none' };
+
+  function mark(kind) {
+    var d = MARKS[kind];
+    var svg = D.createElementNS(NS, 'svg');
+    svg.setAttribute('class', 'fh-m fh-m--' + kind);
+    svg.setAttribute('viewBox', '0 0 28 28');
+    svg.setAttribute('aria-hidden', 'true');
+    var rect = D.createElementNS(NS, 'rect');
+    rect.setAttribute('class', 'sq');
+    ['x', 'y', 'width', 'height'].forEach(function (a, i) { rect.setAttribute(a, String(d.rect[i])); });
+    var path = D.createElementNS(NS, 'path');
+    path.setAttribute('class', 'bar');
+    path.setAttribute('d', d.bars);
+    svg.appendChild(rect);
+    svg.appendChild(path);
+    return svg;
+  }
+
+  function kindOf(chip) { return KINDS[chip] || null; }
+
+  function verdict(kind, words) {
+    return h('span', { class: 'fh-verdict fh-verdict--' + kind }, [mark(kind), words]);
+  }
+
+  /* ------------------------------------------------------------ numbers and times */
+
+  function no(n) {
+    if (n === null || n === undefined) return 'No. ----';
+    var s = String(n);
+    while (s.length < 4) s = '0' + s;
+    return 'No. ' + s;
+  }
+
+  function two(n) { return n < 10 ? '0' + n : String(n); }
+
+  function when(stamp) {
+    if (!stamp) return null;
+    var d = new Date(stamp);
+    return isNaN(d.getTime()) ? null : d;
+  }
+
+  function hms(stamp) {
+    var d = when(stamp);
+    return d ? two(d.getHours()) + ':' + two(d.getMinutes()) + ':' + two(d.getSeconds()) : '';
+  }
+
+  function hm(stamp) {
+    var d = when(stamp);
+    return d ? two(d.getHours()) + ':' + two(d.getMinutes()) : '';
+  }
+
+  /* A margin time: HH:MM today, D Mon HH:MM on another day. */
+  function marginTime(stamp) {
+    var d = when(stamp);
+    if (!d) return '';
+    var now = new Date();
+    if (d.toDateString() === now.toDateString()) return hm(stamp);
+    return d.getDate() + ' ' + MONTHS[d.getMonth()] + ' ' + hm(stamp);
+  }
+
+  function folioDate() {
+    var d = new Date();
+    return DAYS[d.getDay()] + ' ' + d.getDate() + ' ' + MONTHS[d.getMonth()] + ' ' + d.getFullYear() + ' \u00b7 ' + location.host;
   }
 
   /* ------------------------------------------------------------ the API */
@@ -97,7 +207,10 @@
     }
     return fetch(path, opts).then(function (r) {
       return r.json().catch(function () { return null; }).then(function (data) {
-        if (r.ok) return data;
+        if (r.ok) {
+          if (S.lost) setLost(false);
+          return data;
+        }
         var e = (data && data.error) || { code: 'internal', message: INTERNAL };
         var err = new Error(e.message);
         err.code = e.code;
@@ -113,31 +226,61 @@
     });
   }
 
-  /* ------------------------------------------------------------ shell */
+  /* ------------------------------------------------------------ the frame */
 
   function route() {
     var p = location.pathname;
     var m = /^\/([qr])\/([A-Za-z0-9_-]{1,64})$/.exec(p);
-    if (m) return { name: 'question', ref: m[2] };
-    if (p === '/journal' || p === '/skills' || p === '/settings') return { name: p.slice(1) };
-    return { name: 'inbox' };
+    if (m) return { name: 'question', ref: m[2], tab: m[1] === 'q' ? 'inbox' : 'journal' };
+    if (p === '/journal' || p === '/skills' || p === '/settings') return { name: p.slice(1), tab: p.slice(1) };
+    return { name: 'inbox', tab: 'inbox' };
   }
 
-  function markTabs(name) {
+  function markTabs(tab) {
     Array.prototype.forEach.call(D.querySelectorAll('[data-tab]'), function (a) {
       a.setAttribute('href', withProject(a.getAttribute('href').split('?')[0]));
-      if (a.getAttribute('data-tab') === name) a.setAttribute('aria-current', 'page');
+      if (a.getAttribute('data-tab') === tab) a.setAttribute('aria-current', 'page');
       else a.removeAttribute('aria-current');
     });
+    var word = D.querySelector('.fh-wordmark');
+    if (word) word.setAttribute('href', withProject('/'));
+  }
+
+  /* A whole page in one blank ledger row: no session, not reachable, not found, an error. */
+  function blankPage(margin, title, kids, heading) {
+    var main = $('main');
+    clear(main);
+    S.view = null;
+    S.viewJson = null;
+    S.page = 'blank';
+    add(main, [
+      h('h1', { class: 'fh-vh', text: heading || 'The Room' }),
+      h('ol', { class: 'fh-ledger' }, h('li', { class: 'fh-row fh-row--blank' }, [
+        h('div', { class: 'fh-row__margin' }, h('b', { text: margin })),
+        h('div', null, [h('h2', { class: 'fh-row__title', text: title })].concat(kids || []))
+      ]))
+    ]);
   }
 
   function noSession(message) {
     // The server's text names the command as it is typed on this computer.
     var text = message || NO_SESSION;
-    var main = $('main');
-    clear(main);
-    main.appendChild(h('p', { class: 'sub', text: text }));
+    var at = text.indexOf('Run in a terminal: ');
+    var kids;
+    if (at >= 0) {
+      var cmd = text.slice(at + 'Run in a terminal: '.length).replace(/\.$/, '');
+      kids = [h('p', { class: 'fh-text', text: 'Run in a terminal:' }), h('ol', { class: 'fh-cmds' }, h('li', { text: cmd }))];
+    } else {
+      kids = [h('p', { class: 'fh-text', text: text })];
+    }
+    $('tabs').hidden = true;
+    $('notice').hidden = true;
     $('quiet').hidden = true;
+    $('proj').textContent = ' / not signed in';
+    $('asked').textContent = '';
+    if (S.es) { S.es.close(); S.es = null; }
+    S.noSession = true;
+    blankPage('No session', 'This page needs a session.', kids);
     say(text);
   }
 
@@ -154,22 +297,26 @@
     clear(proj);
     var list = inbox.projects || [];
     if (list.length > 1 && inbox.project) {
-      var sel = h('select', { 'aria-label': 'Project', onchange: function () {
+      var sel = h('select', { class: 'fh-select', 'aria-label': 'Project', onchange: function () {
         location.search = '?project=' + encodeURIComponent(sel.value);
       } }, list.map(function (p) {
         return h('option', { value: p.id, text: p.name });
       }));
       sel.value = inbox.project.id;
-      proj.appendChild(sel);
+      add(proj, [' / ', sel]);
     } else if (inbox.project) {
-      proj.textContent = inbox.project.name;
+      proj.textContent = ' / ' + inbox.project.name;
     }
     var q = $('quiet');
     var quiet = inbox.state ? inbox.state.quiet : null;
     q.hidden = !inbox.project;
-    q.textContent = 'Quiet: ' + (quiet ? 'on' : 'off');
+    q.querySelector('b').textContent = quiet ? 'on' : 'off';
     q.setAttribute('aria-pressed', quiet ? 'true' : 'false');
     q.disabled = quiet === 'session';
+    var n = (inbox.now || []).length;
+    $('count').textContent = n ? String(n) : '';
+    $('count').hidden = !n;
+    $('asked').textContent = inbox.closing || '';
     drawNotice();
   }
 
@@ -193,23 +340,28 @@
       .catch(function (err) { say(err.message); });
   }
 
+  function notice(role, name, text, action) {
+    return h('div', { class: 'fh-notice', role: role }, [label(name), h('p', { class: 'fh-notice__text' }, text), action || null]);
+  }
+
   function drawNotice() {
-    var bar = $('notice');
-    clear(bar);
-    var text = S.lost ? LOST : (S.inbox && S.inbox.state ? S.inbox.state.notice : null);
-    bar.hidden = !text;
-    if (!text) return;
-    var p = h('p');
-    var quiet = S.inbox && S.inbox.state ? S.inbox.state.quiet : null;
-    if (!S.lost && /\sTurn on$/.test(text)) {
-      add(p, [text.replace(/\sTurn on$/, ''), h('a', { class: 'tbtn', href: withProject('/settings'), text: 'Turn on' })]);
-    } else if (!S.lost && /\sUndo$/.test(text)) {
-      add(p, text.replace(/\sUndo$/, ''));
-      if (quiet && quiet !== 'session') add(p, h('button', { type: 'button', class: 'tbtn', text: 'Undo', onclick: toggleQuiet }));
-    } else {
-      add(p, text);
+    var box = $('notice');
+    clear(box);
+    var state = S.inbox && S.inbox.state ? S.inbox.state : {};
+    var text = state.notice || '';
+    var el = null;
+    if (S.lost) {
+      el = notice('alert', 'Not reachable', ['The Room cannot reach Firsthand on this computer. Start it with: ',
+        h('span', { class: 'fh-fact', text: 'firsthand room' })]);
+    } else if (state.dial === 'off' && text) {
+      el = notice('status', 'Off', text.replace(/\s*Turn on$/, ''),
+        h('a', { class: 'fh-btn fh-btn--quiet', href: withProject('/settings'), text: 'Turn on' }));
+    } else if (state.quiet && text) {
+      el = notice('status', 'Quiet', text.replace(/\s*Undo$/, ''), state.quiet === 'session' ? null
+        : h('button', { type: 'button', class: 'fh-btn fh-btn--quiet', text: 'Undo', onclick: toggleQuiet }));
     }
-    bar.appendChild(p);
+    box.hidden = !el || S.noSession;
+    if (el) box.appendChild(el);
   }
 
   function loadShell() {
@@ -219,564 +371,41 @@
     });
   }
 
-  /* ------------------------------------------------------------ inbox */
+  /* ------------------------------------------------------------ errors and focus */
 
-  function group(title, items) {
-    if (!items.length) return null;
-    var id = 'g-' + title.toLowerCase();
-    return h('section', { class: 'grp', 'aria-labelledby': id }, [h('h2', { id: id, text: title })].concat(items));
+  /* The engine's message, shown under the control that was used. */
+  function errLine() {
+    if (!S.err) return null;
+    return h('p', { class: 'fh-err', role: 'alert' }, [h('b', { text: 'Not taken' }), h('span', { text: S.err.message })]);
   }
 
-  function nowItem(it) {
-    return h('a', { class: 'it now', href: it.href }, [
-      h('span', { class: 'k', text: it.reason }), h('span', { class: 'w', text: it.task }),
-      h('span', { class: 'z', text: it.size }), h('span', { class: 'go', text: 'Open' })
-    ]);
+  function setErr(err, where) {
+    S.err = err ? { message: err.message, where: where || null } : null;
+    if (err) say(err.message);
   }
 
-  function noteItem(n) {
-    var ev = (n.evidence || []).map(function (e) {
-      return h('li', { text: e.path + ':' + e.line });
-    });
-    return h('details', { class: 'note' }, [
-      h('summary', null, [h('span', { class: 'k', text: n.title }), h('span', { class: 'z', text: n.time })]),
-      h('div', { class: 'nb' }, [
-        h('p', { class: 'nt', text: n.text }),
-        ev.length ? h('ul', null, ev) : null,
-        h('p', { class: 'nt', text: n.checked })
-      ])
-    ]);
-  }
-
-  function waitingItem(w) {
-    return h('a', { class: 'it', href: w.href }, [
-      h('span', { class: 'k', text: w.kind }), h('span', { class: 'w', text: w.text })
-    ]);
-  }
-
-  function resultItem(r) {
-    return h('a', { class: 'it', href: r.href, 'aria-label': r.chip_label + '. ' + r.kind + ', ' + r.task }, [
-      h('span', { class: 'k', text: r.kind }), h('span', { class: 'w', text: r.task }),
-      h('span', { class: 'z' }), chip(r.chip, r.chip_label)
-    ]);
-  }
-
-  function waitingGroup(list) {
-    var items = list.map(waitingItem);
-    if (items.length <= 3) return items;
-    var rest = h('details', { class: 'more' }, [h('summary', { text: (items.length - 3) + ' more' })].concat(items.slice(3)));
-    return items.slice(0, 3).concat([rest]);
-  }
-
-  function renderInbox(v) {
-    var main = $('main');
-    clear(main);
-    main.appendChild(h('h1', { class: 'pg', text: 'Inbox' }));
-    if (v.empty) main.appendChild(h('p', { class: 'hint', text: v.empty }));
-    var notes = (v.notes || []).map(noteItem);
-    if (notes.length && v.older_notes > 0) {
-      notes.push(h('p', { class: 'close' }, h('a', { href: withProject('/journal'), text: 'Older notes' })));
-    }
-    add(main, [
-      group('NOW', (v.now || []).map(nowItem)),
-      group('WAITING', waitingGroup(v.waiting || [])),
-      group('NOTES', notes),
-      group('RESULTS', (v.results || []).map(resultItem))
-    ]);
-    if (v.closing) main.appendChild(h('p', { class: 'close', text: v.closing }));
-  }
-
-  /* ------------------------------------------------------------ question card */
-
-  function evidence(v) {
-    var items = (v.evidence || []).map(function (t) {
-      var asserts = (t.asserts || []).map(function (a) { return h('span', { class: 'a', text: a.text }); });
-      var src = t.source ? h('details', null, [
-        h('summary', { text: 'Full test' }), h('pre', { text: t.source })
-      ]) : null;
-      return h('li', null, [
-        h('span', { class: 'n', text: String(t.n) }),
-        h('span', null, [t.name].concat(asserts, [h('span', { class: 'a nt', text: t.path + ':' + t.line }), src]))
-      ]);
-    });
-    if (!items.length) return null;
-    return h('ol', { class: 'ev', tabindex: '0', 'aria-label': v.lead || 'Tests' }, items);
-  }
-
-  function trace(v) {
-    var t = v.trace;
-    if (!t) return null;
-    var kids = [h('span', { class: 't', text: t.title })];
-    (t.frames || []).forEach(function (f) {
-      kids.push(h('span', { class: 'a', text: '  ' + f.path + ':' + f.line + (f.where ? '   ' + f.where : '') }));
-    });
-    return h('div', { class: 'ev tr', tabindex: '0', 'aria-label': 'The failing test and its trace' }, kids);
-  }
-
-  function picked(v) {
-    if (v.held && v.held.kind === 'pick') return v.held.answer;
-    if (v.call) return v.call.answer;
-    return null;
-  }
-
-  function pill(name, value, label, checked, disabled, onpick, note) {
-    var input = h('input', { type: 'radio', name: name, value: value, checked: checked, disabled: disabled });
-    input.addEventListener('change', function () { if (input.checked) onpick(value); });
-    input.addEventListener('click', function () { if (checked) onpick(value, true); });
-    var face = note === undefined ? h('span', { text: label }) : h('span', null, [h('b', { class: 'm', text: label }), note ? h('small', { text: note }) : null]);
-    return h('label', { class: 'pill' }, [input, face]);
-  }
-
-  function picks(v) {
-    if (v.multi) return togglePicks(v);
-    var current = picked(v);
-    var can = v.can || {};
-    var col = (v.picks || []).some(function (p) { return 'path' in p; });
-    return h('fieldset', null, [
-      h('legend', { class: 'q', id: 'q', text: v.prompt }),
-      h('div', { class: col ? 'picks col' : 'picks' }, (v.picks || []).map(function (p) {
-        var on = p.value === current;
-        return pill('pick', p.value, p.label, on, !can.lock && !on, function (value, again) {
-          if (!again && can.lock) act(v, 'lock', { answer: value }, 'Locked.');
-        }, col ? null : undefined);
-      }))
-    ]);
-  }
-
-  /* Several tests: the numbers are toggles, None and Don't know are exclusive, and
-     only the Lock button sends. A toggle never locks, so no key press can. */
-
-  var EXCLUSIVE = { none: true, dont_know: true };
-
-  function chosenOf(answer) {
-    var on = {};
-    if (!answer) return on;
-    if (EXCLUSIVE[answer]) on[answer] = true;
-    else answer.split(',').forEach(function (n) { on[n] = true; });
-    return on;
-  }
-
-  function draftFor(v) {
-    if (!S.draft || S.draft.ref !== v.ref) S.draft = { ref: v.ref, on: {} };
-    return S.draft;
-  }
-
-  function draftAnswer(on) {
-    var keys = Object.keys(on).filter(function (k) { return on[k]; });
-    var only = keys.filter(function (k) { return EXCLUSIVE[k]; });
-    if (only.length) return only[0];
-    return keys.map(Number).sort(function (a, b) { return a - b; }).join(',');
-  }
-
-  function toggle(v, value) {
-    var d = draftFor(v);
-    var was = !!d.on[value];
-    if (EXCLUSIVE[value] || Object.keys(d.on).some(function (k) { return EXCLUSIVE[k] && d.on[k]; })) d.on = {};
-    d.on[value] = !was;
-    renderQuestion(v);
-    var again = D.querySelector('[data-pick="' + value + '"]');
-    if (again) again.focus();
-  }
-
-  function togglePicks(v) {
-    var can = v.can || {};
-    var current = picked(v);
-    var on = can.lock ? draftFor(v).on : chosenOf(current);
-    var answer = draftAnswer(on);
-    var kids = (v.picks || []).map(function (p) {
-      var pressed = !!on[p.value];
-      return h('button', {
-        type: 'button', class: 'pill tg' + (EXCLUSIVE[p.value] ? ' ex' : ''), 'data-pick': p.value,
-        'aria-pressed': pressed ? 'true' : 'false', disabled: !can.lock,
-        onclick: function () { if (can.lock) toggle(v, p.value); }
-      }, h('span', { text: p.label }));
-    });
-    var lock = can.lock ? h('p', { class: 'acts send' }, h('button', {
-      type: 'button', class: 'btn sm', text: 'Lock', disabled: !answer,
-      onclick: function () {
-        if (!answer) return;
-        act(v, 'lock', { answer: answer }, 'Locked.');
-      }
-    })) : null;
-    return h('fieldset', null, [
-      h('legend', { class: 'q', id: 'q', text: v.prompt }),
-      h('div', { class: 'picks', role: 'group', 'aria-labelledby': 'q' }, kids),
-      lock
-    ]);
-  }
-
-  function sureRow(v) {
-    var can = v.can || {};
-    var row = h('div', { class: 'sure' });
-    if (can.confidence) {
-      var cur = v.held ? v.held.confidence : null;
-      add(row, h('span', { class: 'lb', id: 'sl', text: 'How sure?' }));
-      [['high', 'Sure'], ['low', 'Not sure']].forEach(function (b) {
-        add(row, pill('sure', b[0], b[1], cur === b[0], false, function (value, again) {
-          act(v, 'confidence', { value: again ? null : value }, null);
-        }));
-      });
-    }
-    if (can.show) {
-      add(row, h('button', { type: 'button', class: 'btn sm', text: 'Show the result', onclick: function () {
-        act(v, 'show', {}, null).then(function (nv) {
-          if (nv && nv.result) say(nv.result.chip_label + '. ' + (nv.result.what_happened || [])[0]);
-        });
-      } }));
-    }
-    return row.childNodes.length ? row : null;
-  }
-
-  function lockRow(v) {
-    var can = v.can || {};
-    if (v.held && v.held.kind === 'pick') {
-      return h('div', { class: 'lock' }, [
-        h('p', { class: 'st' }, ['Locked.', can.undo ? h('button', { type: 'button', class: 'tbtn', text: 'Undo', onclick: function () {
-          act(v, 'undo', {}, 'Undone.');
-        } }) : null]),
-        sureRow(v)
-      ]);
-    }
-    if (v.status_line || v.call) {
-      return h('div', { class: 'lock' }, [
-        v.call ? rows([[v.said_label || 'You said', v.call.label + (v.call.confidence_label ? '. ' + v.call.confidence_label + '.' : (/["]$/.test(v.call.label) ? '' : '.'))]]) : null,
-        v.status_line ? h('p', { class: 'st', text: v.status_line }) : null,
-        sureRow(v)
-      ]);
-    }
-    return null;
-  }
-
-  function quietActs(v) {
-    var can = v.can || {};
-    var acts = [];
-    if (can.skip) acts.push(h('button', { type: 'button', class: 'tbtn', text: 'Skip', onclick: function () { act(v, 'skip', {}, 'Skipped.'); } }));
-    if (can.wrong_start) {
-      acts.push(h('button', { type: 'button', class: 'tbtn', text: 'Wrong start', onclick: function () {
-        act(v, 'wrong-start', {}, null).then(function (nv) {
-          if (!nv) return;
-          // The replacement question, when one was offered at once, takes this page.
-          if (nv.ref && nv.ref !== v.ref) history.replaceState(null, '', withProject('/q/' + nv.ref));
-          say(nv.status_line);
-        });
-      } }));
-    }
-    return acts.length ? h('div', { class: 'acts quiet' }, acts) : null;
-  }
-
-  function renderSkipped(v) {
-    var can = v.can || {};
-    return h('p', { class: 'card' }, ['Skipped. ', can.undo ? h('button', { type: 'button', class: 'tbtn', text: 'Undo', onclick: function () {
-      act(v, 'undo', {}, 'Undone.');
-    } }) : null]);
-  }
-
-  function lineField(v) {
-    var can = v.can || {};
-    if (!can.lock) return null;
-    var field = h('input', { id: 'ans', type: 'text', autocomplete: 'off', maxlength: '500', 'aria-labelledby': 'q' });
-    var send = function () {
-      if (!field.value.trim()) { field.focus(); return; }
-      act(v, 'lock', { answer: field.value }, 'Given to your agent.');
-    };
-    return h('div', null, [
-      h('p', { class: 'q', id: 'q', text: v.prompt }),
-      h('label', { class: 'fld' }, [h('b', { text: v.said_label || 'Your answer' }), field]),
-      h('p', { class: 'acts send' }, h('button', { type: 'button', id: 'send', class: 'btn sm', text: 'Send to my agent', onclick: send }))
-    ]);
-  }
-
-  function renderCard(v) {
-    if ((v.held && v.held.kind === 'skip') || v.state === 'skipped') return renderSkipped(v);
-    var open = v.state === 'open' || v.state === 'held';
-    return h('form', { class: 'card' + (open ? ' open' : ''), 'aria-labelledby': 'q', onsubmit: function (e) {
-      e.preventDefault();
-      var send = $('send');  /* Enter in the Brief's one-line field sends it */
-      if (v.form === 'line' && send) send.click();
-    } }, [
-      h('p', { class: 'eb' }, [h('span', { text: v.reason }), v.skip_ok ? h('span', { class: 'sk', text: 'skip ok' }) : null]),
-      h('p', { class: 'ctx', text: v.context }),
-      v.lead ? h('p', { class: 'lead', text: v.lead }) : null,
-      trace(v),
-      evidence(v),
-      v.form === 'line' ? lineField(v) : picks(v),
-      lockRow(v),
-      quietActs(v),
-      h('p', { class: 'err', id: 'err', hidden: true }),
-      open ? h('p', { class: 'foot', text: v.footer }) : null  /* says what happens next: only while open */
-    ]);
-  }
-
-  /* ------------------------------------------------------------ result */
-
-  function cueRow(cue) {
-    if (!cue) return null;
-    var dd = [cue.text];
-    (cue.evidence || []).forEach(function (e) {
-      dd.push(h('span', { class: 'mono s', text: ' ' + e.path + ':' + e.line + (e.text ? '  ' + e.text : '') }));
-    });
-    return dd;
-  }
-
-  function disputeBox(v) {
-    var box = h('div', { hidden: true });
-    var field = h('textarea', { rows: '3', maxlength: '4000', 'aria-label': 'This result looks wrong' });
-    add(box, [h('label', { class: 'fld' }, field), h('p', { class: 'acts' }, h('button', { type: 'button', class: 'btn sm', text: 'Recheck', onclick: function () {
-      if (!field.value.trim()) { field.focus(); return; }
-      act(v, 'dispute', { reason: field.value }, null).then(function (nv) {
-        if (nv && nv.result && nv.result.more) say(nv.result.more.dispute);
-      });
-    } }))]);
-    var open = h('button', { type: 'button', class: 'tbtn', text: 'This result looks wrong', onclick: function () {
-      box.hidden = false;
-      open.hidden = true;
-      field.focus();
-    } });
-    return h('div', null, [open, box]);
-  }
-
-  function more(v, r) {
-    var m = r.more || {};
-    var cmds = h('pre', { hidden: true, text: (m.commands || []).join('\n') });
-    var cmdBtn = (m.commands || []).length ? h('button', { type: 'button', class: 'tbtn', text: 'Open the commands', onclick: function () {
-      cmds.hidden = !cmds.hidden;
-    } }) : null;
-    var list = (m.rows || []).map(function (row) {
-      return h('li', null, [h('span', { class: 'mono', text: row.name }), h('span', { text: row.text })]);
-    });
-    return h('details', { class: 'more' }, [
-      h('summary', { text: 'More' }),
-      h('div', { class: 'mb' }, [
-        list.length ? h('ul', null, list) : null,
-        h('p', null, [m.checked || '', ' ', cmdBtn]),
-        cmds,
-        m.counts ? h('p', { text: m.counts }) : null,
-        m.sure ? h('p', { text: m.sure }) : null,
-        m.sent ? h('p', { text: m.sent }) : null,
-        m.dispute ? h('p', { text: m.dispute }) : null,
-        (m.notes || []).length ? h('div', { class: 'notes' }, m.notes.map(function (t) { return h('p', { text: t }); })) : null,
-        (v.can || {}).dispute ? disputeBox(v) : null
-      ])
-    ]);
-  }
-
-  function renderResult(v) {
-    var r = v.result;
-    var label = r.chip_label + '. ' + r.headline;
-    return h('section', { class: 'card', id: 'res', tabindex: '-1', 'aria-label': label }, [
-      h('div', { class: 'rh' }, [h('h1', { class: 'rt', text: r.headline }), chip(r.chip, r.chip_label)]),
-      h('p', { class: 'ctx', text: v.context }),
-      r.reason ? h('p', { class: 'sub', text: r.reason }) : null,
-      rows([
-        [r.said_label || 'You said', r.you_said],
-        ['What happened', (r.what_happened || []).join(' ')],
-        ['What would have shown it', cueRow(r.cue)]
-      ]),
-      h('div', { class: 'cue' }, [h('a', { class: 'btn', href: withProject('/'), text: 'Back to the build' }), h('p', { text: r.back })]),
-      quietActs(v),
-      h('p', { class: 'err', id: 'err', hidden: true }),
-      more(v, r)
-    ]);
-  }
-
-  function renderQuestion(v) {
-    S.view = v;
-    var main = $('main');
-    var focusResult = v.result && !D.getElementById('res');
-    clear(main);
-    main.appendChild(h('a', { class: 'crumb', href: withProject('/'), text: 'Inbox' }));
-    main.appendChild(v.result ? renderResult(v) : renderCard(v));
-    if (focusResult) {
-      var res = $('res');
-      if (res) res.focus({ preventScroll: true });
-    }
-  }
-
-  function showError(err) {
-    var el = $('err');
-    if (el) {
-      el.textContent = err.message;
-      el.hidden = false;
-    }
-    say(err.message);
-  }
-
-  function act(v, name, body, live) {
-    return api('POST', '/api/q/' + encodeURIComponent(v.ref) + '/' + name, body).then(function (nv) {
-      renderQuestion(nv);
-      say(live);
-      return nv;
-    }, function (err) {
-      if (err.code === 'no_session' || err.code === 'unreachable') return null;
-      return api('GET', '/api/q/' + encodeURIComponent(v.ref)).then(function (nv) {
-        renderQuestion(nv);
-        showError(err);
-        return null;
-      }, function () { showError(err); return null; });
-    });
-  }
-
-  /* ------------------------------------------------------------ journal, skills */
-
-  function renderJournal(v) {
-    var main = $('main');
-    clear(main);
-    main.appendChild(h('h1', { class: 'pg', text: 'Journal' }));
-    if (v.scope) main.appendChild(h('p', { class: 'sub', text: v.scope }));
-    var entries = v.entries || [];
-    if (!entries.length) {
-      main.appendChild(h('p', { class: 'hint', text: 'No calls or notes yet.' }));
-      return;
-    }
-    main.appendChild(h('div', { class: 'jl' }, entries.map(function (e) {
-      var title = [h('span', { class: 'd', text: e.date }), e.task + ' | ' + e.kind];
-      return h('article', { class: 'je' }, [
-        h('div', { class: 'jh' }, [
-          e.href ? h('a', { class: 'jt', href: e.href }, title) : h('span', { class: 'jt' }, title),
-          e.chip ? chip(e.chip, e.chip_label) : null
-        ]),
-        rows((e.rows || []).map(function (r) { return [r.label, r.text]; }))
-      ]);
-    })));
-  }
-
-  function renderSkills(v) {
-    var main = $('main');
-    clear(main);
-    main.appendChild(h('h1', { class: 'pg', text: 'Skills' }));
-    (v.legend || []).forEach(function (line) { main.appendChild(h('p', { class: 'sub', text: line })); });
-    main.appendChild(h('ul', { class: 'sl' }, (v.rows || []).map(function (r) {
-      return h('li', { class: 'sr', 'aria-label': r.name + ': ' + r.level_line + ', ' + r.newest }, [
-        h('div', { class: 'sh' }, [
-          h('span', { class: 'sn' }, [h('span', { class: 'n', text: String(r.n) }), r.name]),
-          h('span', { class: 'lv', text: r.level_line }),
-          h('span', { class: 'nw', text: r.newest })
-        ]),
-        h('div', { class: 'mb' }, [
-          h('p', { text: r.counts }), r.fixed ? h('p', { text: r.fixed }) : null, h('p', { text: r.asked })
-        ]),
-        rows([['Evidence covers', r.covers], ['No evidence on', r.no_evidence]]),
-        h('p', { class: 'foot', text: r.checked })
-      ]);
-    })));
-  }
-
-  /* ------------------------------------------------------------ settings */
-
-  function save(changes, project, confirm) {
-    return api('POST', '/api/settings', { changes: changes, project: project, confirm: !!confirm }).then(function (nv) {
-      renderSettings(nv);
-      say('Saved.');
-      return loadShell();
-    }, function (err) {
-      if (err.code === 'no_session' || err.code === 'unreachable') return null;
-      return api('GET', withProject('/api/settings')).then(function (nv) {
-        renderSettings(nv);
-        if (err.code === 'confirm') askConfirm(err.message, changes, project);
-        else showError(err);
-      });
-    });
-  }
-
-  function askConfirm(message, changes, project) {
-    var box = $('confirm');
-    clear(box);
-    box.hidden = false;
-    add(box, [h('p', { text: message }), h('div', { class: 'acts' }, [
-      h('button', { type: 'button', class: 'btn sm', text: 'Confirm', onclick: function () { save(changes, project, true); } }),
-      h('button', { type: 'button', class: 'tbtn', text: 'Cancel', onclick: function () { box.hidden = true; } })
-    ])]);
-    say(message);
-    var b = box.querySelector('button');
-    if (b) b.focus();
-  }
-
-  function option(type, name, value, label, note, checked, onpick) {
-    var input = h('input', { type: type, name: name, value: value, checked: checked });
-    input.addEventListener('change', function () { onpick(input); });
-    return h('label', { class: 'opt' }, [input, h('span', null, [label, note ? h('small', { text: note }) : null])]);
-  }
-
-  function howMuch(v) {
-    var dial = h('fieldset', null, [h('legend', { text: 'The dial' })].concat(DIAL.map(function (d) {
-      return option('radio', 'dial', d[0], d[1], d[2], v.dial === d[0], function () { save({ dial: d[0] }, null); });
-    })));
-    var limit = h('select', { 'aria-label': 'Questions while building, a day', onchange: function () {
-      save({ daily_limit: Number(limit.value) }, null);
-    } }, [1, 2, 3].map(function (n) { return h('option', { value: String(n), text: String(n) }); }));
-    limit.value = String(v.daily_limit);
-    var quiet = v.quiet || {};
-    var pid = v.project ? v.project.id : null;
-    var quietSet = h('fieldset', null, [
-      h('legend', { text: 'Quiet' }),
-      option('checkbox', 'qt', 'today', 'Today', null, !!quiet.today, function (i) { save({ quiet_today: i.checked }, null); }),
-      pid ? option('checkbox', 'qh', 'here', 'This project', null, !!quiet.here, function (i) { save({ quiet: i.checked }, pid); }) : null
-    ]);
-    return h('section', { class: 'sg', 'aria-labelledby': 's-how' }, [
-      h('h2', { id: 's-how', text: 'HOW MUCH' }),
-      h('div', { class: 'card' }, [
-        dial,
-        h('p', { class: 'row' }, ['Questions while building: ', limit, ' a day (up to 3).']),
-        quietSet,
-        option('checkbox', 'fa', 'on', 'Send findings to my agent', null, !!v.findings_to_agent, function (i) {
-          save({ findings_to_agent: i.checked }, null);
-        })
-      ])
-    ]);
-  }
-
-  function limitText(s) {
-    if (s % 60 === 0) return (s / 60) + (s === 60 ? ' minute' : ' minutes');
-    return s + ' seconds';
-  }
-
-  function thisProject(p) {
-    var cmd = h('input', { type: 'text', value: p.test_command || '', 'aria-label': 'Test command', spellcheck: 'false' });
-    var glob = h('input', { type: 'text', 'aria-label': 'Add a path', spellcheck: 'false' });
-    var globs = (p.high_stakes || []).map(function (g) {
-      return h('li', null, [g, h('button', { type: 'button', class: 'tbtn', text: 'Remove', 'aria-label': 'Remove ' + g, onclick: function () {
-        save({ high_stakes_remove: g }, p.id);
-      } })]);
-    });
-    return h('section', { class: 'sg', 'aria-labelledby': 's-proj' }, [
-      h('h2', { id: 's-proj', text: 'THIS PROJECT' }),
-      h('div', { class: 'card' }, [
-        h('p', { class: 'mono', text: p.name }),
-        h('div', null, [h('b', { text: 'Test command' }), h('p', { class: 'row' }, [cmd, h('button', { type: 'button', class: 'btn sm ghost', text: 'Change', onclick: function () {
-          save({ test_command: cmd.value }, p.id);
-        } })])]),
-        h('p', { class: 'sub', text: 'Checks stop after ' + limitText(p.check_time_limit_s) + '.' }),
-        h('div', null, [h('b', { text: 'High-stakes paths' }), globs.length ? h('ul', { class: 'globs' }, globs) : null,
-          h('p', { class: 'row' }, [glob, h('button', { type: 'button', class: 'btn sm ghost', text: 'Add a path', onclick: function () {
-            if (glob.value.trim()) save({ high_stakes_add: glob.value.trim() }, p.id);
-          } })])])
-      ])
-    ]);
-  }
-
-  function renderSettings(v) {
-    var main = $('main');
-    clear(main);
-    main.appendChild(h('h1', { class: 'pg', text: 'Settings' }));
-    main.appendChild(h('div', { class: 'confirm', id: 'confirm', role: 'group', hidden: true }));
-    main.appendChild(h('p', { class: 'err', id: 'err', hidden: true }));
-    main.appendChild(howMuch(v));
-    if (v.project) main.appendChild(thisProject(v.project));
-    main.appendChild(h('section', { class: 'sg', 'aria-labelledby': 's-rec' }, [
-      h('h2', { id: 's-rec', text: 'YOUR RECORD' }),
-      h('div', { class: 'card' }, h('p', { text: v.record + '. A git repo on this computer. Plain files. No remote.' }))
-    ]));
+  /* After a redraw, focus returns to the control that was pressed, else to the first
+     control of what replaced it. */
+  function restoreFocus(scope) {
+    var key = S.focus;
+    S.focus = null;
+    if (!key) return;
+    var el = D.querySelector('[data-k="' + key.replace(/["\\]/g, '') + '"]');
+    if (el && !el.disabled) { el.focus({ preventScroll: true }); return; }
+    var first = (scope || $('main')).querySelector('button:not([disabled]), input:not([disabled]), a[href], textarea');
+    if (first) first.focus({ preventScroll: true });
   }
 
   /* ------------------------------------------------------------ routing and live updates */
 
   function render() {
     var r = S.route;
-    if (r.name === 'question') return api('GET', '/api/q/' + encodeURIComponent(r.ref)).then(renderQuestion);
-    if (r.name === 'journal') return api('GET', withProject('/api/journal')).then(renderJournal);
-    if (r.name === 'skills') return api('GET', withProject('/api/skills')).then(renderSkills);
-    if (r.name === 'settings') return api('GET', withProject('/api/settings')).then(renderSettings);
-    return (S.inbox ? Promise.resolve(S.inbox) : loadShell()).then(renderInbox);
+    var V = window.FH;
+    if (r.name === 'question') return api('GET', '/api/q/' + encodeURIComponent(r.ref)).then(V.renderQuestion);
+    if (r.name === 'journal') return api('GET', withProject('/api/journal')).then(V.renderJournal);
+    if (r.name === 'skills') return api('GET', withProject('/api/skills')).then(V.renderSkills);
+    if (r.name === 'settings') return api('GET', withProject('/api/settings')).then(V.renderSettings);
+    return (S.inbox ? Promise.resolve(S.inbox) : loadShell()).then(V.renderInbox);
   }
 
   function typing() {
@@ -784,16 +413,31 @@
     return !!a && (a.tagName === 'TEXTAREA' || (a.tagName === 'INPUT' && a.type === 'text'));
   }
 
+  function loadError(err) {
+    if (err.code === 'no_session') return;
+    if (err.code === 'unreachable') {
+      if (S.page === 'blank' || !$('main').firstChild) firstLost();
+      return;
+    }
+    if (err.code === 'not_found' && S.route.name === 'question') {
+      blankPage('Not found', err.message, [h('p', { class: 'fh-acts' },
+        h('a', { class: 'fh-btn fh-btn--second', href: withProject('/'), text: 'Back to the build' }))]);
+      return;
+    }
+    blankPage('Error', err.message || INTERNAL);
+  }
+
   function refresh() {
-    if (typing()) return;
+    if (typing() || S.noSession) return;
     if (S.route.name === 'inbox') S.inbox = null;
-    render().catch(function (err) { if (err.code !== 'no_session') showError(err); });
+    render().catch(loadError);
   }
 
   function onNotice(n) {
     var r = S.route;
+    if (S.noSession) return;
     if (n.topic === 'inbox' || n.topic === 'settings') {
-      loadShell().then(function () { if (r.name === 'inbox') renderInbox(S.inbox); }).catch(function () {});
+      loadShell().then(function () { if (r.name === 'inbox') window.FH.renderInbox(S.inbox); }).catch(function () {});
     }
     if (r.name === 'question' && n.topic === 'question') {
       if (!n.id || !S.view || n.id === S.view.id) refresh();
@@ -804,7 +448,7 @@
   }
 
   function listen() {
-    if (!window.EventSource) return;
+    if (!window.EventSource || S.noSession) return;
     var es = new EventSource('/api/events');
     S.es = es;
     es.onopen = function () { setLost(false); };
@@ -814,6 +458,7 @@
       onNotice(n);
     };
     es.onerror = function () {
+      if (S.noSession) return;
       setLost(true);
       if (es.readyState !== 2) return;
       setTimeout(function () {
@@ -826,9 +471,17 @@
     };
   }
 
+  function firstLost() {
+    $('notice').hidden = true;
+    blankPage('Not reachable', 'The Room cannot reach Firsthand on this computer.', [
+      h('p', { class: 'fh-text', text: 'Start it with:' }), h('ol', { class: 'fh-cmds' }, h('li', { text: 'firsthand room' }))
+    ]);
+  }
+
   function boot() {
     S.route = route();
-    markTabs(S.route.name);
+    markTabs(S.route.tab);
+    $('folio').textContent = folioDate();
     $('quiet').addEventListener('click', toggleQuiet);
     api('GET', '/api/session').then(function (s) {
       S.token = s.token;
@@ -838,13 +491,20 @@
     }).then(function () {
       listen();
     }).catch(function (err) {
-      if (err.code === 'no_session') return;
-      var main = $('main');
-      clear(main);
-      main.appendChild(h('p', { class: 'sub', text: err.code === 'unreachable' ? LOST : err.message }));
+      if (err.code === 'unreachable') { S.lost = false; firstLost(); return; }
+      loadError(err);
     });
   }
 
-  if (D.readyState === 'loading') D.addEventListener('DOMContentLoaded', boot);
-  else boot();
+  window.FH = {
+    S: S, $: $, h: h, add: add, clear: clear, prop: prop, label: label, sec: sec, say: say,
+    withProject: withProject, mixed: mixed, counts: counts, mark: mark, kindOf: kindOf,
+    verdict: verdict, no: no, hms: hms, hm: hm, marginTime: marginTime, api: api,
+    loadShell: loadShell, refresh: refresh, errLine: errLine, setErr: setErr,
+    restoreFocus: restoreFocus, blankPage: blankPage, loadError: loadError, INTERNAL: INTERNAL,
+    start: function () {
+      if (D.readyState === 'loading') D.addEventListener('DOMContentLoaded', boot);
+      else boot();
+    }
+  };
 }());

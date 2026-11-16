@@ -7,16 +7,28 @@
 <title>Room</title>
 <link rel="stylesheet" href="/static/room.css">
 <script src="/static/room.js" defer></script>
+<script src="/static/room-views.js" defer></script>
 </head>
-<body class="hastabs">
-<header class="top">
-<div class="bar"><a class="word" href="/">Room</a><span class="proj" id="proj"></span><span class="sp"></span><button type="button" class="qbtn" id="quiet" aria-pressed="false" hidden>Quiet: off</button><a class="tbtn" href="/settings" id="settings-link">Settings</a></div>
-<nav class="tabs" aria-label="Room"><a class="tab" href="/" data-tab="inbox">Inbox</a><a class="tab" href="/journal" data-tab="journal">Journal</a><a class="tab" href="/skills" data-tab="skills">Skills</a></nav>
+<body class="fh">
+<div class="fh-page">
+<header class="fh-folio">
+<a class="fh-wordmark" href="/" aria-label="Firsthand, the Room"><i>First</i>hand</a>
+<span class="fh-folio__place"><b>The Room</b><span id="proj"></span></span>
+<span class="fh-folio__right" id="folio"></span>
 </header>
-<div class="quietbar" id="notice" hidden></div>
-<main class="main" id="main"></main>
-<footer class="ft">Served by this computer at 127.0.0.1.</footer>
-<nav class="tabbar" aria-label="Room, bottom"><a class="tab" href="/" data-tab="inbox">Inbox</a><a class="tab" href="/journal" data-tab="journal">Journal</a><a class="tab" href="/skills" data-tab="skills">Skills</a></nav>
-<p class="vh" aria-live="polite" id="live"></p>
+<nav class="fh-tabs" id="tabs" aria-label="Room">
+<a href="/" data-tab="inbox">Inbox<span class="n" id="count" hidden></span></a>
+<a href="/journal" data-tab="journal">Journal</a>
+<a href="/skills" data-tab="skills">Skills</a>
+<span class="fh-tabs__end">
+<button type="button" class="fh-toggle" id="quiet" aria-pressed="false" hidden>Quiet <b>off</b></button>
+<a href="/settings" data-tab="settings">Settings</a>
+</span>
+</nav>
+<div id="notice" hidden></div>
+<main class="fh-main" id="main"></main>
+<footer class="fh-pagefoot"><span>Served by this computer at 127.0.0.1.</span><span id="asked"></span></footer>
+<p class="fh-vh" aria-live="polite" id="live"></p>
+</div>
 </body>
 </html>

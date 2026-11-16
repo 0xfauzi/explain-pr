@@ -32,6 +32,8 @@ REVERT = "revert_test"
 CALL = "call_it"
 BRIEF = "brief"
 KIND_LABELS = {REVERT: "Revert test", CALL: "Call it", BRIEF: "Brief"}
+# The first word of each kind's context line: the skill it exercises.
+SKILL_WORDS = {REVERT: "Verification", CALL: "Debugging", BRIEF: "Framing"}
 
 # read_source(project_id, tree, path) -> text or None
 SourceReader = Callable[[str, str, str], str | None]
@@ -62,9 +64,13 @@ class ViewInput:
 
     def __post_init__(self) -> None:
         self.by_moment: dict[str, list[dict]] = {}
+        # Entry numbers: a moment's 1-based place among offered moments, in record order.
+        self.numbers: dict[str, int] = {}
         for e in self.events:
             if e.get("moment"):
                 self.by_moment.setdefault(e["moment"], []).append(e)
+            if e["type"] == "moment.offered" and e.get("moment"):
+                self.numbers.setdefault(e["moment"], len(self.numbers) + 1)
 
     def of(self, moment_id: str, kind: str) -> list[dict]:
         return [e for e in self.by_moment.get(moment_id, ()) if e["type"] == kind]
@@ -328,7 +334,7 @@ def result_view(v: ViewInput, m: Moment) -> dict | None:
         return None
     k = key_from_ran(ran["body"], m)
     chip, label = _chip(v, m)
-    return {
+    result = {
         "headline": "REVERT TEST",
         "chip": chip,
         "chip_label": label,
@@ -339,6 +345,7 @@ def result_view(v: ViewInput, m: Moment) -> dict | None:
         "back": words.back_line(m.task_name),
         "more": _more(v, m, k),
     }
+    return _room().result_fields(v, m, result, ran, k)
 
 
 # ---------------------------------------------------------------- question
@@ -456,11 +463,23 @@ def _brief():
     return views_brief
 
 
+def _room():
+    from firsthand import views_room  # imported here: it imports this module
+
+    return views_room
+
+
 def question_view(v: ViewInput, m: Moment, say: Sequence[str] | None = None) -> dict:
     if m.kind == CALL:
-        return _callit().question_view(v, m, say)
-    if m.kind == BRIEF:
-        return _brief().question_view(v, m, say)
+        view = _callit().question_view(v, m, say)
+    elif m.kind == BRIEF:
+        view = _brief().question_view(v, m, say)
+    else:
+        view = _revert_view(v, m, say)
+    return _room().question_fields(v, m, view)
+
+
+def _revert_view(v: ViewInput, m: Moment, say: Sequence[str] | None) -> dict:
     result = result_view(v, m)
     return {
         "id": m.id,
@@ -521,7 +540,15 @@ def _printed(v: ViewInput, note: dict) -> bool:
     )
 
 
-def _note_item(v: ViewInput, note: dict) -> dict:
+def _tasks(v: ViewInput) -> dict[str, str]:
+    tasks: dict[str, str] = {}
+    for e in v.events:
+        if e["type"] == "task.started" and e.get("change"):
+            tasks[e["change"]] = e["body"].get("name", "")
+    return tasks
+
+
+def _note_item(v: ViewInput, note: dict, tasks: Mapping[str, str]) -> dict:
     body = note["body"]
     fact = body.get("fact", "")
     title = fact.rstrip(".")
@@ -536,6 +563,7 @@ def _note_item(v: ViewInput, note: dict) -> dict:
         "evidence": list(body.get("evidence", ())),
         "printed": _printed(v, note),
         "checked": "Checked by a run, no model.",
+        "task": tasks.get(note.get("change") or "", ""),
     }
 
 
@@ -594,31 +622,36 @@ def inbox_view(v: ViewInput, project_id: str | None) -> dict:
         "notice": _notice(v, project_id),
     }
     if project_id is None:
-        return {
-            "project": None,
-            "projects": projects,
-            "state": state,
-            "now": [],
-            "waiting": [],
-            "notes": [],
-            "older_notes": 0,
-            "results": [],
-            "closing": closing,
-            "empty": words.FIRST_VISIT,
-        }
+        return _room().inbox_fields(
+            v,
+            {
+                "project": None,
+                "projects": projects,
+                "state": state,
+                "now": [],
+                "waiting": [],
+                "notes": [],
+                "older_notes": 0,
+                "results": [],
+                "closing": closing,
+                "empty": words.FIRST_VISIT,
+            },
+        )
     notes = _notes(v, project_id)
-    return {
+    tasks = _tasks(v)
+    view = {
         "project": {"id": project_id, "name": _project_name(v, project_id)},
         "projects": projects,
         "state": state,
         "now": _now(v, project_id),
         "waiting": _callit().waiting(v, project_id) + _brief().waiting(v, project_id),
-        "notes": [_note_item(v, n) for n in notes[:NOTES_SHOWN]],
+        "notes": [_note_item(v, n, tasks) for n in notes[:NOTES_SHOWN]],
         "older_notes": max(0, len(notes) - NOTES_SHOWN),
         "results": _results(v, project_id),
         "closing": closing,
         "empty": None,
     }
+    return _room().inbox_fields(v, view)
 
 
 # ----------------------------------------------------------------- journal
@@ -626,18 +659,9 @@ def inbox_view(v: ViewInput, project_id: str | None) -> dict:
 
 def _moment_entry(v: ViewInput, m: Moment) -> dict:
     chip, label = _chip(v, m)
-    result = result_view(v, m)
-    if m.kind == CALL:
-        happened = _callit().happened(v, m)
-    elif m.kind == BRIEF:
-        happened = _brief().happened(v, m)
-    elif result:
-        happened = " ".join(result["what_happened"][:1]) + " Checked by a run."
-    else:
-        happened = _status_line(v, m, False) or words.MOVED_ON
-    offered = v.last(m.id, "moment.offered")
-    at = offered["at"] if offered else m.offered_at
-    return {
+    happened, _ = _room().happened(v, m)
+    at = _room().offered_at(v, m)
+    entry = {
         "id": m.id,
         "at": at,
         "date": words.short_date(at, v.tz),
@@ -651,10 +675,11 @@ def _moment_entry(v: ViewInput, m: Moment) -> dict:
             {"label": "What happened", "text": happened},
         ],
     }
+    return _room().journal_moment_fields(v, m, entry)
 
 
 def _note_entry(v: ViewInput, note: dict, tasks: Mapping[str, str]) -> dict:
-    return {
+    entry = {
         "id": note["id"],
         "at": note["at"],
         "date": words.short_date(note["at"], v.tz),
@@ -665,13 +690,11 @@ def _note_entry(v: ViewInput, note: dict, tasks: Mapping[str, str]) -> dict:
         "href": None,
         "rows": [{"label": "Fact", "text": note["body"].get("fact", "")}],
     }
+    return _room().journal_note_fields(v, note, entry)
 
 
 def journal_view(v: ViewInput, project_id: str | None, limit: int) -> dict:
-    tasks: dict[str, str] = {}
-    for e in v.events:
-        if e["type"] == "task.started" and e.get("change"):
-            tasks[e["change"]] = e["body"].get("name", "")
+    tasks = _tasks(v)
     entries = [
         _moment_entry(v, m)
         for m in v.moments.values()
@@ -761,3 +784,4 @@ chip = _chip
 line_of = _line_of
 evidence = _evidence
 cue = _cue
+status_line = _status_line

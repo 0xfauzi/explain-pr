@@ -8,7 +8,7 @@ result's More, after the answer is sealed. As in `views`, a result comes only fr
 
 from __future__ import annotations
 
-from firsthand import views, words, words_callit
+from firsthand import views, views_room, words, words_callit
 from firsthand.model import REVEALED, Moment
 
 KIND = "call_it"
@@ -138,7 +138,7 @@ def result_view(v: views.ViewInput, m: Moment) -> dict | None:
         return None
     k = views.key_from_ran(ran["body"], m)
     chip, label = _chip(v, m)
-    return {
+    result = {
         "headline": words_callit.HEADLINE,
         "chip": chip,
         "chip_label": label,
@@ -149,6 +149,7 @@ def result_view(v: views.ViewInput, m: Moment) -> dict | None:
         "back": words.back_line(m.task_name),
         "more": _more(v, m, k),
     }
+    return views_room.result_fields(v, m, result, ran, k)
 
 
 def happened(v: views.ViewInput, m: Moment) -> str:

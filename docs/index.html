@@ -8,252 +8,188 @@
 <meta property="og:title" content="Firsthand (preview)">
 <meta property="og:description" content="A free, open-source tool for your coding agent. When the agent finishes a change, Firsthand asks you one short question, then runs a real check on your project and shows the result next to your answer.">
 <meta property="og:type" content="website">
-<script>document.documentElement.className += ' js';</script>
+<meta name="color-scheme" content="light dark">
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="anonymous">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wdth,wght@75..100,400..700&amp;family=JetBrains+Mono:wght@400;500&amp;display=swap">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:ital,wght@0,300;0,400;0,500;1,400&family=IBM+Plex+Sans:wght@400;500;600&family=Newsreader:ital,opsz,wght@0,6..72,400..600;1,6..72,400..600&display=swap">
 <link rel="stylesheet" href="assets/site.css">
 </head>
-<body>
-<div class="tex page">
+<body class="fh">
+<div class="fh-site" id="top" data-demo="nojs"><script>document.currentScript.parentNode.setAttribute("data-demo","ask")</script>
+
+<header class="fh-folio"><a class="fh-wordmark" href="#top"><i>First</i>hand</a><nav class="fh-nav" aria-label="Sections"><a href="#how">How it works</a><a href="#status">What works today</a><a href="#install">Install</a><a href="https://github.com/0xfauzi/explain-pr">Source</a></nav><span class="fh-folio__right">Preview &middot; free and open source</span></header>
+
 <main>
-
-<div class="stage">
-<div class="field" id="field" aria-hidden="true"></div>
-
-<header class="wrap top">
-<a href="#top" class="brand">Firsthand</a>
-<nav class="navl" aria-label="Sections">
-<a href="#how">How it works</a>
-<a href="#status">What works today</a>
-<a href="#install">Install</a>
-<a href="https://github.com/0xfauzi/explain-pr" class="gh">GitHub</a>
-</nav>
-</header>
-
-<!-- HERO -->
-<section id="top" class="wrap hero">
+<section class="fh-hero">
+<h1>Your agent says it is done. <em>You make one call.</em> Firsthand runs the check.</h1>
+<div class="fh-hero__cols">
 <div>
-<h1 class="h1 rise">Your agent says it is done. You make one call. Firsthand runs the check.</h1>
-<p class="p lead rise d1">A free, open-source tool for your coding agent. When the agent finishes a change, Firsthand asks you one short question about it. Then it undoes the change in a scratch copy, runs your tests, and shows the result next to your answer.</p>
-<p class="small status rise d2">Preview. It works today in Claude Code, on Python projects that use pytest. More agents and more questions are designed and not built yet. Firsthand is a working name.</p>
-<div class="ctas rise d3">
-<a href="#install" class="btn">Install the preview</a>
-<a href="#status" class="btn ghost">What works today</a>
+<p class="fh-hero__lead">When your coding agent finishes a change, Firsthand asks you one short question about it. Then it undoes the change in a scratch copy, runs your tests, and sets the result beside your answer.</p>
+<div class="fh-cmd fh-cmd--stack"><code data-cmd="install">uvx --from git+https://github.com/<wbr>0xfauzi/explain-pr firsthand init</code><button type="button" data-copy>Copy</button></div>
+<p class="fh-cap">Installs from the git repository. Not on PyPI yet. <a class="fh-link" href="#install">What the command does</a></p>
+<ul class="fh-status"><li><span>Works today in</span><span class="ld"></span><b>Claude Code, pytest</b></li><li><span>Asks at most</span><span class="ld"></span><b>once a day</b></li><li><span>Your record stays</span><span class="ld"></span><b>on your machine</b></li><li><span>Checked by</span><span class="ld"></span><b>a run, no model</b></li></ul>
 </div>
-</div>
-
-<div class="rise d4 democol">
-<div class="demo" id="try">
-<p class="mark">Try it: the question, with example data</p>
-
-<form class="card open" id="card" data-v="ask locked" aria-labelledby="q">
-<p class="eb"><span>Your agent finished</span><span class="sk">skip ok</span></p>
-<p class="ctx">Verification | orbit-pay | idempotent refunds | change since 09:12</p>
-<p class="lead">It added 3 tests. Read them first.</p>
-<ol class="ev" aria-label="The 3 new tests and their assertion lines">
-<li><span class="n">1</span><span>test_same_key_refunds_once<span class="a">assert len(ledger.refunds(charge)) == 1</span></span></li>
-<li><span class="n">2</span><span>test_refund_response_is_stable<span class="a">assert resp.status_code == 200</span></span></li>
-<li><span class="n">3</span><span>test_refund_amount_validated<span class="a">assert exc.value.code == "amount_too_large"</span></span></li>
+<div><section class="fh-sheet" id="sheet" tabindex="-1" aria-labelledby="q">
+<div class="fh-sheet__bar"><span>Revert test</span><span data-v="ask nojs">No. 0042 &middot; skip ok</span><span data-v="locked result">No. 0042 &middot; locked 14:02:11</span><span data-v="skipped">No. 0042 &middot; skipped</span></div>
+<div class="fh-sheet__body">
+<p class="fh-sheet__ctx">orbit-pay / idempotent refunds / change since 09:12</p>
+<p class="fh-sheet__lead">Your agent finished and added 3 tests. Read them first.</p>
+<ol class="fh-evidence" aria-label="The 3 new tests and their assertion lines">
+<li><span class="n">1</span><span class="t"><span class="hd"><b>test_same_key_refunds_once</b><span class="ld"></span><small>tests/test_refunds.py:29</small></span><code>assert len(ledger.refunds(charge)) == 1</code></span></li>
+<li><span class="n">2</span><span class="t"><span class="hd"><b>test_refund_response_is_stable</b><span class="ld"></span><small>tests/test_refunds.py:41</small></span><code>assert resp.status_code == 200</code></span></li>
+<li><span class="n">3</span><span class="t"><span class="hd"><b>test_refund_amount_validated</b><span class="ld"></span><small>tests/test_refunds.py:52</small></span><code>assert exc.value.code == "amount_too_large"</code></span></li>
 </ol>
-<fieldset><legend class="q" id="q">Which of them would still pass with the change undone?</legend>
-<div class="picks" role="group" aria-labelledby="q">
-<button type="button" class="pill pk" data-p="1" aria-pressed="false" disabled>1</button>
-<button type="button" class="pill pk" data-p="2" aria-pressed="false" disabled>2</button>
-<button type="button" class="pill pk" data-p="3" aria-pressed="false" disabled>3</button>
-<button type="button" class="pill pk" data-p="none" aria-pressed="false" disabled>None</button>
-<button type="button" class="pill pk" data-p="dk" aria-pressed="false" disabled>Don't know</button>
+<h2 class="fh-q" id="q"><mark>Which of them would still pass with the change undone?</mark></h2>
+<div class="fh-picks" id="picks" role="group" aria-labelledby="q" aria-describedby="keys">
+<button type="button" class="fh-pick" data-p="1" aria-pressed="false" disabled>1</button><button type="button" class="fh-pick" data-p="2" aria-pressed="true" disabled>2</button><button type="button" class="fh-pick" data-p="3" aria-pressed="false" disabled>3</button><button type="button" class="fh-pick fh-pick--word fh-pick--gap" data-p="none" aria-pressed="false" disabled>None</button><button type="button" class="fh-pick fh-pick--word" data-p="dk" aria-pressed="false" disabled>Don't know</button>
 </div>
-<p class="acts send" data-v="ask"><button type="button" class="btn sm" id="lockbtn" disabled>Lock</button></p></fieldset>
-<div class="lock in" data-v="locked" id="lockrow" hidden><p class="st"><span>Locked.</span> <button type="button" class="tbtn" id="undo">Undo</button></p>
-<div class="sure" id="surerow"><span class="lb" id="sl">How sure?</span>
-<div class="sp" role="radiogroup" aria-labelledby="sl">
-<label class="pill"><input type="radio" name="sure" value="Sure"><span>Sure</span></label>
-<label class="pill"><input type="radio" name="sure" value="Not sure"><span>Not sure</span></label>
+<p class="fh-keys" id="keys" data-v="ask"><b>1 2 3</b> toggle &middot; <b>N</b> none &middot; <b>?</b> don't know</p>
+<div class="fh-sheet__act" data-v="ask"><button type="button" class="fh-btn" id="lock" disabled>Lock <span class="fh-kbd" aria-hidden="true">&crarr;</span></button><button type="button" class="fh-btn fh-btn--quiet" id="skip">Skip</button></div>
+<div class="fh-held" data-v="locked result">
+<div class="fh-spread__head"><span class="fh-label"><b>Your call</b></span><time>locked 14:02:11</time></div>
+<p class="fh-answer" id="held">2.<small>test_refund_response_is_stable</small></p>
+<div class="fh-held__sure" id="surerow" data-v="locked"><span class="fh-label" id="sl">How sure?</span><div class="fh-picks" id="sure" role="group" aria-labelledby="sl"><button type="button" class="fh-pick fh-pick--word" data-s="Sure" aria-pressed="false">Sure</button><button type="button" class="fh-pick fh-pick--word" data-s="Not sure" aria-pressed="false">Not sure</button></div></div>
+<div class="fh-sheet__act" data-v="locked"><button type="button" class="fh-btn" id="show">Show the result <span class="fh-kbd" aria-hidden="true">&crarr;</span></button><button type="button" class="fh-btn fh-btn--quiet" id="undo">Undo</button></div>
+<p class="fh-sheet__state" data-v="result">The result is printed below.</p>
 </div>
-<button type="button" class="btn sm" id="reveal">Show the result</button></div></div>
-<div class="acts quiet needs-js" data-v="ask"><button type="button" class="tbtn" id="skip">Skip</button></div>
-<p class="foot">Checked by a run: the change undone, the tests kept.</p>
-</form>
-
-<p data-v="skipped" class="card" hidden>Skipped. <button type="button" class="tbtn" id="unskip">Undo</button><br><span class="mono s">Back to: idempotent refunds. Next: read the summary.</span></p>
-
-<p class="mark nojs">The result, for the answer 2</p>
-<section class="card in" data-v="result" id="res" tabindex="-1" aria-label="Matched. Revert test">
-<div class="rh"><h2 class="rt">REVERT TEST</h2><span class="chip" id="chip"><svg viewBox="0 0 12 12" aria-hidden="true"><path d="M2 6.5l2.6 2.6L10 3.4" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>Matched</span></div>
-<p class="ctx">Verification | orbit-pay | idempotent refunds</p>
-<p class="dkr" id="dkr" hidden>"Don't know" is not counted as a miss.</p>
-<dl class="rw">
-<div><dt>You said</dt><dd id="said">2, test_refund_response_is_stable.</dd></div>
-<div><dt>What happened</dt><dd id="what">It still passes with the change undone. It would pass whether or not the change exists.</dd></div>
-<div id="cuerow" hidden><dt>What would have shown it</dt><dd id="cue">Its only assertion is at <span class="mono">tests/test_refunds.py:41</span>.</dd></div>
-</dl>
-<div class="cue"><button type="button" class="btn ghost sm needs-js" id="again">Try again</button><p>Back to: idempotent refunds. Next: read the summary.</p></div>
-<details class="more"><summary>More</summary><div class="mb">
-<ul>
-<li><span class="mono">test_same_key_refunds_once</span><span>fails on its assertion</span></li>
-<li><span class="mono">test_refund_response_is_stable</span><span>still passes</span></li>
-<li><span class="mono">test_refund_amount_validated</span><span>cannot run without the new code, which is weak proof</span></li>
-</ul>
-<p>Checked by a run, no model.</p>
-<p>Sent to your agent: "tests/test_refunds.py::test_refund_response_is_stable passes with the change undone. tests/test_refunds.py::test_refund_amount_validated cannot run with the change undone."</p>
-</div></details>
-</section>
+<div data-v="skipped"><p class="fh-sheet__state"><b>Skipped.</b> Back to: idempotent refunds. Next: read the summary.</p><div class="fh-sheet__act"><button type="button" class="fh-btn fh-btn--quiet" id="unskip">Undo</button></div></div>
+<p class="fh-sheet__state" data-v="nojs">This page takes an answer only with JavaScript on. <b>The result for the answer 2 is shown below.</b></p>
 </div>
-<p class="small note">This page runs nothing. On your machine the tests are from your own project and the result is from a real run.</p>
+<div class="fh-sheet__foot"><span>Checked by a run: the change undone, the tests kept.</span><span>Nothing is written to your project.</span></div>
+</section><p class="fh-cap" data-v="ask locked skipped">Example data. Pick, then Lock: the result prints below.</p><p class="fh-cap" data-v="result nojs">Example data. This page runs nothing.</p></div>
 </div>
 </section>
+
+<section class="fh-part" id="result" aria-labelledby="h-result">
+<div class="fh-part__head"><p class="fh-part__no"><b>01</b>The result</p><div><h2 class="fh-part__title" id="h-result">Your call, then the run, on one spread.</h2><p class="fh-part__lead">A result is one spread. What you said is on one side, with the time you locked it. What the run found is on the other, with the time it finished.</p></div></div>
+
+<div data-v="ask locked skipped">
+<div class="fh-entry"><span class="fh-label">No. 0042 &middot; Revert test &middot; idempotent refunds</span><span class="fh-label">Not shown yet</span></div>
+<div class="fh-spread fh-spread--wait">
+<div class="fh-spread__side fh-spread__call"><div class="fh-spread__head"><span class="fh-label"><b>Your call</b></span><time data-v="ask skipped">not locked</time><time data-v="locked">locked 14:02:11</time></div>
+<div class="fh-blank" data-v="ask skipped"></div><p class="fh-answer" id="waitcall" data-v="locked">2.</p><small class="fh-blank__note" data-v="ask">Answer the question above. Your call is written here when you lock it.</small><small class="fh-blank__note" data-v="skipped">Skipped. Nothing is written here.</small></div>
+<div class="fh-spread__side fh-spread__run"><div class="fh-spread__head"><span class="fh-label"><b>The run</b> &middot; change undone</span><time>not shown</time></div>
+<p class="fh-wait">Nothing here is shown before your call is locked.</p></div>
+</div>
 </div>
 
-<!-- HOW -->
-<section id="how" class="sec">
-<div class="wrap two">
-<div>
-<h2 class="h2 sv">How it works</h2>
-<div class="steps">
-<div class="habit sv"><span class="num" aria-hidden="true">1</span><div><h3 class="ht">Your agent finishes a change.</h3><p>Firsthand reads the events your agent reports and the git diff. If the change added or edited tests, it prepares one question. It never blocks a tool call and the agent never waits for you.</p></div></div>
-<div class="habit sv"><span class="num" aria-hidden="true">2</span><div><h3 class="ht">You make one call.</h3><p>One line appears in the agent's chat. Reply there, answer in the Room (a page served by your own computer), or say "skip". By default it asks at most once a day, and not on the first prompt of the day.</p></div></div>
-<div class="habit sv"><span class="num" aria-hidden="true">3</span><div><h3 class="ht">A real check runs.</h3><p>Firsthand copies the project to a scratch folder, undoes the change, keeps the tests and runs them. The result shows what you said and what happened. Nothing is written to your project.</p></div></div>
+<div data-v="result nojs">
+<div class="fh-entry" id="entry" tabindex="-1" aria-label="Matched. Revert test, No. 0042"><span class="fh-label">No. 0042 &middot; Revert test &middot; idempotent refunds</span><span class="fh-verdict fh-verdict--match" id="verdict"><svg class="fh-m fh-m--match" viewBox="0 0 28 28" aria-hidden="true"><rect class="sq" x="0" y="0" width="28" height="28"/><path class="bar" d="M8 11h12M8 17h12"/></svg>Matched</span></div>
+<div class="fh-spread" id="spread">
+<div class="fh-spread__side fh-spread__call"><div class="fh-spread__head"><span class="fh-label"><b>Your call</b></span><time>locked 14:02:11</time></div>
+<p class="fh-answer" id="answer">2.<small>test_refund_response_is_stable</small></p></div>
+<svg class="fh-m fh-m--match" id="stamp" viewBox="0 0 28 28" aria-hidden="true"><rect class="sq" x="0" y="0" width="28" height="28"/><path class="bar" d="M8 11h12M8 17h12"/></svg>
+<div class="fh-spread__side fh-spread__run"><div class="fh-spread__head"><span class="fh-label"><b>The run</b> &middot; change undone</span><time>finished 14:02:19</time></div>
+<ul class="fh-facts"><li style="--i:0"><span class="k">test_same_key_refunds_once</span><span class="ld"></span><span class="v">fails on its assertion</span></li><li class="is-key" style="--i:1"><span class="k">test_refund_response_is_stable</span><span class="ld"></span><span class="v">still passes</span></li><li style="--i:2"><span class="k">test_refund_amount_validated</span><span class="ld"></span><span class="v">cannot run</span></li></ul></div>
 </div>
-<p class="small after">What the check found also goes to your agent as one line, because it is about the agent's own work. A switch in Settings turns that line off. An answer given in the Room does not pass through the agent. A reply typed in the chat is part of the chat: the agent sees it and prints the result there.</p>
+<div class="fh-finding"><span class="fh-label" id="f-label">Matched</span><div><p class="fh-finding__text">Test 2 still passes with the change undone.</p><p id="f-more">It would pass whether or not the change exists.</p></div></div>
+<div class="fh-finding fh-finding--text"><span class="fh-label">Sent to your agent</span><div><p class="fh-finding__sent">tests/test_refunds.py::test_refund_response_is_stable passes with the change undone. tests/test_refunds.py::test_refund_amount_validated cannot run with the change undone.</p></div></div>
+<div class="fh-acts"><button type="button" class="fh-btn fh-btn--second" id="again" data-v="result">Try another answer</button><span class="fh-label" data-v="nojs">The result for the answer 2</span><span class="fh-acts__note">Checked by a run, no model. On this page it is example data.</span></div>
 </div>
-<div class="termcol">
-<div class="term sv">
-<div class="tb"><b>Claude Code</b><span>orbit-pay</span></div>
-<div class="bd">
-<pre class="u">&gt; Make refunds idempotent on the idempotency key.</pre>
-<pre class="d">(the agent works, then finishes)</pre>
-<pre class="fh">Firsthand (skip ok): your agent finished and added 3 tests. Which of them would still pass with the change undone? 1 test_same_key_refunds_once, 2 test_refund_response_is_stable, 3 test_refund_amount_validated. Reply the numbers, or none. With the tests shown: http://127.0.0.1:4127/q/7f3</pre>
-<pre class="u">&gt; 2</pre>
-<pre class="fh">Firsthand, revert test. Matched. You said 2.
+</section>
+
+<section class="fh-part" id="how" aria-labelledby="h-how">
+<div class="fh-part__head"><p class="fh-part__no"><b>02</b>Three steps</p><h2 class="fh-part__title" id="h-how">How it works</h2></div>
+<ol class="fh-ledger">
+<li class="fh-row"><div class="fh-row__margin"><b class="fh-step__n">1</b>Your agent</div><div class="fh-step"><div><h3 class="fh-row__title">Your agent finishes a change.</h3><p class="fh-text">Firsthand reads the events your agent reports and the git diff. If the change added or edited tests, it prepares one question. It never blocks a tool call and the agent never waits for you.</p></div><ul class="fh-status"><li><span>Reads</span><span class="ld"></span><b>agent events, git diff</b></li><li><span>Blocks a tool call</span><span class="ld"></span><b>never</b></li></ul></div></li>
+<li class="fh-row"><div class="fh-row__margin"><b class="fh-step__n">2</b>You</div><div class="fh-step"><div><h3 class="fh-row__title">You make one call.</h3><p class="fh-text">One line appears in the agent's chat. Reply there, answer in the Room (a page served by your own computer), or say "skip". By default it asks at most once a day, and not on the first prompt of the day.</p></div><ul class="fh-status"><li><span>Asks at most</span><span class="ld"></span><b>once a day</b></li><li><span>To pass</span><span class="ld"></span><b>say "skip"</b></li></ul></div></li>
+<li class="fh-row"><div class="fh-row__margin"><b class="fh-step__n">3</b>The run</div><div class="fh-step"><div><h3 class="fh-row__title">A real check runs.</h3><p class="fh-text">Firsthand copies the project to a scratch folder, undoes the change, keeps the tests and runs them. The result shows what you said and what happened. Nothing is written to your project.</p></div><ul class="fh-status"><li><span>Runs in</span><span class="ld"></span><b>a scratch folder</b></li><li><span>Written to your project</span><span class="ld"></span><b>nothing</b></li></ul></div></li>
+<li class="fh-row"><div class="fh-row__margin"><span class="fh-label">What your agent sees</span></div><p class="fh-text">What the check found also goes to your agent as one line, because it is about the agent's own work. A switch in Settings turns that line off. An answer given in the Room does not pass through the agent. A reply typed in the chat is part of the chat: the agent sees it and prints the result there.</p></li>
+</ol>
+</section>
+
+<section class="fh-part" id="chat" aria-labelledby="h-chat">
+<div class="fh-part__head"><p class="fh-part__no"><b>03</b>In the chat</p><h2 class="fh-part__title" id="h-chat">The same moment, as one line in your agent.</h2></div>
+<div class="fh-part__body">
+<div class="fh-term"><div class="fh-term__bar"><span><b>claude code</b> &middot; ~/src/orbit-pay</span><span>main</span></div><div class="fh-term__body">
+<p class="me">Make refunds idempotent on the idempotency key.</p>
+<p class="dim">Edited ledger/refunds.py and api/refunds.py. Added 3 tests in tests/test_refunds.py. 14 passed.</p>
+<p class="fh-line"><em>Firsthand</em> (skip ok): your agent finished and added 3 tests. Which of them would still pass with the change undone? 1 test_same_key_refunds_once, 2 test_refund_response_is_stable, 3 test_refund_amount_validated. Reply the numbers, or none. With the tests shown: http://127.0.0.1:4127/q/7f3</p>
+<p class="me">2</p>
+<p class="fh-line"><em>Firsthand</em>, revert test. Matched. You said 2.
 test_refund_response_is_stable still passes with the change undone. It would pass whether or not the change exists.
 More: http://127.0.0.1:4127/r/7f3
-Back to: idempotent refunds. Next: read the summary.</pre>
-</div>
-</div>
-<p class="small cap">The same question as one line in Claude Code. Example data.</p>
-</div>
+Back to: idempotent refunds. Next: read the summary.</p>
+<p class="me"><span class="cur"></span></p>
+</div></div>
+<p class="fh-cap">The same question as one line in Claude Code. Example data.</p>
 </div>
 </section>
 
-<!-- STATUS -->
-<section id="status" class="sec">
-<div class="wrap">
-<h2 class="h2 sv">What works today, and what does not yet</h2>
-<p class="p">Firsthand is being built in steps. This is the state of the repository now.</p>
-<div class="cols status-cols">
-<div class="sv col-built">
-<h3 class="ctitle">Works today</h3>
-<p class="small sub">In Claude Code, on Python projects that use pytest.</p>
+<section class="fh-part" id="status" aria-labelledby="h-status">
+<div class="fh-part__head"><p class="fh-part__no"><b>04</b>State of the build</p><div><h2 class="fh-part__title" id="h-status">What works today, and what does not yet</h2><p class="fh-part__lead">Firsthand is being built in steps. This is the state of the repository now.</p></div></div>
+<div class="fh-part__body">
+<div class="fh-twocol">
+<div class="fh-state"><h3 class="fh-label fh-state__head"><b>Works today</b><span>runs now</span></h3><p class="fh-state__sub">In Claude Code, on Python projects that use pytest.</p>
 <ul>
-<li><b>Revert test.</b> When the agent finishes a change with tests, you pick the new test that would still pass with the change undone. Checked by undoing the change and running the tests.</li>
-<li><b>Call it.</b> When a test is failing, you pick where the cause is, before a fix exists. Checked by where the fix landed, and by undoing the fix and running the test again.</li>
-<li><b>Brief.</b> At the start of a larger task, you name one check that fails now and will pass when the task is done. Checked by running it with the change and with the change undone.</li>
-<li><b>The Room.</b> A page served at <code class="mono">127.0.0.1</code> with the open question, results, a journal of every call, and settings.</li>
-<li><b>The record.</b> A git repo at <code class="mono">~/.firsthand/record</code>: on your machine, outside your projects, with no remote.</li>
-</ul>
-</div>
-<div class="sv col-designed">
-<h3 class="ctitle">Designed, not built</h3>
-<p class="small sub">Specified in the repository. None of this runs yet.</p>
+<li><div class="hd"><span class="nm">Revert test</span><span class="ld"></span><span class="st">works</span></div><p>When the agent finishes a change with tests, you pick the new test that would still pass with the change undone. Checked by undoing the change and running the tests.</p></li>
+<li><div class="hd"><span class="nm">Call it</span><span class="ld"></span><span class="st">works</span></div><p>When a test is failing, you pick where the cause is, before a fix exists. Checked by where the fix landed, and by undoing the fix and running the test again.</p></li>
+<li><div class="hd"><span class="nm">Brief</span><span class="ld"></span><span class="st">works</span></div><p>At the start of a larger task, you name one check that fails now and will pass when the task is done. Checked by running it with the change and with the change undone.</p></li>
+<li><div class="hd"><span class="nm">The Room</span><span class="ld"></span><span class="st">works</span></div><p>A page served at <code>127.0.0.1</code> with the open question, results, a journal of every call, and settings.</p></li>
+<li><div class="hd"><span class="nm">The record</span><span class="ld"></span><span class="st">works</span></div><p>A git repo at <code>~/.firsthand/record</code>: on your machine, outside your projects, with no remote.</p></li>
+</ul></div>
+<div class="fh-state fh-state--designed"><h3 class="fh-label fh-state__head"><b>Designed, not built</b><span>does not run</span></h3><p class="fh-state__sub">Specified in the repository. None of this runs yet.</p>
 <ul>
-<li><b>Ten more questions.</b> Examples: who is affected by a change, whether a migration can be undone, what would show a failure first.</li>
-<li><b>Other agents:</b> Codex, Cursor, Copilot, Gemini CLI and others.</li>
-<li><b>Other languages and test runners.</b></li>
-<li><b>Drills</b> on your own history, and reviews that bring an idea back some days later.</li>
-<li><b>Questions that fade</b> as your calls on a skill prove reliable.</li>
-<li><b>The Room on your phone.</b></li>
-</ul>
+<li><div class="hd"><span class="nm">Ten more questions</span><span class="ld"></span><span class="st">not built</span></div><p>Examples: who is affected by a change, whether a migration can be undone, what would show a failure first.</p></li>
+<li><div class="hd"><span class="nm">Other agents</span><span class="ld"></span><span class="st">not built</span></div><p>Codex, Cursor, Copilot, Gemini CLI and others.</p></li>
+<li><div class="hd"><span class="nm">Other languages and test runners</span><span class="ld"></span><span class="st">not built</span></div></li>
+<li><div class="hd"><span class="nm">Drills and reviews</span><span class="ld"></span><span class="st">not built</span></div><p>Drills on your own history, and reviews that bring an idea back some days later.</p></li>
+<li><div class="hd"><span class="nm">Questions that fade</span><span class="ld"></span><span class="st">not built</span></div><p>They fade as your calls on a skill prove reliable.</p></li>
+<li><div class="hd"><span class="nm">The Room on your phone</span><span class="ld"></span><span class="st">not built</span></div></li>
+</ul></div>
 </div>
-</div>
-<p class="p ink">The full design is in the repository: <a href="https://github.com/0xfauzi/explain-pr/blob/main/design/product/PRODUCT.md">design/product/PRODUCT.md</a></p>
-</div>
-</section>
-
-<!-- INSTALL -->
-<section id="install" class="sec">
-<div class="wrap two">
-<div>
-<h2 class="h2 sv">Install the preview</h2>
-<p class="p">Firsthand is not on PyPI yet, so the preview installs from the git repository. Run this in a terminal, at the root of a Python project that uses pytest and has at least one git commit.</p>
-<div class="cmd">
-<pre class="mono" data-cmd="install">uvx --from git+https://github.com/0xfauzi/explain-pr firsthand init</pre>
-<button type="button" class="btn cpy needs-js" data-copy="Copy">Copy</button>
-</div>
-<p class="small req">You need Linux or macOS, Python 3.11 or later, git, uv and Claude Code. When Firsthand is published, the command will be <code class="mono">uvx firsthand init</code>.</p>
-</div>
-<div>
-<h3 class="ctitle">What the command does</h3>
-<ul class="list">
-<li>It lists the files it will change in <code class="mono">~/.claude</code> and asks before it writes anything.</li>
-<li>It asks whether this is a work computer and which command runs your tests.</li>
-<li>It adds six hooks to <code class="mono">~/.claude/settings.json</code> and one skill folder at <code class="mono">~/.claude/skills/firsthand/</code>. It backs up each file first.</li>
-<li>The hooks only report what happened. They never allow, deny or block anything your agent does.</li>
-<li>It copies its own code to <code class="mono">~/.firsthand/engine</code>. The hooks run that copy.</li>
-<li>It creates your record at <code class="mono">~/.firsthand/record</code>. These are plain files: anyone who can read your home folder can read them.</li>
-<li>There is no account and no telemetry. Nothing leaves your machine except the lines added to your agent's chat. The only server is the local page at <code class="mono">127.0.0.1</code>.</li>
-</ul>
-<p class="p">The first question comes when your agent next finishes a change that adds or edits tests. Say "skip" to pass on a question.</p>
-<p class="small rm">To remove it, run this. It restores the backed-up files. Your record and the engine copy stay in <code class="mono">~/.firsthand</code>; delete that folder to remove them.</p>
-<div class="cmd sm">
-<pre class="mono">uvx --from git+https://github.com/0xfauzi/explain-pr firsthand uninstall</pre>
-<button type="button" class="btn cpy needs-js" data-copy="Copy">Copy</button>
-</div>
-</div>
+<p class="fh-cap fh-cap--gap">The full design is in the repository: <a class="fh-link" href="https://github.com/0xfauzi/explain-pr/blob/main/design/product/PRODUCT.md">design/product/PRODUCT.md</a></p>
 </div>
 </section>
 
-<!-- SKILL -->
-<section id="skill" class="sec">
-<div class="wrap two">
-<div><h2 class="h2 sv">The earlier skill is still here</h2></div>
-<div>
-<p class="p first">This repository also holds learning-while-building, version 0.6.0. It is an Agent Skill for Claude Code and other agents that read Agent Skills. On tasks you choose, it asks you a question before the agent builds, asks you to explain the code after, and asks again some days later.</p>
-<p class="p">It installs separately and does not need Firsthand. From 0.6.0 its record is kept in <code class="mono">~/.learning-while-building</code>, outside your project. If an earlier version left a <code class="mono">.learning</code> folder in your repository, <a href="https://github.com/0xfauzi/explain-pr#readme">the README</a> says how to move it.</p>
-<div class="cmd gap">
-<pre class="mono">/plugin marketplace add 0xfauzi/explain-pr
-/plugin install learning-while-building@learning-while-building</pre>
-<button type="button" class="btn cpy needs-js" data-copy="Copy">Copy</button>
-</div>
-<p class="small req">Run these inside Claude Code. You need Python 3.10 or later and git.</p>
-</div>
-</div>
-</section>
-
-<!-- LIMITS -->
-<section id="limits" class="sec">
-<div class="wrap two">
-<div><h2 class="h2 sv">What it does not show</h2></div>
-<div>
-<p class="p first">A result is a fact about one change: this test passes with the change undone, or it does not. It is not a score of you as an engineer, and the page that lists your calls shows counts, not a grade.</p>
-<p class="p"><a href="https://www.anthropic.com/research/AI-assistance-coding-skills">One study reports</a> that handing work to an AI assistant can weaken the understanding needed to check that work. <a href="https://github.com/0xfauzi/explain-pr/blob/main/design/product/research/learning-science.md">Other research on learning</a> reports that committing to an answer before you see the result helps. No study has tested questions of this kind during real work with a coding agent. The design does not depend on one: each result is true about your own project and is useful either way.</p>
-<p class="p">The check is only as good as your tests can be run. If the new tests do not pass in a scratch copy exactly as they do in your project, Firsthand asks nothing.</p>
-</div>
+<section class="fh-part" id="install" aria-labelledby="h-install">
+<div class="fh-part__head"><p class="fh-part__no"><b>05</b>Preview</p><div><h2 class="fh-part__title" id="h-install">Install the preview</h2><p class="fh-part__lead">Firsthand is not on PyPI yet, so the preview installs from the git repository. Run this in a terminal, at the root of a Python project that uses pytest and has at least one git commit.</p></div></div>
+<div class="fh-ledger">
+<div class="fh-row"><div class="fh-row__margin"><span class="fh-label">Run this</span></div><div><p class="fh-cmd__cap"><span>Terminal, at the root of your project</span><span>installs from git</span></p><div class="fh-cmd"><code>uvx --from git+https://github.com/<wbr>0xfauzi/explain-pr firsthand init</code><button type="button" data-copy>Copy</button></div></div></div>
+<div class="fh-row"><div class="fh-row__margin"><span class="fh-label">It needs</span></div><ul class="fh-status fh-status--wide"><li><span>System</span><span class="ld"></span><b>Linux or macOS</b></li><li><span>Python</span><span class="ld"></span><b>3.11 or later</b></li><li><span>Also</span><span class="ld"></span><b>git, uv, Claude Code</b></li><li><span>Once on PyPI</span><span class="ld"></span><b>uvx firsthand init</b></li></ul></div>
+<div class="fh-row"><div class="fh-row__margin"><span class="fh-label">What the command does</span></div><div><ol class="fh-does">
+<li><span>It lists the files it will change in <code>~/.claude</code> and asks before it writes anything.</span></li>
+<li><span>It asks whether this is a work computer and which command runs your tests.</span></li>
+<li><span>It adds six hooks to <code>~/.claude/settings.json</code> and one skill folder at <code>~/.claude/skills/firsthand/</code>. It backs up each file first.</span></li>
+<li><span>The hooks only report what happened. They never allow, deny or block anything your agent does.</span></li>
+<li><span>It copies its own code to <code>~/.firsthand/engine</code>. The hooks run that copy.</span></li>
+<li><span>It creates your record at <code>~/.firsthand/record</code>. These are plain files: anyone who can read your home folder can read them.</span></li>
+<li><span>There is no account and no telemetry. Nothing leaves your machine except the lines added to your agent's chat. The only server is the local page at <code>127.0.0.1</code>.</span></li>
+</ol></div></div>
+<div class="fh-row"><div class="fh-row__margin"><span class="fh-label">The first question</span></div><p class="fh-text">The first question comes when your agent next finishes a change that adds or edits tests. Say "skip" to pass on a question.</p></div>
+<div class="fh-row"><div class="fh-row__margin"><span class="fh-label">To remove it</span></div><div><p class="fh-text">Run this. It restores the backed-up files. Your record and the engine copy stay in <code>~/.firsthand</code>; delete that folder to remove them.</p><div class="fh-cmd"><code>uvx --from git+https://github.com/<wbr>0xfauzi/explain-pr firsthand uninstall</code><button type="button" data-copy>Copy</button></div></div></div>
 </div>
 </section>
 
-<!-- CLOSE -->
-<div class="stage close">
-<div class="field low" id="field2" aria-hidden="true"></div>
-<section>
-<div class="wrap">
-<h2 class="h1 sv">Free and open source.</h2>
-<p class="p sv">There is nothing to buy and no account. The code, the design and the research notes are in one repository. Firsthand is a working name and may change.</p>
-<div class="ctas">
-<button type="button" class="btn needs-js" data-copy="Copy the install command" data-copy-from="install">Copy the install command</button>
-<a href="https://github.com/0xfauzi/explain-pr" class="btn ghost">See it on GitHub</a>
-</div>
-<footer>
-<span>Firsthand (preview). Apache-2.0 licence.</span>
-<span class="links"><a href="https://github.com/0xfauzi/explain-pr">Source</a><a href="https://github.com/0xfauzi/explain-pr/blob/main/design/product/PRODUCT.md">Design</a><a href="https://github.com/0xfauzi/explain-pr/blob/main/CHANGELOG.md">Changelog</a></span>
-</footer>
+<section class="fh-part" id="skill" aria-labelledby="h-skill">
+<div class="fh-part__head"><p class="fh-part__no"><b>06</b>Version 0.6.0</p><h2 class="fh-part__title" id="h-skill">The earlier skill is still here</h2></div>
+<div class="fh-part__body">
+<p class="fh-prose">This repository also holds learning-while-building, version 0.6.0. It is an Agent Skill for Claude Code and other agents that read Agent Skills. On tasks you choose, it asks you a question before the agent builds, asks you to explain the code after, and asks again some days later.</p>
+<p class="fh-prose">It installs separately and does not need Firsthand. From 0.6.0 its record is kept in <code>~/.learning-while-building</code>, outside your project. If an earlier version left a <code>.learning</code> folder in your repository, <a class="fh-link" href="https://github.com/0xfauzi/explain-pr#readme">the README</a> says how to move it.</p>
+<div class="fh-cmd__wrap"><p class="fh-cmd__cap"><span>Inside Claude Code</span><span>needs Python 3.10 or later and git</span></p><div class="fh-cmd fh-cmd--chat"><code>/plugin marketplace add 0xfauzi/explain-pr
+/plugin install learning-while-building@learning-while-building</code><button type="button" data-copy>Copy</button></div></div>
 </div>
 </section>
-</div>
 
+<section class="fh-part" id="limits" aria-labelledby="h-limits">
+<div class="fh-part__head"><p class="fh-part__no"><b>07</b>Limits</p><h2 class="fh-part__title" id="h-limits">What it does not show</h2></div>
+<div class="fh-ledger">
+<div class="fh-row"><div class="fh-row__margin"><span class="fh-label">A result</span></div><p class="fh-prose">A result is a fact about one change: this test passes with the change undone, or it does not. It is not a score of you as an engineer, and the page that lists your calls shows counts, not a grade.</p></div>
+<div class="fh-row"><div class="fh-row__margin"><span class="fh-label">The research</span></div><div><p class="fh-prose"><a class="fh-link" href="https://www.anthropic.com/research/AI-assistance-coding-skills">One study reports</a><span class="fh-ref">[1]</span> that handing work to an AI assistant can weaken the understanding needed to check that work. <a class="fh-link" href="https://github.com/0xfauzi/explain-pr/blob/main/design/product/research/learning-science.md">Other research on learning</a><span class="fh-ref">[2]</span> reports that committing to an answer before you see the result helps. No study has tested questions of this kind during real work with a coding agent. The design does not depend on one: each result is true about your own project and is useful either way.</p>
+<ol class="fh-status fh-notes"><li><span class="n">1</span><span>The study</span><span class="ld"></span><a href="https://www.anthropic.com/research/AI-assistance-coding-skills">anthropic.com/research/AI-assistance-coding-skills</a></li><li><span class="n">2</span><span>Research notes</span><span class="ld"></span><a href="https://github.com/0xfauzi/explain-pr/blob/main/design/product/research/learning-science.md">design/product/research/learning-science.md</a></li></ol></div></div>
+<div class="fh-row"><div class="fh-row__margin"><span class="fh-label">The check</span></div><p class="fh-prose">The check is only as good as your tests can be run. If the new tests do not pass in a scratch copy exactly as they do in your project, Firsthand asks nothing.</p></div>
+</div>
+</section>
+
+<section class="fh-part" id="close" aria-labelledby="h-close">
+<div class="fh-part__head"><p class="fh-part__no"><b>08</b>Apache-2.0</p><div><h2 class="fh-part__title" id="h-close">Free and open source.</h2><p class="fh-part__lead">There is nothing to buy and no account. The code, the design and the research notes are in one repository. Firsthand is a working name and may change.</p>
+<div class="fh-acts"><button type="button" class="fh-btn" data-copy data-copy-from="install">Copy the install command</button><a class="fh-btn fh-btn--quiet" href="https://github.com/0xfauzi/explain-pr">See it on GitHub</a></div></div></div>
+</section>
 </main>
+
+<footer class="fh-colophon"><p><b>Firsthand (preview)</b> &middot; Apache-2.0 licence</p><nav class="fh-nav" aria-label="Repository"><a href="https://github.com/0xfauzi/explain-pr">Source</a><a href="https://github.com/0xfauzi/explain-pr/blob/main/design/product/PRODUCT.md">Design</a><a href="https://github.com/0xfauzi/explain-pr/blob/main/CHANGELOG.md">Changelog</a></nav><p class="fh-colophon__set">Set in Newsreader, IBM Plex Mono and IBM Plex Sans.</p></footer>
+<p class="fh-vh" aria-live="polite" id="live"></p>
 </div>
-<p class="vh" aria-live="polite" id="live"></p>
-<script src="assets/site.js"></script>
+<script src="assets/site.js" defer></script>
 </body>
 </html>

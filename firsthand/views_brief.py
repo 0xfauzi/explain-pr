@@ -7,7 +7,7 @@ the free line, "pick" for the confirm), `said_label` and `more.notes`. As in
 
 from __future__ import annotations
 
-from firsthand import gitwatch, views, words, words_brief
+from firsthand import gitwatch, views, views_room, words, words_brief
 from firsthand.model import REVEALED, Moment
 
 KIND = "brief"
@@ -206,7 +206,7 @@ def result_view(v: views.ViewInput, m: Moment) -> dict | None:
             if m.answer == "dont_know"
             else words_brief.unscored_text(_reason_of(v, m))
         )
-    return {
+    result = {
         "headline": words_brief.HEADLINE,
         "chip": chip,
         "chip_label": label,
@@ -218,6 +218,7 @@ def result_view(v: views.ViewInput, m: Moment) -> dict | None:
         "back": words.back_line(m.task_name),
         "more": _more(v, m, k),
     }
+    return views_room.result_fields(v, m, result, ran, k)
 
 
 def happened(v: views.ViewInput, m: Moment) -> str:

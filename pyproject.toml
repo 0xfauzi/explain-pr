@@ -24,7 +24,7 @@ firsthand = "firsthand.cli:main"
 include = ["firsthand*"]
 
 [tool.setuptools.package-data]
-"firsthand.room" = ["page.html", "static/*"]
+"firsthand.room" = ["page.html", "static/*", "static/fonts/*"]
 "firsthand.adapters" = ["*.md"]
 
 [tool.vulture]
