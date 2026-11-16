@@ -1,6 +1,6 @@
 The whole public site, top to bottom, with real copy and a working example. This is the target for `docs/`. The build spec is `design/system/build-site.md`.
 
-- The first screen is ScreenSite. Under it come eight numbered parts (see Part): the result, how it works, the same moment in the agent's chat, what works today, install, the earlier skill, limits, and the close. Then the colophon.
+- The first screen holds the headline, the install command, a record strip and the example question. Under it come eight numbered parts (see Part): the result, how it works, the same moment in the agent's chat, what works today, install, the earlier skill, limits, and the close. Then the colophon.
 - The grid is 1120px wide with a margin column of `margin-col`. Part numbers, step numbers and row labels sit in the margin column. Titles, text and blocks start at the main column.
 - The double rule is under the folio and nowhere else. Each part opens with one `ink` rule.
 - Blue italic appears twice by the same rule: the sentence about the person in the headline, and the visitor's own answer once they lock it. Nothing else is blue italic.
