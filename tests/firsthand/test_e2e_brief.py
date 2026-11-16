@@ -550,7 +550,7 @@ class BriefRules(BriefReplay):
             "5. Framing the problem and the brief",
         ):
             self.assertIn(name, skills)
-        self.assertIn("  Your calls of this kind: 1 of 1 matched.", skills)
+        self.assertIn("  Your answers of this kind: 1 of 1 matched.", skills)
         # The legend explains the counts, and the Brief row says it has no level.
         self.assertTrue(skills[0].startswith("Shown: "), skills)
         framing = skills.index("5. Framing the problem and the brief")

@@ -707,3 +707,9 @@ button.fh-path__stop[disabled]:not([aria-pressed="true"]) .t{border-color:var(--
 #skill .fh-part__head{padding-bottom:var(--space-3)}
 /* The answered stop is in the person's blue, also where the failure shows */
 .fh-path.fh-path--result[data-said="totals"] [data-r="totals"].is-end .t{border-color:var(--call)}
+/* The Room marks the answered stop and the fix with classes */
+.fh-path--result .fh-path__stop.is-said .flag--said{display:inline}
+.fh-path--result .fh-path__stop.is-said .t{border-color:var(--call)}
+.fh-path--result .fh-path__stop.is-off.is-fix .t{border-style:solid}
+.fh-sheet .fh-pathbox{max-width:560px}
+.fh-task::first-letter{text-transform:uppercase}

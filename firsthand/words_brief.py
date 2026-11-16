@@ -245,7 +245,7 @@ def outside_line(categories: Sequence[str], paths: Sequence[str]) -> str | None:
 
 
 def counts_line(matched: int, scored: int) -> str:
-    return f"Your calls of this kind: {matched} of {scored} matched."
+    return f"Your answers of this kind: {matched} of {scored} matched."
 
 
 def _chat_fact(k: Key) -> str:

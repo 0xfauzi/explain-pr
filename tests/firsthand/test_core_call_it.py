@@ -391,7 +391,7 @@ class WordsTest(support.TempHome):
             ),
             "Not scored. The fix adds a sleep at webhooks/handler.py:31. That can turn "
             "the test green without touching the cause, so where it landed proves "
-            "nothing about your call.",
+            "nothing about your answer.",
         )
 
     def test_no_em_dash_in_call_it_copy(self) -> None:

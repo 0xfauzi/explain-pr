@@ -366,7 +366,7 @@ def checked_line(how: How) -> str:
 
 def counts_line(matched: int, scored: int, fixed: int) -> str:
     return (
-        f"Your calls of this kind: {matched} of {scored} matched. "
+        f"Your answers of this kind: {matched} of {scored} matched. "
         f'Always answering "none" would have scored {fixed} of {scored}.'
     )
 

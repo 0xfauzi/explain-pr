@@ -140,7 +140,7 @@
       h('div', { class: 'fh-sheet__bar' }, [h('span', { text: it.reason }), h('span', { text: no(it.no) + ' · skip ok' })]),
       h('div', { class: 'fh-sheet__body' }, [
         ctxText([name], it.since),
-        h('h2', { class: 'fh-sheet__title', id: 'stub-title', text: it.task }),
+        h('h2', { class: 'fh-sheet__title fh-task', id: 'stub-title', text: it.task }),
         h('div', { class: 'fh-sheet__act' }, [
           h('a', { class: 'fh-btn', href: withProject(it.href), text: 'Open' }),
           h('span', { class: 'fh-sheet__size', text: [it.kind_label, it.size].filter(Boolean).join(' · ') })
@@ -189,7 +189,7 @@
       h('div', null, [
         h('div', { class: 'fh-row__kind', text: e.kind }),
         h('div', { class: 'fh-row__head' }, [
-          h('h3', { class: 'fh-row__title' }, e.href ? h('a', { href: withProject(e.href), text: e.task }) : e.task),
+          h('h3', { class: 'fh-row__title fh-task' }, e.href ? h('a', { href: withProject(e.href), text: e.task }) : e.task),
           kind ? F.verdict(kind, e.chip_label) : null
         ]),
         lines(e.said, e.happened, e.ran)
@@ -202,7 +202,7 @@
       margin(no(w.no), w.locked_at ? 'locked ' + F.hm(w.locked_at) : null),
       h('div', null, [
         h('div', { class: 'fh-row__kind', text: w.kind }),
-        h('div', { class: 'fh-row__head' }, h('h3', { class: 'fh-row__title' }, h('a', { href: withProject(w.href), text: w.task }))),
+        h('div', { class: 'fh-row__head' }, h('h3', { class: 'fh-row__title fh-task' }, h('a', { href: withProject(w.href), text: w.task }))),
         lines(w.said, w.text, true)
       ])
     ]);
@@ -275,6 +275,17 @@
     return h('ol', { class: 'fh-code' }, rows);
   }
 
+  /* A long test name breaks only after _ / . or ::. The <wbr> marks add no text, so a
+     screen reader and a copy get the name as it is. */
+  function breakable(text) {
+    var out = [];
+    String(text || '').split(/(?<=::|[_/.])/).forEach(function (part, i) {
+      if (i) out.push(h('wbr'));
+      out.push(part);
+    });
+    return out;
+  }
+
   function evidence(v) {
     var items = (v.evidence || []).map(function (t) {
       var asserts = (t.asserts || []).map(function (a) { return h('code', { text: a.text }); });
@@ -282,7 +293,7 @@
       return h('li', null, [
         h('span', { class: 'n', text: String(t.n) }),
         h('span', { class: 't' }, [
-          h('span', { class: 'hd' }, [h('b', { text: t.name }), h('span', { class: 'ld' }), h('small', { text: t.path + ':' + t.line })])
+          h('span', { class: 'hd' }, [h('b', null, breakable(t.name)), h('span', { class: 'ld' }), h('small', { text: t.path + ':' + t.line })])
         ].concat(asserts, [full]))
       ]);
     });
@@ -290,6 +301,7 @@
     return h('ol', { class: 'fh-evidence', tabindex: '0', 'aria-labelledby': 'lead' }, items);
   }
 
+  /* A Call it from before the picture, with no frames: the trace as a list. */
   function trace(v) {
     var t = v.trace;
     if (!t) return null;
@@ -300,6 +312,82 @@
         return h('li', null, f.where ? [k, h('span', { class: 'ld' }), h('small', { text: f.where })] : [k]);
       }))
     ]);
+  }
+
+  /* ------------------------------------------------------------ the path of a failure */
+
+  /* The end of the path: a struck square, where the failure shows. */
+  function endMark() {
+    var svg = D.createElementNS(F.NS, 'svg');
+    svg.setAttribute('viewBox', '0 0 14 14');
+    svg.setAttribute('aria-hidden', 'true');
+    var rect = D.createElementNS(F.NS, 'rect');
+    [['x', '1'], ['y', '1'], ['width', '12'], ['height', '12']].forEach(function (a) { rect.setAttribute(a[0], a[1]); });
+    var cross = D.createElementNS(F.NS, 'path');
+    cross.setAttribute('d', 'M4.5 4.5l5 5M9.5 4.5l-5 5');
+    svg.appendChild(rect);
+    svg.appendChild(cross);
+    return svg;
+  }
+
+  function stopName(dir, file, small) {
+    return h('span', { class: 'nm' }, [
+      dir ? h('small', { class: 'dir', text: dir }) : null,
+      h('b', { text: file }),
+      small ? h('small', { text: small }) : null
+    ]);
+  }
+
+  function stopClass(s) {
+    return ['fh-path__stop', s.end ? 'is-end' : null, s.on_path ? null : 'is-off',
+      s.flags && s.said ? 'is-said' : null, s.flags && s.fix ? 'is-fix' : null].filter(Boolean).join(' ');
+  }
+
+  /* One file on the path. A pick is a button that locks it; any other file is drawn only. */
+  function pathStop(v, s, words, opts) {
+    var t = h('span', { class: 't' }, [stopName(s.dir, s.file, s.line ? 'line ' + s.line : null)]);
+    if (opts.flags && s.said) add(t, h('span', { class: 'flag flag--said', text: words.said }));
+    if (opts.flags && s.fix) add(t, h('span', { class: 'flag flag--fix', text: words.fix }));
+    var kids = [h('span', { class: 'st' }, s.end ? endMark() : null), t];
+    var cls = stopClass({ end: s.end, on_path: s.on_path, said: s.said, fix: s.fix, flags: opts.flags });
+    if (opts.flags || !s.value) return h('div', { class: cls }, kids);
+    var can = v.can || {};
+    return h('button', {
+      type: 'button', class: cls, 'data-k': 'pick-' + s.value, 'aria-label': s.path,
+      'aria-pressed': s.value === opts.current ? 'true' : 'false', disabled: !can.lock,
+      onclick: can.lock ? function () { act(v, 'lock', { answer: s.value }, 'Locked.', 'pick-' + s.value); } : null
+    }, kids);
+  }
+
+  /* Somewhere else and Don't know, under the picture. */
+  function pathWords(v, current) {
+    var cells = (v.picks || []).filter(function (p) { return !('path' in p); }).map(function (p) {
+      var text = p.value === 'dont_know' ? p.label : p.label.replace(/^\S+\s+/, '');
+      return cell(v, { value: p.value, text: text }, p.value === current, 'fh-pick--word', function () {
+        act(v, 'lock', { answer: p.value }, 'Locked.', 'pick-' + p.value);
+      });
+    });
+    return h('div', { class: 'fh-picks fh-path__words' }, cells);
+  }
+
+  /* The route of the failure, drawn. On the question its stops are the answer cells;
+     on a result it carries the answer and the fix, and nothing in it is a control. */
+  function pathPicture(v, p, opts) {
+    var w = p.words || {};
+    var stops = p.stops || [];
+    var on = stops.filter(function (s) { return s.on_path; });
+    var off = stops.filter(function (s) { return !s.on_path; });
+    var kids = [h('div', { class: 'fh-path__stop is-start' }, [
+      h('span', { class: 'st' }), h('span', { class: 't' }, [stopName('the test', p.test, 'starts here')])
+    ])];
+    on.forEach(function (s) { kids.push(pathStop(v, s, w, opts)); });
+    if (on.length) kids.push(h('p', { class: 'fh-path__note' }, [w.note, p.message ? ' ' : null, p.message ? h('b', { text: p.message }) : null]));
+    off.forEach(function (s) { kids.push(pathStop(v, s, w, opts)); });
+    if (off.length) kids.push(h('p', { class: 'fh-path__off', text: w.off }));
+    if (!opts.flags) kids.push(pathWords(v, opts.current));
+    var cls = ['fh-path', p.flow ? 'fh-path--flow' : null, opts.flags ? 'fh-path--result' : null].filter(Boolean).join(' ');
+    var attrs = opts.flags ? { class: cls } : { class: cls, role: 'group', 'aria-labelledby': 'q' };
+    return h('div', { class: 'fh-pathbox' }, h('div', attrs, kids));
   }
 
   function chosenOf(answerValue) {
@@ -380,6 +468,7 @@
 
   function control(v) {
     if (v.form === 'line') return lineField(v);
+    if (v.path) return pathPicture(v, v.path, { current: picked(v) });
     var col = (v.picks || []).some(function (p) { return 'path' in p; });
     var kids = v.multi ? multiCells(v) : tapCells(v, col);
     return h('div', { class: col ? 'fh-picks fh-picks--col' : 'fh-picks', role: 'group', 'aria-labelledby': 'q' }, kids);
@@ -481,7 +570,7 @@
     var can = v.can || {};
     var held = v.held;
     return h('div', { class: 'fh-held' }, [
-      head('Your call', held.at ? 'locked ' + hms(held.at) : null),
+      head('Your answer', held.at ? 'locked ' + hms(held.at) : null),
       answer(held.said, held.confidence, held.names),
       can.confidence ? sureCells(v) : null,
       h('div', { class: 'fh-sheet__act' }, [
@@ -515,6 +604,8 @@
     return ctxText([w.project, w.task], w.since);
   }
 
+  function leadOf(v) { return v.lead || (v.path ? v.path.lead : null); }
+
   function sheet(v) {
     var held = v.held && v.held.kind === 'pick';
     var still = !!S.drawn[v.ref] || held;
@@ -522,9 +613,9 @@
     var right = no(v.no) + (held ? ' · locked' : (v.skip_ok ? ' · skip ok' : ''));
     var form = h('form', { onsubmit: function (e) { e.preventDefault(); primary(v); } }, [
       ctxLine(v),
-      h('p', { class: 'fh-sheet__lead', id: 'lead', text: v.reason + '.' + (v.lead ? ' ' + v.lead : '') }),
+      h('p', { class: 'fh-sheet__lead', id: 'lead', text: v.reason + '.' + (leadOf(v) ? ' ' + leadOf(v) : '') }),
       isBriefConfirm(v) ? briefLine(v) : null,
-      trace(v),
+      v.path ? null : trace(v),
       evidence(v),
       h('h2', { class: 'fh-q', id: 'q', 'data-still': still }, h('mark', { text: v.prompt_text || v.prompt })),
       v.prompt_name ? h('p', { class: 'fh-q__name', text: v.prompt_name }) : null,
@@ -548,7 +639,7 @@
   function resultHead(v, kind, words) {
     var top = [no(v.no), v.kind_label, v.skill].filter(Boolean).join(' · ');
     return h('div', { class: 'fh-head' }, [
-      h('div', null, [h('div', { class: 'fh-label', text: top }), h('h1', { class: 'fh-head__title', text: (v.where || {}).task || v.kind_label })]),
+      h('div', null, [h('div', { class: 'fh-label', text: top }), h('h1', { class: 'fh-head__title fh-task', text: (v.where || {}).task || v.kind_label })]),
       kind ? F.verdict(kind, words) : null
     ]);
   }
@@ -559,14 +650,14 @@
     var brief = v.kind === 'brief';
     var kids = [];
     if (call) {
-      kids.push(head(brief ? (v.said_label || 'Your check') : 'Your call', call.locked_at ? 'locked ' + hms(call.locked_at) : null));
+      kids.push(head(brief ? (v.said_label || 'Your check') : 'Your answer', call.locked_at ? 'locked ' + hms(call.locked_at) : null));
       kids.push(brief ? lineAnswer(answerText(call.said, call.confidence)) : answer(call.said, call.confidence, call.names));
       if (brief && call.confirm) {
         kids.push(head('Is this your check?', call.confirm.at ? 'locked ' + hms(call.confirm.at) : null));
         kids.push(lineAnswer(call.confirm.value === 'yes' ? 'Yes.' : 'No.'));
       }
     } else {
-      kids.push(head(brief ? (v.said_label || 'Your check') : 'Your call'));
+      kids.push(head(brief ? (v.said_label || 'Your check') : 'Your answer'));
       kids.push(h('p', { class: 'fh-answer', text: r.you_said || 'No answer.' }));
     }
     return h('div', { class: 'fh-spread__side fh-spread__call' }, kids);
@@ -666,7 +757,8 @@
   /* Everything after the spread, in order. */
   function afterSpread(v) {
     var r = v.result;
-    return findingRows(r).concat([moreBox(r), v.can && v.can.dispute ? recheckRow(v) : null, errHere(), resultActs(v)]);
+    var picture = r.path ? finding('The picture', [pathPicture(v, r.path, { flags: true })]) : null;
+    return [picture].concat(findingRows(r)).concat([moreBox(r), v.can && v.can.dispute ? recheckRow(v) : null, errHere(), resultActs(v)]);
   }
 
   function resultPage(v, play) {
@@ -896,7 +988,7 @@
     return h('div', { class: 'fh-figs' }, [
       h('div', { class: 'fh-fig fh-fig--you' }, [
         h('div', { class: 'fh-fig__n' }, [h('b', { text: String(r.matched) }), ' ', h('span', { text: 'of ' + r.total })]),
-        h('p', { class: 'fh-fig__cap', text: 'of your calls matched' })
+        h('p', { class: 'fh-fig__cap', text: 'of your answers matched' })
       ]),
       r.fixed_answer ? h('div', { class: 'fh-fig' }, [
         h('div', { class: 'fh-fig__n' }, [String(r.fixed_count), ' ', h('span', { text: 'of ' + r.total })]),
@@ -961,7 +1053,7 @@
   }
 
   var KEY = [
-    ['on', 'your call matched'], ['miss', 'did not match'], ['easy', 'the easy answer would have matched'],
+    ['on', 'your answer matched'], ['miss', 'did not match'], ['easy', 'the easy answer would have matched'],
     [null, 'it would not'], ['catch', 'a catch: you matched and the easy answer did not']
   ];
 

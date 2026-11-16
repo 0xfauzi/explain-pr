@@ -144,7 +144,7 @@ def _skill_row(v: ViewInput, spec: tuple) -> dict:
         "n": n,
         "name": name,
         **level,
-        "counts": f"Your calls of this kind: {matched} of {total} matched.",
+        "counts": f"Your answers of this kind: {matched} of {total} matched.",
         "fixed": (
             f'Always answering "{fixed_answer}" would have scored {fixed} of {total}.'
             if fixed_answer

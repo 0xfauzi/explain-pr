@@ -215,7 +215,7 @@ class CallItFixtures(CallReplay):
             result["reason"],
             "Not scored. The fix adds a sleep at pricing.py:7. That can turn the test "
             "green without touching the cause, so where it landed proves nothing about "
-            "your call.",
+            "your answer.",
         )
         self.assert_untouched(root)
 

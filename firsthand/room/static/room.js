@@ -335,6 +335,12 @@
     if (on) say(LOST);
   }
 
+  /* The page foot repeats the day's count, except on the Inbox, whose Today list has it. */
+  function footAsked() {
+    var inbox = S.inbox || {};
+    $('asked').textContent = S.route && S.route.name === 'inbox' ? '' : (inbox.closing || '');
+  }
+
   function shell(inbox) {
     S.inbox = inbox;
     var proj = $('proj');
@@ -357,7 +363,7 @@
     $('count').hidden = !n;
     setTitle();
     setIcon();
-    $('asked').textContent = inbox.closing || '';
+    footAsked();
     drawNotice();
   }
 
@@ -485,6 +491,7 @@
   function render() {
     var r = S.route;
     var V = window.FH;
+    if (!S.noSession) footAsked();
     if (r.name === 'question') return api('GET', '/api/q/' + encodeURIComponent(r.ref)).then(V.renderQuestion);
     if (r.name === 'journal') return api('GET', withProject('/api/journal')).then(V.renderJournal);
     if (r.name === 'skills') return api('GET', withProject('/api/skills')).then(V.renderSkills);
@@ -582,7 +589,7 @@
 
   window.FH = {
     S: S, $: $, h: h, add: add, clear: clear, prop: prop, label: label, sec: sec, say: say,
-    withProject: withProject, mixed: mixed, counts: counts, mark: mark, kindOf: kindOf,
+    withProject: withProject, mixed: mixed, counts: counts, mark: mark, NS: NS, kindOf: kindOf,
     verdict: verdict, no: no, title: setTitle, fitFacts: fitFacts, placeFor: placeFor, noticeText: noticeText, hms: hms, hm: hm, marginTime: marginTime, api: api,
     loadShell: loadShell, refresh: refresh, errLine: errLine, setErr: setErr,
     restoreFocus: restoreFocus, blankPage: blankPage, loadError: loadError, INTERNAL: INTERNAL,

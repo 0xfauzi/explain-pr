@@ -245,7 +245,7 @@ class ResultTest(support.TempHome):
     def test_more_rows_and_counts(self) -> None:
         self.assertEqual(
             words.counts_line(5, 7, 4),
-            'Your calls of this kind: 5 of 7 matched. Always answering "none" would have scored 4 of 7.',
+            'Your answers of this kind: 5 of 7 matched. Always answering "none" would have scored 4 of 7.',
         )
         self.assertEqual(
             words.sure_line(6, 8, 3, 6), "Sure: 6 of 8 matched. Not sure: 3 of 6."

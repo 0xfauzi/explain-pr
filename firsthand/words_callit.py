@@ -35,7 +35,7 @@ NO_FIX = (
 )
 NOT_CAUSAL = (
     "Not scored. With the fix undone, the test still passes, so where the fix "
-    "landed proves nothing about your call."
+    "landed proves nothing about your answer."
 )
 SOMEWHERE_ELSE = "Somewhere else"
 FIXED_SENTENCE = 'Always answering "the file changed in this task" would have scored'
@@ -201,7 +201,7 @@ def pattern_reason(pattern: Mapping[str, object]) -> str:
     return (
         f"Not scored. The fix {verb} at {pattern['path']}:{pattern['line']}. That can "
         "turn the test green without touching the cause, so where it landed proves "
-        "nothing about your call."
+        "nothing about your answer."
     )
 
 
@@ -255,7 +255,7 @@ def more_row(k: Key) -> str:
 
 def counts_line(matched: int, scored: int, fixed: int) -> str:
     return (
-        f"Your calls of this kind: {matched} of {scored} matched. "
+        f"Your answers of this kind: {matched} of {scored} matched. "
         f"{FIXED_SENTENCE} {fixed} of {scored}."
     )
 

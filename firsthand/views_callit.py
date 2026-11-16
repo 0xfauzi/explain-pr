@@ -8,7 +8,7 @@ result's More, after the answer is sealed. As in `views`, a result comes only fr
 
 from __future__ import annotations
 
-from firsthand import views, views_room, words, words_callit
+from firsthand import views, views_path, views_room, words, words_callit
 from firsthand.model import REVEALED, Moment
 
 KIND = "call_it"
@@ -61,6 +61,7 @@ def question_view(v: views.ViewInput, m: Moment, say=None) -> dict:
         "lead": None,
         "evidence": [],
         "trace": words_callit.trace(m),
+        "path": views_path.picture(m),
         "prompt": words_callit.PROMPT,
         "picks": words_callit.pick_rows(m),
         "multi": False,
@@ -130,6 +131,12 @@ def _more(v: views.ViewInput, m: Moment, k) -> dict:
     }
 
 
+def _result_path(m: Moment, k) -> dict | None:
+    from firsthand.moments import call_it
+
+    return views_path.result_picture(m, m.answer, call_it.fix_paths(k))
+
+
 def result_view(v: views.ViewInput, m: Moment) -> dict | None:
     if m.state not in REVEALED:
         return None
@@ -148,6 +155,7 @@ def result_view(v: views.ViewInput, m: Moment) -> dict | None:
         "cue": _cue(v, m, k),
         "back": words.back_line(m.task_name),
         "more": _more(v, m, k),
+        "path": _result_path(m, k),
     }
     return views_room.result_fields(v, m, result, ran, k)
 

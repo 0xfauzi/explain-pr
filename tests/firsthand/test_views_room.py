@@ -179,6 +179,75 @@ class CallItFields(CallReplay):
         self.assertTrue(why)
         self.assertEqual(result["more"]["rows"][1:], why)
 
+    def test_path_picture(self) -> None:
+        root, _ = self.red_turn("causal_fix")
+        m = self.moment()
+        ref = m.id[-6:].lower()
+        path = self.engine.question(ref)["path"]
+        self.assertEqual(path["test"], "test_total")
+        self.assertTrue(path["flow"])
+        self.assertEqual(path["message"], "ValueError: negative price")
+        self.assertEqual(
+            [
+                (s["path"], s["line"], s["value"], s["on_path"], s["end"])
+                for s in path["stops"]
+            ],
+            [
+                ("service.py", 5, "3", True, False),
+                ("pricing.py", 7, "1", True, True),
+                ("rates.py", None, "2", False, False),
+            ],
+        )
+        # Before the lock the picture says nothing about the answer or the fix.
+        self.assertFalse(any(s["said"] or s["fix"] for s in path["stops"]))
+        self.say(root, "3")
+        self.assertIsNone(self.engine.question(ref)["result"])
+        self.green_turn("causal_fix", root)
+        shown = self.engine.question(ref)["result"]["path"]
+        flags = {s["path"]: (s["said"], s["fix"]) for s in shown["stops"]}
+        self.assertEqual(
+            flags,
+            {
+                "service.py": (True, False),
+                "pricing.py": (False, False),
+                "rates.py": (False, True),
+            },
+        )
+
+    def test_path_stops_from_frames(self) -> None:
+        import dataclasses
+
+        from firsthand import views_path
+
+        self.red_turn("causal_fix")
+        m = self.moment()
+        frames = [
+            {"path": "tests/test_total.py", "line": 5, "where": None},
+            {"path": "shop/service.py", "line": 5, "where": None},
+            {"path": "shop/pricing.py", "line": 4, "where": None},
+            {"path": "shop/service.py", "line": 9, "where": None},
+            {"path": "core/calc.py", "line": 7, "where": None},
+        ]
+        extra = dict(m.extra or {}, frames=frames, message=None)
+        extra["picks"] = [{"n": 1, "path": "core/calc.py"}, {"n": 2, "path": "x.py"}]
+        deep = dataclasses.replace(m, extra=extra)
+        path = views_path.picture(deep, None, ["y/z.py"])
+        assert path is not None
+        self.assertFalse(path["flow"])
+        self.assertIsNone(path["message"])
+        self.assertEqual(
+            [(s["dir"], s["file"], s["line"], s["value"]) for s in path["stops"]],
+            [
+                ("shop/", "service.py", 9, None),
+                ("shop/", "pricing.py", 4, None),
+                ("core/", "calc.py", 7, "1"),
+                (None, "x.py", None, "2"),
+                ("y/", "z.py", None, None),
+            ],
+        )
+        self.assertEqual([s["end"] for s in path["stops"]].index(True), 2)
+        self.assertIsNone(views_path.picture(dataclasses.replace(m, extra={})))
+
     def test_somewhere_else_and_dont_know(self) -> None:
         self.red_turn("causal_fix")
         m = self.moment()
