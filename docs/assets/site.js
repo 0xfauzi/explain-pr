@@ -54,7 +54,7 @@
 
   var picks = [].slice.call($("path").querySelectorAll("[data-p]"));
   var sures = [].slice.call($("sure").children);
-  // In the example the fix landed in pricing/rates.py.
+  // In the example the fix is in pricing/rates.py.
   var SAID = {
     order: "checkout/order.py.",
     totals: "pricing/totals.py.",
@@ -64,8 +64,8 @@
   };
   var MORE = {
     match: "Your answer and the fix are the same file.",
-    miss: "The fix is in pricing/rates.py, a file that the failing trace does not name.",
-    none: "\"Don't know\" is not counted as a miss."
+    miss: "The trace does not name pricing/rates.py.",
+    none: "Firsthand does not count \"Don't know\" as a miss."
   };
   var BARS = { match: "M8 11h12M8 17h12", miss: "M8 11h12M8 17h12M17.5 6.5l-7 15", none: "M8 11h12M8 17h12" };
   var WORDS = { match: "Matched", miss: "Did not match", none: "Not scored" };
@@ -148,7 +148,10 @@
     if (state() !== "locked") return;
     fill();
     go("result");
+    say(WORDS[verdict()] + ". The result is below the question.");
     draw();
+    // Jump to the result first, so the print plays while the page is still.
+    $("result").scrollIntoView({ block: "start", behavior: "instant" });
     // Play the print once: drop the attribute, force a reflow, set it again.
     [$("spread"), $("entry"), $("rec")].forEach(function (el) {
       el.removeAttribute("data-play");
@@ -156,7 +159,6 @@
       el.setAttribute("data-play", "");
     });
     $("entry").focus({ preventScroll: true });
-    $("result").scrollIntoView({ block: "start" });
   }
 
   function reset() {

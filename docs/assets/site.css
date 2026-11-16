@@ -168,6 +168,7 @@ html{scroll-behavior:auto}
 .fh-facts .k{min-width:0;max-width:100%;overflow-wrap:anywhere;color:var(--ink-2)}
 .fh-facts .ld{flex:1 1 24px;min-width:24px;margin:0 var(--space-2);border-bottom:1.5px dotted var(--rule-strong);transform:translateY(-4px);opacity:.7}
 .fh-facts .v{flex:none;text-align:right}
+@media (min-width:601px) and (max-width:900px){.fh-facts .v{margin-left:auto}}
 .fh-facts .is-key .k,.fh-facts .is-key .v{color:var(--ink);font-weight:500}
 .fh-facts .is-key .k::before{content:"\25B8";display:inline-block;width:14px;margin-left:-14px;color:var(--ink)}
 
@@ -347,6 +348,7 @@ html{scroll-behavior:auto}
 .fh-state li p{margin:var(--space-1) 0 0;color:var(--ink-2)}
 .fh-state--designed .nm{font-weight:400;color:var(--ink-2)}
 .fh-state--designed .st{font-weight:400;color:var(--ink-3)}
+@media (max-width:600px){.fh-state .hd{flex-wrap:nowrap;align-items:last baseline}.fh-state .nm{flex:0 1 auto;min-width:0}.fh-state .to{flex:1 0 auto}.fh-state .ld{min-width:var(--space-6)}}
 @media (max-width:760px){.fh-twocol{grid-template-columns:minmax(0,1fr);gap:var(--space-8)}}
 
 /* Command block: caption, stacked and chat variants, and the numbered list of what it does */
@@ -375,7 +377,7 @@ html{scroll-behavior:auto}
 .fh-notes{max-width:612px;margin-top:var(--space-4)}
 .fh-notes .n{flex:none;width:var(--space-6);color:var(--ink-3)}
 .fh-notes a{min-width:0;font-weight:500;color:var(--call);overflow-wrap:anywhere;text-underline-offset:3px;text-decoration-thickness:1px}
-@media (max-width:600px){.fh-notes li{flex-wrap:wrap}.fh-notes .ld{display:none}.fh-notes a{display:flex;align-items:center;min-height:44px;flex:1 1 100%;padding-left:var(--space-6)}}
+@media (max-width:600px){.fh-notes li{flex-wrap:wrap}.fh-notes .ld{display:none}.fh-notes a{display:flex;align-items:flex-start;min-height:44px;flex:1 1 100%;padding-left:var(--space-6);padding-top:4px;padding-bottom:12px}}
 
 /* Colophon: the foot of the site */
 .fh-colophon{display:flex;flex-wrap:wrap;justify-content:space-between;gap:var(--space-1) var(--space-6);margin-top:calc(var(--space-16) + var(--space-8));padding-top:var(--space-3);border-top:1px solid var(--ink);font:400 12px/18px var(--font-fact);color:var(--ink-3)}
@@ -386,7 +388,7 @@ html{scroll-behavior:auto}
 
 /* Site demo: one sheet and one spread, shown by state. The state is data-demo on the page. */
 [data-demo="nojs"] [data-v]:not([data-v~="nojs"]),[data-demo="ask"] [data-v]:not([data-v~="ask"]),[data-demo="locked"] [data-v]:not([data-v~="locked"]),[data-demo="skipped"] [data-v]:not([data-v~="skipped"]),[data-demo="result"] [data-v]:not([data-v~="result"]){display:none}
-[data-demo="locked"] .fh-q mark,[data-demo="skipped"] .fh-q mark,[data-demo="result"] .fh-q mark{background:none;color:inherit;animation:none}
+[data-demo="locked"] .fh-q mark,[data-demo="skipped"] .fh-q mark,[data-demo="result"] .fh-q mark,[data-demo="nojs"] .fh-q mark{background:none;color:inherit;animation:none}
 [data-demo="nojs"] [data-copy]{display:none}
 .fh-sheet:focus{outline:none}
 .fh-sheet__state{margin:var(--space-4) 0 0;font:400 12px/18px var(--font-fact);color:var(--ink-3)}
@@ -423,6 +425,7 @@ html{scroll-behavior:auto}
 
 /* A URL or a short link is never broken across lines */
 .fh-nb{white-space:nowrap}
+@media (max-width:340px){.fh-nb{white-space:normal;overflow-wrap:anywhere}}
 @media (max-width:600px){.fh-cmd code{font-size:11.5px}}
 
 /* ---------- Finishing ---------- */
@@ -456,6 +459,7 @@ html{scrollbar-color:var(--rule-strong) var(--paper);-webkit-tap-highlight-color
 .fh-rec li[data-play] .fh-m{animation:fh-stamp var(--dur-stamp) var(--ease-stamp) calc(var(--dur-line) + var(--dur-stamp)) both}
 /* The phone folio is two lines: the name, then the four links on one row */
 @media (max-width:600px){.fh-wide{display:none}.fh-folio .fh-nav{display:flex;flex-wrap:nowrap;justify-content:space-between;gap:0;font-size:11.5px}.fh-folio .fh-nav a{min-width:0}}
+@media (max-width:600px){.fh-btn--quiet{min-width:44px}.fh-folio .fh-nav a{min-width:44px;justify-content:center}.fh-folio .fh-nav a:first-child{justify-content:flex-start}.fh-cap .fh-link{display:inline-block;padding:13px 0;margin:-13px 0}}
 
 /* ---------- Path: the route of a failure, drawn. A stop on it can be the answer ---------- */
 .fh-path{margin:var(--space-6) 0 0;font:400 13.5px/20px var(--font-fact);font-variant-ligatures:none;font-feature-settings:"zero"}
@@ -497,11 +501,13 @@ button.fh-path__stop[disabled]:not([aria-pressed="true"]) .t{border-color:var(--
 .fh-path__off{margin:var(--space-1) 0 0 44px;font:400 12px/18px var(--font-fact);color:var(--ink-3)}
 .fh-path__stop.is-off{margin-top:var(--space-4)}
 .fh-path__words{margin:var(--space-4) 0 0 44px}
+@media (max-width:374px){.fh-path__words .fh-pick{padding:0 12px}}
 .fh-path .flag{display:none;flex:none;white-space:nowrap}
 .fh-path .flag--said{font:italic 400 17px/22px var(--font-voice);color:var(--call)}
 .fh-path .flag--fix{font:500 10.5px/16px var(--font-fact);letter-spacing:.11em;text-transform:uppercase;color:var(--ink);padding:2px 6px;border:1.5px solid var(--ink);border-radius:var(--radius-sm)}
 .fh-path--result{margin:0}
 .fh-path--result .flag--fix{display:inline-block}
+.fh-path--flow .flag--fix{white-space:normal;max-width:100%;box-sizing:border-box}
 .fh-path--result[data-said="order"] [data-r="order"] .flag--said,.fh-path--result[data-said="totals"] [data-r="totals"] .flag--said,.fh-path--result[data-said="rates"] [data-r="rates"] .flag--said{display:inline}
 .fh-path--result .fh-path__stop:not(.is-start) .t{border-color:var(--rule)}
 .fh-path--result[data-said="order"] [data-r="order"] .t,.fh-path--result[data-said="totals"] [data-r="totals"] .t,.fh-path--result[data-said="rates"] [data-r="rates"] .t{border-color:var(--call)}
@@ -526,10 +532,12 @@ button.fh-path__stop[disabled]:not([aria-pressed="true"]) .t{border-color:var(--
 .fh-path--flow .fh-path__stop.is-end .t{border-color:var(--miss)}
 .fh-path--flow button.fh-path__stop.is-end:hover:not([disabled]) .t{border-color:var(--call)}
 .fh-path--flow button.fh-path__stop.is-end[aria-pressed="true"] .t{border-color:var(--call)}
+.fh-path--flow button.fh-path__stop[aria-pressed="true"] .st::after{background:none;border:5px solid transparent;border-left:7px solid var(--ink);border-right:0}
 .fh-path--flow .fh-path__note{grid-row:2;grid-column:2 / 4;justify-self:end;margin:6px 0 0;text-align:right}
 .fh-path--flow .fh-path__stop.is-off{grid-row:3;grid-column:1;margin-top:var(--space-6)}
 .fh-path--flow .fh-path__stop.is-off .t{border-style:dashed;min-height:68px}
 .fh-path--flow button.fh-path__stop.is-off[aria-pressed="true"] .t{border-style:solid}
+.fh-path--flow.fh-path--result [data-r="rates"] .t{border-style:solid}
 .fh-path--flow .fh-path__off{grid-row:3;grid-column:2 / 4;align-self:center;margin:var(--space-6) 0 0}
 .fh-path--flow .fh-path__words{grid-row:4;grid-column:1 / -1;margin-left:0}
 .fh-path--flow .flag{margin-top:auto;padding-top:var(--space-2)}
