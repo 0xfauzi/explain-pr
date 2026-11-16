@@ -1,0 +1,96 @@
+/* Firsthand tokens. Generated from tokens.json: do not edit by hand. */
+:root, [data-theme="light"] {
+  --paper: #F4F4F0;
+  --paper-raised: #FCFCFA;
+  --paper-sunk: #E9E9E3;
+  --rule: #D0D0C8;
+  --rule-strong: #72726A;
+  --ink: #14151A;
+  --ink-2: #3F4048;
+  --ink-3: #5E5F68;
+  --on-ink: #F4F4F0;
+  --call: #1F3BD1;
+  --on-call: #FFFFFF;
+  --mark: #F6DB45;
+  --on-mark: #14151A;
+  --mark-bright: #F6DB45;
+  --miss: #A8321A;
+  --miss-tint: #F7E3DC;
+  --screen: #14151A;
+  --on-screen: #EDEBE6;
+  --screen-dim: #9C9EA8;
+  --screen-rule: #2B2D38;
+}
+@media (prefers-color-scheme: dark) {
+:root:not([data-theme="light"]) {
+  --paper: #0D0F15;
+  --paper-raised: #151823;
+  --paper-sunk: #08090D;
+  --rule: #272B3A;
+  --rule-strong: #737A92;
+  --ink: #EDEBE6;
+  --ink-2: #C2C3C9;
+  --ink-3: #9296A6;
+  --on-ink: #0D0F15;
+  --call: #8FA2FF;
+  --on-call: #0A1030;
+  --mark: #3D3508;
+  --on-mark: #FAE588;
+  --mark-bright: #F6DB45;
+  --miss: #F4927A;
+  --miss-tint: #2B1613;
+  --screen: #08090D;
+  --on-screen: #EDEBE6;
+  --screen-dim: #9C9EA8;
+  --screen-rule: #272B3A;
+  color-scheme: dark;
+}
+}
+[data-theme="dark"] {
+  --paper: #0D0F15;
+  --paper-raised: #151823;
+  --paper-sunk: #08090D;
+  --rule: #272B3A;
+  --rule-strong: #737A92;
+  --ink: #EDEBE6;
+  --ink-2: #C2C3C9;
+  --ink-3: #9296A6;
+  --on-ink: #0D0F15;
+  --call: #8FA2FF;
+  --on-call: #0A1030;
+  --mark: #3D3508;
+  --on-mark: #FAE588;
+  --mark-bright: #F6DB45;
+  --miss: #F4927A;
+  --miss-tint: #2B1613;
+  --screen: #08090D;
+  --on-screen: #EDEBE6;
+  --screen-dim: #9C9EA8;
+  --screen-rule: #272B3A;
+  color-scheme: dark;
+}
+:root {
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --space-12: 48px;
+  --space-16: 64px;
+  --margin-col: 132px;
+  --radius-sm: 2px;
+  --radius-md: 5px;
+  --dur-press: 90ms;
+  --dur-state: 140ms;
+  --dur-stamp: 220ms;
+  --dur-line: 280ms;
+  --dur-stroke: 520ms;
+  --stagger: 70ms;
+  --ease-out: cubic-bezier(.2,.7,.2,1);
+  --ease-stamp: cubic-bezier(.3,1.5,.5,1);
+  --ease-pen: cubic-bezier(.6,0,.3,1);
+  --font-voice: Newsreader, Georgia, serif;
+  --font-fact: IBM Plex Mono, ui-monospace, Menlo, monospace;
+  --font-ui: IBM Plex Sans, system-ui, sans-serif;
+}

@@ -1,0 +1,10 @@
+<!-- @dsCard group="Asking" height=170 -->
+<!doctype html>
+<html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:ital,wght@0,300;0,400;0,500;1,400&family=IBM+Plex+Sans:wght@400;500;600&family=Newsreader:ital,opsz,wght@0,6..72,400..600;1,6..72,400..600&display=swap">
+<style>body{margin:0;padding:28px 32px;background:var(--paper)}@media(max-width:600px){body{padding:20px 16px}}</style></head>
+<body><div class="fh">
+<div class="fh-label" style="margin-bottom:10px">Several tests: any number, then Lock</div>
+<div class="fh-picks" role="group" aria-label="Several"><button class="fh-pick" aria-pressed="true">1</button><button class="fh-pick" aria-pressed="false">2</button><button class="fh-pick" aria-pressed="true">3</button><button class="fh-pick fh-pick--word fh-pick--gap" aria-pressed="false">None</button><button class="fh-pick fh-pick--word" aria-pressed="false">Don't know</button></div>
+<div class="fh-label" style="margin:22px 0 10px">Locked</div>
+<div class="fh-picks" role="group" aria-label="Locked"><button class="fh-pick" aria-pressed="true" disabled>1</button><button class="fh-pick" aria-pressed="false" disabled>2</button><button class="fh-pick" aria-pressed="true" disabled>3</button><button class="fh-pick fh-pick--word fh-pick--gap" aria-pressed="false" disabled>None</button><button class="fh-pick fh-pick--word" aria-pressed="false" disabled>Don't know</button></div>
+</div><script>document.querySelectorAll(".fh-pick").forEach(function(b){b.addEventListener("click",function(){var w=b.classList.contains("fh-pick--word"),on=b.getAttribute("aria-pressed")==="true";document.querySelectorAll(".fh-pick").forEach(function(o){if(w||o.classList.contains("fh-pick--word"))o.setAttribute("aria-pressed","false")});b.setAttribute("aria-pressed",on?"false":"true")})})</script></body></html>

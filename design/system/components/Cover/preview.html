@@ -1,0 +1,38 @@
+<!-- @dsCard height=300 -->
+<!doctype html>
+<html><head><meta charset="utf-8"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:ital,wght@0,300;0,400;0,500;1,400&family=IBM+Plex+Sans:wght@400;500;600&family=Newsreader:ital,opsz,wght@0,6..72,400..600;1,6..72,400..600&display=swap">
+<style>
+body{margin:0;background:var(--paper)}
+.cv{position:relative;width:960px;height:300px;overflow:hidden}
+.cv svg{position:absolute;inset:0}
+.cv .t{position:absolute;left:36px;bottom:32px;width:440px}
+.cv h1{margin:0;font:500 92px/88px var(--font-voice);letter-spacing:-.03em;color:var(--ink);font-optical-sizing:auto}
+.cv p{margin:18px 0 0;font:400 14px/21px var(--font-ui);color:var(--ink-3)}
+.b-call{fill:var(--call)}.b-ink{fill:var(--ink)}.b-mark{fill:var(--mark-bright)}.b-sunk{fill:var(--paper-sunk)}
+.c{rx:var(--radius-sm)}
+.c-o{fill:none;stroke:var(--on-call);stroke-width:1.5;opacity:.45}
+.c-on{fill:var(--on-call)}
+.c-ink{fill:none;stroke:var(--on-ink);stroke-width:1.5;opacity:.5}
+.c-inkon{fill:var(--on-ink)}
+.perf{stroke:var(--rule-strong);stroke-width:1.5;stroke-dasharray:6 5}
+</style></head>
+<body><div class="cv">
+<!--
+blocks: call 288x300 slab, ink 144x156, mark-bright 96x96, paper-sunk 144x144 (multiples of space-12 = 48px)
+arrangement: one tall call slab bleeding off top and bottom; right of a vertical perforation, sunk over ink like the two sides of a spread, the highlighter block bleeding off the right edge
+pattern: tiles cut by radius-sm, because the system's own unit is the 48px answer cell: a 5 by 5 form grid in outline, five cells turned on the way a person fills picks
+scales: cell 40px on a space-12 (48px) pitch, gap space-2 (8px), radius-sm
+-->
+<svg viewBox="0 0 960 300" width="960" height="300" aria-hidden="true">
+<rect class="b-call" x="504" y="0" width="288" height="300"/>
+<rect class="b-sunk" x="816" y="0" width="144" height="144"/>
+<rect class="b-ink" x="816" y="144" width="144" height="156"/>
+<rect class="b-mark" x="864" y="48" width="96" height="96"/>
+<line class="perf" x1="804" y1="0" x2="804" y2="300"/>
+<g>
+<rect class="c c-o" x="532" y="34" width="40" height="40"/><rect class="c c-on" x="580" y="34" width="40" height="40"/><rect class="c c-o" x="628" y="34" width="40" height="40"/><rect class="c c-o" x="676" y="34" width="40" height="40"/><rect class="c c-o" x="724" y="34" width="40" height="40"/><rect class="c c-o" x="532" y="82" width="40" height="40"/><rect class="c c-o" x="580" y="82" width="40" height="40"/><rect class="c c-o" x="628" y="82" width="40" height="40"/><rect class="c c-on" x="676" y="82" width="40" height="40"/><rect class="c c-o" x="724" y="82" width="40" height="40"/><rect class="c c-on" x="532" y="130" width="40" height="40"/><rect class="c c-o" x="580" y="130" width="40" height="40"/><rect class="c c-o" x="628" y="130" width="40" height="40"/><rect class="c c-o" x="676" y="130" width="40" height="40"/><rect class="c c-o" x="724" y="130" width="40" height="40"/><rect class="c c-o" x="532" y="178" width="40" height="40"/><rect class="c c-o" x="580" y="178" width="40" height="40"/><rect class="c c-on" x="628" y="178" width="40" height="40"/><rect class="c c-o" x="676" y="178" width="40" height="40"/><rect class="c c-o" x="724" y="178" width="40" height="40"/><rect class="c c-o" x="532" y="226" width="40" height="40"/><rect class="c c-o" x="580" y="226" width="40" height="40"/><rect class="c c-o" x="628" y="226" width="40" height="40"/><rect class="c c-o" x="676" y="226" width="40" height="40"/><rect class="c c-on" x="724" y="226" width="40" height="40"/>
+<rect class="c c-inkon" x="840" y="172" width="40" height="40"/><rect class="c c-ink" x="888" y="172" width="40" height="40"/><rect class="c c-ink" x="840" y="220" width="40" height="40"/><rect class="c c-inkon" x="888" y="220" width="40" height="40"/>
+</g>
+</svg>
+<div class="t"><h1>Firsthand</h1><p>A logbook for calls: what you said, beside what the run found.</p></div>
+</div></body></html>
