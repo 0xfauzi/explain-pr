@@ -21,8 +21,8 @@ from firsthand import cli
 from firsthand.model import PRINT_PREFIX, HookReply
 
 QUESTION = (
-    "Firsthand (skip ok): starting a task. Name one check that fails now and will "
-    'pass when this is done. Reply here starting with "check:".'
+    "Firsthand (skip ok): starting a task. Name one check that fails now and "
+    'passes when this is done. Reply here starting with "check:".'
 )
 REPLY = f"check: {fb.LINE}"
 WORK = f"Done when: {fb.LINE}. Write this check as a failing test first."
@@ -165,7 +165,7 @@ class BriefFixtures(BriefReplay):
         r = self.say(root, "yes")
         lines = (r.context or "").split("\n")
         self.assertIn(PRINT_PREFIX, lines)
-        self.assertIn("Firsthand, done check. Matched.", lines)
+        self.assertIn("Firsthand, Brief. Matched.", lines)
         self.assertIn(
             "test_retry_returns_first_charge passes now. It fails on its assertion "
             "with the change undone. It can tell done from not done.",
@@ -182,7 +182,7 @@ class BriefFixtures(BriefReplay):
         view = self.engine.question(self.ref())
         result = view["result"]
         self.assertEqual(
-            (result["headline"], result["chip_label"]), ("DONE CHECK", "Matched")
+            (result["headline"], result["chip_label"]), ("BRIEF", "Matched")
         )
         self.assertEqual(
             result["you_said"], f'"{fb.LINE}" test_retry_returns_first_charge'
@@ -207,7 +207,7 @@ class BriefFixtures(BriefReplay):
         )
         self.no_result_yet()
         lines = (self.say(root, "yes").context or "").split("\n")
-        self.assertIn("Firsthand, done check. Did not match.", lines)
+        self.assertIn("Firsthand, Brief. Did not match.", lines)
         self.assertIn(
             "Your check passes with the change undone. It cannot tell done from not done.",
             lines,
@@ -230,8 +230,8 @@ class BriefFixtures(BriefReplay):
         stop = self.build_turn(root, fx)
         self.assertEqual(
             stop.visible,
-            "Firsthand: your agent finished, and no test was added for your check, so "
-            "it was not run. Nothing was scored.",
+            "Firsthand: your agent finished and added no test for your check, so no "
+            "run started. Nothing was scored.",
         )
         body = self.scored()
         self.assertEqual(
@@ -242,7 +242,7 @@ class BriefFixtures(BriefReplay):
         self.assertEqual(result["chip_label"], "Not scored")
         self.assertEqual(
             result["reason"],
-            "Not scored. No test was added in this task, so your check was not run.",
+            "Not scored. This task added no test, so your check did not run.",
         )
         self.assertEqual(len(self.question_commits()), 1)
         self.assert_untouched(root)
@@ -323,7 +323,7 @@ class BriefRules(BriefReplay):
         self.assertEqual(
             stop.visible,
             f"Firsthand (skip ok): {url} Starting a task. Name one check that fails "
-            'now and will pass when this is done. Reply here starting with "check:", '
+            'now and passes when this is done. Reply here starting with "check:", '
             "or in the Room. A reply here is part of your agent's chat. The Room is not.",
         )
         self.say(root, REPLY)
@@ -352,8 +352,8 @@ class BriefRules(BriefReplay):
         self.answered_line(root)
         self.build_turn(root, fb.BRIEF_FIXTURES["tells"])
         lines = (self.say(root, "no").context or "").split("\n")
-        self.assertIn("Firsthand, done check. Not scored.", lines)
-        self.assertIn("I could not find your check among the new tests.", lines)
+        self.assertIn("Firsthand, Brief. Not scored.", lines)
+        self.assertIn("Firsthand did not find your check in the new tests.", lines)
         body = self.scored()
         self.assertEqual(
             (body["result"], body["unscored_reason"]), ("unscored", "not-your-check")
@@ -400,7 +400,7 @@ class BriefRules(BriefReplay):
         stop = self.stop(root)
         self.assertEqual(
             stop.visible,
-            "Firsthand: test_refund_response_is_stable passes without the change. "
+            "Firsthand: test_refund_response_is_stable passes with the change undone. "
             "payments/ is marked high stakes.",
         )
         notes = self.of("note.posted")
@@ -496,7 +496,7 @@ class BriefRules(BriefReplay):
             "is this your check? test_retry_returns_first_charge.", stop.visible or ""
         )
         lines = (self.say(root, "yes").context or "").split("\n")
-        self.assertIn("Firsthand, done check. Matched.", lines)
+        self.assertIn("Firsthand, Brief. Matched.", lines)
         self.assert_untouched(root)
 
     def test_an_edit_after_the_test_run_checks_the_done_tree(self) -> None:
@@ -526,7 +526,7 @@ class BriefRules(BriefReplay):
         self.engine.close()
         self.engine = self.new_engine()
         lines = (self.say(root, "yes").context or "").split("\n")
-        self.assertIn("Firsthand, done check. Matched.", lines)
+        self.assertIn("Firsthand, Brief. Matched.", lines)
 
     def test_text_views_show_all_three_moments(self) -> None:
         root = self.brief_project()

@@ -18,7 +18,7 @@ LEAD = "The picture shows the path of the failure."
 NOTE = "The failure shows here:"
 OFF = "Not on the path of the failure."
 SAID = "your answer"
-FIX = "the fix landed here"
+FIX = "the fix is here"
 FLOW_STOPS = 2  # the test and two files fit across the page
 
 

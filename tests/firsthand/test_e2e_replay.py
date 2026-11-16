@@ -165,7 +165,7 @@ class FixtureTest(Replay):
             (body["result"], body["outcome_kind"], body["catch"]),
             ("match", "uncommon", True),
         )
-        self.assertIn("Firsthand, revert test. Matched. You said passes.", r.context)
+        self.assertIn("Firsthand, Revert test. Matched. You said passes.", r.context)
         self.assert_untouched(root)
 
     def test_needs_new_code(self) -> None:
@@ -239,7 +239,7 @@ class FixtureTest(Replay):
         root, stop = self.run_fixture("high_stakes", warm=False)
         self.assertEqual(
             stop.visible,
-            "Firsthand: test_refund_response_is_stable passes without the change. "
+            "Firsthand: test_refund_response_is_stable passes with the change undone. "
             "payments/ is marked high stakes.",
         )
         offered = [
@@ -263,7 +263,7 @@ class FixtureTest(Replay):
         nxt = self.stop(root)
         self.assertEqual(
             nxt.visible,
-            "Firsthand: test_refund_response_is_stable passes without the change. "
+            "Firsthand: test_refund_response_is_stable passes with the change undone. "
             "payments/ is marked high stakes.",
         )
         self.assertEqual(self.of("note.posted")[-1]["body"]["printed"], "fact")
@@ -381,7 +381,7 @@ class RuleTest(Replay):
                 "answer", {"text": "2"}, cwd=str(root), agent=False
             )
             self.assertTrue(
-                result["lines"][0].startswith("Firsthand, revert test. Matched.")
+                result["lines"][0].startswith("Firsthand, Revert test. Matched.")
             )
         scored = self.of("call.scored")[-1]
         self.assertEqual(scored["moment"], ref)
@@ -530,7 +530,7 @@ class EngineRulesTest(Replay):
         self.assertEqual(reruns[0]["body"]["reason"], "the check looks off")
         result = self.engine.question(new_ref)["result"]
         self.assertEqual(
-            result["more"]["dispute"], "Rechecked. The result stands, and here is why."
+            result["more"]["dispute"], "Rechecked. The result is the same."
         )
         self.assertEqual(self.engine.status(str(root))["asked_today"], 1)
         self.assert_untouched(root)

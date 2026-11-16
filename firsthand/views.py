@@ -288,7 +288,10 @@ def _sent(v: ViewInput, m: Moment, k: Key) -> str | None:
             and body.get("line") in ("finding", "result")
             and body.get("check") == m.id
         ):
-            return f'Sent to your agent: "{words.note_fact(k)}"'
+            fact = words.note_fact(k)
+            if not fact:
+                return None
+            return f'Sent to your agent: "{fact}"'
     return None
 
 
@@ -511,12 +514,12 @@ def _revert_view(v: ViewInput, m: Moment, say: Sequence[str] | None) -> dict:
 
 def _notice(v: ViewInput, project_id: str | None) -> str | None:
     if v.settings.dial == "off":
-        return "Firsthand is off. Your record is kept. Turn on"
+        return "Firsthand is off. It keeps your record. Open Settings"
     scope = v.quiet.get(project_id or "")
     return {
-        "session": "Quiet for this session. Checks still run and post notes. Undo",
-        "today": "Quiet for today. Checks still run and post notes. Undo",
-        "here": "Quiet for this project. Checks still run and post notes. Undo",
+        "session": "Quiet for this session. Runs still post notes. Undo",
+        "today": "Quiet for today. Runs still post notes. Undo",
+        "here": "Quiet for this project. Runs still post notes. Undo",
     }.get(scope or "")
 
 
@@ -540,12 +543,14 @@ def _printed(v: ViewInput, note: dict) -> bool:
     )
 
 
-def _tasks(v: ViewInput) -> dict[str, str]:
-    tasks: dict[str, str] = {}
+def _task_of(v: ViewInput, note: dict) -> str:
+    name = ""
     for e in v.events:
-        if e["type"] == "task.started" and e.get("change"):
-            tasks[e["change"]] = e["body"].get("name", "")
-    return tasks
+        if e["id"] == note["id"]:
+            break
+        if e["type"] == "task.started" and e.get("change") == note.get("change"):
+            name = e["body"].get("name", "")
+    return name
 
 
 def note_title(body: dict) -> str:
@@ -556,7 +561,7 @@ def note_title(body: dict) -> str:
     return title
 
 
-def _note_item(v: ViewInput, note: dict, tasks: Mapping[str, str]) -> dict:
+def _note_item(v: ViewInput, note: dict) -> dict:
     body = note["body"]
     fact = body.get("fact", "")
     title = note_title(body)
@@ -569,7 +574,7 @@ def _note_item(v: ViewInput, note: dict, tasks: Mapping[str, str]) -> dict:
         "evidence": list(body.get("evidence", ())),
         "printed": _printed(v, note),
         "checked": "Checked by a run, no model.",
-        "task": tasks.get(note.get("change") or "", ""),
+        "task": _task_of(v, note),
     }
 
 
@@ -606,17 +611,21 @@ def _now(v: ViewInput, project_id: str) -> list[dict]:
     ]
     if live and live[0].kind == BRIEF:
         return [_brief().now_row(live[0])]
-    return [
-        {
-            "id": m.id,
-            "ref": short_ref(m.id),
-            "reason": "A test is failing" if m.kind == CALL else "Your agent finished",
-            "task": m.task_name,
-            "size": "One tap",
-            "href": f"/q/{short_ref(m.id)}",
-        }
-        for m in live[:1]
-    ]
+    return [_now_item(m) for m in live[:1]]
+
+
+def _now_item(m: Moment) -> dict:
+    held = (m.pending or {}).get("kind") if m.state == "held" else None
+    one = m.kind == CALL or len(m.tests) == 1
+    return {
+        "id": m.id,
+        "ref": short_ref(m.id),
+        "reason": "A test is failing" if m.kind == CALL else "Your agent finished",
+        "task": m.task_name,
+        "size": None if held else ("One tap" if one else f"{len(m.tests)} tests"),
+        "held": held,
+        "href": f"/q/{short_ref(m.id)}",
+    }
 
 
 def inbox_view(v: ViewInput, project_id: str | None) -> dict:
@@ -644,14 +653,13 @@ def inbox_view(v: ViewInput, project_id: str | None) -> dict:
             },
         )
     notes = _notes(v, project_id)
-    tasks = _tasks(v)
     view = {
         "project": {"id": project_id, "name": _project_name(v, project_id)},
         "projects": projects,
         "state": state,
         "now": _now(v, project_id),
         "waiting": _callit().waiting(v, project_id) + _brief().waiting(v, project_id),
-        "notes": [_note_item(v, n, tasks) for n in notes[:NOTES_SHOWN]],
+        "notes": [_note_item(v, n) for n in notes[:NOTES_SHOWN]],
         "older_notes": max(0, len(notes) - NOTES_SHOWN),
         "results": _results(v, project_id),
         "closing": closing,
@@ -684,12 +692,12 @@ def _moment_entry(v: ViewInput, m: Moment) -> dict:
     return _room().journal_moment_fields(v, m, entry)
 
 
-def _note_entry(v: ViewInput, note: dict, tasks: Mapping[str, str]) -> dict:
+def _note_entry(v: ViewInput, note: dict) -> dict:
     entry = {
         "id": note["id"],
         "at": note["at"],
         "date": words.short_date(note["at"], v.tz),
-        "task": tasks.get(note.get("change") or "", ""),
+        "task": _task_of(v, note),
         "kind": "Note",
         "chip": None,
         "chip_label": None,
@@ -700,7 +708,6 @@ def _note_entry(v: ViewInput, note: dict, tasks: Mapping[str, str]) -> dict:
 
 
 def journal_view(v: ViewInput, project_id: str | None, limit: int) -> dict:
-    tasks = _tasks(v)
     entries = [
         _moment_entry(v, m)
         for m in v.moments.values()
@@ -709,7 +716,7 @@ def journal_view(v: ViewInput, project_id: str | None, limit: int) -> dict:
         and m.close_how != "wrong-start"
     ]
     entries += [
-        _note_entry(v, n, tasks)
+        _note_entry(v, n)
         for n in v.events
         if n["type"] == "note.posted"
         and (project_id is None or n.get("project") == project_id)

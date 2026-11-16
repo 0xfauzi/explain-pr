@@ -10,7 +10,7 @@
   var NS = 'http://www.w3.org/2000/svg';
   var NO_SESSION = 'This page needs a session. Run: firsthand room';
   var LOST = 'The Room cannot reach Firsthand on this computer. Start it with: firsthand room';
-  var INTERNAL = 'Something went wrong inside Firsthand. Nothing was changed.';
+  var INTERNAL = 'Firsthand had an error. It changed nothing.';
   var DAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
   var MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 
@@ -138,7 +138,7 @@
     text = text || '';
     while ((m = re.exec(text)) !== null) {
       if (m.index > last) frag.appendChild(D.createTextNode(text.slice(last, m.index)));
-      frag.appendChild(h('span', { class: 'fh-fact', text: m[0] }));
+      frag.appendChild(h('span', { class: 'fh-fact fh-nobr', text: m[0] }));
       last = m.index + m[0].length;
     }
     if (last < text.length) frag.appendChild(D.createTextNode(text.slice(last)));
@@ -328,11 +328,14 @@
     say(text);
   }
 
+  /* The start command as typed on this computer: the server sends it, the constant is the fallback. */
+  function lost() { return S.command ? LOST.replace(/firsthand room$/, S.command) : LOST; }
+
   function setLost(on) {
     if (S.lost === on) return;
     S.lost = on;
     drawNotice();
-    if (on) say(LOST);
+    if (on) say(lost());
   }
 
   /* The page foot repeats the day's count, except on the Inbox, whose Today list has it. */
@@ -361,6 +364,7 @@
     var n = (inbox.now || []).length;
     $('count').textContent = n ? String(n) : '';
     $('count').hidden = !n;
+    $('count').setAttribute('aria-label', n + ' open');
     setTitle();
     setIcon();
     footAsked();
@@ -410,7 +414,7 @@
     return { changes: { quiet_today: false }, project: null };
   }
 
-  function noticeText(text) { return String(text || '').replace(/\s*(Undo|Turn on)$/, ''); }
+  function noticeText(text) { return String(text || '').replace(/\s*(Undo|Open Settings)$/, ''); }
 
   function toggleQuiet(e) {
     var quiet = S.inbox && S.inbox.state ? S.inbox.state.quiet : null;
@@ -441,10 +445,11 @@
     var el = null;
     if (S.lost) {
       el = notice('alert', 'Not reachable', ['The Room cannot reach Firsthand on this computer. Start it with: ',
-        h('span', { class: 'fh-fact', text: 'firsthand room' })]);
+        h('span', { class: 'fh-fact', text: S.command || 'firsthand room' })]);
     } else if (state.dial === 'off' && text) {
-      el = notice('status', 'Off', noticeText(text),
-        h('a', { class: 'fh-btn fh-btn--quiet', href: withProject('/settings'), text: 'Turn on' }));
+      // On Settings the link would open the page it is on: the dial is right there.
+      el = notice('status', 'Off', noticeText(text), S.route.name === 'settings' ? null
+        : h('a', { class: 'fh-btn fh-btn--quiet', href: withProject('/settings'), text: 'Open Settings' }));
     } else if (state.quiet && text) {
       el = notice('status', 'Quiet', noticeText(text), state.quiet === 'session' ? null
         : h('button', { type: 'button', class: 'fh-btn fh-btn--quiet', text: 'Undo', onclick: toggleQuiet }));
@@ -512,7 +517,7 @@
     }
     if (err.code === 'not_found' && S.route.name === 'question') {
       blankPage('Not found', err.message, [h('p', { class: 'fh-acts' },
-        h('a', { class: 'fh-btn fh-btn--second', href: withProject('/'), text: 'Back to the build' }))]);
+        h('a', { class: 'fh-btn fh-btn--second', href: withProject('/'), text: 'Back to the Inbox' }))]);
       return;
     }
     blankPage('Error', err.message || INTERNAL);
@@ -565,7 +570,7 @@
   function firstLost() {
     $('notice').hidden = true;
     blankPage('Not reachable', 'The Room cannot reach Firsthand on this computer.', [
-      h('p', { class: 'fh-text', text: 'Start it with:' }), h('ol', { class: 'fh-cmds' }, h('li', { text: 'firsthand room' }))
+      h('p', { class: 'fh-text', text: 'Start it with:' }), h('ol', { class: 'fh-cmds' }, h('li', { text: S.command || 'firsthand room' }))
     ]);
   }
 
@@ -576,6 +581,7 @@
     $('quiet').addEventListener('click', toggleQuiet);
     api('GET', '/api/session').then(function (s) {
       S.token = s.token;
+      S.command = s.command || 'firsthand room';
       return loadShell();
     }).then(function () {
       return render();
@@ -590,7 +596,7 @@
   window.FH = {
     S: S, $: $, h: h, add: add, clear: clear, prop: prop, label: label, sec: sec, say: say,
     withProject: withProject, mixed: mixed, counts: counts, mark: mark, NS: NS, kindOf: kindOf,
-    verdict: verdict, no: no, title: setTitle, fitFacts: fitFacts, placeFor: placeFor, noticeText: noticeText, hms: hms, hm: hm, marginTime: marginTime, api: api,
+    verdict: verdict, no: no, title: setTitle, fitFacts: fitFacts, placeFor: placeFor, noticeText: noticeText, markTabs: markTabs, hms: hms, hm: hm, marginTime: marginTime, api: api,
     loadShell: loadShell, refresh: refresh, errLine: errLine, setErr: setErr,
     restoreFocus: restoreFocus, blankPage: blankPage, loadError: loadError, INTERNAL: INTERNAL,
     start: function () {

@@ -21,25 +21,23 @@ NO_ROOM = "run firsthand room"
 WORK_NOTICE = "A reply here is part of your agent's chat. The Room is not."
 QUIET_OFF = "Quiet is off."
 FIRST_VISIT = (
-    "Nothing here yet. Notes about this project arrive in a few minutes. "
+    "The Room is empty. Notes about a project come in a few minutes. "
     "Your first question comes when your agent next finishes a change with tests."
 )
 COVERS = "Telling a test that proves a change from one that would pass anyway."
 NO_EVIDENCE = "Checking work that has no tests."
-DONT_KNOW_REASON = '"Don\'t know" is not counted as a miss.'
+DONT_KNOW_REASON = '"Don\'t know" does not count as Did not match.'
 SKIPPED_REASON = "Skipped, so nothing was scored."
-MOVED_ON = "You moved on, so nothing was scored."
+MOVED_ON = "You did not answer. Nothing was scored."
 WRONG_START = (
-    "Closed. The start was moved back and the check runs again from there. "
+    "Closed. Firsthand moved the start back. The run starts again from there. "
     "Nothing was scored."
 )
-SHOWN_FIRST = "This was printed in your agent as a fact, so the question is closed."
-STILL_RUNNING = "Locked. The check is still running."
-CHECK_DROPPED = (
-    "The check could not finish, so there is nothing to show. Nothing was scored."
-)
+SHOWN_FIRST = "Your agent's chat already showed this fact, so the question closed."
+STILL_RUNNING = "Locked. The run has not finished."
+CHECK_DROPPED = "The run did not finish, so there is no result. Nothing was scored."
 TIME_DROPPED = (
-    "The check took longer than 2 minutes, so I dropped it. Nothing was scored."
+    "The run took longer than 2 minutes, so Firsthand stopped it. Nothing was scored."
 )
 WOULD_PASS = "It would pass whether or not the change exists."
 
@@ -52,7 +50,7 @@ _MORE_ROWS = {
 _ONE_TEST = {
     "still_passes": ["It still passes with the change undone.", WOULD_PASS],
     "fails_on_assertion": ["It fails on its assertion with the change undone."],
-    "cannot_run": ["It cannot run with the change undone, which is weak proof."],
+    "cannot_run": ["It cannot run with the change undone. That is weak proof."],
     "does_not_pass": ["It does not pass with the change undone."],
 }
 _MISS_REASON = {
@@ -72,14 +70,14 @@ _ACKS = {
     "skip": "Skipped. Back to: {task}. Next: read the summary.",
     "skip2": "Skipped. No more questions this session. Back to: {task}. Next: read the summary.",
     "quiet": (
-        'Quiet for this session. Checks still run and post notes. "quiet today" and '
-        '"quiet here" also work.'
+        "Quiet for this session. Runs still post notes. "
+        'You can also say "quiet today" or "quiet here".'
     ),
-    "quiet-today": "Quiet for today. Checks still run and post notes.",
-    "quiet-here": "Quiet for this project. Checks still run and post notes.",
+    "quiet-today": "Quiet for today. Runs still post notes.",
+    "quiet-here": "Quiet for this project. Runs still post notes.",
     "off": (
-        "Firsthand is off. Nothing is asked, run or recorded. Your record is kept. "
-        '"firsthand on" to return.'
+        "Firsthand is off. It asks, runs and records nothing. It keeps your record. "
+        'Say "firsthand on" to turn it on.'
     ),
 }
 
@@ -367,7 +365,7 @@ def checked_line(how: How) -> str:
 def counts_line(matched: int, scored: int, fixed: int) -> str:
     return (
         f"Your answers of this kind: {matched} of {scored} matched. "
-        f'Always answering "none" would have scored {fixed} of {scored}.'
+        f'The answer "none" each time scores {fixed} of {scored}.'
     )
 
 
@@ -387,13 +385,15 @@ def pending_line(m: Moment, ctx: OutputContext) -> str:
         return _brief().pending_line(m, ctx)
     url = _url(ctx, "r", m)
     where = f"at {url}" if url else "in the Room: run firsthand room"
-    return f"Firsthand: locked. The check is still running. The result will be {where}"
+    return f"Firsthand: locked. The run has not finished. See the result {where}"
 
 
 def dispute_line(stands: bool) -> str:
     if stands:
-        return "Rechecked. The result stands, and here is why."
-    return "Rechecked. The check was wrong. This call is removed from your record."
+        return "Rechecked. The result is the same."
+    return (
+        "Rechecked. The run was wrong. Firsthand removed this answer from your record."
+    )
 
 
 def chip_label(result: str | None) -> str:
@@ -430,7 +430,7 @@ def result_lines(
     if result is None and m.answer not in (None, "dont_know"):
         sc = revert_test.score(m.answer, k)  # type: ignore[arg-type]
         result = sc.result if sc is not None else None
-    head = f"Firsthand, revert test. {chip_label(result)}. You said {_chat_answer(m)}."
+    head = f"Firsthand, Revert test. {chip_label(result)}. You said {_chat_answer(m)}."
     if m.confidence == "high":
         head += " Sure."
     elif m.confidence == "low":
@@ -489,7 +489,7 @@ def fact_line(k: Key, pattern: str) -> str:
     passing = [t for t in k.tests if t.result == "still_passes"]
     name = _name(passing[0].id) if passing else _name(k.tests[0].id)
     return (
-        f"Firsthand: {name} passes without the change. "
+        f"Firsthand: {name} passes with the change undone. "
         f"{glob_label(pattern)} is marked high stakes."
     )
 

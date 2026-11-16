@@ -183,7 +183,7 @@ class ScoreAndReplyTest(unittest.TestCase):
         self.assertNotIn(words_brief.CANNOT_TELL, lines)
         self.assertEqual(
             lines,
-            ["Passes now. It cannot run with the change undone, which is weak proof."],
+            ["Passes now. It cannot run with the change undone. That is weak proof."],
         )
 
     def test_outside_line(self) -> None:
@@ -218,7 +218,7 @@ class WordsTest(support.TempHome):
         self.assertEqual(
             words.question_line(moment(), CTX),
             "Firsthand (skip ok): starting a task. Name one check that fails now and "
-            'will pass when this is done. Reply here starting with "check:".',
+            'passes when this is done. Reply here starting with "check:".',
         )
 
     def test_work_and_sent_lines(self) -> None:
@@ -263,7 +263,7 @@ class WordsTest(support.TempHome):
         self.assertEqual(
             words.result_lines(m, key(), CTX, "match"),
             [
-                "Firsthand, done check. Matched.",
+                "Firsthand, Brief. Matched.",
                 (
                     "test_retry_returns_first_charge passes now. It fails on its "
                     "assertion with the change undone. It can tell done from not done."
@@ -273,7 +273,7 @@ class WordsTest(support.TempHome):
             ],
         )
         lines = words.result_lines(m, key("still_passes"), CTX)
-        self.assertEqual(lines[0], "Firsthand, done check. Did not match.")
+        self.assertEqual(lines[0], "Firsthand, Brief. Did not match.")
         self.assertEqual(
             lines[1],
             "Your check passes with the change undone. It cannot tell done from not done.",
@@ -286,8 +286,8 @@ class WordsTest(support.TempHome):
         self.assertEqual(
             words.result_lines(no, key(), CTX)[:2],
             [
-                "Firsthand, done check. Not scored.",
-                "I could not find your check among the new tests.",
+                "Firsthand, Brief. Not scored.",
+                "Firsthand did not find your check in the new tests.",
             ],
         )
 

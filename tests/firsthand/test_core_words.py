@@ -151,7 +151,7 @@ class ResultTest(support.TempHome):
         self.assertEqual(
             lines,
             [
-                "Firsthand, revert test. Matched. You said 2.",
+                "Firsthand, Revert test. Matched. You said 2.",
                 (
                     "test_refund_response_is_stable still passes with the change undone. "
                     "It would pass whether or not the change exists."
@@ -166,7 +166,7 @@ class ResultTest(support.TempHome):
         k = key("fails_on_assertion", "still_passes", "cannot_run")
         lines = words.result_lines(m, k, ctx())
         self.assertEqual(
-            lines[0], "Firsthand, revert test. Did not match. You said none. Not sure."
+            lines[0], "Firsthand, Revert test. Did not match. You said none. Not sure."
         )
         self.assertEqual(
             lines[1],
@@ -212,13 +212,13 @@ class ResultTest(support.TempHome):
         )
         lines = words.result_lines(m, two, ctx())
         self.assertEqual(
-            lines[0], "Firsthand, revert test. Matched. You said 1 and 3. Sure."
+            lines[0], "Firsthand, Revert test. Matched. You said 1 and 3. Sure."
         )
         self.assertNotIn("What would have shown it", " ".join(lines))
         # One of two is a miss, and the cue is about the one left out.
         one = moment(state="settled", answer="1")
         lines = words.result_lines(one, two, ctx())
-        self.assertEqual(lines[0], "Firsthand, revert test. Did not match. You said 1.")
+        self.assertEqual(lines[0], "Firsthand, Revert test. Did not match. You said 1.")
         self.assertEqual(
             lines[2],
             "What would have shown it: Its only assertion is at tests/test_refunds.py:55.",
@@ -245,7 +245,8 @@ class ResultTest(support.TempHome):
     def test_more_rows_and_counts(self) -> None:
         self.assertEqual(
             words.counts_line(5, 7, 4),
-            'Your answers of this kind: 5 of 7 matched. Always answering "none" would have scored 4 of 7.',
+            "Your answers of this kind: 5 of 7 matched. "
+            'The answer "none" each time scores 4 of 7.',
         )
         self.assertEqual(
             words.sure_line(6, 8, 3, 6), "Sure: 6 of 8 matched. Not sure: 3 of 6."
@@ -257,12 +258,12 @@ class ResultTest(support.TempHome):
     def test_pending_and_dispute(self) -> None:
         self.assertEqual(
             words.pending_line(moment(), ctx()),
-            "Firsthand: locked. The check is still running. The result will be at "
+            "Firsthand: locked. The run has not finished. See the result at "
             "http://127.0.0.1:4127/r/r6t9kd",
         )
         self.assertEqual(
             words.dispute_line(False),
-            "Rechecked. The check was wrong. This call is removed from your record.",
+            "Rechecked. The run was wrong. Firsthand removed this answer from your record.",
         )
 
 
@@ -299,7 +300,7 @@ class NoQuestionTest(support.TempHome):
         )
         self.assertEqual(
             words.fact_line(k, "refunds/**"),
-            "Firsthand: test_refund_response_is_stable passes without the change. "
+            "Firsthand: test_refund_response_is_stable passes with the change undone. "
             "refunds/ is marked high stakes.",
         )
         self.assertEqual(words.glob_label("**/migrations/**"), "migrations/")
@@ -311,13 +312,13 @@ class NoQuestionTest(support.TempHome):
         )
         self.assertEqual(
             words.ack_line("quiet", "x"),
-            'Quiet for this session. Checks still run and post notes. "quiet today" and '
-            '"quiet here" also work.',
+            "Quiet for this session. Runs still post notes. "
+            'You can also say "quiet today" or "quiet here".',
         )
         self.assertEqual(
             words.ack_line("off", "x"),
-            "Firsthand is off. Nothing is asked, run or recorded. Your record is kept. "
-            '"firsthand on" to return.',
+            "Firsthand is off. It asks, runs and records nothing. It keeps your record. "
+            'Say "firsthand on" to turn it on.',
         )
 
     def test_context_text(self) -> None:

@@ -79,6 +79,12 @@ def no_session_text() -> str:
     return f"This page needs a session. Run in a terminal: {install.command()} room"
 
 
+def _start_command() -> str:
+    from firsthand import install
+
+    return f"{install.command()} room"
+
+
 def ticket_used_text() -> str:
     from firsthand import install
 
@@ -88,7 +94,7 @@ def ticket_used_text() -> str:
     )
 
 
-INTERNAL = "Something went wrong inside Firsthand. Nothing was changed."
+INTERNAL = "Firsthand had an error. It changed nothing."
 
 FONTS = (
     "newsreader-latin-opsz-normal",
@@ -539,7 +545,11 @@ def _api_get(
 ) -> Response:
     engine = server.engine
     reads: dict[str, Callable[[], object]] = {
-        "/api/session": lambda: {"token": session.token, "room": server.url},
+        "/api/session": lambda: {
+            "token": session.token,
+            "room": server.url,
+            "command": _start_command(),
+        },
         "/api/inbox": lambda: engine.inbox(project=_project(query)),
         "/api/journal": lambda: engine.journal(
             project=_project(query), limit=_limit(query)

@@ -293,15 +293,15 @@ class ScoreTest(support.TempHome):
 
         self.assertEqual(
             wc.cue_text(key()),
-            "The fix is in webhooks/handler.py, which the trace names at line 27.",
+            "The trace names webhooks/handler.py at line 27.",
         )
         self.assertEqual(
             wc.cue_text(key(fix=("config/rates.py", "webhooks/handler.py"))),
-            "The fix is in webhooks/handler.py, which the trace names at line 27.",
+            "The trace names webhooks/handler.py at line 27.",
         )
         self.assertEqual(
             wc.cue_text(key(fix=("config/rates.py",))),
-            "The fix is in config/rates.py, a file the failing trace never names.",
+            "The trace does not name config/rates.py.",
         )
 
 
@@ -361,8 +361,8 @@ class WordsTest(support.TempHome):
         m.state, m.answer = "sealed", "3"
         self.assertEqual(
             keys.agent_output("pending", moment=m, store=store, ctx=ctx()),
-            "Firsthand: locked. Shown when test_settled_posts_to_ledger passes again. "
-            "The result will be at http://127.0.0.1:4127/r/r6t9kd",
+            "Firsthand: locked. The result comes when test_settled_posts_to_ledger "
+            "passes again. See it at http://127.0.0.1:4127/r/r6t9kd",
         )
 
     def test_you_said_and_result_lines(self) -> None:
@@ -374,12 +374,11 @@ class WordsTest(support.TempHome):
         m.answer = "1"
         lines = words.result_lines(m, key(), ctx())
         self.assertEqual(
-            lines[0], "Firsthand, call it. Did not match. You said 1, api/charges.py."
+            lines[0], "Firsthand, Call it. Did not match. You said 1, api/charges.py."
         )
         self.assertEqual(
             lines[2],
-            "What would have shown it: the fix is in webhooks/handler.py, which the "
-            "trace names at line 27.",
+            "What would have shown it: the trace names webhooks/handler.py at line 27.",
         )
 
     def test_symptom_reason(self) -> None:
@@ -389,9 +388,9 @@ class WordsTest(support.TempHome):
             wc.pattern_reason(
                 {"kind": "sleep", "path": "webhooks/handler.py", "line": 31}
             ),
-            "Not scored. The fix adds a sleep at webhooks/handler.py:31. That can turn "
-            "the test green without touching the cause, so where it landed proves "
-            "nothing about your answer.",
+            "Not scored. The fix adds a sleep at webhooks/handler.py:31. That can make "
+            "the test pass and keep the cause. The fix file proves nothing about your "
+            "answer.",
         )
 
     def test_no_em_dash_in_call_it_copy(self) -> None:

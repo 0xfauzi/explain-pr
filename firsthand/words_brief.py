@@ -15,12 +15,12 @@ from firsthand.model import Key, KeyItem, Moment
 if TYPE_CHECKING:
     from firsthand.keys import OutputContext
 
-HEADLINE = "DONE CHECK"
+HEADLINE = "BRIEF"
 REASON = "Starting a task"
 CONFIRM_REASON = "Your agent finished"
-PROMPT = "Name one check that fails now and will pass when this is done"
+PROMPT = "Name one check that fails now and passes when this is done"
 FOOTER = (
-    "It goes to your agent as written. Checked by a run when your agent finishes: "
+    "Your agent gets your line as written. When your agent finishes, a run checks "
     "your test with the change, then with the change undone."
 )
 CONFIRM_FOOTER = "Checked by a run, no model: the change undone, your test kept."
@@ -30,31 +30,31 @@ CAN_TELL = "It can tell done from not done."
 CANNOT_TELL = "It cannot tell done from not done."
 WAITING_LINE = "Given to your agent. Shown when your agent finishes."
 WAITING_ROW = "shown when your agent finishes"
-CHECK_ROW = "the check is still running"
-CONFIRM_RUNNING = "Locked. The check is still running."
+CHECK_ROW = "the run has not finished"
+CONFIRM_RUNNING = "Locked. The run has not finished."
 _NO_ROOM = "run firsthand room"
 _UNSCORED = {
-    "no-test": "Not scored. No test was added in this task, so your check was not run.",
+    "no-test": "Not scored. This task added no test, so your check did not run.",
     "no-change": (
         "Not scored. Nothing outside the tests changed, so there was no change to undo."
     ),
-    "not-your-check": "Not scored. I could not find your check among the new tests.",
+    "not-your-check": "Not scored. Firsthand did not find your check in the new tests.",
     "never-done": "Not scored. The change ended before your agent finished.",
     "no-confirm": "Not scored. The change ended before you said whether this is your check.",
-    "moved-on": "You moved on, so nothing was scored.",
+    "moved-on": "You did not answer. Nothing was scored.",
     "skipped": "Skipped, so nothing was scored.",
     "check-unavailable": (
-        "The check could not finish, so there is nothing to show. Nothing was scored."
+        "The run did not finish, so there is no result. Nothing was scored."
     ),
 }
 _STOP = {
     "no-test": (
-        "Firsthand: your agent finished, and no test was added for your check, so it "
-        "was not run. Nothing was scored."
+        "Firsthand: your agent finished and added no test for your check, so no run "
+        "started. Nothing was scored."
     ),
     "no-change": (
-        "Firsthand: your agent finished, and nothing outside the tests changed, so "
-        "your check was not run. Nothing was scored."
+        "Firsthand: your agent finished and changed nothing outside the tests, so "
+        "your check did not run. Nothing was scored."
     ),
 }
 
@@ -102,7 +102,7 @@ def context_line(m: Moment, project_name: str) -> str:
 
 
 WORK_NOTICE = "A reply here is part of your agent's chat. The Room is not."
-_ASK = "Name one check that fails now and will pass when this is done."
+_ASK = "Name one check that fails now and passes when this is done."
 _REPLY = 'Reply here starting with "check:"'
 
 
@@ -162,7 +162,7 @@ def pending_line(m: Moment, ctx: OutputContext) -> str:
         return sent_line(m)
     url = _url(ctx, "r", m)
     where = f"at {url}" if url else f"in the Room: {_NO_ROOM}"
-    return f"Firsthand: locked. The check is still running. The result will be {where}"
+    return f"Firsthand: locked. The run has not finished. See the result {where}"
 
 
 # --------------------------------------------------------------- the result
@@ -191,9 +191,7 @@ def what_happened(k: Key) -> list[str]:
     if result == "cannot_run":
         # Not CANNOT_TELL: it does fail without the change, only not on its
         # assertion (experience.md 5.3 gives that sentence to a passing check only).
-        return [
-            "Passes now. It cannot run with the change undone, which is weak proof."
-        ]
+        return ["Passes now. It cannot run with the change undone. That is weak proof."]
     return ["Passes now. It does not pass with the change undone."]
 
 
@@ -256,7 +254,7 @@ def _chat_fact(k: Key) -> str:
     name = item.id.rsplit("::", 1)[-1]
     rest = {
         "fails_on_assertion": f"It fails on its assertion with the change undone. {CAN_TELL}",
-        "cannot_run": "It cannot run with the change undone, which is weak proof.",
+        "cannot_run": "It cannot run with the change undone. That is weak proof.",
     }.get(item.result, "It does not pass with the change undone.")
     return f"{name} passes now. {rest}"
 
@@ -266,7 +264,7 @@ def result_lines(
 ) -> list[str]:
     """The chat form of the result, after "yes" (or "no") to "Is this your check?"."""
     chip = {"match": "Matched", "miss": "Did not match"}.get(result or "", "Not scored")
-    lines = [f"Firsthand, done check. {chip}."]
+    lines = [f"Firsthand, Brief. {chip}."]
     if _extra(m).get("confirm") == "no":
         lines.append(_UNSCORED["not-your-check"].removeprefix("Not scored. "))
     else:

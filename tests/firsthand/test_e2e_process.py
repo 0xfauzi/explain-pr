@@ -249,7 +249,7 @@ class ProcessTest(Process):
         reply = self.prompt(root, "passes")
         self.assertFalse(reply.startswith("{"))
         self.assertIn(PRINT_PREFIX, reply)
-        self.assertIn("Firsthand, revert test. Matched. You said passes.", reply)
+        self.assertIn("Firsthand, Revert test. Matched. You said passes.", reply)
         for _, printed in self.outputs:
             for word in (
                 "decision",

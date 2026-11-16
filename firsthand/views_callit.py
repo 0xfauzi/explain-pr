@@ -164,7 +164,7 @@ def happened(v: views.ViewInput, m: Moment) -> str:
     """The journal's What happened row."""
     result = result_view(v, m)
     if result is not None:
-        return " ".join(result["what_happened"]) + " Checked by a run."
+        return " ".join(result["what_happened"])
     return _status_line(v, m, False) or words.MOVED_ON
 
 

@@ -150,7 +150,7 @@ class EngineTest(FakeLoop):
         self.assertEqual(view["state"], "settled")
         self.assertEqual(view["result"]["chip"], "not_scored")
         self.assertEqual(
-            view["result"]["reason"], '"Don\'t know" is not counted as a miss.'
+            view["result"]["reason"], '"Don\'t know" does not count as Did not match.'
         )
         self.assertEqual(self.record.events(types=("call.scored",)), [])
 
@@ -199,9 +199,7 @@ class EngineTest(FakeLoop):
     def test_quiet_today_closes_the_open_question(self) -> None:
         _, ref = self.ask()
         out = self.engine.quiet("today", True, cwd=str(self.root))
-        self.assertEqual(
-            out["lines"], ["Quiet for today. Checks still run and post notes."]
-        )
+        self.assertEqual(out["lines"], ["Quiet for today. Runs still post notes."])
         self.assertEqual(self.engine.question(ref)["state"], "closed")
         self.assertEqual(self.engine.inbox()["state"]["quiet"], "today")
         self.assertEqual(
@@ -346,7 +344,7 @@ class ViewShapeTest(FakeLoop):
     def test_empty_inbox_before_any_project(self) -> None:
         inbox = self.engine.inbox()
         self.assertIsNone(inbox["project"])
-        self.assertTrue(inbox["empty"].startswith("Nothing here yet."))
+        self.assertTrue(inbox["empty"].startswith("The Room is empty."))
 
 
 class OutputRuleTest(unittest.TestCase):

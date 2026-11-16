@@ -19,14 +19,14 @@ HEADLINE = "CALL IT"
 REASON = "A test is failing"
 PROMPT = "Before any fix: where is the cause?"
 FOOTER = (
-    "Your agent keeps working. If it starts a fix before you answer, this closes "
-    "and the failure is saved in your record. Its theory may already be on screen. "
-    "Checked by a run, once the test passes again."
+    "Your agent keeps working. Its chat can already name a cause. If your agent "
+    "starts a fix before you answer, this question closes. Your record keeps the "
+    "failure. A run checks your answer when the test passes again."
 )
 # The Replay drill is not in this preview, so the line does not name it.
 FIX_STARTED = (
-    "Your agent got there first. Nothing was scored. The failure is saved in your "
-    "record."
+    "Your agent started the fix first. Nothing was scored. Your record keeps the "
+    "failure."
 )
 NEVER_GREEN = "Not scored. The change ended before the test passed."
 NO_FIX = (
@@ -34,11 +34,11 @@ NO_FIX = (
     "is no fix to undo."
 )
 NOT_CAUSAL = (
-    "Not scored. With the fix undone, the test still passes, so where the fix "
-    "landed proves nothing about your answer."
+    "Not scored. With the fix undone, the test still passes. The fix file proves "
+    "nothing about your answer."
 )
 SOMEWHERE_ELSE = "Somewhere else"
-FIXED_SENTENCE = 'Always answering "the file changed in this task" would have scored'
+FIXED_SENTENCE = 'The answer "the file changed in this task" each time scores'
 _PATTERN_VERBS = {
     "sleep": "adds a sleep",
     "except": "adds a broad except",
@@ -153,7 +153,10 @@ def waiting_row(m: Moment) -> str:
 def pending_line(m: Moment, ctx: OutputContext) -> str:
     url = _url(ctx, "r", m)
     where = f"at {url}" if url else f"in the Room: {_NO_ROOM}"
-    return f"Firsthand: locked. Shown when {name(m)} passes again. The result will be {where}"
+    return (
+        f"Firsthand: locked. The result comes when {name(m)} passes again. "
+        f"See it {where}"
+    )
 
 
 # ---------------------------------------------------------------- the result
@@ -188,7 +191,7 @@ def fails_again(k: Key) -> bool:
 
 def what_happened(k: Key) -> list[str]:
     fix = _fix(k)
-    lines = [f"The fix landed in {_and(fix)}."] if fix else []
+    lines = [f"The fix is in {_and(fix)}."] if fix else []
     if fix and fails_again(k):
         lines.append("With the fix undone, the test fails again.")
     elif fix:
@@ -200,8 +203,8 @@ def pattern_reason(pattern: Mapping[str, object]) -> str:
     verb = _PATTERN_VERBS.get(str(pattern.get("kind")), "adds a pattern")
     return (
         f"Not scored. The fix {verb} at {pattern['path']}:{pattern['line']}. That can "
-        "turn the test green without touching the cause, so where it landed proves "
-        "nothing about your answer."
+        "make the test pass and keep the cause. The fix file proves nothing about "
+        "your answer."
     )
 
 
@@ -229,8 +232,8 @@ def cue_text(k: Key) -> str | None:
         if f["path"] == path
     ]
     if lines:
-        return f"The fix is in {path}, which the trace names at line {lines[-1]}."
-    return f"The fix is in {path}, a file the failing trace never names."
+        return f"The trace names {path} at line {lines[-1]}."
+    return f"The trace does not name {path}."
 
 
 def cue_line(k: Key) -> int | None:
@@ -272,7 +275,7 @@ def result_lines(
         sc = call_it.score(m.answer, k)  # type: ignore[arg-type]
         result = sc.result if sc is not None else None
     said = answer_text(m).rstrip(".")
-    head = f"Firsthand, call it. {words.chip_label(result)}. You said {said}."
+    head = f"Firsthand, Call it. {words.chip_label(result)}. You said {said}."
     lines = [head, " ".join(what_happened(k))]
     if result == "miss":
         cue = cue_text(k)

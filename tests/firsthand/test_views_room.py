@@ -158,16 +158,20 @@ class CallItFields(CallReplay):
         m = self.moment()
         ref = m.id[-6:].lower()
         self.say(root, "2 sure")
+        # The picture has no numbers: the answer reads as the file tapped.
+        second = str(m.extra["picks"][1]["path"])  # type: ignore[index]
         waiting = self.engine.inbox()["waiting"][0]
-        self.assertEqual((waiting["said"], waiting["task"]), ("2. Sure.", m.task_name))
+        self.assertEqual(
+            (waiting["said"], waiting["task"]), (f"{second}. Sure.", m.task_name)
+        )
         self.assertIsNotNone(waiting["locked_at"])
         self.green_turn("causal_fix", root)
         view = self.engine.question(ref)
         call, result = view["call"], view["result"]
         self.assertEqual((view["kind_label"], view["skill"]), ("Call it", "Debugging"))
         self.assertIsNone(view["where"]["since"])
-        self.assertEqual(call["said"], "2")
-        self.assertEqual(len(call["names"]), 1)
+        self.assertEqual(call["said"], second)
+        self.assertEqual(call["names"], [])
         self.assertEqual(result["run_label"], "fix undone")
         facts = result["facts"]
         self.assertEqual(facts[0]["k"], "the fix")
@@ -254,9 +258,7 @@ class CallItFields(CallReplay):
         listed = len(m.extra["picks"])  # type: ignore[index]
         from firsthand import views_room
 
-        self.assertEqual(
-            views_room.said(m, str(listed + 1)), (f"{listed + 1}, somewhere else", [])
-        )
+        self.assertEqual(views_room.said(m, str(listed + 1)), ("Somewhere else", []))
         self.assertEqual(views_room.said(m, "dont_know"), ("Don't know", []))
 
 

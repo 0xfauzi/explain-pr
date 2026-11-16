@@ -39,10 +39,11 @@ def _callit_said(m: Moment, answer: str) -> tuple[str, list[str]]:
     if answer == "dont_know":
         return "Don't know", []
     listed = words_callit.picks(m)
+    # The picture has no numbers: the answer is the file, as it was tapped.
     if answer.isdigit() and 1 <= int(answer) <= len(listed):
-        return answer, [str(listed[int(answer) - 1]["path"])]
+        return str(listed[int(answer) - 1]["path"]), []
     if answer.isdigit():
-        return f"{answer}, somewhere else", []
+        return words_callit.SOMEWHERE_ELSE, []
     return answer, []
 
 
@@ -224,8 +225,21 @@ def happened(v: views.ViewInput, m: Moment) -> tuple[str, bool]:
     if m.kind == views.BRIEF:
         return views._brief().happened(v, m), ran
     if result:
-        return " ".join(result["what_happened"][:1]) + " Checked by a run.", ran
+        return _revert_happened(v, m, result["what_happened"][:1]), ran
     return views.status_line(v, m, False) or words.MOVED_ON, False
+
+
+def _revert_happened(v: views.ViewInput, m: Moment, first: list[str]) -> str:
+    """The first line of what happened, with the test named in place of "It", as
+    the chat line names it (words._chat_fact): a ledger row has no test to point at."""
+    ran = v.last(m.id, "check.ran")
+    if not first or ran is None or not first[0].startswith("It "):
+        return " ".join(first)
+    k = views.key_from_ran(ran["body"], m)
+    subject = words._picked(m, k) or (k.tests[0] if len(k.tests) == 1 else None)
+    if subject is None:
+        return first[0]
+    return f"{words._name(subject.id)} {first[0][3:]}"
 
 
 def offered_at(v: views.ViewInput, m: Moment) -> str:

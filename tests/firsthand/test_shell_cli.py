@@ -78,11 +78,11 @@ class CliCase(support.TempHome):
 class CommandsTest(CliCase):
     def test_answer_and_skip(self) -> None:
         self.fake.results["answer"] = {
-            "lines": ["Firsthand, revert test. Matched. You said 2."]
+            "lines": ["Firsthand, Revert test. Matched. You said 2."]
         }
         code, out, _ = self.run_cli("answer", "2", "sure")
         self.assertEqual(code, 0)
-        self.assertEqual(out, "Firsthand, revert test. Matched. You said 2.\n")
+        self.assertEqual(out, "Firsthand, Revert test. Matched. You said 2.\n")
         op, args, kw = self.fake.requests[-1]
         self.assertEqual((op, args), ("answer", {"text": "2 sure"}))
         self.assertEqual(kw["cwd"], os.getcwd())
@@ -104,7 +104,7 @@ class CommandsTest(CliCase):
 
     def test_quiet_off_on(self) -> None:
         self.fake.results["quiet"] = {
-            "lines": ["Quiet for today. Checks still run and post notes."]
+            "lines": ["Quiet for today. Runs still post notes."]
         }
         self.run_cli("quiet", "today")
         self.assertEqual(
@@ -213,11 +213,15 @@ class CommandsTest(CliCase):
         self.assertIn("  You said: 2, test_x.", out)
         self.fake.results["skills"] = {
             "rows": [
-                {"n": 1, "name": "Verification", "level_line": "Too few calls. 1 of 2."}
+                {
+                    "n": 1,
+                    "name": "Verification",
+                    "level_line": "Too few answers. 1 of 2.",
+                }
             ]
         }
         out = self.run_cli("skills")[1]
-        self.assertIn("1. Verification\n  Too few calls. 1 of 2.", out)
+        self.assertIn("1. Verification\n  Too few answers. 1 of 2.", out)
         self.assertFalse(self.fake.requests[-1][2]["agent"])
 
     def test_journal_under_an_agent_is_refused(self) -> None:
@@ -274,7 +278,7 @@ class CommandsTest(CliCase):
             "result": None,
         }
         self.fake.results["answer_room"] = {
-            "say": ["Firsthand: locked. The check is still running."]
+            "say": ["Firsthand: locked. The run has not finished."]
         }
         self.swap(sys, "stdin", io.StringIO("1 and 2\n"))
         code, out, _ = self.run_cli("room", "--tty")

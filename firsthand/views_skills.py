@@ -44,7 +44,7 @@ def _level(v: ViewInput, scored: Iterable[tuple[dict, Moment | None]]) -> dict:
     have = min(len(days), 1)
     return {
         "level": "too_few",
-        "level_line": f"Too few calls. {have} of 2.",
+        "level_line": f"Too few answers. {have} of 2.",
         "days": have,
         "shown_since": None,
     }
@@ -67,8 +67,10 @@ def _newest(v: ViewInput, scored: Sequence[tuple[dict, Moment | None]]) -> str |
     newest = max(local_date(e["at"], v.tz) for e, _ in scored)
     days = (v.today - newest).days
     if days <= 0:
-        return "newest call today"
-    return "newest call 1 day ago" if days == 1 else f"newest call {days} days ago"
+        return "newest answer today"
+    if days == 1:
+        return "newest answer 1 day ago"
+    return f"newest answer {days} days ago"
 
 
 _SKILL_ROWS = (
@@ -86,7 +88,7 @@ _SKILL_ROWS = (
         5,
         "Framing the problem and the brief",
         None,  # a made thing, not a pick: no fixed answer (learning.md section 7.1)
-        "Writing a done check that fails without the change.",
+        "Writing a check that fails with the change undone.",
         "Whether the goal was the right goal.",
     ),
 )
@@ -168,14 +170,17 @@ def _skill_row(v: ViewInput, spec: tuple) -> dict:
 
 LEGEND = (
     (
-        "Shown: you made this call correctly when it was not the easy answer, with "
-        "matched calls on two different days."
+        "Shown: your answers matched on 2 different days, and 1 or more was not the "
+        "easy answer."
     ),
-    '"Too few calls. n of 2." counts the days with a matched call. Shown needs 2.',
+    (
+        '"Too few answers. n of 2." counts the days with a matched answer. '
+        "Shown needs 2 days and 1 catch."
+    ),
 )
 NO_LEVEL = (
-    "No level yet. A done check has no easy answer to beat, and what counts as "
-    "a catch for one is not decided."
+    "No level yet. A Brief has no easy answer. Firsthand has no rule for a catch "
+    "on a Brief."
 )
 
 

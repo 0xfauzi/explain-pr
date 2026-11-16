@@ -103,7 +103,8 @@ class CallItFixtures(CallReplay):
         )
         r = self.say(root, "2 sure")
         self.assertIn(
-            "Firsthand: locked. Shown when test_total passes again.", r.context or ""
+            "Firsthand: locked. The result comes when test_total passes again.",
+            r.context or "",
         )
         self.assertEqual(self.of("call.scored"), [])
         inbox = self.engine.inbox()
@@ -131,7 +132,7 @@ class CallItFixtures(CallReplay):
         self.assertEqual(
             result["what_happened"],
             [
-                "The fix landed in rates.py.",
+                "The fix is in rates.py.",
                 "With the fix undone, the test fails again.",
             ],
         )
@@ -181,7 +182,7 @@ class CallItFixtures(CallReplay):
         self.assertEqual(result["chip_label"], "Did not match")
         self.assertEqual(
             result["cue"]["text"],
-            "The fix is in rates.py, a file the failing trace never names.",
+            "The trace does not name rates.py.",
         )
         self.assert_untouched(root)
 
@@ -213,9 +214,8 @@ class CallItFixtures(CallReplay):
         self.assertEqual(result["chip_label"], "Not scored")
         self.assertEqual(
             result["reason"],
-            "Not scored. The fix adds a sleep at pricing.py:7. That can turn the test "
-            "green without touching the cause, so where it landed proves nothing about "
-            "your answer.",
+            "Not scored. The fix adds a sleep at pricing.py:7. That can make the test "
+            "pass and keep the cause. The fix file proves nothing about your answer.",
         )
         self.assert_untouched(root)
 
@@ -296,8 +296,8 @@ class CallItRules(CallReplay):
         view = self.engine.question(self.moment().id)
         self.assertEqual(
             view["status_line"],
-            "Your agent got there first. Nothing was scored. The failure is saved in "
-            "your record.",
+            "Your agent started the fix first. Nothing was scored. Your record keeps "
+            "the failure.",
         )
         self.assertEqual(
             [
@@ -390,7 +390,7 @@ class CallItRules(CallReplay):
         view = self.engine.question(m.id)
         self.assertIsNone(view["result"])
         for text in [stop.visible or "", str(view), str(self.engine.inbox())]:
-            for word in ("fix landed", "fails again", "still passes", "fix is in"):
+            for word in ("fix is here", "fails again", "still passes", "fix is in"):
                 self.assertNotIn(word, text)
         self.assertEqual(self.of("check.ran"), [])
         for r in self.replies:

@@ -192,23 +192,30 @@ class RoomPageTest(support.TempHome):
         for line in (
             "This page needs a session. Run: firsthand room",
             "The Room cannot reach Firsthand on this computer. Start it with: firsthand room",
-            "Nothing is asked, run or recorded.",
-            "No questions. Checks run and post notes.",
+            "Firsthand asks, runs and records nothing.",
+            "No questions. Runs still post notes.",
             "Questions within the daily limit.",
-            "As Standard. You may also write a line of code on some questions.",
+            "The same as Standard. Some questions also ask for a line of code.",
             "Show the result",
             "How sure?",
             "This result looks wrong",
+            "Say what looks wrong",
             "Open the commands",
-            "Back to the build",
+            "Back to the Inbox",
             "What would have shown it",
             "Wrong start",
             "Send findings to my agent",
-            "A git repo on this computer. Plain files. No remote.",
+            "A local git repo of plain files. No remote.",
             "Lock",
             "Send to my agent",
             "Recheck",
             "Turn on any number of tests, then Lock.",
+            (
+                "Tap one part of the picture. A tap locks your answer. You can undo "
+                "it before the result."
+            ),
+            "Firsthand had an error. It changed nothing.",
+            "Open Settings",
         ):
             self.assertIn(line, self.js)
 

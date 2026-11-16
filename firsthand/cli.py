@@ -18,7 +18,7 @@ DIAL_LABELS = {
     "standard": "Standard",
     "deep": "Deep",
 }
-OFF_LINE = 'Firsthand is off. Nothing is asked, run or recorded. Your record is kept. "firsthand on" to return.'
+OFF_LINE = 'Firsthand is off. It asks, runs and records nothing. It keeps your record. Say "firsthand on" to turn it on.'
 
 
 # ------------------------------------------------------------- agent check

@@ -79,7 +79,7 @@ class FakeEngine:
         self.calls.append(
             ("lock", (ref, answer), {"channel": channel, "final": final, "cwd": cwd})
         )
-        return {"say": ["Firsthand, revert test. Matched. You said 2."], "result": None}
+        return {"say": ["Firsthand, Revert test. Matched. You said 2."], "result": None}
 
     def skip(self, ref, *, channel, final, cwd=None):
         self.calls.append(
@@ -89,7 +89,7 @@ class FakeEngine:
 
     def quiet(self, scope, on=True, *, cwd=None, session=None):
         self.calls.append(("quiet", (scope, on), {"cwd": cwd}))
-        return {"lines": ["Quiet for today. Checks still run and post notes."]}
+        return {"lines": ["Quiet for today. Runs still post notes."]}
 
     def journal(self, project=None, limit=200):
         return self._record("journal", project, limit)

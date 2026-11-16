@@ -9,3 +9,4 @@ __pycache__/
 # py311 target set for ruff above it. Ignoring it is better than committing a
 # version claim no one made.
 uv.lock
+*.egg-info/

@@ -21,10 +21,10 @@
   var hms = F.hms;
 
   var DIAL = [
-    ['off', 'Off', 'Nothing is asked, run or recorded.'],
-    ['notes', 'Notes only', 'No questions. Checks run and post notes.'],
+    ['off', 'Off', 'Firsthand asks, runs and records nothing.'],
+    ['notes', 'Notes only', 'No questions. Runs still post notes.'],
     ['standard', 'Standard', 'Questions within the daily limit.'],
-    ['deep', 'Deep', 'As Standard. You may also write a line of code on some questions.']
+    ['deep', 'Deep', 'The same as Standard. Some questions also ask for a line of code.']
   ];
   var QUIET_WORDS = { session: 'this session', today: 'today', here: 'this project' };
   var CONFIDENCE = { high: 'Sure', low: 'Not sure' };
@@ -32,6 +32,7 @@
   var KEYS_MULTI = 'Turn on any number of tests, then Lock.';
   var KEYS_TAP_UNDO = 'A tap locks your answer. You can undo it before the result.';
   var KEYS_TAP = 'A tap locks your answer.';
+  var KEYS_TAP_PICTURE = 'Tap one part of the picture. A tap locks your answer. You can undo it before the result.';
 
   /* ------------------------------------------------------------ small parts */
 
@@ -68,7 +69,7 @@
   }
 
   function back(second) {
-    return h('a', { class: second ? 'fh-btn fh-btn--second' : 'fh-btn', href: withProject('/'), text: 'Back to the build' });
+    return h('a', { class: second ? 'fh-btn fh-btn--second' : 'fh-btn', href: withProject('/'), text: 'Back to the Inbox' });
   }
 
   function testName(id) { return String(id || '').split('::').pop(); }
@@ -137,7 +138,7 @@
   function stub(it) {
     var name = S.inbox && S.inbox.project ? S.inbox.project.name : '';
     return h('section', { class: 'fh-sheet fh-sheet--stub', 'aria-labelledby': 'stub-title' }, [
-      h('div', { class: 'fh-sheet__bar' }, [h('span', { text: it.reason }), h('span', { text: no(it.no) + ' · skip ok' })]),
+      h('div', { class: 'fh-sheet__bar' }, [h('span', { text: it.reason }), h('span', { text: no(it.no) + (it.held === 'pick' ? ' · locked' : it.held === 'skip' ? ' · skipped' : ' · skip ok') })]),
       h('div', { class: 'fh-sheet__body' }, [
         ctxText([name], it.since),
         h('h2', { class: 'fh-sheet__title fh-task', id: 'stub-title', text: it.task }),
@@ -176,7 +177,7 @@
 
   function lines(you, run, ran) {
     return h('dl', { class: 'fh-row__lines' }, [
-      h('dt', { text: 'You' }), h('dd', { class: 'you', text: you }),
+      h('dt', { text: 'You' }), h('dd', { class: 'you', text: curly(you) }),
       h('dt', { text: 'Run' }), h('dd', { class: ran === false ? 'say' : 'run', text: run })
     ]);
   }
@@ -477,7 +478,7 @@
   function keysLine(v) {
     var can = v.can || {};
     if (!can.lock || v.form === 'line') return null;
-    var text = v.multi ? KEYS_MULTI : (isBriefConfirm(v) ? KEYS_TAP : KEYS_TAP_UNDO);
+    var text = v.multi ? KEYS_MULTI : (isBriefConfirm(v) ? KEYS_TAP : (v.path ? KEYS_TAP_PICTURE : KEYS_TAP_UNDO));
     return h('p', { class: 'fh-keys', text: text });
   }
 
@@ -498,7 +499,11 @@
     if (!can.lock) return;
     if (v.form === 'line') {
       var field = $('ans');
-      if (!field || !field.value.trim()) { if (field) field.focus(); return; }
+      if (!field || !field.value.trim()) {
+        say('Write your check in one line.');
+        if (field) field.focus();
+        return;
+      }
       act(v, 'lock', { answer: field.value }, 'Given to your agent.', 'ans').then(function (nv) {
         if (nv && S.lines) delete S.lines[v.ref];
       });
@@ -569,13 +574,15 @@
   function heldBlock(v) {
     var can = v.can || {};
     var held = v.held;
+    var key = /^[a-z_0-9]+$/.test(String(held.answer)) ? 'pick-' + held.answer : 'undo';
     return h('div', { class: 'fh-held' }, [
       head('Your answer', held.at ? 'locked ' + hms(held.at) : null),
       answer(held.said, held.confidence, held.names),
       can.confidence ? sureCells(v) : null,
       h('div', { class: 'fh-sheet__act' }, [
         can.show ? btn('Show the result', null, function () { showResult(v); }, { 'data-k': 'show' }) : null,
-        can.undo ? btn('Undo', 'quiet', function () { act(v, 'undo', {}, 'Undone.', 'undo'); }, { 'data-k': 'undo' }) : null
+        // After Undo, focus goes back to the answer that was locked. An answer of several numbers has no one cell.
+        can.undo ? btn('Undo', 'quiet', function () { act(v, 'undo', {}, 'Undone.', key); }, { 'data-k': 'undo' }) : null
       ]),
       errHere()
     ]);
@@ -629,7 +636,7 @@
       h('div', { class: 'fh-sheet__body' }, form),
       v.footer ? h('div', { class: 'fh-sheet__foot' }, [
         h('span', { text: v.footer }),
-        v.kind === 'revert_test' ? h('span', { text: 'Nothing is written to your project.' }) : null
+        v.kind === 'revert_test' ? h('span', { text: 'Firsthand writes nothing to your project.' }) : null
       ]) : null
     ]);
   }
@@ -713,10 +720,14 @@
     var row = h('div', { class: 'fh-finding fh-finding--text', id: 'recheck', hidden: true }, [
       h('span', { class: 'fh-label', text: 'Recheck' }),
       h('div', null, [
-        h('label', { class: 'fh-field' }, [h('span', { class: 'fh-label', text: 'This result looks wrong' }), field]),
+        h('label', { class: 'fh-field' }, [h('span', { class: 'fh-label', text: 'Say what looks wrong' }), field]),
         h('div', { class: 'fh-acts' }, [
           btn('Recheck', 'second', function () {
-            if (!field.value.trim()) { field.focus(); return; }
+            if (!field.value.trim()) {
+              say('Say what looks wrong.');
+              field.focus();
+              return;
+            }
             act(v, 'dispute', { reason: field.value }, null, 'wrong-result').then(function (nv) {
               if (nv && nv.result && nv.result.more) say(nv.result.more.dispute);
             });
@@ -893,6 +904,12 @@
     S.view = v;
     S.viewJson = json;
     S.page = layout;
+    // A result has one address and one tab: a result drawn at /q/ moves to /r/, under the Journal.
+    if (layout === 'result' && location.pathname.indexOf('/q/') === 0) {
+      history.replaceState(null, '', withProject('/r/' + v.ref));
+      S.route.tab = 'journal';
+      F.markTabs('journal');
+    }
     F.title([no(v.no), v.kind_label].join(' '));
     F.placeFor(v.where);
     F.fitFacts($('main'));
@@ -922,8 +939,7 @@
       return entryRow(e, e.time);
     });
     if (!rows.length) {
-      var next = S.inbox && S.inbox.next_no ? no(S.inbox.next_no) : null;
-      rows = [blankRow(next || 'No entries', next ? 'next' : null, 'No calls or notes yet.')];
+      rows = [blankRow('No entries', null, 'No answers or notes yet.')];
     }
     F.title('Journal');
     add(main, [
@@ -953,10 +969,10 @@
   }
 
   function trackLabel(r) {
-    var text = plural(r.total, 'call', 'calls') + '. You matched ' + r.matched + '.';
+    var text = plural(r.total, 'answer', 'answers') + '. You matched ' + r.matched + '.';
     if (!r.fixed_answer) return text;
     var c = (r.calls || []).filter(function (x) { return x.catch; }).length;
-    return text + ' The easy answer would have matched ' + r.fixed_count + '. ' + c + ' of yours were catches.';
+    return text + ' The easy answer would have matched ' + r.fixed_count + '. ' + (c === 1 ? '1 of yours was a catch.' : c + ' of yours were catches.');
   }
 
   function track(r) {
@@ -992,7 +1008,7 @@
       ]),
       r.fixed_answer ? h('div', { class: 'fh-fig' }, [
         h('div', { class: 'fh-fig__n' }, [String(r.fixed_count), ' ', h('span', { text: 'of ' + r.total })]),
-        h('p', { class: 'fh-fig__cap', text: 'if you had always said "' + r.fixed_answer + '"' })
+        h('p', { class: 'fh-fig__cap', text: 'with "' + r.fixed_answer + '" each time' })
       ]) : null
     ]);
   }
@@ -1000,7 +1016,7 @@
   function level(r) {
     if (r.level === 'shown') return h('span', { class: 'fh-level' }, [h('b', { text: 'Shown' }), ' · since ' + r.shown_since]);
     if (r.level === 'too_few') {
-      return h('span', { class: r.days ? 'fh-level' : 'fh-level fh-level--none' }, ['Too few calls · ', h('b', { text: r.days + ' of 2' })]);
+      return h('span', { class: r.days ? 'fh-level' : 'fh-level fh-level--none' }, ['Too few answers · ', h('b', { text: r.days + ' of 2' })]);
     }
     return h('span', { class: 'fh-level fh-level--none' }, h('b', { text: 'No level yet' }));
   }
@@ -1014,7 +1030,7 @@
   function skillRow(r) {
     var calls = r.calls || [];
     // "since 16 Nov" stays whole: the line breaks before "since", never inside the date.
-    var since = calls.length ? [plural(r.total, 'call', 'calls') + ' ', h('span', { class: 'fh-nobr', text: 'since ' + r.since })] : 'no calls yet';
+    var since = calls.length ? [plural(r.total, 'answer', 'answers') + ' ', h('span', { class: 'fh-nobr', text: 'since ' + r.since })] : 'no answers yet';
     return h('li', { class: 'fh-row fh-row--skill', 'aria-label': r.name + ': ' + r.level_line + ', ' + r.newest }, [
       margin('Skill ' + r.n, since),
       h('div', null, [
@@ -1098,9 +1114,9 @@
   /* The engine names a setting by its field ("test_command must be a non-empty
      string."): the Room says it in words. Any other message is already plain. */
   var PLAIN = {
-    test_command: 'The test command cannot be empty.',
+    test_command: 'The test command cannot be empty. The saved command stays.',
     high_stakes_add: 'Write a path to add, such as refunds/**.',
-    high_stakes_remove: 'That path cannot be removed.',
+    high_stakes_remove: 'Firsthand cannot remove that path.',
     dial: 'The dial is Off, Notes only, Standard or Deep.',
     daily_limit: 'Questions while building is 1, 2 or 3 a day.',
     quiet: 'Quiet for this project is on or off.',
@@ -1227,9 +1243,9 @@
       sec('How much'),
       ledger([].concat(
         setRow('dial', 'The dial', [dial, dialFacts]),
-        // The cells and their unit wrap as one, so "a day (up to 3)." is never alone on a line.
+        // The cells and their unit wrap as one, so "a day." is never alone on a line.
         setRow('limit', 'Questions', [h('p', { class: 'fh-inline' }, ['Questions while building: ',
-          h('span', { class: 'fh-inline__unit' }, [limit, ' a day (up to 3).'])])]),
+          h('span', { class: 'fh-inline__unit' }, [limit, ' a day.'])])]),
         setRow('quiet', 'Quiet', [h('div', null, [
           check('quiet-today', 'Today', !!quiet.today, function (on) { save({ quiet_today: on }, null, false, 'quiet', 'quiet-today'); }),
           pid ? check('quiet-here', 'This project', !!quiet.here, function (on) { save({ quiet: on }, pid, false, 'quiet', 'quiet-here'); }) : null
@@ -1260,7 +1276,7 @@
       S.focus = 'cmd';
       renderSettings(S.settings);
     });
-    add(cmd, h('p', { class: 'fh-field__hint', text: 'Checks stop after ' + limitText(p.check_time_limit_s) + '.' }));
+    add(cmd, h('p', { class: 'fh-field__hint', text: 'A run stops after ' + limitText(p.check_time_limit_s) + '.' }));
     var globs = (p.high_stakes || []).map(function (g) {
       return h('li', null, [h('span', { class: 'k', text: g }), h('span', { class: 'ld' }),
         btn('Remove', 'quiet', function () { save({ high_stakes_remove: g }, p.id, false, 'globs', 'glob'); }, { 'aria-label': 'Remove ' + g })]);
@@ -1292,7 +1308,7 @@
     add(main, [
       sec('Your record'),
       ledger(setRow('record', 'Kept at', [h('p', { class: 'fh-text' }, [
-        h('span', { class: 'fh-fact', text: v.record }), '. A git repo on this computer. Plain files. No remote.'
+        h('span', { class: 'fh-fact', text: v.record }), '. A local git repo of plain files. No remote.'
       ])]))
     ]);
     F.restoreFocus(main);

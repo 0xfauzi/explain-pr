@@ -47,7 +47,7 @@ class TwoStillPass(Replay):
             ("miss", "uncommon", False),
         )
         context = r.context or ""
-        self.assertIn("Firsthand, revert test. Did not match. You said 2.", context)
+        self.assertIn("Firsthand, Revert test. Did not match. You said 2.", context)
         self.assertIn(f"{BOTH} still pass with the change undone.", context)
         # The cue is about the test that still passes and was left out.
         self.assertIn(
@@ -72,7 +72,7 @@ class TwoStillPass(Replay):
             ("match", "uncommon", True),
         )
         self.assertIn(
-            "Firsthand, revert test. Matched. You said 2 and 3. Sure.", r.context or ""
+            "Firsthand, Revert test. Matched. You said 2 and 3. Sure.", r.context or ""
         )
         result = self.engine.question(self.moment_id())["result"]
         self.assertEqual(result["you_said"], f"2 and 3, {BOTH}. Sure.")

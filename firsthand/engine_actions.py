@@ -330,7 +330,7 @@ class Actions:
             _, m = self._target(ref, None)
             if m.state != "held" or (m.pending or {}).get("kind") != "pick":
                 raise EngineError(
-                    "How sure is set after a pick, before the result.", "state"
+                    "Set How sure after you answer and before the result.", "state"
                 )
             if value not in ("high", "low", None):
                 raise EngineError("value must be high, low or null.", "invalid")
@@ -368,7 +368,7 @@ class Actions:
         with self._mutex:
             p, m = self._target(ref, None)
             if m.state != "open":
-                raise EngineError("Wrong start is offered only before a pick.", "state")
+                raise EngineError("Use Wrong start before you answer.", "state")
             if m.kind in ("call_it", "brief"):
                 raise EngineError(
                     "Wrong start is not offered on this question.", "state"
@@ -427,9 +427,7 @@ class Actions:
             if m.kind == "call_it":
                 raise EngineError("A Call it result cannot be rechecked yet.", "state")
             if m.kind == "brief":
-                raise EngineError(
-                    "A done check result cannot be rechecked yet.", "state"
-                )
+                raise EngineError("A Brief result cannot be rechecked yet.", "state")
             text, _ = events.scan_secrets((reason or "").strip())
             if not text:
                 raise EngineError("Say in a few words what looks wrong.", "invalid")

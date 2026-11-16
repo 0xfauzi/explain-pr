@@ -8,6 +8,7 @@ from urllib.parse import urlsplit
 
 import support
 
+from firsthand import install
 from firsthand.room import server as room
 from firsthand.room.server import RoomServer, handle
 
@@ -93,7 +94,14 @@ class RoomRoutesTest(support.TempHome):
 
     def test_session_route(self) -> None:
         data = json.loads(self.get("/api/session").body)
-        self.assertEqual(data, {"token": self.token, "room": self.room.url})
+        self.assertEqual(
+            data,
+            {
+                "token": self.token,
+                "room": self.room.url,
+                "command": f"{install.command()} room",
+            },
+        )
         self.assertEqual(self.engine.calls, [])
 
     def test_reads(self) -> None:
