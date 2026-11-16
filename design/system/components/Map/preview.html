@@ -1,0 +1,41 @@
+<!-- @dsCard group="Questions" height=1500 -->
+<!doctype html>
+<html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:ital,wght@0,300;0,400;0,500;1,400&family=IBM+Plex+Sans:wght@400;500;600&family=Newsreader:ital,opsz,wght@0,6..72,400..600;1,6..72,400..600&display=swap">
+<style>body{margin:0;padding:28px 32px;background:var(--paper)}@media(max-width:600px){body{padding:20px 16px}}</style></head>
+<body><div class="fh" style="max-width:600px">
+<div class="fh-label" style="margin-bottom:16px">The question: one changed part, and the parts outside the change. No lines yet</div>
+<div class="fh-mapbox"><div class="fh-map" role="group" aria-label="Which part sees a difference?">
+<div class="fh-map__src"><small class="tag">Changed</small><b>Ledger</b><small>A refund amount is now in cents. Before the change, it was in dollars.</small></div>
+<div class="fh-map__parts">
+<button type="button" class="fh-map__part" data-p="checkout" aria-pressed="false"><span class="w"></span><span class="t"><span class="nm"><b>Checkout</b><small>takes payments</small></span></span></button>
+<button type="button" class="fh-map__part" data-p="emails" aria-pressed="false"><span class="w"></span><span class="t"><span class="nm"><b>Emails</b><small>sends receipts</small></span></span></button>
+<button type="button" class="fh-map__part" data-p="export" aria-pressed="false"><span class="w"></span><span class="t"><span class="nm"><b>Finance export</b><small>makes the monthly file</small></span></span></button>
+<button type="button" class="fh-map__part" data-p="mobile" aria-pressed="false"><span class="w"></span><span class="t"><span class="nm"><b>Mobile API</b><small>serves the phone app</small></span></span></button>
+<button type="button" class="fh-map__part" data-p="support" aria-pressed="false"><span class="w"></span><span class="t"><span class="nm"><b>Support console</b><small>shows orders to staff</small></span></span></button>
+</div>
+<div class="fh-picks fh-map__words"><button type="button" class="fh-pick fh-pick--word" data-p="nobody" aria-pressed="false">Nobody</button><button type="button" class="fh-pick fh-pick--word" data-p="dk" aria-pressed="false">Don't know</button></div>
+</div></div>
+<div class="fh-label" style="margin:40px 0 16px">Narrow: the changed part on top</div>
+<div style="max-width:340px"><div class="fh-mapbox"><div class="fh-map" role="group" aria-label="Which part sees a difference?">
+<div class="fh-map__src"><small class="tag">Changed</small><b>Ledger</b><small>A refund amount is now in cents. Before the change, it was in dollars.</small></div>
+<div class="fh-map__parts">
+<button type="button" class="fh-map__part" data-p="checkout" aria-pressed="false"><span class="w"></span><span class="t"><span class="nm"><b>Checkout</b><small>takes payments</small></span></span></button>
+<button type="button" class="fh-map__part" data-p="emails" aria-pressed="false"><span class="w"></span><span class="t"><span class="nm"><b>Emails</b><small>sends receipts</small></span></span></button>
+<button type="button" class="fh-map__part" data-p="export" aria-pressed="false"><span class="w"></span><span class="t"><span class="nm"><b>Finance export</b><small>makes the monthly file</small></span></span></button>
+<button type="button" class="fh-map__part" data-p="mobile" aria-pressed="false"><span class="w"></span><span class="t"><span class="nm"><b>Mobile API</b><small>serves the phone app</small></span></span></button>
+<button type="button" class="fh-map__part" data-p="support" aria-pressed="false"><span class="w"></span><span class="t"><span class="nm"><b>Support console</b><small>shows orders to staff</small></span></span></button>
+</div>
+<div class="fh-picks fh-map__words"><button type="button" class="fh-pick fh-pick--word" data-p="nobody" aria-pressed="false">Nobody</button><button type="button" class="fh-pick fh-pick--word" data-p="dk" aria-pressed="false">Don't know</button></div>
+</div></div></div>
+<div class="fh-label" style="margin:40px 0 16px">The result: a line to each part that uses the changed part</div>
+<div class="fh-mapbox"><div class="fh-map fh-map--result">
+<div class="fh-map__src"><small class="tag">Changed</small><b>Ledger</b><small>A refund amount is now in cents. Before the change, it was in dollars.</small></div>
+<div class="fh-map__parts">
+<div class="fh-map__part is-through" data-r="checkout"><span class="w"></span><span class="t"><span class="nm"><b>Checkout</b><small>no use found</small></span><span class="flag flag--said">your answer</span></span></div>
+<div class="fh-map__part is-ref is-through" data-r="emails"><span class="w"></span><span class="t"><span class="nm"><b>Emails</b><small>reads the amount at <span class="fh-fact">emails/receipt.py:31</span>. Its old tests pass.</small></span><span class="flag flag--said">your answer</span></span></div>
+<div class="fh-map__part is-ref is-fail is-said" data-r="export"><span class="w"></span><span class="t"><span class="nm"><b>Finance export</b><small>reads the amount at <span class="fh-fact">exports/finance.py:88</span>. Its old test fails.</small></span><span class="flag flag--said">your answer</span></span></div>
+<div class="fh-map__part " data-r="mobile"><span class="w"></span><span class="t"><span class="nm"><b>Mobile API</b><small>no use found</small></span><span class="flag flag--said">your answer</span></span></div>
+<div class="fh-map__part " data-r="support"><span class="w"></span><span class="t"><span class="nm"><b>Support console</b><small>no use found</small></span><span class="flag flag--said">your answer</span></span></div>
+</div>
+</div></div>
+</div><script>document.querySelectorAll("button.fh-map__part,.fh-map .fh-pick").forEach(function(b){b.addEventListener("click",function(){var g=b.closest(".fh-map");g.querySelectorAll("[aria-pressed]").forEach(function(o){o.setAttribute("aria-pressed","false")});b.setAttribute("aria-pressed","true")})})</script></body></html>
