@@ -27,24 +27,25 @@ FIRST_VISIT = (
 COVERS = "Telling a test that proves a change from one that would pass anyway."
 NO_EVIDENCE = "Checking work that has no tests."
 DONT_KNOW_REASON = '"Don\'t know" does not count as Did not match.'
-SKIPPED_REASON = "Skipped, so nothing was scored."
-MOVED_ON = "You did not answer. Nothing was scored."
+SKIPPED_REASON = "Skipped. Firsthand scored nothing."
+MOVED_ON = "You did not answer. Firsthand scored nothing."
 WRONG_START = (
     "Closed. Firsthand moved the start back. The run starts again from there. "
-    "Nothing was scored."
+    "Firsthand scored nothing."
 )
-SHOWN_FIRST = "Your agent's chat already showed this fact, so the question closed."
+SHOWN_FIRST = "Your agent's chat showed this fact first. The question is closed."
 STILL_RUNNING = "Locked. The run has not finished."
-CHECK_DROPPED = "The run did not finish, so there is no result. Nothing was scored."
+CHECK_DROPPED = "The run did not finish. There is no result. Firsthand scored nothing."
 TIME_DROPPED = (
-    "The run took longer than 2 minutes, so Firsthand stopped it. Nothing was scored."
+    "The run took longer than 2 minutes. Firsthand stopped it. "
+    "Firsthand scored nothing."
 )
 WOULD_PASS = "It would pass whether or not the change exists."
 
 _MORE_ROWS = {
     "fails_on_assertion": "fails on its assertion",
     "still_passes": "still passes",
-    "cannot_run": "cannot run without the new code, which is weak proof",
+    "cannot_run": "cannot run with the change undone: weak proof",
     "does_not_pass": "does not pass",
 }
 _ONE_TEST = {
@@ -55,7 +56,7 @@ _ONE_TEST = {
 }
 _MISS_REASON = {
     "fails_on_assertion": ": it fails on its assertion.",
-    "cannot_run": ": it cannot run without the new code.",
+    "cannot_run": ": it cannot run.",
     "does_not_pass": ".",
 }
 _ANSWER_LABELS = {
@@ -365,7 +366,7 @@ def checked_line(how: How) -> str:
 def counts_line(matched: int, scored: int, fixed: int) -> str:
     return (
         f"Your answers of this kind: {matched} of {scored} matched. "
-        f'The answer "none" each time scores {fixed} of {scored}.'
+        f'If you always answer "none", you score {fixed} of {scored}.'
     )
 
 

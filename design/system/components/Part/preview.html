@@ -4,14 +4,14 @@
 <style>body{margin:0;padding:28px 32px;background:var(--paper)}@media(max-width:600px){body{padding:20px 16px}}.fh > .fh-part:first-child{margin-top:0}.fh > .fh-colophon{margin-top:0}.eg{margin:36px 0 12px}.eg:first-child{margin-top:0}</style></head>
 <body><div class="fh">
 <section class="fh-part" id="status" aria-labelledby="h-status">
-<div class="fh-part__head"><p class="fh-part__no"><b>04</b>State of the build</p><div><h2 class="fh-part__title" id="h-status">What works today, and what does not yet</h2><p class="fh-part__lead">Firsthand is being built in steps. This is the state of the repository now.</p></div></div>
+<div class="fh-part__head"><p class="fh-part__no"><b>04</b>State of the build</p><div><h2 class="fh-part__title" id="h-status">What works today</h2><p class="fh-part__lead">Firsthand is a preview. This list shows what runs now and what does not.</p></div></div>
 </section>
 <section class="fh-part" id="skill" aria-labelledby="h-skill">
-<div class="fh-part__head"><p class="fh-part__no"><b>06</b>Version 0.6.0</p><h2 class="fh-part__title" id="h-skill">The earlier skill is still here</h2></div>
+<div class="fh-part__head"><p class="fh-part__no"><b>06</b>Version 0.6.0</p><h2 class="fh-part__title" id="h-skill">The earlier skill is still available</h2></div>
 <div class="fh-part__body">
-<p class="fh-prose">This repository also holds learning-while-building, version 0.6.0. It is an Agent Skill for Claude Code and other agents that read Agent Skills. On tasks you choose, it asks you a question before the agent builds, asks you to explain the code after, and asks again some days later.</p>
-<p class="fh-prose">It installs separately and does not need Firsthand. From 0.6.0 its record is kept in <code>~/.learning-while-building</code>, outside your project. If an earlier version left a <code>.learning</code> folder in your repository, <a class="fh-link" href="https://github.com/0xfauzi/explain-pr#readme">the README</a> says how to move it.</p>
-<div class="fh-cmd__wrap"><p class="fh-cmd__cap"><span>Inside Claude Code</span><span>needs Python 3.10 or later and git</span></p><div class="fh-cmd fh-cmd--chat"><code>/plugin marketplace add 0xfauzi/explain-pr
+<p class="fh-prose">This repository also contains learning-while-building, version 0.6.0. It is an Agent Skill for Claude Code and for other agents that read Agent Skills. You choose the tasks. On those tasks, it asks you a question before the agent builds. After the build, it asks you to explain the code. It asks again after some days.</p>
+<p class="fh-prose">It installs separately and does not need Firsthand. From version 0.6.0, it keeps its record in <code>~/.learning-while-building</code>, outside your project. If an older version left a <code>.learning</code> folder in your repository, <a class="fh-link" href="https://github.com/0xfauzi/explain-pr#readme">the README</a> tells you how to move it.</p>
+<div class="fh-cmd__wrap"><p class="fh-cmd__cap"><span>In Claude Code</span><span>needs Python 3.10 or later and git</span></p><div class="fh-cmd fh-cmd--chat"><code>/plugin marketplace add 0xfauzi/explain-pr
 /plugin install learning-while-building@learning-while-building</code><button type="button" data-copy>Copy</button></div></div>
 </div>
 </section>

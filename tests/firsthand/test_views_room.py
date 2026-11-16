@@ -137,7 +137,7 @@ class RevertFields(FakeLoop):
         self.assertEqual(row["since"], row["calls"][0]["day"])
         self.assertEqual(row["fixed_answer"], "none")
         self.assertIsInstance(row["fixed_count"], int)
-        self.assertTrue(row["fixed"].startswith('Always answering "none"'))
+        self.assertTrue(row["fixed"].startswith('If you always answer "none"'))
         brief = self.engine.skills()["rows"][-1]
         self.assertEqual((brief["calls"], brief["since"]), ([], None))
         self.assertIsNone(brief["fixed_answer"])

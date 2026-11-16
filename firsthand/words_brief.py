@@ -34,27 +34,27 @@ CHECK_ROW = "the run has not finished"
 CONFIRM_RUNNING = "Locked. The run has not finished."
 _NO_ROOM = "run firsthand room"
 _UNSCORED = {
-    "no-test": "Not scored. This task added no test, so your check did not run.",
+    "no-test": "Not scored. This task added no test. Your check did not run.",
     "no-change": (
         "Not scored. Nothing outside the tests changed, so there was no change to undo."
     ),
     "not-your-check": "Not scored. Firsthand did not find your check in the new tests.",
     "never-done": "Not scored. The change ended before your agent finished.",
     "no-confirm": "Not scored. The change ended before you said whether this is your check.",
-    "moved-on": "You did not answer. Nothing was scored.",
-    "skipped": "Skipped, so nothing was scored.",
+    "moved-on": "You did not answer. Firsthand scored nothing.",
+    "skipped": "Skipped. Firsthand scored nothing.",
     "check-unavailable": (
-        "The run did not finish, so there is no result. Nothing was scored."
+        "The run did not finish. There is no result. Firsthand scored nothing."
     ),
 }
 _STOP = {
     "no-test": (
-        "Firsthand: your agent finished and added no test for your check, so no run "
-        "started. Nothing was scored."
+        "Firsthand: your agent finished. It added no test for your check. No run "
+        "started. Firsthand scored nothing."
     ),
     "no-change": (
-        "Firsthand: your agent finished and changed nothing outside the tests, so "
-        "your check did not run. Nothing was scored."
+        "Firsthand: your agent finished. It changed nothing outside the tests. "
+        "Your check did not run. Firsthand scored nothing."
     ),
 }
 
@@ -204,7 +204,7 @@ def more_row(k: Key) -> str:
     return {
         "fails_on_assertion": "fails on its assertion with the change undone",
         "still_passes": "still passes with the change undone",
-        "cannot_run": "cannot run without the new code, which is weak proof",
+        "cannot_run": "cannot run with the change undone: weak proof",
     }.get(item.result if item else "", "does not pass with the change undone")
 
 

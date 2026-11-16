@@ -230,8 +230,8 @@ class BriefFixtures(BriefReplay):
         stop = self.build_turn(root, fx)
         self.assertEqual(
             stop.visible,
-            "Firsthand: your agent finished and added no test for your check, so no "
-            "run started. Nothing was scored.",
+            "Firsthand: your agent finished. It added no test for your check. No "
+            "run started. Firsthand scored nothing.",
         )
         body = self.scored()
         self.assertEqual(
@@ -242,7 +242,7 @@ class BriefFixtures(BriefReplay):
         self.assertEqual(result["chip_label"], "Not scored")
         self.assertEqual(
             result["reason"],
-            "Not scored. This task added no test, so your check did not run.",
+            "Not scored. This task added no test. Your check did not run.",
         )
         self.assertEqual(len(self.question_commits()), 1)
         self.assert_untouched(root)

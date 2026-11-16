@@ -386,7 +386,7 @@ class Daemon:
             typed = REFUSED_UNDER_AGENT[op].replace("firsthand", install.command(), 1)
             raise _ProtocolError(
                 "refused",
-                "This is not shown inside an agent, because it holds your own answers. "
+                "An agent cannot open this page. It holds your answers. "
                 f"Run it in a terminal you opened: {typed}",
             )
         handler = _OPS.get(op)

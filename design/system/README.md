@@ -3,12 +3,12 @@ Firsthand is a logbook. A person writes a call before a result exists, a run pri
 ## Content fundamentals
 
 - Write in the second person, present tense, sentence case. "Your answer", "The run", "Your agent finished". No title case, no exclamation marks, no emoji.
-- A result is a fact about one change, never a judgement of the person. Write "Did not match", never "Wrong". Write "Don't know is not counted as a miss".
+- A result is a fact about one change, never a judgement of the person. Write "Did not match", never "Wrong". Write the product's sentence: "Don't know" does not count as Did not match.
 - Name the mechanism plainly: "Checked by a run, no model." "Served by this computer at 127.0.0.1."
 - Keep the product's fixed words exact: Revert test, Call it, Brief, the Room, Matched, Did not match, Not scored, Skip, Lock, Show the result.
-- Buttons say what happens: "Lock", "Show the result", "Back to the build". Never "OK" or "Continue".
+- Buttons say what happens: "Lock", "Show the result", "Back to the Inbox". Never "OK" or "Continue".
 - Numbers are counts with their base: "3 of 4", "Asked today: 0 of 1". Never a percentage or a score.
-- Every entry has a number and two times: when the call was locked and when the run finished. Show both. They are the proof that the call came first.
+- Every entry has a number and two times: when the answer was locked and when the run was recorded. Show both. They are the proof that the call came first.
 
 ## Words
 
@@ -53,7 +53,7 @@ This is the core of the system. Every screen keeps the two apart.
 - **The spread.** A result puts "Your answer" on the left and "The run" on the right, divided by a vertical perforation (a dashed `rule-strong` line). The verdict mark sits on the perforation. Each side is headed by its time. Below 600px the sides stack and the perforation runs across.
 - The system is square. Use `radius-sm` everywhere. No pills, circles, shadows, gradients or rounded cards.
 - Controls are 48px tall. Answer cells are 48px squares that sit flush and share borders, like boxes on a form.
-- A key that does the same thing is shown as a keycap inside the control: `Lock` with its Enter cap.
+- A key that does the same thing is shown as a keycap inside the control: `Send to my agent` with its Enter cap.
 - Focus is a 2px solid `call` outline with a 2px offset on every surface.
 
 ## Verdict marks

@@ -148,7 +148,7 @@ def _skill_row(v: ViewInput, spec: tuple) -> dict:
         **level,
         "counts": f"Your answers of this kind: {matched} of {total} matched.",
         "fixed": (
-            f'Always answering "{fixed_answer}" would have scored {fixed} of {total}.'
+            f'If you always answer "{fixed_answer}", you score {fixed} of {total}.'
             if fixed_answer
             else None
         ),
@@ -170,7 +170,7 @@ def _skill_row(v: ViewInput, spec: tuple) -> dict:
 
 LEGEND = (
     (
-        "Shown: your answers matched on 2 different days, and 1 or more was not the "
+        "Shown: your answers matched on 2 different days. One or more was not the "
         "easy answer."
     ),
     (

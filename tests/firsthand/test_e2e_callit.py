@@ -296,7 +296,7 @@ class CallItRules(CallReplay):
         view = self.engine.question(self.moment().id)
         self.assertEqual(
             view["status_line"],
-            "Your agent started the fix first. Nothing was scored. Your record keeps "
+            "Your agent started the fix first. Firsthand scored nothing. Your record keeps "
             "the failure.",
         )
         self.assertEqual(

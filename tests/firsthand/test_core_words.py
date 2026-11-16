@@ -189,7 +189,7 @@ class ResultTest(support.TempHome):
             [
                 (
                     "test_refund_amount_validated does not pass with the change undone: "
-                    "it cannot run without the new code."
+                    "it cannot run."
                 )
             ],
         )
@@ -236,7 +236,7 @@ class ResultTest(support.TempHome):
                 (
                     "test_same_key_refunds_once does not pass with the change undone: "
                     "it fails on its assertion. test_refund_amount_validated does not "
-                    "pass with the change undone: it cannot run without the new code."
+                    "pass with the change undone: it cannot run."
                 )
             ],
         )
@@ -246,7 +246,7 @@ class ResultTest(support.TempHome):
         self.assertEqual(
             words.counts_line(5, 7, 4),
             "Your answers of this kind: 5 of 7 matched. "
-            'The answer "none" each time scores 4 of 7.',
+            'If you always answer "none", you score 4 of 7.',
         )
         self.assertEqual(
             words.sure_line(6, 8, 3, 6), "Sure: 6 of 8 matched. Not sure: 3 of 6."

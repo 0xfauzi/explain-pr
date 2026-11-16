@@ -425,9 +425,9 @@ class Actions:
         with self._mutex:
             p, m = self._target(ref, None)
             if m.kind == "call_it":
-                raise EngineError("A Call it result cannot be rechecked yet.", "state")
+                raise EngineError("You cannot recheck a Call it result yet.", "state")
             if m.kind == "brief":
-                raise EngineError("A Brief result cannot be rechecked yet.", "state")
+                raise EngineError("You cannot recheck a Brief result yet.", "state")
             text, _ = events.scan_secrets((reason or "").strip())
             if not text:
                 raise EngineError("Say in a few words what looks wrong.", "invalid")

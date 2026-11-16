@@ -25,8 +25,8 @@ FOOTER = (
 )
 # The Replay drill is not in this preview, so the line does not name it.
 FIX_STARTED = (
-    "Your agent started the fix first. Nothing was scored. Your record keeps the "
-    "failure."
+    "Your agent started the fix first. Firsthand scored nothing. Your record "
+    "keeps the failure."
 )
 NEVER_GREEN = "Not scored. The change ended before the test passed."
 NO_FIX = (
@@ -38,7 +38,7 @@ NOT_CAUSAL = (
     "nothing about your answer."
 )
 SOMEWHERE_ELSE = "Somewhere else"
-FIXED_SENTENCE = 'The answer "the file changed in this task" each time scores'
+FIXED_SENTENCE = 'If you always answer "the file changed in this task", you score'
 _PATTERN_VERBS = {
     "sleep": "adds a sleep",
     "except": "adds a broad except",
