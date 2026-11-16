@@ -6,10 +6,12 @@
 <div class="fh-term"><div class="fh-term__bar"><span><b>claude code</b> &middot; ~/src/orbit-pay</span><span>main</span></div><div class="fh-term__body">
 <p class="me">Make refunds idempotent on the idempotency key.</p>
 <p class="dim">Edited ledger/refunds.py and api/refunds.py. Added 3 tests in tests/test_refunds.py. 14 passed.</p>
-<p class="fh-line"><em>Firsthand</em> (skip ok): your agent finished and added 3 tests. Which of them would still pass with the change undone? 1 test_same_key_refunds_once, 2 test_refund_response_is_stable, 3 test_refund_amount_validated. Reply the numbers, or none.</p>
+<p class="fh-line"><em>Firsthand</em> (skip ok): your agent finished and added 3 tests. Which of them would still pass with the change undone? 1 test_same_key_refunds_once, 2 test_refund_response_is_stable, 3 test_refund_amount_validated. Reply the numbers, or none. With the tests shown: http://127.0.0.1:4127/q/7f3a2c</p>
 <p class="me">2</p>
-<p class="fh-line"><em>Firsthand</em>, revert test. Matched. You said 2.
-test_refund_response_is_stable still passes with the change undone. It would pass whether or not the change exists.</p>
+<p class="fh-line"><em>Firsthand</em>, Revert test. Matched. You said 2.
+test_refund_response_is_stable still passes with the change undone. It would pass whether or not the change exists.
+More: http://127.0.0.1:4127/r/7f3a2c
+Back to: Idempotent refunds. Next: read the summary.</p>
 <p class="me"><span class="cur"></span></p>
 </div></div>
 </div></body></html>
