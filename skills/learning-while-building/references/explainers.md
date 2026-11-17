@@ -17,12 +17,7 @@ the conversation; it never replaces the learner's own attempt in chat.
 
 ## When to build one, and when not to
 
-A page is the most expensive thing this skill does: one test build took about
-138k tokens and 43 tool calls, against a few turns for a question in chat. The
-learning effect it relies on, committing to a prediction before the answer, works
-in chat too. What a page adds is the picture. So build one only when the learner
-asks for one, or when two chat attempts at the mechanism have failed and the
-mechanism has a shape that text carries badly:
+Build a page when the mechanism has a shape that text carries badly:
 
 - state that changes over time (a request lifecycle, a retry, a migration)
 - ordering or interleaving (two writers, a crash between two steps)
@@ -63,15 +58,15 @@ List what the learner's chat answer missed or got wrong; each gap gets at least
 one interaction.
 
 **3. Write the page.** Copy `assets/explainer-template.html` to
-`<record>/explainers/<topic-id>.html`, where `<record>` is the directory
-`learning.py where` prints. Keep the `<style>` and the
+`explainers/<topic-id>.html` in the record directory (`learning.py where` prints
+it). Keep the `<style>` and the
 `<script id="ex-runtime">` block unchanged. Replace everything marked EXAMPLE,
 set `<body data-topic>` to the topic id, and follow the structure below.
 
 **4. Sweep the rules.** For each simulation, extract the rules to a scratch
 location outside the repository and sweep them:
 
-    python3 <skill>/scripts/check_explainer.py PAGE --extract-rules SCRATCH/rules.cjs
+    python3 ${CLAUDE_SKILL_DIR}/scripts/check_explainer.py PAGE --extract-rules SCRATCH/rules.cjs
     node -e "
       const R = require('SCRATCH/rules.cjs');
       for (const flag of [false, true])
@@ -98,7 +93,7 @@ comparison with the code are the only things that do.
 
 **5. Run the checker.**
 
-    python3 <skill>/scripts/check_explainer.py PAGE
+    python3 ${CLAUDE_SKILL_DIR}/scripts/check_explainer.py PAGE
 
 It runs static checks, then drives the page in headless Chromium: no network
 requests, no console errors, no sideways scroll on a phone, no answer visible
@@ -287,8 +282,8 @@ behind the choice and the evidence against it; it never scolds or cheers.
 
 ## Storing and delivering the page
 
-1. Save it as `<record>/explainers/<topic-id>.html`, where `<record>` is the
-   directory `learning.py where` prints.
+1. Save it as `explainers/<topic-id>.html` in the record directory, so it is
+   kept with the record and outside the project.
 2. Get it in front of the learner in a form they can open where they are. A
    path inside a cloud container is not something a phone can open. In order of
    preference:
@@ -310,7 +305,7 @@ behind the choice and the evidence against it; it never scolds or cheers.
    for Claude" at the bottom and paste the result into the chat.
 5. Import what they paste:
 
-       python3 <skill>/scripts/learning.py import --file RESULTS.jsonl
+       python3 ${CLAUDE_SKILL_DIR}/scripts/learning.py import --file RESULTS.jsonl
 
    (Write the pasted text to a file first, or pipe it with `--file -`.)
 6. Discuss every misconception the import prints. Then ask one question in chat,

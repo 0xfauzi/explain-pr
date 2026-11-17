@@ -4,10 +4,11 @@
 Every write goes through this script so the record stays valid and the schedule
 is computed the same way every time. Claude never edits the data files by hand.
 
-Data lives in one directory per project, outside the project, in a local git
-repo at ~/.learning-while-building/ ($LEARNING_HOME). --dir or the LEARNING_DIR
-environment variable point elsewhere; `where` prints which directory is used and
-why. One file per topic and per attempt; see record.py for the layout and why.
+Data lives outside the project, in ~/.learning-while-building/projects/<project>/
+($LEARNING_HOME changes the home; --dir or the LEARNING_DIR environment variable
+names a directory directly). One file per topic and per attempt; see record.py
+for the layout and why. A record that an earlier version left in ./.learning is
+still read, with a notice, until `move` copies it out.
 
 Commands:
   init      [--dimensions a,b,c]
@@ -21,13 +22,11 @@ Commands:
   due       [--limit N]
   map
   check
+  where     (print the record directory)
+  move      (copy a record from ./.learning to the home)
   migrate   (convert a record from the old single-file format)
-  move      (move a ./.learning record out of the project)
-  export    (print the record as one JSON document)
-  import-bundle FILE   (merge an exported document; - reads stdin)
-  where     (print the record directory and which rule chose it)
 
-Only the standard library is used. Python 3.10 or later.
+Only the standard library is used. Python 3.9 or later.
 """
 
 from __future__ import annotations
@@ -35,15 +34,16 @@ from __future__ import annotations
 import argparse
 import datetime as dt
 import json
-import os
+import shutil
+import subprocess
 import sys
 from pathlib import Path
 
-from bundle import add_commands as add_bundle_commands
 from record import (
     CONFIDENCES,
     DEFAULT_DIMENSIONS,
     DEFAULT_DUE_LIMIT,
+    GRADERS,
     HINT_LEVELS,
     INTERVAL_AFTER_MISS,
     INTERVALS_AFTER_SUCCESS,
@@ -51,17 +51,17 @@ from record import (
     LEVEL_NAMES,
     OUTCOMES,
     TOPIC_ID,
+    LEGACY_DIR,
     RecordError,
-    after_write,
     current_evidence,
     data_dir,
+    holds_record,
+    home_record_dir,
+    is_legacy,
     durable_since,
-    ensure_home,
     find_attempt,
     graded_for_topic,
     highest_reached,
-    holds_record,
-    inside_home,
     is_clean_success,
     is_durable,
     level,
@@ -71,7 +71,6 @@ from record import (
     next_due,
     now_stamp,
     read_json,
-    record_problems,
     require_topic,
     save_attempt,
     save_dimensions,
@@ -80,34 +79,45 @@ from record import (
     success_streak,
     today,
 )
-from room import add_commands as add_room_commands
 
-# Independent review questions sent in one message. Same size as a practice
-# session, for the same reason: more than that and the reply becomes a chore.
-BATCH_LIMIT = DEFAULT_DUE_LIMIT
+# ---------------------------------------------------------------- git
+
+
+def git(*args: str) -> str | None:
+    try:
+        done = subprocess.run(
+            ["git", *args], capture_output=True, text=True, check=False
+        )
+    except OSError:
+        return None
+    return done.stdout.strip() if done.returncode == 0 else None
+
+
+def branch_note() -> None:
+    """Say when a write lands on a branch other sessions cannot see yet.
+
+    Only a record inside the project travels with a branch. A record in the
+    home does not, so there is nothing to say.
+    """
+    if not is_legacy():
+        return
+    branch = git("rev-parse", "--abbrev-ref", "HEAD")
+    default = (
+        git("symbolic-ref", "--short", "refs/remotes/origin/HEAD") or ""
+    ).removeprefix("origin/")
+    if branch and default and branch != default:
+        print(
+            f"Note: recorded on branch {branch}. Sessions on other branches see this only "
+            f"after {branch} is pushed and merged into {default}."
+        )
+
 
 # ---------------------------------------------------------------- commands
 
 
-CLOUD_NOTICE = (
-    "This is a cloud session. Its record is lost when the session ends. "
-    'Before you finish, run "learning.py export" and keep the output.'
-)
-
-
-def create_record(root: Path, dims: list[str]) -> None:
-    """A new, empty record at root; the home repo too when root is inside it."""
-    if inside_home(root):
-        ensure_home()
-    save_dimensions(root, dims)
-    for sub in ("topics", "attempts"):
-        (root / sub).mkdir(parents=True, exist_ok=True)
-        (root / sub / ".gitkeep").touch()
-
-
 def cmd_init(args: argparse.Namespace) -> None:
     root = data_dir(args.dir)
-    if holds_record(root):
+    if (root / "dimensions.json").exists() or (root / "topics.json").exists():
         raise RecordError(f"{root}/ already holds a record. Nothing was changed.")
     dims = (
         [d.strip() for d in args.dimensions.split(",")]
@@ -119,18 +129,16 @@ def cmd_init(args: argparse.Namespace) -> None:
         raise RecordError(
             "--dimensions was empty. Pass a comma-separated list, or omit it."
         )
-    create_record(root, dims)
-    if inside_home(root):
-        print(
-            f"Created {root}. It is outside your project. "
-            "There is nothing to commit in your project."
-        )
-    else:
-        print(f"Created {root}/.")
-    print(f"Dimensions: {', '.join(dims)}")
-    if os.environ.get("CLAUDE_CODE_REMOTE") == "true":
-        print(CLOUD_NOTICE)
-    after_write(args.dir, f"init {root.name}")
+    save_dimensions(root, dims)
+    for sub in ("topics", "attempts"):
+        (root / sub).mkdir(parents=True, exist_ok=True)
+        (root / sub / ".gitkeep").touch()
+    print(f"Created {root}/ with dimensions: {', '.join(dims)}")
+    print(
+        "The record is outside the project and is not committed with it. In a "
+        "cloud session it is lost when the container is reclaimed: copy the "
+        "directory somewhere that lasts if you need it."
+    )
 
 
 def cmd_topic_add(args: argparse.Namespace) -> None:
@@ -164,7 +172,7 @@ def cmd_topic_add(args: argparse.Namespace) -> None:
     print(
         f"Added topic {args.id} ({args.dimension}). First review due in {INTERVAL_AFTER_MISS} day."
     )
-    after_write(args.dir, f"topic add {args.id}")
+    branch_note()
 
 
 def cmd_topic_dimension(args: argparse.Namespace) -> None:
@@ -174,7 +182,6 @@ def cmd_topic_dimension(args: argparse.Namespace) -> None:
         raise RecordError(f"Dimension {args.name!r} already exists.")
     save_dimensions(root, data["dimensions"] + [args.name])
     print(f"Added dimension {args.name}.")
-    after_write(args.dir, f"topic add-dimension {args.name}")
 
 
 def cmd_topic_retire(args: argparse.Namespace) -> None:
@@ -185,7 +192,6 @@ def cmd_topic_retire(args: argparse.Namespace) -> None:
     topic["retired_reason"] = args.reason
     save_topic(root, args.id, topic)
     print(f"Retired topic {args.id}: {args.reason}")
-    after_write(args.dir, f"topic retire {args.id}")
 
 
 def cmd_ask(args: argparse.Namespace) -> None:
@@ -198,18 +204,10 @@ def cmd_ask(args: argparse.Namespace) -> None:
         raise RecordError(
             "--rubric is empty. Write the expected answer points before asking."
         )
-    # Posted questions wait for the learner by design, so they never block a chat question.
     open_ones = [
-        f"{k} ({a['topic']})"
-        for k, a in load_attempts(root).items()
-        if not a["graded"] and a.get("channel") != "async"
+        f"{k} ({a['topic']})" for k, a in load_attempts(root).items() if not a["graded"]
     ]
-    if args.batch and len(open_ones) >= BATCH_LIMIT:
-        raise RecordError(
-            f"A batch holds at most {BATCH_LIMIT} open questions; open now: "
-            f"{', '.join(open_ones)}. Send them, then grade them."
-        )
-    if open_ones and not args.batch:
+    if open_ones:
         raise RecordError(
             f"Still ungraded: {', '.join(open_ones)}. Grade each one first; "
             "use --outcome skipped if the learner never answered."
@@ -228,7 +226,6 @@ def cmd_ask(args: argparse.Namespace) -> None:
     print(
         f"Attempt {attempt['id']} recorded. Ask the question now; do not show the rubric."
     )
-    after_write(args.dir, f"ask {attempt['id']}")
 
 
 def grader_for(attempt: dict, evidence: str) -> str:
@@ -250,19 +247,11 @@ def cmd_grade(args: argparse.Namespace) -> None:
             "Hint level 3 means the answer was given. Grade it partial or wrong, not correct."
         )
     evidence = (args.evidence or "").strip()
-    response = attempt.get("response") or {}
-    answer = args.answer or response.get("answer")
-    confidence = args.confidence or response.get("confidence")
-    if not answer or not confidence:
-        raise RecordError(
-            "--answer and --confidence are required unless the learner saved an answer."
-        )
     attempt["graded"] = {
         "outcome": args.outcome,
         "hint": args.hint,
-        "confidence": confidence,
-        "answer": answer,
-        "feedback": args.feedback or "",
+        "confidence": args.confidence,
+        "answer": args.answer,
         "gap": args.gap or "",
         "evidence": evidence,
         "grader": grader_for(attempt, evidence),
@@ -280,7 +269,7 @@ def cmd_grade(args: argparse.Namespace) -> None:
             "inspected would count: record a new field attempt with --evidence."
         )
     print(f"Next review of {attempt['topic']}: {next_due(topic, history).isoformat()}")
-    after_write(args.dir, f"grade {attempt['id']}")
+    branch_note()
 
 
 IMPORT_FIELDS = [
@@ -377,7 +366,7 @@ def cmd_import(args: argparse.Namespace) -> None:
                 f"MISCONCEPTION to discuss: {row['question'][:100]} (answered: {row['answer'][:80]})"
             )
     if added:
-        after_write(args.dir, f"import {len(added)} result(s)")
+        branch_note()
 
 
 def interleave(rows: list[tuple]) -> list[tuple]:
@@ -428,7 +417,7 @@ def cmd_due(args: argparse.Namespace) -> None:
     data = load_record(root)
     attempts = load_attempts(root)
     for attempt in attempts.values():
-        if not attempt["graded"] and attempt.get("channel") != "async":
+        if not attempt["graded"]:
             print(
                 f"UNGRADED attempt {attempt['id']} on {attempt['topic']}: grade it "
                 "(--outcome skipped if never answered) before asking anything new."
@@ -477,24 +466,8 @@ def topic_lines(
     return lines
 
 
-def short_line(
-    topic_id: str, topic: dict, attempts: dict[str, dict], now: dt.date
-) -> str:
-    history = scheduled_history(attempts, topic_id)
-    best = LEVEL_NAMES[level(history)]
-    return f"  {topic_id}: highest {best}; {current_evidence(topic, history, now)}"
-
-
-def needs_attention(
-    topic: dict, attempts: dict[str, dict], topic_id: str, now: dt.date
-) -> bool:
-    """Shown in the default map: anything not currently holding."""
-    history = scheduled_history(attempts, topic_id)
-    return not current_evidence(topic, history, now).startswith("holding")
-
-
 def dimension_lines(
-    dim: str, data: dict, attempts: dict[str, dict], now: dt.date, detail: bool
+    dim: str, data: dict, attempts: dict[str, dict], now: dt.date
 ) -> list[str]:
     topics = [
         (tid, t)
@@ -504,17 +477,9 @@ def dimension_lines(
     if not topics:
         return [f"{dim}: no evidence yet"]
     durable = sum(is_durable(t, scheduled_history(attempts, tid)) for tid, t in topics)
-    flagged = [(tid, t) for tid, t in topics if needs_attention(t, attempts, tid, now)]
-    holding = len(topics) - len(flagged)
-    lines = [
-        f"{dim}: {len(topics)} topic(s), {holding} holding, {durable} with durable retention"
-    ]
-    for tid, topic in topics if detail else flagged:
-        lines += (
-            topic_lines(tid, topic, attempts, now)
-            if detail
-            else [short_line(tid, topic, attempts, now)]
-        )
+    lines = [f"{dim}: {len(topics)} topic(s), {durable} with durable retention"]
+    for tid, topic in topics:
+        lines += topic_lines(tid, topic, attempts, now)
     return lines
 
 
@@ -552,18 +517,8 @@ def cmd_map(args: argparse.Namespace) -> None:
         "Durable retention: an unaided correct answer at least a week after the topic was added."
     )
     print()
-    if args.topic:
-        topic = require_topic(data, args.topic)
-        for line in topic_lines(args.topic, topic, attempts, now):
-            print(line)
-        return
-    if not args.all:
-        print(
-            "Showing only topics that are not holding. --all lists every topic; --topic ID details one."
-        )
-        print()
     for dim in data["dimensions"]:
-        for line in dimension_lines(dim, data, attempts, now, args.all):
+        for line in dimension_lines(dim, data, attempts, now):
             print(line)
     rates = interval_rows(attempts, data)
     if rates:
@@ -575,11 +530,40 @@ def cmd_map(args: argparse.Namespace) -> None:
             print(line)
 
 
+def check_attempt(key: str, attempt: dict, data: dict) -> list[str]:
+    problems = []
+    if attempt.get("id") != key:
+        problems.append(f"attempts/{key}.json holds id {attempt.get('id')!r}")
+    if attempt.get("topic") not in data["topics"]:
+        problems.append(f"attempt {key} names unknown topic {attempt.get('topic')!r}")
+    if attempt.get("kind") not in KINDS:
+        problems.append(f"attempt {key} has unknown kind {attempt.get('kind')!r}")
+    grade = attempt.get("graded")
+    if grade:
+        for field, allowed in (
+            ("outcome", OUTCOMES),
+            ("confidence", CONFIDENCES),
+            ("grader", GRADERS),
+        ):
+            if grade.get(field) not in allowed:
+                problems.append(f"attempt {key} has {field} {grade.get(field)!r}")
+        if grade.get("hint") not in HINT_LEVELS:
+            problems.append(f"attempt {key} has hint {grade.get('hint')!r}")
+    return problems
+
+
 def cmd_check(args: argparse.Namespace) -> None:
     root = data_dir(args.dir)
     data = load_record(root)
     attempts = load_attempts(root)
-    problems = record_problems(data, attempts)
+    problems = []
+    for key, attempt in attempts.items():
+        problems += check_attempt(key, attempt, data)
+    for tid, topic in data["topics"].items():
+        if topic.get("dimension") not in data["dimensions"]:
+            problems.append(
+                f"topic {tid} names unknown dimension {topic.get('dimension')!r}"
+            )
     if problems:
         for problem in problems:
             print(f"PROBLEM: {problem}")
@@ -637,7 +621,7 @@ def cmd_migrate(args: argparse.Namespace) -> None:
     print(
         f"Migrated {len(old['topics'])} topic(s) and {len(attempts)} attempt(s). Old files removed."
     )
-    after_write(args.dir, "migrate")
+    print("Commit the result. The old files remain in git history.")
 
 
 # ---------------------------------------------------------------- cli
@@ -646,10 +630,7 @@ def cmd_migrate(args: argparse.Namespace) -> None:
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     parser.add_argument(
-        "--dir",
-        help="record directory (default: $LEARNING_DIR, else ./.learning if it "
-        "holds a record, else ~/.learning-while-building/projects/<project>; "
-        "`where` prints the one in use)",
+        "--dir", help="record directory (default .learning or $LEARNING_DIR)"
     )
     parser.add_argument("--today", help="override today's date, YYYY-MM-DD")
     sub = parser.add_subparsers(dest="command", required=True)
@@ -680,11 +661,6 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("--kind", required=True, choices=KINDS)
     p.add_argument("--question", required=True)
     p.add_argument("--rubric", required=True)
-    p.add_argument(
-        "--batch",
-        action="store_true",
-        help=f"allow up to {DEFAULT_DUE_LIMIT} open questions, for independent review questions sent together",
-    )
     p.set_defaults(func=cmd_ask)
 
     p = sub.add_parser("grade")
@@ -693,18 +669,9 @@ def build_parser() -> argparse.ArgumentParser:
     )
     p.add_argument("--outcome", required=True, choices=OUTCOMES)
     p.add_argument("--hint", required=True, type=int, choices=HINT_LEVELS)
-    p.add_argument(
-        "--confidence", choices=CONFIDENCES, help="defaults to the saved answer's"
-    )
-    p.add_argument(
-        "--answer",
-        help="the learner's answer, paraphrased; defaults to the saved answer",
-    )
+    p.add_argument("--confidence", required=True, choices=CONFIDENCES)
+    p.add_argument("--answer", required=True, help="the learner's answer, paraphrased")
     p.add_argument("--gap", help="what was missing or wrong, in one line")
-    p.add_argument(
-        "--feedback",
-        help="the feedback, stored so the learner can read it outside chat",
-    )
     p.add_argument(
         "--evidence",
         help="an artifact Claude inspected: commit, PR, test output, trace",
@@ -723,15 +690,35 @@ def build_parser() -> argparse.ArgumentParser:
     )
     p.set_defaults(func=cmd_import)
 
-    p = sub.add_parser("map")
-    p.add_argument("--all", action="store_true", help="list every topic in full")
-    p.add_argument("--topic", help="full detail for one topic")
-    p.set_defaults(func=cmd_map)
+    sub.add_parser("map").set_defaults(func=cmd_map)
     sub.add_parser("check").set_defaults(func=cmd_check)
-    add_room_commands(sub)
+    sub.add_parser("where").set_defaults(func=cmd_where)
+    sub.add_parser("move").set_defaults(func=cmd_move)
     sub.add_parser("migrate").set_defaults(func=cmd_migrate)
-    add_bundle_commands(sub)
     return parser
+
+
+def cmd_where(args: argparse.Namespace) -> None:
+    print(data_dir(args.dir))
+
+
+def cmd_move(args: argparse.Namespace) -> None:
+    """Copy ./.learning to the home. The old folder is left for the learner."""
+    old = Path(LEGACY_DIR)
+    new = home_record_dir()
+    if not holds_record(old):
+        raise RecordError(f"No record in ./{LEGACY_DIR}. Nothing to move.")
+    if holds_record(new):
+        raise RecordError(f"{new}/ already holds a record. Nothing was changed.")
+    new.parent.mkdir(mode=0o700, parents=True, exist_ok=True)
+    shutil.copytree(old, new)
+    copied = sum(1 for f in new.rglob("*") if f.is_file())
+    print(f"Copied {copied} files to {new}/. This record is used from now on.")
+    print(
+        f"./{LEGACY_DIR} is unchanged. To take it out of the repository, run "
+        f"`git rm -r --cached {LEGACY_DIR}`, add `{LEGACY_DIR}/` to .gitignore, and "
+        "commit. It stays in the history of commits that already hold it."
+    )
 
 
 def main() -> None:

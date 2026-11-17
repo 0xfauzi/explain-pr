@@ -4,27 +4,27 @@ learning.py is the command line over this module. Kept separate so the
 schedule rules can be read in one place, and imported by a test or a script
 without running the CLI.
 
-The record lives outside the project, in a local git repo with no remote:
+The record is kept outside the project, because it holds every answer the
+learner got wrong and a project folder is read by everyone who can read the
+repository:
 
-  ~/.learning-while-building/                 $LEARNING_HOME; created by init
-    FORMAT                                    "learning-record 2"
-    projects/<project-key>/                   one record per project
-      dimensions.json                         the dimensions the learner cares about
-      topics/<id>.json                        one per topic
-      attempts/<id>.json                      one per attempt; the grade is added to it
-      explainers/<topic-id>.html              explainer pages
+  ~/.learning-while-building/                 $LEARNING_HOME, mode 0700
+  ~/.learning-while-building/projects/<key>/  one folder per project
 
-Every write is committed in that home repo, so the record has its own history
-and nothing is ever written to the project. data_dir() gives the order in which
-a record directory is chosen; an older `.learning/` inside the project is still
-read until `learning.py move` moves it out.
+<key> is the project folder's name and a short hash, so two projects with the
+same name stay apart. A record that an earlier version left in ./.learning is
+still read, with a notice, until `learning.py move` copies it out.
 
-Storage is one file per thing, so that records from separate sessions (a cloud
-session's export, an old record on another branch) merge without conflict.
+Storage is one file per thing:
+
+  <record>/dimensions.json        the dimensions the learner cares about
+  <record>/topics/<id>.json       one per topic
+  <record>/attempts/<id>.json     one per attempt; the grade is added to it
+
 Attempt ids are a timestamp plus random hex, never "highest number plus one",
-which two sessions starting from the same state would both compute. The only
-conflicts left are real ones (the same topic or attempt changed in two places);
-load_record names the file and how to resolve.
+which two sessions starting from the same commit would both compute. The only
+conflicts left are real ones (the same topic or attempt changed on two
+branches); git reports those, and load_record names the file and how to resolve.
 """
 
 from __future__ import annotations
@@ -36,6 +36,7 @@ import os
 import re
 import secrets
 import subprocess
+import sys
 from pathlib import Path
 
 SCHEMA_VERSION = 2
@@ -153,21 +154,15 @@ def new_attempt_id(stamp: str) -> str:
 # ---------------------------------------------------------------- storage
 
 
-HOME_FORMAT = "learning-record 2"
 LEGACY_DIR = ".learning"
 LEGACY_NOTICE = (
-    'This record is inside your project. Run "learning.py move" to move it out.'
+    "Note: this record is in ./.learning, inside the project. Anyone who can "
+    "read the repository can read it. Run `learning.py move` to copy it to "
+    "your home folder."
 )
 
-# How data_dir chose the record directory, as `where` prints it.
-RULE_FLAG = "--dir"
-RULE_ENV = "$LEARNING_DIR"
-RULE_LEGACY = "an existing ./.learning record inside this project"
-RULE_HOME = "the default: a folder in the home record, outside the project"
 
-
-def git(*args: str, cwd: Path | None = None) -> str | None:
-    """Output of a git command, or None if git is missing or the command fails."""
+def _git(*args: str, cwd: Path) -> str | None:
     try:
         done = subprocess.run(
             ["git", *args], cwd=cwd, capture_output=True, text=True, check=False
@@ -182,130 +177,45 @@ def home_dir() -> Path:
     return Path(env) if env else Path.home() / ".learning-while-building"
 
 
-def project_top(cwd: Path) -> Path | None:
-    """The main worktree of the git repo at cwd, so worktrees share one key."""
-    top = git("rev-parse", "--show-toplevel", cwd=cwd)
-    if not top:
-        return None
-    common = git("rev-parse", "--git-common-dir", cwd=cwd)
-    if common:
-        common_dir = (cwd / common).resolve()
-        if common_dir.name == ".git":
-            return common_dir.parent
-    return Path(top).resolve()
-
-
-def _key(folder: Path, seed: str) -> str:
-    slug = re.sub(r"[^a-z0-9]+", "-", folder.name.lower()).strip("-")
-    digest = hashlib.sha256(seed.encode()).hexdigest()[:8]
-    return f"{slug or 'project'}-{digest}"
+def project_top(cwd: Path) -> Path:
+    """The git repository root at cwd, or cwd itself outside a repository."""
+    top = _git("rev-parse", "--show-toplevel", cwd=cwd)
+    return Path(top).resolve() if top else cwd.resolve()
 
 
 def project_key(cwd: Path | None = None) -> str:
-    """`<slug>-<8 hex>`: the repo folder name and a hash of its root commit."""
-    cwd = (cwd or Path.cwd()).resolve()
-    top = project_top(cwd)
-    roots = git("rev-list", "--max-parents=0", "HEAD", cwd=cwd) if top else None
-    seed = roots.splitlines()[-1] if roots else str(top or cwd)
-    return _key(top or cwd, seed)
-
-
-def path_key(cwd: Path | None = None) -> str:
-    """The key the project had before its first commit: a hash of its path."""
-    cwd = (cwd or Path.cwd()).resolve()
-    top = project_top(cwd) or cwd
-    return _key(top, str(top))
+    """`<slug>-<8 hex>`: the project folder's name and a hash of its path."""
+    top = project_top((cwd or Path.cwd()).resolve())
+    slug = re.sub(r"[^a-z0-9]+", "-", top.name.lower()).strip("-")
+    digest = hashlib.sha256(str(top).encode()).hexdigest()[:8]
+    return f"{slug or 'project'}-{digest}"
 
 
 def holds_record(root: Path) -> bool:
     return (root / "dimensions.json").exists() or (root / "topics.json").exists()
 
 
-def is_legacy(root: Path) -> bool:
-    """True when the project folder `root` holds a record in ./.learning."""
-    return holds_record(root / LEGACY_DIR)
-
-
 def home_record_dir(cwd: Path | None = None) -> Path:
-    """The project's folder in the home.
-
-    A record started before the repo's first commit is under the path key. Once
-    the repo has a commit the key changes, so that folder is kept while the
-    commit key has no record of its own.
-    """
-    projects = home_dir() / "projects"
-    chosen = projects / project_key(cwd)
-    if not holds_record(chosen):
-        early = projects / path_key(cwd)
-        if early != chosen and holds_record(early):
-            return early
-    return chosen
+    return home_dir() / "projects" / project_key(cwd)
 
 
-def resolve_dir(arg: str | None) -> tuple[Path, str]:
-    """The record directory and the rule that chose it.
-
-    A ./.learning record is read only while the home has none for this project,
-    so after `move` the home copy is read even though the old folder remains.
-    """
-    if arg:
-        return Path(arg), RULE_FLAG
-    if os.environ.get("LEARNING_DIR"):
-        return Path(os.environ["LEARNING_DIR"]), RULE_ENV
-    home = home_record_dir()
-    if is_legacy(Path.cwd()) and not holds_record(home):
-        return Path(LEGACY_DIR), RULE_LEGACY
-    return home, RULE_HOME
+def is_legacy(cwd: Path | None = None) -> bool:
+    """True when the record that will be used is the one inside the project."""
+    here = cwd or Path.cwd()
+    return holds_record(here / LEGACY_DIR) and not holds_record(home_record_dir(here))
 
 
 def data_dir(arg: str | None) -> Path:
-    return resolve_dir(arg)[0]
-
-
-def inside_home(root: Path) -> bool:
-    return root.resolve().is_relative_to(home_dir().resolve())
-
-
-def ensure_home() -> Path:
-    """Create the home repo if missing: mode 0700, `git init`, FORMAT."""
-    home = home_dir()
-    home.mkdir(mode=0o700, parents=True, exist_ok=True)
-    if not (home / ".git").exists():
-        git("init", "-q", cwd=home)
-    if not (home / "FORMAT").exists():
-        (home / "FORMAT").write_text(HOME_FORMAT + "\n", encoding="utf-8")
-    return home
-
-
-def commit_home(root: Path, message: str) -> None:
-    """Commit a write in the home repo. Silent: the write already succeeded."""
-    if not inside_home(root) or not (home_dir() / ".git").exists():
-        return
-    home = home_dir()
-    if git("-C", str(home), "add", "-A") is None:
-        return
-    git(
-        "-C",
-        str(home),
-        "-c",
-        "user.name=learning",
-        "-c",
-        "user.email=learning@localhost",
-        "-c",
-        "commit.gpgsign=false",
-        "commit",
-        "-q",
-        "-m",
-        message,
-    )
-
-
-def after_write(arg: str | None, message: str) -> None:
-    """Every writing command ends here: commit in the home, or say it is legacy."""
-    root, rule = resolve_dir(arg)
-    commit_home(root, message)
-    if rule == RULE_LEGACY:
-        print(LEGACY_NOTICE)
+    """--dir, then $LEARNING_DIR, then an unmoved ./.learning, then the home."""
+    chosen = arg or os.environ.get("LEARNING_DIR")
+    if chosen:
+        return Path(chosen)
+    if is_legacy():
+        print(LEGACY_NOTICE, file=sys.stderr)
+        return Path(LEGACY_DIR)
+    root = home_record_dir()
+    home_dir().mkdir(mode=0o700, parents=True, exist_ok=True)
+    return root
 
 
 def read_json(path: Path) -> dict:
@@ -353,7 +263,7 @@ def require_v2(root: Path) -> None:
     if (root / "topics.json").exists():
         raise RecordError(
             f"{root}/ uses the old single-file format. Run `learning.py migrate` once "
-            "to convert it."
+            "to convert it, then commit the result."
         )
     raise RecordError(
         f"No record at {root}/. Run `learning.py init` from the repository root first, "
@@ -532,41 +442,3 @@ def require_topic(data: dict, topic_id: str) -> dict:
         known = ", ".join(sorted(data["topics"])) or "(none yet)"
         raise RecordError(f"No topic {topic_id!r}. Known topics: {known}")
     return topic
-
-
-# ---------------------------------------------------------------- validation
-
-
-def check_attempt(key: str, attempt: dict, data: dict) -> list[str]:
-    problems = []
-    if attempt.get("id") != key:
-        problems.append(f"attempts/{key}.json holds id {attempt.get('id')!r}")
-    if attempt.get("topic") not in data["topics"]:
-        problems.append(f"attempt {key} names unknown topic {attempt.get('topic')!r}")
-    if attempt.get("kind") not in KINDS:
-        problems.append(f"attempt {key} has unknown kind {attempt.get('kind')!r}")
-    grade = attempt.get("graded")
-    if grade:
-        for field, allowed in (
-            ("outcome", OUTCOMES),
-            ("confidence", CONFIDENCES),
-            ("grader", GRADERS),
-        ):
-            if grade.get(field) not in allowed:
-                problems.append(f"attempt {key} has {field} {grade.get(field)!r}")
-        if grade.get("hint") not in HINT_LEVELS:
-            problems.append(f"attempt {key} has hint {grade.get('hint')!r}")
-    return problems
-
-
-def record_problems(data: dict, attempts: dict[str, dict]) -> list[str]:
-    """What `check` reports: attempts and topics that do not fit the record."""
-    problems = []
-    for key, attempt in attempts.items():
-        problems += check_attempt(key, attempt, data)
-    for tid, topic in data["topics"].items():
-        if topic.get("dimension") not in data["dimensions"]:
-            problems.append(
-                f"topic {tid} names unknown dimension {topic.get('dimension')!r}"
-            )
-    return problems
