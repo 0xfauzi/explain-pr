@@ -5,76 +5,257 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>EXAMPLE: Retrying a charge safely</title>
 <style>
+/* Firsthand explainer. One file, no network: the fonts are named and fall back
+   to the reader's own. Tokens and rules follow design/system in the repository. */
 :root {
-  --bg: #fbfbf8; --fg: #1d1f21; --muted: #5d6166; --line: #d9d9d2;
-  --panel: #f1f1ec; --accent: #2557a7; --right: #1f7a3a; --wrong: #b3261e;
-  --right-bg: #e6f3ea; --wrong-bg: #fbe9e7; --hl: #fff2b3;
+  --paper: #F4F4F0; --paper-raised: #FCFCFA; --paper-sunk: #E9E9E3;
+  --rule: #D0D0C8; --rule-strong: #72726A;
+  --ink: #14151A; --ink-2: #3F4048; --ink-3: #5E5F68; --on-ink: #F4F4F0;
+  --call: #1F3BD1; --on-call: #FFFFFF; --call-tint: #E6EAFB;
+  --mark: #F6DB45; --on-mark: #14151A;
+  --miss: #A8321A; --miss-tint: #F7E3DC;
+  --voice: "Newsreader", "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, serif;
+  --ui: "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --fact: "IBM Plex Mono", ui-monospace, "SF Mono", SFMono-Regular, Menlo, Consolas, monospace;
+  color-scheme: light dark;
 }
 @media (prefers-color-scheme: dark) {
   :root {
-    --bg: #17181a; --fg: #e6e6e3; --muted: #a3a6aa; --line: #3a3c40;
-    --panel: #222427; --accent: #8ab4f8; --right: #7fd39a; --wrong: #f2a29b;
-    --right-bg: #1d3325; --wrong-bg: #3a2220; --hl: #4a4220;
+    --paper: #0D0F15; --paper-raised: #151823; --paper-sunk: #08090D;
+    --rule: #272B3A; --rule-strong: #737A92;
+    --ink: #EDEBE6; --ink-2: #C2C3C9; --ink-3: #9296A6; --on-ink: #0D0F15;
+    --call: #8FA2FF; --on-call: #0B0F2A; --call-tint: #1A2046;
+    --mark: #3D3508; --on-mark: #FAE588;
+    --miss: #F4927A; --miss-tint: #2B1613;
   }
 }
 * { box-sizing: border-box; }
+::selection { background: #F6DB45; color: #14151A; }
+html { scrollbar-color: var(--rule-strong) var(--paper); -webkit-tap-highlight-color: transparent; }
 body {
-  margin: 0; background: var(--bg); color: var(--fg);
-  font: 17px/1.55 system-ui, -apple-system, "Segoe UI", sans-serif;
+  margin: 0; background: var(--paper); color: var(--ink-2);
+  font: 400 16px/26px var(--ui); font-feature-settings: "zero";
 }
-main { max-width: 42rem; margin: 0 auto; padding: 1.5rem 1rem 4rem; }
-h1 { font-size: 1.6rem; line-height: 1.25; margin: 0 0 .5rem; }
-h2 { font-size: 1.2rem; margin: 2.2rem 0 .6rem; }
+main { max-width: 44rem; margin: 0 auto; padding: 0 1rem 5rem; }
+
+/* The folio: the name, the place, a double rule */
+.fh-folio {
+  max-width: 44rem; margin: 0 auto; padding: 1.5rem 1rem 0;
+}
+.fh-folio > div {
+  display: flex; flex-wrap: wrap; align-items: baseline; gap: .25rem 1.5rem;
+  padding-bottom: .75rem; border-bottom: 2px solid var(--ink); position: relative;
+}
+.fh-folio > div::after { content: ""; position: absolute; left: 0; right: 0; bottom: -6px; border-bottom: 1px solid var(--ink); }
+.fh-wordmark { font: 500 22px/28px var(--voice); letter-spacing: -.015em; color: var(--ink); white-space: nowrap; }
+.fh-wordmark i { font-style: normal; background: linear-gradient(transparent 30%, var(--mark) 30%, var(--mark) 92%, transparent 92%); padding: 0 3px; margin: 0 -3px; color: var(--ink); }
+@media (prefers-color-scheme: dark) { .fh-wordmark i { color: var(--on-mark); } }
+.fh-place { font: 400 12px/18px var(--fact); color: var(--ink-3); }
+.fh-place b { font-weight: 500; color: var(--ink); }
+
+h1 { margin: 3rem 0 1rem; font: 500 40px/44px var(--voice); letter-spacing: -.022em; color: var(--ink); text-wrap: balance; }
+h2 {
+  margin: 4rem 0 1rem; padding-top: 1rem; border-top: 1px solid var(--ink);
+  font: 500 26px/32px var(--voice); letter-spacing: -.012em; color: var(--ink); text-wrap: balance;
+}
 p, li, td, th, figcaption { overflow-wrap: break-word; }
+p { margin: 0 0 1rem; }
+.stake { font: 400 19px/30px var(--voice); color: var(--ink-2); max-width: 38rem; }
 code { overflow-wrap: anywhere; }
-code, pre { font: 0.9em ui-monospace, SFMono-Regular, Menlo, monospace; }
-pre { background: var(--panel); padding: .75rem; overflow-x: auto; border-radius: 6px; }
-table { border-collapse: collapse; width: 100%; font-size: .95rem; }
-th, td { border-bottom: 1px solid var(--line); padding: .4rem .3rem; text-align: left; vertical-align: top; }
+code, pre { font: 400 .86em/1.5 var(--fact); font-variant-ligatures: none; color: var(--ink); }
+pre { background: var(--paper-sunk); padding: .75rem 1rem; overflow-x: auto; border-radius: 2px; }
+
+/* Tables are ledgers: a label row, then facts on rules */
+table { border-collapse: collapse; width: 100%; font-size: 15px; line-height: 23px; }
+th { font: 500 10.5px/16px var(--fact); letter-spacing: .11em; text-transform: uppercase; color: var(--ink-3); border-bottom: 1px solid var(--ink); padding: 0 .75rem .5rem 0; text-align: left; }
+td { border-bottom: 1px solid var(--rule); padding: .6rem .75rem .6rem 0; text-align: left; vertical-align: top; }
+td:first-child { color: var(--ink); font-weight: 500; }
+
+/* Figures */
 figure { margin: 1rem 0; }
-figcaption { color: var(--muted); font-size: .9rem; margin-top: .3rem; }
-svg { width: 100%; max-width: 30rem; height: auto; display: block; }
-svg text { fill: var(--fg); font: 15px system-ui, sans-serif; }
-svg .box { fill: var(--panel); stroke: var(--fg); stroke-width: 1.2; }
-svg .edge { stroke: var(--fg); stroke-width: 1.4; fill: none; marker-end: url(#arrow); }
-svg .arrowhead { fill: var(--fg); }
-svg .changed { stroke: var(--accent); stroke-width: 3; }
-svg text.changed { stroke: none; fill: var(--accent); font-weight: 600; }
-svg .fault { stroke: var(--wrong); stroke-width: 2; stroke-dasharray: 5 4; }
-.stake { font-size: 1.05rem; }
-.ex-predict, .ex-explain, .ex-order, .ex-sim, .ex-stepper {
-  border: 1px solid var(--line); border-radius: 8px; padding: .9rem 1rem; margin: 1.2rem 0;
+figcaption { margin-top: .5rem; font: 400 12.5px/19px var(--fact); color: var(--ink-3); }
+svg { width: 100%; max-width: 32rem; height: auto; display: block; }
+svg text { fill: var(--ink); font: 400 13px var(--ui); }
+svg .box { fill: var(--paper-raised); stroke: var(--ink); stroke-width: 1.5; rx: 2px; }
+svg .edge { stroke: var(--ink); stroke-width: 1.5; fill: none; marker-end: url(#arrow); }
+svg .arrowhead { fill: var(--ink); }
+svg .changed { stroke: var(--call); stroke-width: 3; }
+svg text.changed { stroke: none; fill: var(--call); font-weight: 500; }
+svg .fault { stroke: var(--miss); stroke-width: 2; stroke-dasharray: 5 4; }
+
+/* A sheet: one question. Its bar says what is asked and whether it is locked */
+.ex-predict, .ex-explain, .ex-order {
+  margin: 1.75rem 0; padding: 0 1.25rem 1.25rem;
+  background: var(--paper-raised); border: 1.5px solid var(--ink); border-radius: 2px;
 }
-.ex-q { font-weight: 600; margin-top: 0; }
-.ex-options, .ex-items { list-style: none; padding: 0; margin: .5rem 0; }
-.ex-options li label { display: flex; gap: .6rem; align-items: flex-start; padding: .55rem .5rem; min-height: 44px; border-radius: 6px; cursor: pointer; }
-.ex-options li label:hover { background: var(--panel); }
-.ex-right { background: var(--right-bg); border-left: 4px solid var(--right); }
-.ex-wrong { background: var(--wrong-bg); border-left: 4px solid var(--wrong); }
-.ex-badge { font-size: .8rem; font-weight: 600; margin-left: auto; white-space: nowrap; }
-.ex-conf { border: 0; padding: 0; margin: .6rem 0; }
-.ex-conf legend { padding: 0; color: var(--muted); }
-.ex-conf div { display: flex; gap: 1.2rem; }
-.ex-conf label { min-height: 44px; display: inline-flex; align-items: center; gap: .3rem; }
-button { font: inherit; min-height: 44px; padding: .4rem .9rem; border-radius: 6px; border: 1px solid var(--accent); background: transparent; color: var(--accent); cursor: pointer; }
-button.ex-commit { background: var(--accent); color: var(--bg); }
-button:disabled { opacity: .45; cursor: default; }
-.ex-msg { font-weight: 600; min-height: 1.2em; }
-.ex-reveal { border-top: 1px dashed var(--line); margin-top: .8rem; padding-top: .6rem; }
-textarea { width: 100%; min-height: 6rem; font: inherit; padding: .5rem; background: var(--bg); color: var(--fg); border: 1px solid var(--line); border-radius: 6px; }
-.ex-items li { display: flex; align-items: center; gap: .4rem; padding: .3rem .4rem; border: 1px solid var(--line); border-radius: 6px; margin: .3rem 0; }
-.ex-items li span { flex: 1; }
-.ex-items li button { min-width: 44px; padding: .2rem; }
-.ex-nav { display: flex; gap: .6rem; align-items: center; margin-top: .6rem; }
-.ex-nav span { color: var(--muted); }
-.ex-sim .ex-controls { display: grid; gap: .4rem; margin: .6rem 0; }
-.ex-sim input[type=range] { width: 100%; min-height: 44px; }
-.ex-out { display: block; font-weight: 600; padding: .5rem; border-radius: 6px; background: var(--panel); }
-.ex-sim[data-state=bad] .ex-out { background: var(--wrong-bg); }
-.ex-sim[data-state=good] .ex-out { background: var(--right-bg); }
-.ex-label { color: var(--muted); font-size: .9rem; }
-.ex-results { background: var(--panel); border-radius: 8px; padding: .9rem 1rem; margin-top: 2.5rem; }
-.ex-results textarea { min-height: 8rem; font: .8rem ui-monospace, monospace; }
+.ex-predict::before, .ex-explain::before, .ex-order::before {
+  display: block; margin: 0 -1.25rem 1.25rem; padding: 9px 1.25rem;
+  background: var(--ink); color: var(--on-ink);
+  font: 500 10.5px/16px var(--fact); letter-spacing: .11em; text-transform: uppercase;
+}
+.ex-predict::before { content: "Your prediction \00B7  answer first"; }
+.ex-explain::before { content: "Your explanation \00B7  write first"; }
+.ex-order::before { content: "Your order \00B7  arrange first"; }
+.ex-predict[data-committed="true"]::before { content: "Your prediction \00B7  locked"; }
+.ex-explain[data-committed="true"]::before { content: "Your explanation \00B7  locked"; }
+.ex-order[data-committed="true"]::before { content: "Your order \00B7  locked"; }
+/* a sheet inside a figure or a simulation keeps to its column */
+.ex-frame > .ex-predict, .ex-frame > .ex-explain, .ex-frame > .ex-order,
+.ex-sim > .ex-predict { margin: 1.25rem 0 0; }
+
+/* The question: in the person's voice, under the highlighter until it is answered */
+.ex-q {
+  display: inline; margin: 0; padding: 1px 6px; margin-left: -6px;
+  font: 500 22px/32px var(--voice); letter-spacing: -.008em; color: var(--ink);
+  background: linear-gradient(transparent 26%, var(--mark) 26%, var(--mark) 94%, transparent 94%);
+  -webkit-box-decoration-break: clone; box-decoration-break: clone;
+}
+@media (prefers-color-scheme: dark) { .ex-q { color: var(--on-mark); } }
+[data-committed="true"] > .ex-q { background: none; color: var(--ink); }
+.ex-q + * { margin-top: 1.25rem; }
+
+/* Answers: flush cells. The chosen one is in the person's blue */
+.ex-options, .ex-items { list-style: none; padding: 0; margin: 1.25rem 0 0; }
+.ex-options li { margin: 0 0 -1.5px; border: 1.5px solid var(--rule-strong); position: relative; }
+.ex-options li:first-child { border-radius: 2px 2px 0 0; }
+.ex-options li:last-child { border-radius: 0 0 2px 2px; }
+.ex-options li label {
+  display: flex; gap: .75rem; align-items: center; min-height: 48px; padding: .6rem .9rem;
+  cursor: pointer; color: var(--ink); transition: background .14s, color .14s;
+}
+.ex-options input, .ex-conf input {
+  appearance: none; -webkit-appearance: none; flex: none; margin: 0;
+  width: 14px; height: 14px; border: 1.5px solid currentColor; border-radius: 0; background: transparent; color: inherit;
+}
+.ex-options input:checked, .ex-conf input:checked { background: currentColor; box-shadow: inset 0 0 0 2.5px var(--call); }
+.ex-options li:hover { border-color: var(--call); z-index: 1; }
+.ex-options li:has(input:checked) { border-color: var(--call); z-index: 2; }
+.ex-options li:has(input:checked) label { background: var(--call); color: var(--on-call); }
+.ex-options li:has(input:focus-visible), .ex-conf label:has(input:focus-visible) { outline: 2px solid var(--call); outline-offset: 2px; z-index: 3; }
+.ex-options input:focus-visible, .ex-conf input:focus-visible { outline: none; }
+[data-committed="true"] .ex-options li { border-color: var(--rule); }
+[data-committed="true"] .ex-options li label { cursor: default; color: var(--ink-3); }
+[data-committed="true"] .ex-options li:hover { border-color: var(--rule); }
+/* after the lock: the answer that holds, and the person's own where it differs */
+.ex-options li.ex-right { border-color: var(--call); z-index: 2; }
+.ex-options li.ex-right label { background: var(--call-tint); color: var(--ink); }
+.ex-options li.ex-right:has(input:checked) label { background: var(--call); color: var(--on-call); }
+.ex-options li.ex-wrong { border-color: var(--miss); z-index: 2; }
+.ex-options li.ex-wrong label, .ex-options li.ex-wrong:has(input:checked) label { background: var(--miss-tint); color: var(--ink); }
+.ex-options li.ex-wrong input:checked { box-shadow: inset 0 0 0 2.5px var(--miss-tint); }
+.ex-badge { margin-left: auto; padding-left: .75rem; white-space: nowrap; font: 500 10.5px/16px var(--fact); letter-spacing: .11em; text-transform: uppercase; }
+.ex-right .ex-badge { color: var(--call); }
+.ex-right:has(input:checked) .ex-badge { color: var(--on-call); }
+.ex-wrong .ex-badge { color: var(--miss); }
+
+/* How sure: three flush cells */
+.ex-conf { border: 0; padding: 0; margin: 1.25rem 0 0; display: flex; flex-wrap: wrap; align-items: center; gap: .5rem 1rem; min-width: 0; }
+.ex-conf legend { float: left; padding: 0; margin-right: 1rem; font: 500 10.5px/48px var(--fact); letter-spacing: .11em; text-transform: uppercase; color: var(--ink-3); }
+.ex-conf div { display: flex; }
+.ex-conf label {
+  display: inline-flex; align-items: center; gap: .5rem; min-height: 48px; padding: 0 1rem; margin-right: -1.5px;
+  border: 1.5px solid var(--rule-strong); color: var(--ink); font: 500 14px/1 var(--ui); cursor: pointer; position: relative;
+  transition: background .14s, color .14s;
+}
+.ex-conf label:first-child { border-radius: 2px 0 0 2px; }
+.ex-conf label:last-child { border-radius: 0 2px 2px 0; }
+.ex-conf label:hover { border-color: var(--call); z-index: 1; }
+.ex-conf label:has(input:checked) { background: var(--call); border-color: var(--call); color: var(--on-call); z-index: 2; }
+.ex-conf label:has(input:disabled) { cursor: default; border-color: var(--rule); color: var(--ink-3); }
+.ex-conf label:has(input:disabled:checked) { background: var(--call-tint); border-color: var(--call); color: var(--ink); }
+
+/* Buttons: ink, square. Blue is the person's answer, not the interface */
+button {
+  font: 600 15px/1 var(--ui); min-height: 48px; padding: 0 1.25rem; border-radius: 2px;
+  border: 1.5px solid var(--ink); background: transparent; color: var(--ink); cursor: pointer;
+  transition: background .14s, color .14s, border-color .14s;
+}
+button:hover:not(:disabled) { background: var(--ink); color: var(--on-ink); }
+button:active:not(:disabled) { transform: translateY(1px); }
+button:focus-visible { outline: 2px solid var(--call); outline-offset: 2px; }
+button.ex-commit { display: block; margin-top: 1.25rem; background: var(--ink); color: var(--on-ink); }
+button.ex-commit:hover:not(:disabled) { background: var(--ink-2); border-color: var(--ink-2); }
+button:disabled { border-color: var(--rule); background: transparent; color: var(--ink-3); cursor: default; }
+button.ex-commit:disabled { display: none; }
+.ex-msg { margin: .75rem 0 0; min-height: 19px; font: 400 12.5px/19px var(--fact); color: var(--ink-2); }
+.ex-msg:empty { display: none; }
+
+/* What the page shows after the lock: under a perforation */
+.ex-reveal { margin-top: 1.25rem; padding-top: 1rem; border-top: 1.5px dashed var(--rule-strong); color: var(--ink-2); }
+.ex-reveal:not([hidden]) { animation: ex-in .28s cubic-bezier(.2,.7,.2,1) both; }
+.ex-reveal::before { content: "After your answer"; display: block; margin-bottom: .5rem; font: 500 10.5px/16px var(--fact); letter-spacing: .11em; text-transform: uppercase; color: var(--ink-3); }
+.ex-reveal > :last-child { margin-bottom: 0; }
+.ex-reveal ol { margin: 0 0 1rem; padding-left: 1.4rem; color: var(--ink); }
+@keyframes ex-in { from { opacity: 0; transform: translateY(4px); } }
+
+/* Writing: ruled lines, the person's hand */
+textarea {
+  display: block; width: 100%; min-height: 7.5rem; padding: 6px 0; border: 0; border-top: 1px solid var(--rule); border-radius: 0;
+  background: repeating-linear-gradient(transparent 0 29px, var(--rule) 29px 30px) local; color: var(--call);
+  font: italic 400 19px/30px var(--voice); resize: vertical;
+}
+textarea::placeholder { color: var(--ink-3); opacity: 1; }
+textarea:focus-visible { outline: 2px solid var(--call); outline-offset: 4px; }
+textarea:disabled { color: var(--call); opacity: 1; -webkit-text-fill-color: var(--call); }
+
+/* Ordering: one row a step, with its two keys */
+.ex-items { counter-reset: ex-item; }
+.ex-items li {
+  counter-increment: ex-item; display: flex; align-items: center; gap: .5rem; min-height: 48px; padding: 0 0 0 .9rem; margin: 0 0 -1.5px;
+  border: 1.5px solid var(--rule-strong); color: var(--ink); position: relative;
+}
+.ex-items li::before { content: counter(ex-item); flex: none; width: 1.5rem; font: 400 13px/1 var(--fact); color: var(--ink-3); }
+.ex-items li span { flex: 1; padding: .6rem 0; }
+.ex-items li button { flex: none; min-width: 48px; min-height: 48px; padding: 0; border: 0; border-left: 1.5px solid var(--rule-strong); border-radius: 0; font: 400 16px/1 var(--fact); }
+.ex-items li.ex-right { border-color: var(--call); background: var(--call-tint); z-index: 1; }
+.ex-items li.ex-wrong { border-color: var(--miss); background: var(--miss-tint); z-index: 2; }
+.ex-items li button:disabled { display: none; }
+.ex-items li:has(button:disabled) { padding-right: .9rem; }
+
+/* The stepper: a frame at a time, at the reader's pace */
+.ex-stepper { margin: 1.5rem 0; padding: 1.25rem 0 0; border-top: 1px solid var(--rule); border-bottom: 1px solid var(--rule); }
+.ex-frame:not([hidden]) { animation: ex-in .28s cubic-bezier(.2,.7,.2,1) both; }
+.ex-nav { display: flex; flex-wrap: wrap; gap: .5rem .75rem; align-items: center; margin: 1.25rem 0; }
+.ex-nav span { margin-left: auto; font: 400 12.5px/19px var(--fact); color: var(--ink-3); font-variant-numeric: tabular-nums; }
+
+/* The simulation: controls, then what the rule returns, set as a fact */
+.ex-sim { margin: 1.5rem 0; }
+.ex-sim .ex-controls { display: grid; gap: .75rem; margin: 1.5rem 0 1rem; color: var(--ink); }
+.ex-sim .ex-controls label { display: block; }
+.ex-sim .ex-controls label:has(input[type=checkbox]) { display: flex; align-items: center; gap: .6rem; min-height: 44px; }
+.ex-val { font: 500 15px/1 var(--fact); color: var(--ink); font-variant-numeric: tabular-nums; }
+.ex-sim input[type=range] { width: 100%; min-height: 44px; accent-color: var(--ink); }
+.ex-sim input[type=checkbox] { width: 18px; height: 18px; accent-color: var(--ink); }
+.ex-out {
+  display: block; padding: .75rem 1rem; border-left: 3px solid var(--rule-strong); border-radius: 0 2px 2px 0;
+  background: var(--paper-sunk); color: var(--ink); font: 400 13.5px/22px var(--fact); transition: background .14s, border-color .14s;
+}
+.ex-sim[data-state=bad] .ex-out { background: var(--miss-tint); border-left-color: var(--miss); }
+.ex-sim[data-state=good] .ex-out { border-left-color: var(--call); }
+.ex-label { margin-top: .5rem; font: 400 12.5px/19px var(--fact); color: var(--ink-3); }
+
+/* The record of this page: answers to take back to the chat */
+.ex-results { margin-top: 4rem; padding-top: 1rem; border-top: 2px solid var(--ink); position: relative; }
+.ex-results::before { content: ""; position: absolute; left: 0; right: 0; top: 4px; border-top: 1px solid var(--ink); }
+.ex-results h2 { margin: .5rem 0 .5rem; padding: 0; border: 0; }
+.ex-results p { margin: 0 0 .5rem; font: 400 12.5px/19px var(--fact); color: var(--ink-3); }
+.ex-results textarea { min-height: 8rem; margin: .75rem 0 1rem; padding: .75rem 1rem; border: 0; background: var(--paper-sunk); color: var(--ink); font: 400 12px/18px var(--fact); }
+.fh-colophon { max-width: 42rem; margin: -2rem auto 3rem; padding-top: .75rem; border-top: 1px solid var(--rule); font: 400 12px/18px var(--fact); color: var(--ink-3); }
+@media (max-width: 46rem) { .fh-colophon { margin-left: 1rem; margin-right: 1rem; } }
+
+@media (max-width: 600px) {
+  h1 { font-size: 30px; line-height: 35px; margin-top: 2rem; }
+  h2 { font-size: 22px; line-height: 28px; margin-top: 3rem; }
+  .ex-q { font-size: 20px; line-height: 29px; }
+  .ex-predict, .ex-explain, .ex-order { padding: 0 1rem 1rem; }
+  .ex-predict::before, .ex-explain::before, .ex-order::before { margin: 0 -1rem 1rem; padding: 9px 1rem; }
+  .ex-conf legend { float: none; display: block; width: 100%; line-height: 16px; }
+  .ex-conf label { padding: 0 .8rem; }
+  .ex-nav span { margin-left: 0; flex-basis: 100%; }
+  .ex-badge { white-space: normal; text-align: right; }
+}
+@media (prefers-reduced-motion: reduce) { * { animation: none !important; transition: none !important; } }
+@media print { .ex-commit, .ex-nav button, .ex-results button { display: none; } body { background: #fff; } }
 </style>
 </head>
 <!-- data-topic must match a topic id in the learner's record. -->
@@ -84,6 +265,8 @@ textarea { width: 100%; min-height: 6rem; font: inherit; padding: .5rem; backgro
 <svg width="0" height="0" style="position:absolute" aria-hidden="true">
   <defs><marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path class="arrowhead" d="M0,0 L10,5 L0,10 z"/></marker></defs>
 </svg>
+<!-- The folio. Keep it. Put the topic's plain name after the slash. -->
+<header class="fh-folio"><div><span class="fh-wordmark"><i>First</i>hand</span><span class="fh-place"><b>Explainer</b> / EXAMPLE idempotent retry</span></div></header>
 <main>
 
 <h1>EXAMPLE: Why a retried charge needs a key</h1>
@@ -119,16 +302,16 @@ code.</p>
 <section class="ex-stepper">
   <figure class="ex-frame">
     <svg viewBox="0 0 360 120" role="img" aria-label="Worker sends charge to gateway">
-      <rect class="box" x="10" y="40" width="100" height="40" rx="6"/><text x="60" y="65" text-anchor="middle">worker</text>
-      <rect class="box" x="250" y="40" width="100" height="40" rx="6"/><text x="300" y="65" text-anchor="middle">gateway</text>
+      <rect class="box" x="10" y="40" width="100" height="40" rx="2"/><text x="60" y="65" text-anchor="middle">worker</text>
+      <rect class="box" x="250" y="40" width="100" height="40" rx="2"/><text x="300" y="65" text-anchor="middle">gateway</text>
       <path class="edge changed" d="M110,60 L250,60"/><text x="180" y="52" text-anchor="middle">charge #1</text>
     </svg>
     <figcaption>Step 1. The worker sends charge #1 and starts a 0.8 s timer.</figcaption>
   </figure>
   <figure class="ex-frame">
     <svg viewBox="0 0 360 120" role="img" aria-label="Timer fires before the gateway replies">
-      <rect class="box" x="10" y="40" width="100" height="40" rx="6"/><text x="60" y="65" text-anchor="middle">worker</text>
-      <rect class="box" x="250" y="40" width="100" height="40" rx="6"/><text x="300" y="65" text-anchor="middle">gateway</text>
+      <rect class="box" x="10" y="40" width="100" height="40" rx="2"/><text x="60" y="65" text-anchor="middle">worker</text>
+      <rect class="box" x="250" y="40" width="100" height="40" rx="2"/><text x="300" y="65" text-anchor="middle">gateway</text>
       <path class="edge" d="M110,60 L250,60"/><text x="180" y="52" text-anchor="middle">charge #1</text>
       <text class="changed" x="60" y="100" text-anchor="middle">timer fires at 0.8 s</text>
     </svg>
@@ -146,8 +329,8 @@ code.</p>
   </figure>
   <figure class="ex-frame">
     <svg viewBox="0 0 360 120" role="img" aria-label="Retry reaches the gateway as a second charge">
-      <rect class="box" x="10" y="40" width="100" height="40" rx="6"/><text x="60" y="65" text-anchor="middle">worker</text>
-      <rect class="box" x="250" y="40" width="100" height="40" rx="6"/><text x="300" y="65" text-anchor="middle">gateway</text>
+      <rect class="box" x="10" y="40" width="100" height="40" rx="2"/><text x="60" y="65" text-anchor="middle">worker</text>
+      <rect class="box" x="250" y="40" width="100" height="40" rx="2"/><text x="300" y="65" text-anchor="middle">gateway</text>
       <path class="edge fault" d="M110,75 L250,75"/><text x="180" y="95" text-anchor="middle">charge #2 (retry)</text>
     </svg>
     <figcaption>Step 3. The retry arrives. Without a key it is a second purchase.</figcaption>
@@ -213,6 +396,8 @@ code.</p>
 </table>
 
 </main>
+<!-- The colophon. Keep it. -->
+<footer class="fh-colophon">Made with Firsthand. This page runs nothing and sends nothing. Your answers stay on it until you copy them.</footer>
 
 <script id="ex-rules">
 // Pure rules, one per simulation. Each takes the control values and returns

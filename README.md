@@ -1,4 +1,4 @@
-# learning-while-building
+# Firsthand
 
 A Claude Code skill for building a real project with Claude while getting better
 as an engineer, rather than only getting faster.
@@ -14,16 +14,16 @@ showed you could do without help, split by engineering dimension.
 ## Install
 
     /plugin marketplace add 0xfauzi/explain-pr
-    /plugin install learning-while-building@learning-while-building
+    /plugin install firsthand@firsthand
 
 Then, in a project repository:
 
-    /learning-while-building:learning-while-building
+    /firsthand:firsthand
 
 or say "make this a learning task", "quiz me", "help me understand what PR 128
 did", "draw me how this works", or "what am I weak at".
 
-The first run creates your record in `~/.learning-while-building/`, outside the
+The first run creates your record in `~/.firsthand/`, outside the
 repository. It holds every answer you got wrong, so it is not kept where others
 who can read the repository can read it. In a cloud session the record is lost
 when the container is reclaimed, unless you copy it out.
@@ -37,7 +37,7 @@ before its name, the real technical term once the idea is clear, honest about
 what is known, and no performed warmth. The skill applies it to everything it
 says to you whether or not you select it. To use it for all of Claude's writing:
 
-    /output-style learning-while-building:Human-Outward
+    /output-style firsthand:Human-Outward
 
 Requires Python 3.9+ and git. Checking explainer pages also needs node, and
 Playwright for node (`npm i -g playwright`) to drive the page in a browser.

@@ -4,8 +4,8 @@
 Every write goes through this script so the record stays valid and the schedule
 is computed the same way every time. Claude never edits the data files by hand.
 
-Data lives outside the project, in ~/.learning-while-building/projects/<project>/
-($LEARNING_HOME changes the home; --dir or the LEARNING_DIR environment variable
+Data lives outside the project, in ~/.firsthand/projects/<project>/
+($FIRSTHAND_HOME changes the home; --dir or the FIRSTHAND_DIR environment variable
 names a directory directly). One file per topic and per attempt; see record.py
 for the layout and why. A record that an earlier version left in ./.learning is
 still read, with a notice, until `move` copies it out.
@@ -630,7 +630,7 @@ def cmd_migrate(args: argparse.Namespace) -> None:
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     parser.add_argument(
-        "--dir", help="record directory (default .learning or $LEARNING_DIR)"
+        "--dir", help="record directory (default: the project folder in ~/.firsthand)"
     )
     parser.add_argument("--today", help="override today's date, YYYY-MM-DD")
     sub = parser.add_subparsers(dest="command", required=True)

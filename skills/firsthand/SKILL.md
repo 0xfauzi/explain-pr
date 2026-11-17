@@ -1,9 +1,9 @@
 ---
-name: learning-while-building
+name: firsthand
 description: Turns building software with Claude into deliberate practice, so the learner's own engineering ability grows instead of eroding. Has the learner attempt designs, predictions and diagnoses before Claude explains, has them explain finished changes back, schedules spaced retrieval and transfer questions, builds interactive explainer pages that make the learner predict before revealing, runs debugging drills on injected bugs, and keeps a per-dimension record of what the learner has shown they can do unaided. Use when the user wants to learn from the work rather than only finish it - "make this a learning task", "teach me as we build", "help me understand what PR 128 did", "quiz me", "test whether I still understand X", "what am I weak at", "give me a debugging drill", "draw me how this works". Do not use for ordinary implementation, defect review or code review requests that show no learning intent.
 ---
 
-# Learning while building
+# Firsthand
 
 The target is what the learner can do without Claude: predict, design, debug and
 extend the system unaided. Finishing the task matters too, so Claude still does
@@ -96,7 +96,7 @@ On first use in a repository, run:
 Run all commands from the repository root. Before running `init`, show the
 learner the default dimensions (run `init --help` to print them) and ask which to keep, drop or add. Pass their list with
 `--dimensions a,b,c`. The record is created outside the project, in
-`~/.learning-while-building/`, because it holds every answer the learner got
+`~/.firsthand/`, because it holds every answer the learner got
 wrong. Tell the learner where it is (`where` prints the directory). In a cloud
 session, say that the record is lost when the container is reclaimed unless they
 copy it out. If a command prints a note that the record is in `./.learning`, an
@@ -228,7 +228,7 @@ now, and the summary must say so.
 
 Run, do not read. Prefix each command with
 `python3 ${CLAUDE_SKILL_DIR}/scripts/learning.py`. All commands take `--dir`
-(default: the project's folder in `~/.learning-while-building/`). Every write
+(default: the project's folder in `~/.firsthand/`). Every write
 goes through the script; never edit the data files by hand.
 
 | Command | Use |

@@ -8,8 +8,8 @@ The record is kept outside the project, because it holds every answer the
 learner got wrong and a project folder is read by everyone who can read the
 repository:
 
-  ~/.learning-while-building/                 $LEARNING_HOME, mode 0700
-  ~/.learning-while-building/projects/<key>/  one folder per project
+  ~/.firsthand/                 $FIRSTHAND_HOME, mode 0700
+  ~/.firsthand/projects/<key>/  one folder per project
 
 <key> is the project folder's name and a short hash, so two projects with the
 same name stay apart. A record that an earlier version left in ./.learning is
@@ -173,8 +173,8 @@ def _git(*args: str, cwd: Path) -> str | None:
 
 
 def home_dir() -> Path:
-    env = os.environ.get("LEARNING_HOME")
-    return Path(env) if env else Path.home() / ".learning-while-building"
+    env = os.environ.get("FIRSTHAND_HOME") or os.environ.get("LEARNING_HOME")
+    return Path(env) if env else Path.home() / ".firsthand"
 
 
 def project_top(cwd: Path) -> Path:
@@ -206,8 +206,11 @@ def is_legacy(cwd: Path | None = None) -> bool:
 
 
 def data_dir(arg: str | None) -> Path:
-    """--dir, then $LEARNING_DIR, then an unmoved ./.learning, then the home."""
-    chosen = arg or os.environ.get("LEARNING_DIR")
+    """--dir, then $FIRSTHAND_DIR, then an unmoved ./.learning, then the home.
+
+    The earlier names $LEARNING_DIR and $LEARNING_HOME are still read.
+    """
+    chosen = arg or os.environ.get("FIRSTHAND_DIR") or os.environ.get("LEARNING_DIR")
     if chosen:
         return Path(chosen)
     if is_legacy():

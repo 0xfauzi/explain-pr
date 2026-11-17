@@ -1,20 +1,20 @@
 {
-  "name": "learning-while-building",
+  "name": "firsthand",
   "owner": {
     "name": "0xfauzi"
   },
   "metadata": {
     "description": "Learn while you build with Claude",
-    "version": "0.3.1"
+    "version": "0.4.0"
   },
   "plugins": [
     {
-      "name": "learning-while-building",
+      "name": "firsthand",
       "description": "Turns building with Claude into deliberate practice, and keeps a record of what you can do unaided.",
       "source": "./",
       "strict": false,
       "skills": [
-        "./skills/learning-while-building"
+        "./skills/firsthand"
       ]
     }
   ]

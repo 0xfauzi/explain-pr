@@ -60,7 +60,9 @@ one interaction.
 **3. Write the page.** Copy `assets/explainer-template.html` to
 `explainers/<topic-id>.html` in the record directory (`learning.py where` prints
 it). Keep the `<style>` and the
-`<script id="ex-runtime">` block unchanged. Replace everything marked EXAMPLE,
+`<script id="ex-runtime">` block unchanged. Keep the folio at the top and the
+colophon at the bottom, and put the topic's plain name in the folio after the
+slash. Replace everything marked EXAMPLE,
 set `<body data-topic>` to the topic id, and follow the structure below.
 
 **4. Sweep the rules.** For each simulation, extract the rules to a scratch
@@ -248,9 +250,13 @@ can be swept in node. Mirror the real code's logic and constants, and cite them.
 - **No decoration.** No icons, gradients, shadows or illustrative clip-art.
   Every mark carries information.
 - **Readable at 375 px.** Keep `viewBox` widths near 360 units. At phone width
-  a 360-unit figure renders at about 0.85 scale, so the template's 15-unit text
+  a 360-unit figure renders at about its own size, so the template's 13-unit text
   lands near 13 px. No more than six boxes per row. The template caps figures at
-  30rem wide so they do not balloon on a desktop.
+  32rem wide so they do not balloon on a desktop.
+- **Keep the page's two colours to their meanings.** Blue is the learner's own
+  answer and the part a step changes. The brick red is a fault or an answer
+  that did not hold. Do not use either for decoration, and add no other colour.
+  Boxes are square (`rx="2"`).
 - **Use the template's classes** (`box`, `edge`, `changed`, `fault`, `arrowhead`)
   so dark mode works. Keep shared `<defs>` in the hidden block at the top.
 - **Generated over hand-drawn for system maps.** If the repository can emit its
